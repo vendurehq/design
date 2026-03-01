@@ -20,6 +20,10 @@
       "cache": false,
       "persistent": true
     },
+    "generate": {
+      "outputs": ["src/css/**"],
+      "inputs": ["src/tokens/**", "scripts/**"]
+    },
     "clean": {
       "cache": false
     }
