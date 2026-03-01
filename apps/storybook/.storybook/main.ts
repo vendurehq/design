@@ -1,8 +1,9 @@
+import path from 'node:path';
 import type { StorybookConfig } from '@storybook/react-vite';
 import tailwindcss from '@tailwindcss/vite';
 
 const config: StorybookConfig = {
-  stories: ['../../../packages/ui/src/**/*.stories.@(ts|tsx)'],
+  stories: ['../../../packages/ui/stories/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-essentials', '@storybook/addon-themes'],
   framework: {
     name: '@storybook/react-vite',
@@ -10,6 +11,13 @@ const config: StorybookConfig = {
   },
   viteFinal(config) {
     config.plugins = [...(config.plugins ?? []), tailwindcss()];
+    config.resolve = {
+      ...config.resolve,
+      alias: {
+        ...config.resolve?.alias,
+        '@': path.resolve(__dirname, '../../../packages/ui/src'),
+      },
+    };
     return config;
   },
 };

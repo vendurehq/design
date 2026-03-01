@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react';
 import { withThemeByClassName } from '@storybook/addon-themes';
-import '@vendure-io/design-tokens/css/theme';
+import './storybook.css';
 
 const preview: Preview = {
   decorators: [
