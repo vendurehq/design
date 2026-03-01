@@ -42,6 +42,9 @@ const radiusLines = [
   `  --radius-md: calc(var(--radius) - 2px);`,
   `  --radius-lg: var(--radius);`,
   `  --radius-xl: calc(var(--radius) + 4px);`,
+  `  --radius-2xl: calc(var(--radius) + 8px);`,
+  `  --radius-3xl: calc(var(--radius) + 12px);`,
+  `  --radius-4xl: calc(var(--radius) + 16px);`,
 ];
 
 // Font-family lines from typography tokens
@@ -56,6 +59,7 @@ const themeCss = [
   '',
   '@import "tailwindcss";',
   '@import "tw-animate-css";',
+  '@import "shadcn/tailwind.css";',
   '@import "./variables.css";',
   '@plugin "@tailwindcss/typography";',
   '',
@@ -67,7 +71,7 @@ const themeCss = [
   '',
   '@layer base {',
   '  * {',
-  '    border-color: var(--border);',
+  '    @apply border-border outline-ring/50;',
   '  }',
   '  body {',
   '    background-color: var(--background);',

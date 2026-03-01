@@ -1,4 +1,5 @@
 export const fontFamily = {
+  sans: '"Inter", system-ui, sans-serif',
   heading: '"Public Sans", system-ui, sans-serif',
   body: '"Inter", system-ui, sans-serif',
   mono: '"Geist Mono", ui-monospace, monospace',
