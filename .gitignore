@@ -1,0 +1,43 @@
+# dependencies
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# turbo
+.turbo
+
+# storybook
+storybook-static
+
+# IntelliJ based IDEs
+.idea
+
+# Cursor
+.cursor
+
+# Finder (MacOS) folder config
+.DS_Store
