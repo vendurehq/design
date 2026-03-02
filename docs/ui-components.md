@@ -2,6 +2,25 @@
 
 `@vendure-io/ui` is the React component library for Vendure. Built on shadcn/ui with Tailwind v4 and React 19+.
 
+## Setup
+
+`@vendure-io/ui` ships raw `.tsx` source files (no pre-compiled JS). Bundlers need to be configured to transpile the package.
+
+### Next.js
+
+Add `@vendure-io/ui` to `transpilePackages` in your Next.js config:
+
+```ts
+// next.config.ts
+const nextConfig = {
+  transpilePackages: ["@vendure-io/ui"],
+};
+
+export default nextConfig;
+```
+
+This applies to both Turbopack and Webpack modes.
+
 ## Import Pattern
 
 Components use wildcard subpath exports — there are no barrel files. Always import from the specific component path:
