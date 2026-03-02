@@ -16,14 +16,12 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-themes": "^8.6.14",
-    "@storybook/react": "^8.6.14",
-    "@storybook/react-vite": "^8.6.14",
+    "@storybook/addon-themes": "^10.2.13",
+    "@storybook/react-vite": "^10.2.13",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "storybook": "^8.6.14",
+    "storybook": "^10.2.13",
     "tailwindcss": "^4.1.18",
     "vite": "^6.3.5"
   }
