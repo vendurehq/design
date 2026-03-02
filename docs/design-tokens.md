@@ -12,13 +12,25 @@ The full Tailwind v4 theme. This is what you should import in your app's CSS. It
 
 - Tailwind CSS v4
 - `tw-animate-css` animations
-- `shadcn/tailwind.css` base styles
 - All CSS custom properties (variables)
 - Tailwind theme mapping (`@theme inline`)
-- The `@tailwindcss/typography` plugin
 
 ```css
 @import "@vendure-io/design-tokens/css/theme";
+```
+
+If you're using **shadcn/ui** components, add the shadcn Tailwind import after the theme:
+
+```css
+@import "@vendure-io/design-tokens/css/theme";
+@import "shadcn/tailwind.css";
+```
+
+If you need the **typography plugin** (`prose` classes), add it separately:
+
+```css
+@import "@vendure-io/design-tokens/css/theme";
+@plugin "@tailwindcss/typography";
 ```
 
 ### `@vendure-io/design-tokens/css/variables`
