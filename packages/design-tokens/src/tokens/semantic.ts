@@ -2,7 +2,7 @@ import { brand, neutral, success, warning, destructive } from './colors.ts';
 import { radii } from './radii.ts';
 
 export const lightTheme = {
-  background: 'oklch(1 0 0)',
+  background: neutral[50],
   foreground: neutral[950],
   card: 'oklch(1 0 0)',
   'card-foreground': neutral[950],
