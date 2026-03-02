@@ -12,14 +12,10 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "storybook": "turbo run storybook",
-    "clean": "turbo run clean",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "clean": "turbo run clean"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",
-    "@changesets/cli": "^2.29.4",
     "@types/bun": "^1.2.9",
     "turbo": "^2.5.3",
     "typescript": "^5.8.2"
