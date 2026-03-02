@@ -33,7 +33,7 @@
     },
     "packages/design-tokens": {
       "name": "@vendure-io/design-tokens",
-      "version": "0.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@tailwindcss/typography": "^0.5.16",
         "shadcn": "^3.8.5",
@@ -43,7 +43,7 @@
     },
     "packages/ui": {
       "name": "@vendure-io/ui",
-      "version": "0.0.0",
+      "version": "1.0.1",
       "dependencies": {
         "@base-ui/react": "^1.2.0",
         "@vendure-io/design-tokens": "workspace:*",

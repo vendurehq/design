@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@vendure-io/ui/lib/utils"
 
 function AspectRatio({
   ratio,

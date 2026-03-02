@@ -11,11 +11,11 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "hooks": "@/hooks",
-    "lib": "@/lib"
+    "components": "@vendure-io/ui/components",
+    "utils": "@vendure-io/ui/lib/utils",
+    "ui": "@vendure-io/ui/components/ui",
+    "hooks": "@vendure-io/ui/hooks",
+    "lib": "@vendure-io/ui/lib"
   },
   "iconLibrary": "lucide",
   "rtl": false,
