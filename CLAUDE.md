@@ -109,3 +109,17 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+
+## Releasing Packages
+
+Create releases via GitHub Releases using `gh release create`, not by pushing tags directly. The release workflows trigger on tags matching `<package>/v*`.
+
+```sh
+# Release @vendure-io/ui
+gh release create ui/v1.2.3 --title "@vendure-io/ui v1.2.3" --generate-notes
+
+# Release @vendure-io/design-tokens
+gh release create design-tokens/v1.2.3 --title "@vendure-io/design-tokens v1.2.3" --generate-notes
+```
+
+The CI workflow handles version bumping in `package.json`, publishing to npm, and committing the version bump back to `main`.
