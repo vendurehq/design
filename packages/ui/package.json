@@ -1,6 +1,14 @@
 {
   "name": "@vendure-io/ui",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "React component library for Vendure, built on shadcn/ui and Tailwind v4",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "homepage": "https://github.com/vendurehq/design/tree/main/packages/ui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vendurehq/design.git",
+    "directory": "packages/ui"
+  },
   "type": "module",
   "exports": {
     "./components/ui/*": "./src/components/ui/*.tsx",
