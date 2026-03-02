@@ -1,6 +1,6 @@
 {
   "name": "@vendure-io/design-tokens",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Design tokens and Tailwind v4 CSS theme for the Vendure design system",
   "license": "SEE LICENSE IN LICENSE.md",
   "homepage": "https://github.com/vendurehq/design/tree/main/packages/design-tokens",
