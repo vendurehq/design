@@ -16,7 +16,8 @@
     "./css/theme": "./src/css/theme.css"
   },
   "files": [
-    "src"
+    "src",
+    "README.md"
   ],
   "dependencies": {
     "tailwindcss": "^4.1.18",

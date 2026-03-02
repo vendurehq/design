@@ -17,7 +17,8 @@
     "./hooks/*": "./src/hooks/*.ts"
   },
   "files": [
-    "src"
+    "src",
+    "README.md"
   ],
   "scripts": {
     "lint": "biome check src/",

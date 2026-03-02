@@ -1,16 +1,17 @@
-name: Release
+name: Release ui
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "ui/v*"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: release-ui
   cancel-in-progress: false
 
 jobs:
   release:
-    name: Release
+    name: Publish @vendure-io/ui
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -36,7 +37,7 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=${GITHUB_REF_NAME#ui/v}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -52,22 +53,21 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Update package versions
+      - name: Update package version
         run: |
-          for pkg in packages/*/package.json; do
-            jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' "$pkg" > tmp.json && mv tmp.json "$pkg"
-          done
+          jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' \
+            packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
 
       - name: Build
         run: bun run build
 
-      - name: Publish @vendure-io/design-tokens
-        run: npm publish --provenance --access public
-        working-directory: packages/design-tokens
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Resolve workspace dependency
+        run: |
+          TOKENS_VERSION=$(jq -r '.version' packages/design-tokens/package.json)
+          jq --arg v "^$TOKENS_VERSION" '.dependencies["@vendure-io/design-tokens"] = $v' \
+            packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
 
-      - name: Publish @vendure-io/ui
+      - name: Publish
         run: npm publish --provenance --access public
         working-directory: packages/ui
         env:
@@ -77,6 +77,10 @@ jobs:
         run: |
           git config user.name "${{ steps.bot-token.outputs.app-slug }}[bot]"
           git config user.email "${{ steps.get-user.outputs.user-id }}+${{ steps.bot-token.outputs.app-slug }}[bot]@users.noreply.github.com"
-          git add packages/*/package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.VERSION }}"
+          git checkout -- packages/ui/package.json
+          jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' \
+            packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
+          git add packages/ui/package.json
+          git commit -m "chore(ui): bump version to ${{ steps.version.outputs.VERSION }}"
+          git pull --rebase origin main
           git push origin HEAD:main
