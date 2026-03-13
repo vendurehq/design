@@ -62,6 +62,8 @@ const themeCss = [
   '@import "./variables.css";',
   '',
   '@custom-variant dark (&:is(.dark *));',
+  '@custom-variant data-horizontal (&[data-orientation="horizontal"]);',
+  '@custom-variant data-vertical (&[data-orientation="vertical"]);',
   '',
   '@theme inline {',
   themeBlock,
