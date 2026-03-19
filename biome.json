@@ -8,7 +8,8 @@
       "!**/.turbo",
       "!**/.changeset",
       "!**/bun.lock",
-      "!**/storybook-static"
+      "!**/storybook-static",
+      "!**/components/ui"
     ]
   },
   "formatter": {
