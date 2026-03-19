@@ -1,5 +1,5 @@
-import { brand, neutral, success, warning, destructive } from './colors.ts';
-import { radii } from './radii.ts';
+import { brand, neutral, success, warning, destructive } from './colors.js';
+import { radii } from './radii.js';
 
 export const lightTheme = {
   background: neutral[50],

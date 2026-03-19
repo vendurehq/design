@@ -11,12 +11,16 @@
   },
   "type": "module",
   "exports": {
-    ".": "./src/tokens/index.ts",
+    ".": {
+      "types": "./dist/tokens/index.d.ts",
+      "default": "./dist/tokens/index.js"
+    },
     "./css/variables": "./src/css/variables.css",
     "./css/theme": "./src/css/theme.css"
   },
   "files": [
-    "src",
+    "dist",
+    "src/css",
     "README.md"
   ],
   "dependencies": {
@@ -26,6 +30,8 @@
     "shadcn": "^3.8.5"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
     "generate": "bun scripts/generate-css.ts",
     "check-freshness": "bun scripts/generate-css.ts && git diff --exit-code src/css/",
     "lint": "biome check src/",

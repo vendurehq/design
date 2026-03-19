@@ -11,16 +11,30 @@
   },
   "type": "module",
   "exports": {
-    "./components/ui/*": "./src/components/ui/*.tsx",
-    "./components/custom/*": "./src/components/custom/*.tsx",
-    "./lib/*": "./src/lib/*.ts",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./components/ui/*": {
+      "types": "./dist/components/ui/*.d.ts",
+      "default": "./dist/components/ui/*.js"
+    },
+    "./components/custom/*": {
+      "types": "./dist/components/custom/*.d.ts",
+      "default": "./dist/components/custom/*.js"
+    },
+    "./lib/*": {
+      "types": "./dist/lib/*.d.ts",
+      "default": "./dist/lib/*.js"
+    },
+    "./hooks/*": {
+      "types": "./dist/hooks/*.d.ts",
+      "default": "./dist/hooks/*.js"
+    }
   },
   "files": [
-    "src",
+    "dist",
     "README.md"
   ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
     "lint": "biome check src/",
     "check-types": "tsc --noEmit"
   },
