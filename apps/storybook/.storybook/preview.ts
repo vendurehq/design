@@ -4,7 +4,6 @@ import './storybook.css';
 
 const preview: Preview = {
   decorators: [
-    // @ts-expect-error -- addon-themes Renderer type diverges from ReactRenderer in SB10
     withThemeByClassName({
       themes: {
         light: '',
