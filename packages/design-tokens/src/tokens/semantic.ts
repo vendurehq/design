@@ -1,4 +1,4 @@
-import { brand, neutral, success, warning, destructive } from './colors.js';
+import { brand, destructive, neutral, success, warning } from './colors.js';
 import { radii } from './radii.js';
 
 export const lightTheme = {
