@@ -9,7 +9,8 @@
       "!**/.changeset",
       "!**/bun.lock",
       "!**/storybook-static",
-      "!**/components/ui"
+      "!**/components/ui",
+      "!**/hooks/use-mobile.ts"
     ]
   },
   "formatter": {
