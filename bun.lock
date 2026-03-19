@@ -22,6 +22,7 @@
       },
       "devDependencies": {
         "@storybook/addon-themes": "^10.2.13",
+        "@storybook/react": "^10.2.13",
         "@storybook/react-vite": "^10.2.13",
         "@tailwindcss/vite": "^4.1.18",
         "@types/react": "^19.1.2",
@@ -33,7 +34,7 @@
     },
     "packages/design-tokens": {
       "name": "@vendure-io/design-tokens",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "dependencies": {
         "@tailwindcss/typography": "^0.5.16",
         "shadcn": "^3.8.5",
@@ -43,7 +44,7 @@
     },
     "packages/ui": {
       "name": "@vendure-io/ui",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "dependencies": {
         "@base-ui/react": "^1.2.0",
         "@vendure-io/design-tokens": "workspace:*",

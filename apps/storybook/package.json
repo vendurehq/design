@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@storybook/addon-themes": "^10.2.13",
+    "@storybook/react": "^10.2.13",
     "@storybook/react-vite": "^10.2.13",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.1.2",
