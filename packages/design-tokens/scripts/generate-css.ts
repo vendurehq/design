@@ -1,8 +1,15 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brand, neutral, success, warning, destructive } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
 import { fontFamily } from '../src/tokens/typography.ts';
 import { radii } from '../src/tokens/radii.ts';
+
+// Base color ranges — static across light/dark themes
+const colorRanges = { brand, neutral, success, warning, destructive } as Record<
+  string,
+  Record<string, string>
+>;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const cssDir = resolve(__dirname, '../src/css');
@@ -16,10 +23,23 @@ function buildBlock(selector: string, tokens: Record<string, string>): string {
   return `${selector} {\n${lines.join('\n')}\n}`;
 }
 
+// Flatten color ranges into { 'brand-50': 'oklch(...)', 'brand-100': '...' , ... }
+function flattenColorRanges(ranges: Record<string, Record<string, string>>): Record<string, string> {
+  const flat: Record<string, string> = {};
+  for (const [name, scale] of Object.entries(ranges)) {
+    for (const [step, value] of Object.entries(scale)) {
+      flat[`${name}-${step}`] = value;
+    }
+  }
+  return flat;
+}
+
+const baseColorVars = flattenColorRanges(colorRanges);
+
 const variablesCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '',
-  buildBlock(':root', lightTheme),
+  buildBlock(':root', { ...baseColorVars, ...lightTheme }),
   '',
   buildBlock('.dark', darkTheme),
   '',
@@ -31,7 +51,12 @@ await Bun.write(resolve(cssDir, 'variables.css'), variablesCss);
 // theme.css
 // ---------------------------------------------------------------------------
 
-// Color mappings — every semantic key except "radius" gets a --color-* alias
+// Base color range mappings — e.g. --color-brand-50: var(--brand-50)
+const baseColorLines = Object.keys(baseColorVars).map(
+  (key) => `  --color-${key}: var(--${key});`,
+);
+
+// Semantic color mappings — every semantic key except "radius" gets a --color-* alias
 const colorKeys = Object.keys(lightTheme).filter((k) => k !== 'radius');
 
 const colorLines = colorKeys.map((key) => `  --color-${key}: var(--${key});`);
@@ -52,7 +77,7 @@ const fontLines = Object.entries(fontFamily).map(
   ([key, value]) => `  --font-${key}: ${value};`,
 );
 
-const themeBlock = [...colorLines, ...radiusLines, ...fontLines].join('\n');
+const themeBlock = [...baseColorLines, ...colorLines, ...radiusLines, ...fontLines].join('\n');
 
 const themeCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
