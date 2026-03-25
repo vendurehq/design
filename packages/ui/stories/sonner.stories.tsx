@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ThemeProvider } from 'next-themes';
 import { toast } from 'sonner';
-import { Toaster } from '../src/components/ui/sonner.tsx';
 import { Button } from '../src/components/ui/button.tsx';
+import { Toaster } from '../src/components/ui/sonner.tsx';
 
 const meta = {
   title: 'UI/Feedback/Sonner',
@@ -24,16 +24,35 @@ export const Default: Story = {
   render: () => (
     <div className="flex gap-2">
       <Toaster />
-      <Button onClick={() => toast('Event has been created')}>
-        Show Toast
-      </Button>
-      <Button variant="outline" onClick={() => toast.success('Successfully saved!')}>
+      <Button onClick={() => toast('Event has been created')}>Show Toast</Button>
+      <Button
+        variant="outline"
+        onClick={() =>
+          toast.success('Successfully saved!', {
+            description: 'Your changes have been persisted.',
+          })
+        }
+      >
         Success
       </Button>
-      <Button variant="outline" onClick={() => toast.error('Something went wrong')}>
+      <Button
+        variant="outline"
+        onClick={() =>
+          toast.error('Something went wrong', {
+            description: 'Please try again or contact support.',
+          })
+        }
+      >
         Error
       </Button>
-      <Button variant="outline" onClick={() => toast.warning('Please review your input')}>
+      <Button
+        variant="outline"
+        onClick={() =>
+          toast.warning('Please review your input', {
+            description: 'Some fields may need attention.',
+          })
+        }
+      >
         Warning
       </Button>
       <Button
