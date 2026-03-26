@@ -4,6 +4,7 @@ import { brand, neutral, success, warning, destructive } from '../src/tokens/col
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
 import { fontFamily } from '../src/tokens/typography.ts';
 import { radii } from '../src/tokens/radii.ts';
+import { shadows } from '../src/tokens/shadows.ts';
 
 // Base color ranges — static across light/dark themes
 const colorRanges = { brand, neutral, success, warning, destructive } as Record<
@@ -72,12 +73,17 @@ const radiusLines = [
   `  --radius-4xl: calc(var(--radius) + 16px);`,
 ];
 
+// Shadow lines — override Tailwind defaults with our tokens
+const shadowLines = Object.entries(shadows).map(
+  ([key, value]) => `  --shadow-${key}: ${value};`,
+);
+
 // Font-family lines from typography tokens
 const fontLines = Object.entries(fontFamily).map(
   ([key, value]) => `  --font-${key}: ${value};`,
 );
 
-const themeBlock = [...baseColorLines, ...colorLines, ...radiusLines, ...fontLines].join('\n');
+const themeBlock = [...baseColorLines, ...colorLines, ...radiusLines, ...shadowLines, ...fontLines].join('\n');
 
 const themeCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
