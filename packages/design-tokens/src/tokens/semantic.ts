@@ -25,7 +25,7 @@ export const lightTheme = {
   border: 'oklch(0.9 0.01 231)',
   input: 'oklch(0.9 0.01 231)',
   ring: brand[500],
-  radius: radii.none,
+  radius: radii.md,
   'chart-1': brand[500],
   'chart-2': success[500],
   'chart-3': destructive[500],

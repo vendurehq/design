@@ -62,16 +62,10 @@ const colorKeys = Object.keys(lightTheme).filter((k) => k !== 'radius');
 
 const colorLines = colorKeys.map((key) => `  --color-${key}: var(--${key});`);
 
-// Radius calc expressions matching the existing theme.css convention
-const radiusLines = [
-  `  --radius-sm: calc(var(--radius) - 4px);`,
-  `  --radius-md: calc(var(--radius) - 2px);`,
-  `  --radius-lg: var(--radius);`,
-  `  --radius-xl: calc(var(--radius) + 4px);`,
-  `  --radius-2xl: calc(var(--radius) + 8px);`,
-  `  --radius-3xl: calc(var(--radius) + 12px);`,
-  `  --radius-4xl: calc(var(--radius) + 16px);`,
-];
+// Radius lines — driven directly from radii tokens
+const radiusLines = Object.entries(radii).map(
+  ([key, value]) => `  --radius-${key}: ${value};`,
+);
 
 // Shadow lines — override Tailwind defaults with our tokens
 const shadowLines = Object.entries(shadows).map(
