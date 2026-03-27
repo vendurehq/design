@@ -2,6 +2,7 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
+// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Card({
   className,
   size = "default",
@@ -12,7 +13,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "ring-foreground/10 bg-card text-card-foreground group/card flex flex-col gap-6 overflow-hidden rounded-xl py-6 text-sm shadow-xs ring-1 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "ring-foreground/10 bg-card text-card-foreground group/card flex flex-col gap-6 overflow-hidden rounded-xl py-6 text-sm ring-1 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       {...props}
