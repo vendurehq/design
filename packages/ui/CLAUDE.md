@@ -15,6 +15,8 @@ Config: `components.json` (base-vega style, lucide icons, RSC-compatible).
 
 Manual edits to `src/components/ui/` are fine for customization, but structure and base patterns come from shadcn.
 
+When customizing shadcn components, add a `// [vendure]` comment explaining the change so it can be restored after a shadcn upgrade. For JSX, use `{/* [vendure] ... */}`.
+
 ## Structure
 
 - `src/components/ui/` — shadcn-managed primitives (button, dialog, etc.)
