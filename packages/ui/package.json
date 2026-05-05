@@ -10,6 +10,7 @@
     "directory": "packages/ui"
   },
   "type": "module",
+  "sideEffects": false,
   "exports": {
     "./components/ui/*": "./src/components/ui/*.tsx",
     "./components/custom/*": "./src/components/custom/*.tsx",

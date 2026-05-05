@@ -24,12 +24,19 @@ When customizing shadcn components, add a `// [vendure]` comment explaining the 
 - `src/lib/` — utilities (cn, etc.)
 - `src/hooks/` — shared React hooks
 
-## Exports (wildcard, no barrel files)
+## Exports (wildcard, no wrapper barrels)
 
 - `./components/ui/*` → individual ui components
 - `./components/custom/*` → individual custom components
 - `./lib/*` → utilities
 - `./hooks/*` → hooks
+
+The "no barrels" rule applies to **wrapper components**: do not aggregate
+`components/ui/*` or `components/custom/*` behind an index file. The single
+exception is `src/lib/base-ui.ts`, which re-exports `@base-ui/react` primitive
+namespaces so consumers can override wrapper subcomponents without taking a
+direct dependency on `@base-ui/react`. Keep that file pure named re-exports
+(no value transforms), so bundlers can tree-shake unused primitives.
 
 ## Stack
 
