@@ -47,7 +47,7 @@ export const warning = {
   200: 'oklch(0.87 0.08 85)',
   300: 'oklch(0.78 0.12 85)',
   400: 'oklch(0.72 0.15 85)',
-  500: 'oklch(0.65 0.15 85)',
+  500: 'oklch(0.65 0.18 85)',
   600: 'oklch(0.55 0.13 85)',
   700: 'oklch(0.45 0.11 85)',
   800: 'oklch(0.37 0.09 85)',
@@ -67,4 +67,14 @@ export const destructive = {
   800: 'oklch(0.33 0.12 25)',
   900: 'oklch(0.27 0.09 25)',
   950: 'oklch(0.2 0.06 25)',
+} as const;
+
+// Qualitative palette for data viz. Hues at matched L/C so no series visually
+// dominates and chart roles stop borrowing semantic meaning from success/destructive.
+export const viz = {
+  1: 'oklch(0.65 0.16 231)', // cyan
+  2: 'oklch(0.65 0.16 280)', // violet
+  3: 'oklch(0.65 0.16 25)', // red-orange
+  4: 'oklch(0.65 0.16 145)', // green
+  5: 'oklch(0.65 0.16 85)', // amber
 } as const;
