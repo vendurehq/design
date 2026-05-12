@@ -1,13 +1,13 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { brand, neutral, success, warning, destructive } from '../src/tokens/colors.ts';
+import { brand, neutral, success, warning, destructive, viz } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
 import { fontFamily } from '../src/tokens/typography.ts';
 import { radii } from '../src/tokens/radii.ts';
 import { shadows } from '../src/tokens/shadows.ts';
 
 // Base color ranges — static across light/dark themes
-const colorRanges = { brand, neutral, success, warning, destructive } as Record<
+const colorRanges = { brand, neutral, success, warning, destructive, viz } as Record<
   string,
   Record<string, string>
 >;

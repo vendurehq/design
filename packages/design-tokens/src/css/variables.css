@@ -56,6 +56,11 @@
   --destructive-800: oklch(0.33 0.12 25);
   --destructive-900: oklch(0.27 0.09 25);
   --destructive-950: oklch(0.2 0.06 25);
+  --viz-1: oklch(0.65 0.16 231);
+  --viz-2: oklch(0.65 0.16 280);
+  --viz-3: oklch(0.65 0.16 25);
+  --viz-4: oklch(0.65 0.16 145);
+  --viz-5: oklch(0.65 0.16 85);
   --background: oklch(0.97 0.005 231);
   --foreground: oklch(0.15 0.01 231);
   --card: oklch(1 0 0);
