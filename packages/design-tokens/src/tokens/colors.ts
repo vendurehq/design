@@ -71,8 +71,9 @@ export const destructive = {
 
 // Qualitative palette for data viz. Hues at matched L/C so no series visually
 // dominates and chart roles stop borrowing semantic meaning from success/destructive.
+// viz-1 sits at magenta (335) rather than cyan (231) to avoid echoing brand[500].
 export const viz = {
-  1: 'oklch(0.65 0.16 231)', // cyan
+  1: 'oklch(0.65 0.16 335)', // magenta
   2: 'oklch(0.65 0.16 280)', // violet
   3: 'oklch(0.65 0.16 25)', // red-orange
   4: 'oklch(0.65 0.16 145)', // green

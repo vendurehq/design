@@ -56,7 +56,7 @@
   --destructive-800: oklch(0.33 0.12 25);
   --destructive-900: oklch(0.27 0.09 25);
   --destructive-950: oklch(0.2 0.06 25);
-  --viz-1: oklch(0.65 0.16 231);
+  --viz-1: oklch(0.65 0.16 335);
   --viz-2: oklch(0.65 0.16 280);
   --viz-3: oklch(0.65 0.16 25);
   --viz-4: oklch(0.65 0.16 145);
@@ -85,7 +85,7 @@
   --input: oklch(0.86 0.01 231);
   --ring: oklch(0.76 0.15 231);
   --radius: 0.2rem;
-  --chart-1: oklch(0.65 0.16 231);
+  --chart-1: oklch(0.65 0.16 335);
   --chart-2: oklch(0.65 0.16 280);
   --chart-3: oklch(0.65 0.16 25);
   --chart-4: oklch(0.65 0.16 145);
@@ -124,7 +124,7 @@
   --border: oklch(0.28 0.02 231);
   --input: oklch(0.28 0.02 231);
   --ring: oklch(0.76 0.15 231);
-  --chart-1: oklch(0.65 0.16 231);
+  --chart-1: oklch(0.65 0.16 335);
   --chart-2: oklch(0.65 0.16 280);
   --chart-3: oklch(0.65 0.16 25);
   --chart-4: oklch(0.65 0.16 145);
