@@ -43,9 +43,9 @@ export const lightTheme = {
 
 export const darkTheme = {
   background: neutral[950],
-  foreground: 'oklch(0.95 0.01 231)',
+  foreground: 'oklch(0.80 0.01 231)',
   card: 'oklch(0.18 0.01 231)',
-  'card-foreground': 'oklch(0.95 0.01 231)',
+  'card-foreground': 'oklch(0.80 0.01 231)',
   popover: 'oklch(0.18 0.01 231)',
   'popover-foreground': 'oklch(0.95 0.01 231)',
   primary: brand[500],
