@@ -69,16 +69,10 @@ export const destructive = {
   950: 'oklch(0.2 0.06 25)',
 } as const;
 
-// Qualitative palette for data viz. Each hue sits near its in-gamut chroma
-// ceiling so series read as vivid, not dusty. Lightness varies slightly per
-// hue (yellow and green need different L to hit max chroma) — a deliberate
-// deviation from strict matched-L in favor of visual punch. viz-1 sits in the
-// blue family (250) clearly outside brand cyan (231) so chart-1 never echoes
-// brand color.
 export const viz = {
-  1: 'oklch(0.5 0.22 250)', // deep blue
-  2: 'oklch(0.62 0.2 320)', // magenta
-  3: 'oklch(0.62 0.19 25)', // red-orange
-  4: 'oklch(0.65 0.17 145)', // green
-  5: 'oklch(0.75 0.17 85)', // amber
+  1: 'oklch(0.5 0.22 250)',
+  2: 'oklch(0.62 0.2 320)',
+  3: 'oklch(0.62 0.19 25)',
+  4: 'oklch(0.65 0.17 145)',
+  5: 'oklch(0.75 0.17 85)',
 } as const;
