@@ -14,13 +14,14 @@ import * as React from 'react';
 type ItemValue = string | number;
 
 /**
- * Describes how to read a piece of data off an item. Pass a property key for
- * the common case, or a function for full control.
+ * Describes how to read a piece of data off an item. Pass a property key — only
+ * keys whose value is assignable to `R` are allowed — or a function for full control.
  */
-type Accessor<T, R> = keyof T | ((item: T) => R);
+type AccessorKey<T, R> = { [K in keyof T]-?: T[K] extends R ? K : never }[keyof T];
+type Accessor<T, R> = AccessorKey<T, R> | ((item: T) => R);
 
 function resolveAccessor<T, R>(item: T, accessor: Accessor<T, R>): R {
-  return typeof accessor === 'function' ? accessor(item) : (item[accessor] as unknown as R);
+  return typeof accessor === 'function' ? accessor(item) : (item[accessor] as R);
 }
 
 export interface MultiSelectProps<T> {
@@ -49,7 +50,8 @@ export interface MultiSelectProps<T> {
   placeholder?: React.ReactNode;
   /**
    * Override how the selected options are summarised in the trigger. Defaults
-   * to the selected labels joined with commas.
+   * to the selected labels joined with commas. Provide this when `itemToLabel`
+   * renders multi-line content, so the trigger stays a single, non-growing line.
    */
   renderValue?: (selectedItems: T[]) => React.ReactNode;
   /** Disable the entire control. */
@@ -101,7 +103,22 @@ function MultiSelect<T>({
   const itemByValue = React.useMemo(() => {
     const map = new Map<ItemValue, T>();
     for (const item of items) {
-      map.set(getValue(item), item);
+      const itemValue = getValue(item);
+      if (process.env.NODE_ENV !== 'production') {
+        if (typeof itemValue !== 'string' && typeof itemValue !== 'number') {
+          console.warn(
+            'MultiSelect: `itemToValue` must resolve to a string or number. When `items` are ' +
+              'objects, pass `itemToValue` (e.g. itemToValue="id") so the selection survives the ' +
+              'items array being recreated.',
+          );
+        } else if (map.has(itemValue)) {
+          console.warn(
+            `MultiSelect: duplicate item value ${JSON.stringify(itemValue)} — each item must ` +
+              'resolve to a unique `itemToValue`; later items override earlier ones.',
+          );
+        }
+      }
+      map.set(itemValue, item);
     }
     return map;
   }, [items, getValue]);
@@ -111,7 +128,7 @@ function MultiSelect<T>({
       multiple
       value={value as ItemValue[] | undefined}
       defaultValue={defaultValue as ItemValue[] | undefined}
-      onValueChange={(nextValue: ItemValue[]) => onValueChange?.(nextValue)}
+      onValueChange={onValueChange}
       disabled={disabled}
       name={name}
       required={required}
@@ -126,7 +143,7 @@ function MultiSelect<T>({
       >
         <SelectValue placeholder={placeholder}>
           {(selected: ItemValue[]) => {
-            const selectedItems = (selected ?? [])
+            const selectedItems = selected
               .map((v) => itemByValue.get(v))
               .filter((item): item is T => item !== undefined);
             if (selectedItems.length === 0) return placeholder;
