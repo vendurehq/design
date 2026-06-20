@@ -9,6 +9,10 @@ function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
+function PopoverPortal({ ...props }: PopoverPrimitive.Portal.Props) {
+  return <PopoverPrimitive.Portal data-slot="popover-portal" {...props} />
+}
+
 function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
@@ -82,6 +86,7 @@ function PopoverDescription({
 
 export {
   Popover,
+  PopoverPortal,
   PopoverContent,
   PopoverDescription,
   PopoverHeader,
