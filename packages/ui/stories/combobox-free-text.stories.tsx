@@ -114,8 +114,6 @@ export const Default: Story = {
           placeholder="owner@example.com"
         />
         <p className="text-muted-foreground mt-2 text-xs">
-          {/* Try a match ("ada") to pick a suggestion, or type a new email — the
-              free text stays as the value and the popup closes on no match. */}
           Value: <span className="font-mono">{value || '—'}</span>
         </p>
       </div>
@@ -205,6 +203,11 @@ export const CapturingTheRecord: Story = {
 // to see real matches, or type any other email — the free text stays as the
 // value and the popup closes when nothing matches.
 export const LiveUserSearch: Story = {
+  // Makes a real network call, so it's excluded from autodocs, the test runner,
+  // and Chromatic snapshots — it must not gate the deterministic story surface.
+  // Open it manually to see live suggestions.
+  tags: ['!autodocs', '!test'],
+  parameters: { chromatic: { disableSnapshot: true } },
   render: function ComboboxFreeTextLiveUserSearch() {
     const [value, setValue] = React.useState('');
     const { items, loading } = useDummyUserSearch(value);

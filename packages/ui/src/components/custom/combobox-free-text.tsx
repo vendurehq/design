@@ -1,6 +1,6 @@
 'use client';
 
-import { Autocomplete } from '@base-ui/react';
+import { Autocomplete } from '@base-ui/react/autocomplete';
 import { ComboboxContent, ComboboxItem, ComboboxList } from '@vendure-io/ui/components/ui/combobox';
 import {
   InputGroup,
@@ -12,7 +12,11 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 
 export interface ComboboxFreeTextItem {
-  /** The string committed to `value` when this row is chosen. */
+  /**
+   * The string committed to `value` when this row is chosen. Must be unique
+   * across `items`: it is used as the React key and to resolve a picked row back
+   * to its record for `onSelectItem`.
+   */
   value: string;
   /** Primary line of the suggestion row. */
   label: string;
@@ -104,9 +108,13 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
       autoHighlight={false}
       value={value}
       onValueChange={(next, details) => {
+        // Call onValueChange before onSelectItem so a record captured in the
+        // latter survives any reset the value handler performs.
         onValueChange(next);
         // `item-press` is the only reason a row selection (mouse or keyboard)
         // drives a value change; keystrokes and free text use other reasons.
+        // The literal is checked against Base UI's public `reason` union, so a
+        // future rename surfaces as a type error rather than silent breakage.
         if (onSelectItem && details.reason === 'item-press') {
           const picked = items.find((i) => i.value === next);
           if (picked) {
