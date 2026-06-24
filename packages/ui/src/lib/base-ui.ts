@@ -24,6 +24,7 @@
 
 export { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 export { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog';
+export { Autocomplete as AutocompletePrimitive } from '@base-ui/react/autocomplete';
 export { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 export { Button as ButtonPrimitive } from '@base-ui/react/button';
 export { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox';
