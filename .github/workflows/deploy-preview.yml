@@ -1,0 +1,48 @@
+name: '🚀 Deploy PR Preview'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: deploy-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Preview Storybook
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Vercel Environment
+        uses: ./.github/actions/setup-vercel
+
+      - name: Deploy to Vercel
+        id: deploy_vercel
+        uses: ./.github/actions/deploy-vercel
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project-name: ${{ vars.VERCEL_STORYBOOK_PROJECT_NAME }}
+          environment: preview
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v4
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Storybook-Preview-URL:'
+
+      - name: Post or update preview URL comment
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Storybook-Preview-URL: ${{ steps.deploy_vercel.outputs.deployment-url }}
+          edit-mode: replace

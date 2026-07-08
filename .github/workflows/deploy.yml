@@ -1,0 +1,29 @@
+name: '🚀 Deploy'
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Storybook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Vercel Environment
+        uses: ./.github/actions/setup-vercel
+
+      - name: Deploy to Vercel
+        uses: ./.github/actions/deploy-vercel
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project-name: ${{ vars.VERCEL_STORYBOOK_PROJECT_NAME }}
+          environment: production
+          production: 'true'

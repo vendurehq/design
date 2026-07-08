@@ -1,0 +1,48 @@
+name: 'Deploy to Vercel'
+description: 'Links project, pulls environment info, builds, and deploys to Vercel'
+
+inputs:
+  vercel-token:
+    description: 'Vercel authentication token'
+    required: true
+  vercel-project-name:
+    description: 'Vercel project name'
+    required: true
+  vercel-scope:
+    description: 'Vercel scope/team name'
+    required: false
+    default: 'vendure'
+  environment:
+    description: 'Deployment environment (preview, production)'
+    required: false
+    default: 'preview'
+  production:
+    description: 'Whether to deploy to production (adds --prod flag)'
+    required: false
+    default: 'false'
+
+outputs:
+  deployment-url:
+    description: 'The URL of the deployed application'
+    value: ${{ steps.deploy.outputs.URL }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Link folder to project
+      shell: bash
+      run: vercel link --yes --scope ${{ inputs.vercel-scope }} --project=${{ inputs.vercel-project-name }} --token=${{ inputs.vercel-token }}
+
+    - name: Pull Vercel Environment Information
+      shell: bash
+      run: vercel pull --environment=${{ inputs.environment }} --yes --scope ${{ inputs.vercel-scope }} --token=${{ inputs.vercel-token }}
+
+    - name: Build Project Artifacts
+      shell: bash
+      run: vercel build --scope ${{ inputs.vercel-scope }} --token=${{ inputs.vercel-token }}${{ inputs.production == 'true' && ' --prod' || '' }}
+
+    - name: Deploy Project Artifacts to Vercel
+      id: deploy
+      shell: bash
+      run: |
+        vercel deploy --archive=tgz --prebuilt --scope ${{ inputs.vercel-scope }} --token=${{ inputs.vercel-token }}${{ inputs.production == 'true' && ' --prod' || ' --target=preview' }} | awk 'END{print}' | awk '{print "URL="$1}' >> $GITHUB_OUTPUT
