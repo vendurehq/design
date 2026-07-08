@@ -125,7 +125,7 @@
   --surface: oklch(0.18 0.007 231);
   --surface-raised: oklch(0.21 0.007 231);
   --overlay: oklch(0.24 0.007 231);
-  --inset: color-mix(in oklab, black 25%, transparent);
+  --inset: color-mix(in oklab, black 40%, transparent);
   --card: var(--surface);
   --card-foreground: oklch(0.8 0.004 231);
   --popover: var(--overlay);

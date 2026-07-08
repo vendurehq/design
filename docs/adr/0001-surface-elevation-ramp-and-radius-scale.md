@@ -65,9 +65,11 @@ Some components need to read *below* their host surface: the tabs track, and lat
 
 | Slot | Light | Dark |
 | --- | --- | --- |
-| `inset` | `color-mix(in oklab, black 5%, transparent)` | `color-mix(in oklab, black 25%, transparent)` |
+| `inset` | `color-mix(in oklab, black 5%, transparent)` | `color-mix(in oklab, black 40%, transparent)` |
 
-This fixes the active-tab hierarchy: today the active trigger uses `bg-background`, which on a white `surface` card renders as a hole punched down to the canvas. Proposed treatment: **TabsList sits in an `inset` well; the active trigger lifts to `surface-raised`** — a segmented-control thumb that reads raised out of a sunken track in both themes, on any host surface (light: white thumb on a gray well; dark: 0.21 thumb on a ~0.14 well).
+This fixes the active-tab hierarchy: today the active trigger uses `bg-background`, which on a white `surface` card renders as a hole punched down to the canvas. Proposed treatment: **TabsList sits in an `inset` well; the active trigger lifts to `surface-raised`** — a segmented-control thumb that reads raised out of a sunken track in both themes, on any host surface (light: white thumb on a gray well; dark: 0.21 thumb on a ~0.09 well).
+
+Dark values revised during implementation (OSS-609): the spike's 25% well put everything within a few points of black — well 0.11, thumb 0.21, no edge — and the thumb was judged "hardly visible" in review. The well deepens to 40% and the dark thumb keeps a `border-input` hairline (now a foreground mix, so it holds on any tier); lightness alone can't separate the thumb near the black end of the ramp.
 
 ## Decision 2: differentiated radius scale
 
