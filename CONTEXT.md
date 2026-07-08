@@ -15,7 +15,7 @@ A named semantic variable (`border`, `muted`, `primary`) that points into a ramp
 _Avoid_: semantic token, theme variable
 
 **Brand**:
-The Vendure blue (hue 231) — an identity signature, not a general-purpose color. Lives only in the `primary` and `ring` slots.
+The Vendure blue (hue 231) — an identity signature, not a general-purpose color. Exposed only through the dedicated `brand` slot; components opt in explicitly. Never a default — `primary` and `ring` are neutral.
 _Avoid_: accent, Vendure blue, primary (when meaning the color rather than the slot)
 
 **Tone**:
@@ -30,8 +30,12 @@ _Avoid_: soft, light, pastel
 A background level in the elevation ramp. Contrast between surfaces, not borders, is what separates content.
 _Avoid_: elevation, layer
 
+**Intensity**:
+The strength ordering of the neutral surface slots: `muted` (lowest) < `secondary` < `accent` (highest). De-emphasis uses lower intensity; hover/selected treatments use higher.
+_Avoid_: emphasis level, prominence
+
 **Accent rationing**:
-The color principle: neutral by default, tone for state, brand for the one primary action per view.
+The color principle: neutral by default, tone for state, brand only for deliberate identity moments a component opts into.
 
 ### Components & process
 
