@@ -21,7 +21,7 @@ const tones = [
   },
 ];
 
-function Chip({ label, classes }: { label: string; classes: string }) {
+function SubtleBadge({ label, classes }: { label: string; classes: string }) {
   return (
     <span
       className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${classes}`}
@@ -31,11 +31,11 @@ function Chip({ label, classes }: { label: string; classes: string }) {
   );
 }
 
-function ChipRow() {
+function SubtleBadgeRow() {
   return (
     <div className="flex flex-wrap gap-2">
       {tones.map((tone) => (
-        <Chip key={tone.label} {...tone} />
+        <SubtleBadge key={tone.label} {...tone} />
       ))}
     </div>
   );
@@ -48,12 +48,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Chips: Story = {
-  render: () => <ChipRow />,
+export const Badges: Story = {
+  render: () => <SubtleBadgeRow />,
 };
 
-// Dark subtle backgrounds are alpha mixes, so the chips must hold up on every
-// tier of the surface ramp, not just the canvas.
+// Dark subtle backgrounds are alpha mixes, so the subtle treatment must hold
+// up on every tier of the surface ramp, not just the canvas.
 export const OnSurfaceTiers: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
@@ -61,7 +61,7 @@ export const OnSurfaceTiers: Story = {
         (surface) => (
           <div key={surface} className={`rounded-lg border p-4 ${surface}`}>
             <p className="text-muted-foreground mb-2 text-xs">{surface}</p>
-            <ChipRow />
+            <SubtleBadgeRow />
           </div>
         ),
       )}
