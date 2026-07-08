@@ -136,24 +136,24 @@
 
 .dark {
   --background: oklch(0.15 0.007 231);
-  --foreground: oklch(0.8 0.004 231);
+  --foreground: oklch(0.92 0.004 231);
   --surface: oklch(0.18 0.007 231);
   --surface-raised: oklch(0.21 0.007 231);
   --overlay: oklch(0.24 0.007 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --card: var(--surface);
-  --card-foreground: oklch(0.8 0.004 231);
+  --card-foreground: oklch(0.92 0.004 231);
   --popover: var(--overlay);
   --popover-foreground: oklch(0.95 0.004 231);
   --primary: oklch(0.93 0.004 231);
   --primary-foreground: oklch(0.2 0.007 231);
   --brand: oklch(0.76 0.15 231);
   --brand-foreground: oklch(0.15 0.007 231);
-  --secondary: color-mix(in oklab, var(--foreground) 8%, transparent);
+  --secondary: color-mix(in oklab, var(--foreground) 7%, transparent);
   --secondary-foreground: oklch(0.95 0.004 231);
-  --muted: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --muted: color-mix(in oklab, var(--foreground) 4%, transparent);
   --muted-foreground: oklch(0.65 0.005 231);
-  --accent: color-mix(in oklab, var(--foreground) 11%, transparent);
+  --accent: color-mix(in oklab, var(--foreground) 9%, transparent);
   --accent-foreground: oklch(0.95 0.004 231);
   --destructive: oklch(0.48 0.18 25);
   --destructive-foreground: oklch(0.98 0.01 25);
@@ -178,8 +178,8 @@
   --neutral-subtle: color-mix(in oklab, oklch(0.2 0.007 231) 40%, transparent);
   --neutral-subtle-foreground: oklch(0.78 0.004 231);
   --neutral-border: oklch(0.28 0.007 231);
-  --border: color-mix(in oklab, var(--foreground) 20%, transparent);
-  --input: color-mix(in oklab, var(--foreground) 20%, transparent);
+  --border: color-mix(in oklab, var(--foreground) 17%, transparent);
+  --input: color-mix(in oklab, var(--foreground) 17%, transparent);
   --ring: oklch(0.55 0.005 231);
   --chart-1: oklch(0.5 0.22 250);
   --chart-2: oklch(0.62 0.2 320);
