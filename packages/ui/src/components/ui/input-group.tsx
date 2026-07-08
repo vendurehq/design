@@ -8,7 +8,6 @@ import { Button } from "@vendure-io/ui/components/ui/button"
 import { Input } from "@vendure-io/ui/components/ui/input"
 import { Textarea } from "@vendure-io/ui/components/ui/textarea"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

@@ -40,7 +40,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "cn-toast",
-          // [vendure] Override Sonner's hardcoded #3f3f3f description colour
+          // Override Sonner's hardcoded #3f3f3f description colour
           // with our semantic muted-foreground token for consistent contrast.
           // See: https://github.com/vendurehq/design/issues/5
           description: "!text-muted-foreground",

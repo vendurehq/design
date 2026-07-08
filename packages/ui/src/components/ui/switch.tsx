@@ -4,7 +4,6 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Switch({
   className,
   size = "default",

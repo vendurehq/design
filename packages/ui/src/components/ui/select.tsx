@@ -28,7 +28,6 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   )
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function SelectTrigger({
   className,
   size = "default",
@@ -57,7 +56,7 @@ function SelectTrigger({
   )
 }
 
-// [vendure] changed w-(--anchor-width) to min-w-(--anchor-width) so dropdown expands to fit content
+// min-w-(--anchor-width) rather than w-(--anchor-width) so the popup can expand beyond the trigger to fit content
 function SelectContent({
   className,
   children,

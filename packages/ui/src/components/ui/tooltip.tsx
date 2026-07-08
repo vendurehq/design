@@ -47,7 +47,7 @@ function TooltipContent({
         sideOffset={sideOffset}
         className="isolate z-50"
       >
-        {/* [vendure] removed dead Radix-era data-[state=delayed-open]:* classes — Base UI never emits data-state; the adjacent data-open:* classes already apply the same animation */}
+        {/* Base UI never emits Radix-style data-state attributes — data-[state=delayed-open]:* selectors would be dead here; data-open:* covers the open animation */}
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(

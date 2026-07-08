@@ -22,7 +22,6 @@ import {
 } from "@vendure-io/ui/components/ui/dropdown-menu"
 import { CheckIcon } from "lucide-react"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
     <MenubarPrimitive

@@ -7,7 +7,6 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
   size?: "sm" | "default"
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function NativeSelect({
   className,
   size = "default",

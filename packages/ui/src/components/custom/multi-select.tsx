@@ -133,7 +133,7 @@ function MultiSelect<T>({
       name={name}
       required={required}
     >
-      {/* [vendure] default to a stable, container-width trigger so it doesn't grow with the
+      {/* Default to a stable, container-width trigger so it doesn't grow with the
           selection — the underlying SelectTrigger is `w-fit`, which we override here. */}
       <SelectTrigger
         id={id}

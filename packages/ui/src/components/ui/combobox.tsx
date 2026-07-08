@@ -212,7 +212,6 @@ function ComboboxSeparator({
   )
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function ComboboxChips({
   className,
   ...props

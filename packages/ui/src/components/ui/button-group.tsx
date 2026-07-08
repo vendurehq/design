@@ -38,7 +38,6 @@ function ButtonGroup({
   )
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function ButtonGroupText({
   className,
   render,

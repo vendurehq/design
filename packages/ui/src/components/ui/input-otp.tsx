@@ -40,7 +40,6 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function InputOTPSlot({
   index,
   className,

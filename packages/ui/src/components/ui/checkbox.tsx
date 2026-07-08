@@ -5,7 +5,6 @@ import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { CheckIcon } from "lucide-react"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
   return (
     <CheckboxPrimitive.Root

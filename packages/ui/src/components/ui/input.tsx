@@ -3,7 +3,6 @@ import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <InputPrimitive

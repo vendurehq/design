@@ -53,7 +53,6 @@ function TabsList({
   )
 }
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
     <TabsPrimitive.Tab

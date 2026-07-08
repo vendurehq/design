@@ -2,7 +2,6 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
-// [vendure] shadow removed for flat look — restore if overwritten by shadcn upgrade
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea

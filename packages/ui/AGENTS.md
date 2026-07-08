@@ -2,25 +2,39 @@
 
 React component library for Vendure. Built on shadcn/ui (base-vega style) + Tailwind v4.
 
-## IMPORTANT: shadcn CLI manages components
+## IMPORTANT: this package is the source of truth
 
-Files in `src/components/ui/` are **generated/updated by the shadcn CLI**. Do NOT manually create or heavily restructure these files — use the CLI:
+Components in `src/components/ui/` were originally generated from the shadcn registry (base-vega style), but **this package owns them now**. shadcn is an upstream we cherry-pick from, not something we sync with. When a file differs from the registry, treat the difference as an intentional design decision unless git history says otherwise.
+
+The shadcn CLI is used for exactly two things:
 
 ```sh
-bunx shadcn@latest add <component>    # add new component
-bunx shadcn@latest diff <component>   # check for upstream changes
+bunx shadcn@latest add <component>    # scaffold a NEW component into src/components/ui/
+bunx shadcn@latest diff <component>   # review what changed upstream, for cherry-picking
 ```
 
 Config: `components.json` (base-vega style, lucide icons, RSC-compatible).
 
-Manual edits to `src/components/ui/` are fine for customization, but structure and base patterns come from shadcn.
+### Pulling upstream changes
 
-When customizing shadcn components, add a `// [vendure]` comment explaining the change so it can be restored after a shadcn upgrade. For JSX, use `{/* [vendure] ... */}`.
+Never run `add --overwrite` on an existing component — it discards our design decisions. Instead:
+
+1. Run `bunx shadcn@latest diff <component>` to see what changed upstream.
+2. Judge each hunk: bug fixes and a11y improvements are usually worth taking; styling that conflicts with our system is not.
+3. Apply the changes you want surgically, leave the rest as is.
+
+### Known system-wide divergences from upstream
+
+- **Flat look**: `shadow-xs`/`shadow-2xs` classes are removed from primitives (buttons, inputs, cards, toggles, …). Overlay shadows (`shadow-md` and up) are kept. Don't reintroduce xs-tier shadows when cherry-picking.
+- **Dead Radix selectors removed**: the base-vega registry still carries leftover Radix-era `data-[state=...]` selectors in places; Base UI never emits `data-state` (it emits `data-open`, `data-pressed`, etc.), so we've deleted them. Don't reintroduce.
+- **Popup sizing**: select/dropdown popups size to their content instead of being pinned to the trigger width (`min-w-(--anchor-width)` / no anchor width, rather than `w-(--anchor-width)`).
+
+Comment non-obvious decisions in component files like you would anywhere else — no special markers needed; the whole file is ours.
 
 ## Structure
 
-- `src/components/ui/` — shadcn-managed primitives (button, dialog, etc.)
-- `src/components/custom/` — hand-built Vendure-specific components (NOT shadcn-managed)
+- `src/components/ui/` — shadcn-derived primitives (button, dialog, etc.)
+- `src/components/custom/` — hand-built Vendure-specific components (no shadcn counterpart)
 - `src/lib/` — utilities (cn, etc.)
 - `src/hooks/` — shared React hooks
 
