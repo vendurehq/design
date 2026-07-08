@@ -13,8 +13,8 @@
 
 /**
  * The semantic meaning a color expresses about a state. Tone ≠ token name:
- * `critical` renders with the `destructive` slots and `progress` shares the
- * `info` slots (distinguished by motion, not hue) — see StatusBadge.
+ * `critical` renders with the `destructive` slots and `progress` renders with
+ * the `neutral` slots plus an info-colored pulsing dot — see StatusBadge.
  */
 export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'critical' | 'progress';
 

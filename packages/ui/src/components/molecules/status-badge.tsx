@@ -10,9 +10,11 @@ import { cva } from 'class-variance-authority';
 // (accent rationing applied at the API level).
 //
 // Slot = tone, with two aliases: `critical` renders via the `destructive`
-// slots (the token keeps its shadcn-compatible name) and `progress` shares the
-// `info` slots (distinguished by motion, not hue). Class strings are static
-// per tone so Tailwind's scanner picks them up.
+// slots (the token keeps its shadcn-compatible name) and `progress` renders
+// via the `neutral` slots with an info-colored pulsing dot — a chip that is
+// otherwise identical to `info` is not scannable; the neutral body says "no
+// outcome yet" while the dot says "in motion". Class strings are static per
+// tone so Tailwind's scanner picks them up.
 //
 // Metrics mirror `Badge` (h-5, pill radius, text-xs) so a StatusBadge and a
 // Badge sit side by side on the same row of a table.
@@ -27,7 +29,7 @@ const statusBadgeVariants = cva(
         warning: 'bg-warning-subtle text-warning-subtle-foreground border-warning-border',
         critical:
           'bg-destructive-subtle text-destructive-subtle-foreground border-destructive-border',
-        progress: 'bg-info-subtle text-info-subtle-foreground border-info-border',
+        progress: 'bg-neutral-subtle text-neutral-subtle-foreground border-neutral-border',
       } satisfies Record<Tone, string>,
     },
     defaultVariants: {
@@ -75,8 +77,10 @@ function StatusBadge({
               <span
                 aria-hidden
                 className={cn(
-                  'size-1.5 shrink-0 rounded-full bg-current',
-                  tone === 'progress' && 'motion-safe:animate-pulse',
+                  'size-1.5 shrink-0 rounded-full',
+                  tone === 'progress'
+                    ? 'bg-info-subtle-foreground motion-safe:animate-pulse'
+                    : 'bg-current',
                 )}
               />
             ) : null}

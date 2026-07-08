@@ -22,7 +22,7 @@ Tone is the semantic meaning a color expresses about state — the entire visual
 | `critical` | Failed, blocked, or service-affecting. Intervene. | failed, error, rejected, declined, revoked, invalid, out of stock, disconnected |
 | `progress` | The system is working right now. Transient; will resolve itself. Always shows a pulsing dot. | running (a job), building, deploying, queued in a live pipeline, validating |
 
-**Tone is not a token name.** `critical` renders through the `destructive` ramp (hue 25) — the token keeps its shadcn-compatible name, the dictionary speaks tones. `progress` shares the `info` ramp (hue 250) and is distinguished by **motion, not hue**; it stays a semantically distinct tone so consumers can declare intent and rollup/polling logic can key on it.
+**Tone is not a token name.** `critical` renders through the `destructive` ramp (hue 25) — the token keeps its shadcn-compatible name, the dictionary speaks tones. `progress` renders on the `neutral` slots with an always-on, info-colored pulsing dot: the neutral body says "no outcome yet", the moving dot says "in motion". (Amended 2026-07-08: the original ruling had `progress` share the `info` chip wholesale, distinguished by motion alone — in practice an info chip and a progress chip were indistinguishable at a glance.) It stays a semantically distinct tone so consumers can declare intent and rollup/polling logic can key on it.
 
 ## Decision 2: four principles decide every mapping
 
@@ -37,7 +37,7 @@ Tone is the semantic meaning a color expresses about state — the entire visual
 | --- | --- | --- |
 | **Cancelled** | Red in OSS dashboard; grey in EE, Cloud, portals; outline in ops-admin & workflow-engine | `neutral` — user-initiated terminal, not failure (principle 2). OSS dashboard drops red. |
 | **Pending** | 5-way: amber (OSS, two different partner-portal ambers), grey (Cloud, ops-admin), outline (EE), blue (tax-id) | Split by resolver (principle 3): human-blocking → `warning`; system/time → `neutral`. Everyone converges. |
-| **In progress** | Blue raw-Tailwind (Cloud), spinner + grey (OSS job queue), brand default (EE) | `progress` — info hue + always-on pulsing dot. Both info *and* animated, as its own tone. The dot replaces the ad-hoc spinner. |
+| **In progress** | Blue raw-Tailwind (Cloud), spinner + grey (OSS job queue), brand default (EE) | `progress` — neutral chip + always-on, info-colored pulsing dot, as its own tone. The dot replaces the ad-hoc spinner. |
 | **Active / Completed** | Green in portals & 3 EE plugins; brand blue in ops-admin; grey in workflow-engine; 4 tones inside org-hierarchy alone | `success` (principle 4). ops-admin (~10 blue states) and workflow-engine `COMPLETED` change. |
 | **Expired** | Grey in EE quote/approval/tax-id; red for licenses in enterprise-portal | `neutral` by default; `critical` when service-affecting (license); `warning` when it demands re-action (tax ID) — principle 1. The dictionary encodes the per-domain exceptions. |
 | **Suspended** | Grey (ops-admin customers), red (ops-admin plugins), raw orange (partner-portal) | `warning` — imposed, abnormal, reversible; not a failure. All three converge. |
@@ -220,7 +220,7 @@ This table is **part of the decision**, not documentation of it: each domain map
 
 ## Consequences
 
-- **`@vendure-io/design-tokens`**: no new work. The subtle slot tier — `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` for success / warning / destructive / info / neutral, light + dark — already shipped ([#21](https://github.com/vendurehq/design/pull/21)); `StatusBadge` consumes it, with `critical` rendering via the `destructive` slots and `progress` via the `info` slots.
+- **`@vendure-io/design-tokens`**: no new work. The subtle slot tier — `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` for success / warning / destructive / info / neutral, light + dark — already shipped ([#21](https://github.com/vendurehq/design/pull/21)); `StatusBadge` consumes it, with `critical` rendering via the `destructive` slots and `progress` via the `neutral` slots plus an info-colored dot.
 - **`@vendure-io/ui`**: ship `StatusBadge` (`components/molecules/`) and the `state-dictionary` module (`lib/`) with the universal map, per wildcard export rules (no barrels). Storybook gains a guidance page documenting the tone definitions, the principles/rulings, and this reference table — decisions, not props. Tracked in OSS-627.
 - **Consumers**: each declares its own domain maps via `defineStateEntries` and migrates off its bespoke recipe. Suggested order: Cloud (already architecture-aligned) → OSS dashboard (fixes refund-`Failed` and cancelled-red) → ops-admin (biggest visual delta: ~10 brand-blue states turn green) → EE plugins → partner/enterprise portals. Migrations are separate issues in the owning repos, not part of this ADR or OSS-627.
 - **Enforcement**: a lint rule banning raw Tailwind palette classes for state semantics (~100 sites) lands with the migration so retired recipes can't regrow.

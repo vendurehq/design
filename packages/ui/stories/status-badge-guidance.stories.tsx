@@ -119,7 +119,7 @@ const RULINGS: { conflict: string; ruling: Tone[]; note: string }[] = [
   {
     conflict: 'In progress',
     ruling: ['progress'],
-    note: 'Info hue plus an always-on pulsing dot, as its own tone.',
+    note: 'Neutral chip plus an always-on, info-colored pulsing dot, as its own tone.',
   },
   {
     conflict: 'Active / Completed',
@@ -398,7 +398,7 @@ export const Tones: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="The six tones"
-        intro="Tone is the semantic meaning a color expresses about a state. Six tones are the entire visual vocabulary. Tone ≠ token name: critical renders with the destructive slots, and progress shares the info slots, distinguished by its pulsing dot rather than by hue."
+        intro="Tone is the semantic meaning a color expresses about a state. Six tones are the entire visual vocabulary. Tone ≠ token name: critical renders with the destructive slots, and progress renders on the neutral slots with an info-colored pulsing dot (the grey body says no outcome yet; the dot says in motion)."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           {TONES.map(({ tone, sample, def, examples }) => (
