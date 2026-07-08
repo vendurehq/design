@@ -79,7 +79,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
 
-The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Public Sans) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`) apply it out of the box.
+The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Public Sans) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
 
 ### Radii
 
