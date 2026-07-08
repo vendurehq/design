@@ -21,11 +21,13 @@
   },
   "files": [
     "src",
+    "!src/**/*.test.ts",
     "README.md"
   ],
   "scripts": {
     "lint": "biome check src/",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
   },
   "peerDependencies": {
     "react": ">=19",
