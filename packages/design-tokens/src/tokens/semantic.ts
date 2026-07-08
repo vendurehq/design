@@ -84,8 +84,11 @@ export const darkTheme = {
   'warning-foreground': warning[950],
   info: info[600],
   'info-foreground': 'oklch(0.98 0.01 250)',
-  border: neutral[800],
-  input: neutral[800],
+  // Foreground mixes like the intensity slots — neutral-800 tuned for the
+  // canvas disappears on raised/overlay tiers. 20% renders exactly
+  // neutral-800 on the canvas and degrades correctly above it.
+  border: 'color-mix(in oklab, var(--foreground) 20%, transparent)',
+  input: 'color-mix(in oklab, var(--foreground) 20%, transparent)',
   ring: neutral[500],
   'chart-1': viz[1],
   'chart-2': viz[2],

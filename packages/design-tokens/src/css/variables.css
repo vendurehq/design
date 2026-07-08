@@ -148,8 +148,8 @@
   --warning-foreground: oklch(0.2 0.04 85);
   --info: oklch(0.48 0.17 250);
   --info-foreground: oklch(0.98 0.01 250);
-  --border: oklch(0.28 0.007 231);
-  --input: oklch(0.28 0.007 231);
+  --border: color-mix(in oklab, var(--foreground) 20%, transparent);
+  --input: color-mix(in oklab, var(--foreground) 20%, transparent);
   --ring: oklch(0.55 0.005 231);
   --chart-1: oklch(0.5 0.22 250);
   --chart-2: oklch(0.62 0.2 320);

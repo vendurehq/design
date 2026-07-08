@@ -57,6 +57,8 @@ The intensity slots (`muted` < `secondary` < `accent`) are absolute lightness va
 
 Percentages are calibrated per theme to reproduce today's rendered values exactly on the default surfaces — this is a representation change, not a visual one, until a component sits on a raised/overlay tier, where it now degrades correctly instead of vanishing.
 
+The same applies to dark `border`/`input` (implementation finding, OSS-609): atoms pair them with the overlay tier constantly (outline buttons and every form control render `dark:border-input` + `dark:bg-input/30` inside dialogs), and the absolute `neutral-800` (0.28) vanishes on the 0.24 overlay. Dark `border` and `input` become `color-mix(in oklab, var(--foreground) 20%, transparent)` — 20% renders exactly 0.28 on the canvas (and the `/30`, `/50` alpha usages are linear, so they hold parity too). Light mode keeps absolute values; its surfaces collapse to white, so there is no tier to degrade on.
+
 ### Companion: sunken wells (`inset`)
 
 Some components need to read *below* their host surface: the tabs track, and later switch/progress tracks and skeletons. A foreground mix can't express this in dark mode (it lightens), so `inset` is a shade mix:
