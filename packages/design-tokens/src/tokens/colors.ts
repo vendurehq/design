@@ -13,18 +13,19 @@ export const brand = {
   950: 'oklch(0.25 0.07 231)',
 } as const;
 
+// "Whisper cool" — near-gray with a barely-perceptible cool bias toward brand hue 231
 export const neutral = {
-  50: 'oklch(0.97 0.005 231)',
-  100: 'oklch(0.93 0.005 231)',
-  200: 'oklch(0.87 0.005 231)',
-  300: 'oklch(0.78 0.005 231)',
-  400: 'oklch(0.68 0.01 231)',
-  500: 'oklch(0.55 0.01 231)',
-  600: 'oklch(0.45 0.01 231)',
-  700: 'oklch(0.37 0.01 231)',
-  800: 'oklch(0.28 0.01 231)',
-  900: 'oklch(0.2 0.01 231)',
-  950: 'oklch(0.15 0.01 231)',
+  50: 'oklch(0.97 0.004 231)',
+  100: 'oklch(0.93 0.004 231)',
+  200: 'oklch(0.87 0.004 231)',
+  300: 'oklch(0.78 0.004 231)',
+  400: 'oklch(0.68 0.005 231)',
+  500: 'oklch(0.55 0.005 231)',
+  600: 'oklch(0.45 0.005 231)',
+  700: 'oklch(0.37 0.007 231)',
+  800: 'oklch(0.28 0.007 231)',
+  900: 'oklch(0.2 0.007 231)',
+  950: 'oklch(0.15 0.007 231)',
 } as const;
 
 export const success = {
@@ -67,6 +68,21 @@ export const destructive = {
   800: 'oklch(0.33 0.12 25)',
   900: 'oklch(0.27 0.09 25)',
   950: 'oklch(0.2 0.06 25)',
+} as const;
+
+// Info — hue 250, clearly distinct from brand 231
+export const info = {
+  50: 'oklch(0.97 0.02 250)',
+  100: 'oklch(0.93 0.05 250)',
+  200: 'oklch(0.87 0.08 250)',
+  300: 'oklch(0.78 0.12 250)',
+  400: 'oklch(0.68 0.16 250)',
+  500: 'oklch(0.55 0.19 250)',
+  600: 'oklch(0.48 0.17 250)',
+  700: 'oklch(0.4 0.15 250)',
+  800: 'oklch(0.33 0.12 250)',
+  900: 'oklch(0.27 0.09 250)',
+  950: 'oklch(0.2 0.06 250)',
 } as const;
 
 export const viz = {
