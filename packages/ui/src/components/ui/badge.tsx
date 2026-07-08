@@ -9,9 +9,12 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
-        secondary:
-          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        // Neutral by default: brand is a signature, not a wallpaper. Solid
+        // brand is an explicit opt-in via the `brand` variant (ui v2).
+        default:
+          "bg-neutral-subtle text-neutral-subtle-foreground border-neutral-border [a]:hover:bg-neutral-subtle/80",
+        primary: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        brand: "bg-brand text-brand-foreground [a]:hover:bg-brand/80",
         destructive:
           "bg-destructive/10 [a]:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive dark:bg-destructive/20",
         outline:

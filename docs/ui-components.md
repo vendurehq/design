@@ -120,6 +120,22 @@ import { Button } from "@vendure-io/ui/components/ui/button";
 <Button variant="ghost">More</Button>
 ```
 
+Button's `default` variant is solid brand (primary). Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`.
+
+### Badge
+
+```tsx
+import { Badge } from "@vendure-io/ui/components/ui/badge";
+
+<Badge>Neutral</Badge>
+<Badge variant="primary">Primary</Badge>
+<Badge variant="brand">Brand</Badge>
+<Badge variant="destructive">Destructive</Badge>
+<Badge variant="outline">Outline</Badge>
+```
+
+> **Breaking change in ui v2:** Badge's `default` variant is neutral (neutral-subtle), not solid brand. Solid brand is an explicit opt-in via `variant="brand"` and follows the same one-primary-per-view rule as Button. The `secondary` variant was removed — it was visually identical to the new neutral default; migrate `variant="secondary"` to no variant. Status colors belong to the intent variants, not brand.
+
 ### Dialog
 
 ```tsx
