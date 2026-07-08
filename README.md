@@ -11,7 +11,7 @@
   The design system powering every Vendure surface.
 </h3>
 <h4 align="center">
-  Design tokens and React components built on shadcn/ui, Base UI, and Tailwind CSS v4 — consumed by the Vendure dashboard, Cloud, and ecosystem portals.
+  Design tokens and React components built on shadcn/ui, Base UI, and Tailwind CSS v4, consumed by the Vendure dashboard, Cloud, and ecosystem portals.
 </h4>
 <h4 align="center">
   <a href="https://docs.vendure.io">Documentation</a> |
@@ -43,15 +43,15 @@ This monorepo contains the two published packages of the Vendure design system, 
 |-----|-------------|
 | [`storybook`](./apps/storybook) | Component documentation and playground (Storybook 10) |
 
-Note that `@vendure-io/ui` ships raw `.tsx` source with no build step — consumers transpile the package themselves. The two packages version independently.
+Note that `@vendure-io/ui` ships raw `.tsx` source with no build step; consumers transpile the package themselves. The two packages version independently.
 
 ## Getting started
 
 To consume the design system in your app, follow the [getting started guide](./docs/getting-started.md). Further guides:
 
-- [Design tokens](./docs/design-tokens.md) — token pipeline, CSS theme, usage
-- [UI components](./docs/ui-components.md) — component catalog and usage
-- [Releasing](./docs/releasing.md) — how packages are versioned and published
+- [Design tokens](./docs/design-tokens.md): token pipeline, CSS theme, usage
+- [UI components](./docs/ui-components.md): component catalog and usage
+- [Releasing](./docs/releasing.md): how packages are versioned and published
 
 ## Development
 
