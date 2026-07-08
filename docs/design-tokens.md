@@ -68,6 +68,9 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `accent`, `accent-foreground` — Accent highlights
 - `destructive`, `destructive-foreground` — Destructive/error states
 - `success`, `success-foreground` — Success states
+- `warning`, `warning-foreground` — Warning states
+- `info`, `info-foreground` — Informational states
+- `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` — The subtle tier for each tone (`success`, `warning`, `destructive`, `info`, `neutral`): tinted background, readable foreground, and matching border for soft status treatments (e.g. `bg-success-subtle text-success-subtle-foreground border-success-border`)
 - `border`, `input`, `ring` — Borders, inputs, focus rings
 - `chart-1` through `chart-5` — Data visualization
 - `sidebar-*` — Sidebar-specific variants
