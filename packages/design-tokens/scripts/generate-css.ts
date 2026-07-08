@@ -84,6 +84,13 @@ const themeCss = [
   '',
   '@import "tailwindcss";',
   '@import "tw-animate-css";',
+  // shadcn/tailwind.css defines the @custom-variant data-* selectors (data-open,
+  // data-horizontal, ...), the no-scrollbar utility, and Base UI-aware accordion
+  // keyframes that the base-vega components in @vendure-io/ui rely on. Without it,
+  // e.g. data-horizontal: compiles to [data-horizontal] instead of
+  // [data-orientation="horizontal"] and never matches. Must come after
+  // tw-animate-css so shadcn's accordion keyframes win the cascade.
+  '@import "shadcn/tailwind.css";',
   '@import "./variables.css";',
   '',
   '@custom-variant dark (&:is(.dark *));',

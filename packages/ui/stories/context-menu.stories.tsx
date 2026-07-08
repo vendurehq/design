@@ -3,6 +3,7 @@ import {
   ContextMenu,
   ContextMenuCheckboxItem,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
   ContextMenuLabel,
   ContextMenuRadioGroup,
@@ -61,11 +62,13 @@ export const Default: Story = {
         </ContextMenuCheckboxItem>
         <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
         <ContextMenuSeparator />
-        <ContextMenuLabel>People</ContextMenuLabel>
-        <ContextMenuRadioGroup value="john">
-          <ContextMenuRadioItem value="john">John Doe</ContextMenuRadioItem>
-          <ContextMenuRadioItem value="jane">Jane Smith</ContextMenuRadioItem>
-        </ContextMenuRadioGroup>
+        <ContextMenuGroup>
+          <ContextMenuLabel>People</ContextMenuLabel>
+          <ContextMenuRadioGroup value="john">
+            <ContextMenuRadioItem value="john">John Doe</ContextMenuRadioItem>
+            <ContextMenuRadioItem value="jane">Jane Smith</ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
+        </ContextMenuGroup>
       </ContextMenuContent>
     </ContextMenu>
   ),

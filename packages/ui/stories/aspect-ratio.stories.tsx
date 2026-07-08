@@ -5,6 +5,8 @@ const meta = {
   title: 'UI/General/AspectRatio',
   component: AspectRatio,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { ratio: 16 / 9 },
 } satisfies Meta<typeof AspectRatio>;
 
 export default meta;

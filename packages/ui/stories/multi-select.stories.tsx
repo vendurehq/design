@@ -6,6 +6,8 @@ const meta = {
   title: 'UI/Forms/MultiSelect',
   component: MultiSelect,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { items: [] },
 } satisfies Meta<typeof MultiSelect>;
 
 export default meta;

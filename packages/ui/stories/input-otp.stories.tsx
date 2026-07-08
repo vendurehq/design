@@ -10,6 +10,8 @@ const meta = {
   title: 'UI/Forms/InputOTP',
   component: InputOTP,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { maxLength: 6, children: null },
 } satisfies Meta<typeof InputOTP>;
 
 export default meta;
