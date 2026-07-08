@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <ToggleGroup type="single" defaultValue="center">
+    <ToggleGroup defaultValue={["center"]}>
       <ToggleGroupItem value="left"><AlignLeft /></ToggleGroupItem>
       <ToggleGroupItem value="center"><AlignCenter /></ToggleGroupItem>
       <ToggleGroupItem value="right"><AlignRight /></ToggleGroupItem>
@@ -23,7 +23,7 @@ export const Default: Story = {
 
 export const Outline: Story = {
   render: () => (
-    <ToggleGroup type="single" variant="outline" defaultValue="center">
+    <ToggleGroup variant="outline" defaultValue={["center"]}>
       <ToggleGroupItem value="left"><AlignLeft /></ToggleGroupItem>
       <ToggleGroupItem value="center"><AlignCenter /></ToggleGroupItem>
       <ToggleGroupItem value="right"><AlignRight /></ToggleGroupItem>
@@ -33,7 +33,7 @@ export const Outline: Story = {
 
 export const Vertical: Story = {
   render: () => (
-    <ToggleGroup type="single" orientation="vertical" defaultValue="center">
+    <ToggleGroup orientation="vertical" defaultValue={["center"]}>
       <ToggleGroupItem value="left"><AlignLeft /></ToggleGroupItem>
       <ToggleGroupItem value="center"><AlignCenter /></ToggleGroupItem>
       <ToggleGroupItem value="right"><AlignRight /></ToggleGroupItem>
@@ -43,7 +43,7 @@ export const Vertical: Story = {
 
 export const Multiple: Story = {
   render: () => (
-    <ToggleGroup type="multiple" defaultValue={["left", "right"]}>
+    <ToggleGroup multiple defaultValue={["left", "right"]}>
       <ToggleGroupItem value="left"><AlignLeft /></ToggleGroupItem>
       <ToggleGroupItem value="center"><AlignCenter /></ToggleGroupItem>
       <ToggleGroupItem value="right"><AlignRight /></ToggleGroupItem>
@@ -53,7 +53,7 @@ export const Multiple: Story = {
 
 export const Small: Story = {
   render: () => (
-    <ToggleGroup type="single" size="sm" defaultValue="center">
+    <ToggleGroup size="sm" defaultValue={["center"]}>
       <ToggleGroupItem value="left"><AlignLeft /></ToggleGroupItem>
       <ToggleGroupItem value="center"><AlignCenter /></ToggleGroupItem>
       <ToggleGroupItem value="right"><AlignRight /></ToggleGroupItem>

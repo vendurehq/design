@@ -26,6 +26,8 @@ const meta = {
   title: 'UI/Data Display/Chart',
   component: ChartContainer,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { config: {}, children: <div /> },
 } satisfies Meta<typeof ChartContainer>;
 
 export default meta;

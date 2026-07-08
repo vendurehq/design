@@ -9,6 +9,8 @@ const meta = {
   title: 'UI/Data Display/Progress',
   component: Progress,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { value: null },
 } satisfies Meta<typeof Progress>;
 
 export default meta;

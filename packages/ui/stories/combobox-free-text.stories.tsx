@@ -9,6 +9,8 @@ const meta = {
   title: 'UI/Forms/ComboboxFreeText',
   component: ComboboxFreeText,
   tags: ['autodocs'],
+  // baseline args to satisfy required props; all stories use render()
+  args: { value: '', onValueChange: () => {}, items: [] },
 } satisfies Meta<typeof ComboboxFreeText>;
 
 export default meta;

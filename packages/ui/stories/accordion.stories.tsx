@@ -42,7 +42,7 @@ export const Default: Story = {
 
 export const Multiple: Story = {
   render: () => (
-    <Accordion openMultiple className="w-full max-w-md">
+    <Accordion multiple className="w-full max-w-md">
       <AccordionItem value="item-1">
         <AccordionTrigger>First Section</AccordionTrigger>
         <AccordionContent>
