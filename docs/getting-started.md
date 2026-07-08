@@ -154,4 +154,4 @@ Or via Google Fonts in your HTML `<head>`:
 />
 ```
 
-The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded.
+The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded. Headings (`h1`–`h6`) get `--font-heading` (Public Sans) automatically via a base rule in the theme, so no app-side overrides are needed.

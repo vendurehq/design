@@ -75,15 +75,25 @@ All colors use the OKLCH color space for perceptual uniformity.
 ### Typography
 
 - **Font families**: `--font-sans` (Inter), `--font-heading` (Public Sans), `--font-body` (Inter), `--font-mono` (Geist Mono)
+- **Type scale**: `--text-xs` through `--text-5xl` — Tailwind `text-*` utilities
+- **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
+- **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
+
+Headings (`h1`–`h6`) get `--font-heading` (Public Sans) automatically via a base rule in the theme — no app-side overrides needed.
 
 ### Radii
 
 - `--radius` — Base radius value
 - Scaled variants: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, `--radius-2xl`, `--radius-3xl`, `--radius-4xl`
 
-### Shadows & Motion
+### Shadows
 
-Available via the TypeScript export (`shadows`, `motion`) for programmatic use, including easing curves and duration values.
+- `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities
+
+### Motion
+
+- **Easing**: `--ease-default`, `--ease-in`, `--ease-out`, `--ease-in-out`, `--ease-spring` — Tailwind `ease-*` utilities
+- **Duration**: `--transition-duration-instant`, `-fast`, `-normal`, `-slow`, `-slower` — Tailwind `duration-*` utilities (`duration-fast`, `duration-slow`, …)
 
 ## Dark Mode
 

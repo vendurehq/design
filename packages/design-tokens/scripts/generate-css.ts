@@ -2,7 +2,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brand, neutral, success, warning, destructive, info, viz } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
-import { fontFamily } from '../src/tokens/typography.ts';
+import { fontFamily, fontSize, fontWeight, letterSpacing } from '../src/tokens/typography.ts';
+import { easing, duration } from '../src/tokens/motion.ts';
 import { radii } from '../src/tokens/radii.ts';
 import { shadows } from '../src/tokens/shadows.ts';
 
@@ -77,7 +78,46 @@ const fontLines = Object.entries(fontFamily).map(
   ([key, value]) => `  --font-${key}: ${value};`,
 );
 
-const themeBlock = [...baseColorLines, ...colorLines, ...radiusLines, ...shadowLines, ...fontLines].join('\n');
+// Type scale lines — Tailwind text-* utilities
+const textLines = Object.entries(fontSize).map(
+  ([key, value]) => `  --text-${key}: ${value};`,
+);
+
+// Font-weight lines — Tailwind font-* utilities
+const fontWeightLines = Object.entries(fontWeight).map(
+  ([key, value]) => `  --font-weight-${key}: ${value};`,
+);
+
+// Letter-spacing lines — Tailwind tracking-* utilities
+const trackingLines = Object.entries(letterSpacing).map(
+  ([key, value]) => `  --tracking-${key}: ${value};`,
+);
+
+const kebabCase = (key: string) => key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+// Easing lines — Tailwind ease-* utilities
+const easeLines = Object.entries(easing).map(
+  ([key, value]) => `  --ease-${kebabCase(key)}: ${value};`,
+);
+
+// Duration lines — Tailwind duration-* utilities resolve named values from the
+// --transition-duration-* theme namespace
+const durationLines = Object.entries(duration).map(
+  ([key, value]) => `  --transition-duration-${key}: ${value};`,
+);
+
+const themeBlock = [
+  ...baseColorLines,
+  ...colorLines,
+  ...radiusLines,
+  ...shadowLines,
+  ...fontLines,
+  ...textLines,
+  ...fontWeightLines,
+  ...trackingLines,
+  ...easeLines,
+  ...durationLines,
+].join('\n');
 
 const themeCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
@@ -107,6 +147,14 @@ const themeCss = [
   '    background-color: var(--background);',
   '    color: var(--foreground);',
   '    font-family: var(--font-body);',
+  '  }',
+  '  h1,',
+  '  h2,',
+  '  h3,',
+  '  h4,',
+  '  h5,',
+  '  h6 {',
+  '    font-family: var(--font-heading);',
   '  }',
   '}',
   '',
