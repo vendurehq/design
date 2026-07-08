@@ -18,7 +18,7 @@ Optional peers: `next`, `next-themes`, `react-hook-form`
 ## Usage
 
 ```tsx
-import { Button } from "@vendure-io/ui/components/ui/button";
+import { Button } from "@vendure-io/ui/components/atoms/button";
 import { cn } from "@vendure-io/ui/lib/utils";
 ```
 
@@ -26,15 +26,17 @@ import { cn } from "@vendure-io/ui/lib/utils";
 
 | Export | Description |
 |--------|-------------|
-| `@vendure-io/ui/components/ui/*` | shadcn/ui primitives (button, dialog, input, etc.) |
-| `@vendure-io/ui/components/custom/*` | Vendure-specific components |
+| `@vendure-io/ui/components/atoms/*` | shadcn/ui primitives (button, dialog, input, etc.) |
+| `@vendure-io/ui/components/molecules/*` | Hand-written composed Vendure components |
 | `@vendure-io/ui/lib/*` | Utilities (`cn`, etc.) |
 | `@vendure-io/ui/lib/base-ui` | `@base-ui/react` primitive namespaces (see below) |
 | `@vendure-io/ui/hooks/*` | Shared React hooks |
 
+The former paths `@vendure-io/ui/components/ui/*` and `@vendure-io/ui/components/custom/*` still resolve as **deprecated aliases** for atoms and molecules respectively; they will be removed in v2.
+
 ## Customizing wrapper components
 
-The components under `components/ui/*` are thin wrappers around [`@base-ui/react`](https://base-ui.com/) primitives. To override a single subcomponent (e.g. swap `DialogTitle` for one with a different font) while re-using the rest, import the underlying primitive namespace from `@vendure-io/ui/lib/base-ui` rather than from `@base-ui/react` directly:
+The components under `components/atoms/*` are thin wrappers around [`@base-ui/react`](https://base-ui.com/) primitives. To override a single subcomponent (e.g. swap `DialogTitle` for one with a different font) while re-using the rest, import the underlying primitive namespace from `@vendure-io/ui/lib/base-ui` rather than from `@base-ui/react` directly:
 
 ```tsx
 // In your own dialog.tsx
@@ -49,7 +51,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTrigger,
-} from "@vendure-io/ui/components/ui/dialog";
+} from "@vendure-io/ui/components/atoms/dialog";
 
 export {
   Dialog,

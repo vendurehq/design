@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Skeleton } from '../src/components/ui/skeleton.tsx';
+import { Skeleton } from '../src/components/atoms/skeleton.tsx';
 
 const meta = {
-  title: 'UI/General/Skeleton',
+  title: 'Atoms/General/Skeleton',
   component: Skeleton,
   tags: ['autodocs'],
 } satisfies Meta<typeof Skeleton>;

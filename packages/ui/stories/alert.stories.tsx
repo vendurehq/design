@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { TerminalIcon } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/ui/alert.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/atoms/alert.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Feedback/Alert',
+  title: 'Atoms/Feedback/Alert',
   component: Alert,
   tags: ['autodocs'],
 } satisfies Meta<typeof Alert>;

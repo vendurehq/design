@@ -12,8 +12,10 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./components/ui/*": "./src/components/ui/*.tsx",
-    "./components/custom/*": "./src/components/custom/*.tsx",
+    "./components/atoms/*": "./src/components/atoms/*.tsx",
+    "./components/molecules/*": "./src/components/molecules/*.tsx",
+    "./components/ui/*": "./src/components/atoms/*.tsx",
+    "./components/custom/*": "./src/components/molecules/*.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts"
   },

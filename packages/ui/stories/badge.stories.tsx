@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Badge } from '../src/components/ui/badge.tsx';
+import { Badge } from '../src/components/atoms/badge.tsx';
 
 const meta = {
-  title: 'UI/General/Badge',
+  title: 'Atoms/General/Badge',
   component: Badge,
   tags: ['autodocs'],
 } satisfies Meta<typeof Badge>;

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Calendar } from '../src/components/ui/calendar.tsx';
+import { Calendar } from '../src/components/atoms/calendar.tsx';
 
 const meta = {
-  title: 'UI/Forms/Calendar',
+  title: 'Atoms/Forms/Calendar',
   component: Calendar,
   tags: ['autodocs'],
 } satisfies Meta<typeof Calendar>;

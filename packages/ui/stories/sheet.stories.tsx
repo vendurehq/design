@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/ui/sheet.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Overlays/Sheet',
+  title: 'Atoms/Overlays/Sheet',
   component: Sheet,
   tags: ['autodocs'],
 } satisfies Meta<typeof Sheet>;

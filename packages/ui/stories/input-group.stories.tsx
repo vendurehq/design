@@ -6,11 +6,11 @@ import {
   InputGroupText,
   InputGroupInput,
   InputGroupTextarea,
-} from '../src/components/ui/input-group.tsx';
+} from '../src/components/atoms/input-group.tsx';
 import { Search, Copy } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Forms/InputGroup',
+  title: 'Atoms/Forms/InputGroup',
   component: InputGroup,
   tags: ['autodocs'],
 } satisfies Meta<typeof InputGroup>;

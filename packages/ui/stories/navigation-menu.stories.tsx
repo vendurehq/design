@@ -6,10 +6,10 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '../src/components/ui/navigation-menu.tsx';
+} from '../src/components/atoms/navigation-menu.tsx';
 
 const meta = {
-  title: 'UI/Menus/NavigationMenu',
+  title: 'Atoms/Menus/NavigationMenu',
   component: NavigationMenu,
   tags: ['autodocs'],
 } satisfies Meta<typeof NavigationMenu>;

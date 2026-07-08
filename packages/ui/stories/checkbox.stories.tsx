@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Checkbox } from '../src/components/ui/checkbox.tsx';
-import { Label } from '../src/components/ui/label.tsx';
+import { Checkbox } from '../src/components/atoms/checkbox.tsx';
+import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
-  title: 'UI/Forms/Checkbox',
+  title: 'Atoms/Forms/Checkbox',
   component: Checkbox,
   tags: ['autodocs'],
 } satisfies Meta<typeof Checkbox>;

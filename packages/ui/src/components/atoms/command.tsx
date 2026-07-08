@@ -10,11 +10,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@vendure-io/ui/components/ui/dialog"
+} from "@vendure-io/ui/components/atoms/dialog"
 import {
   InputGroup,
   InputGroupAddon,
-} from "@vendure-io/ui/components/ui/input-group"
+} from "@vendure-io/ui/components/atoms/input-group"
 import { SearchIcon, CheckIcon } from "lucide-react"
 
 function Command({

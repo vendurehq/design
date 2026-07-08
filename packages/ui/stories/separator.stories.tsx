@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Separator } from '../src/components/ui/separator.tsx';
+import { Separator } from '../src/components/atoms/separator.tsx';
 
 const meta = {
-  title: 'UI/General/Separator',
+  title: 'Atoms/General/Separator',
   component: Separator,
   tags: ['autodocs'],
 } satisfies Meta<typeof Separator>;

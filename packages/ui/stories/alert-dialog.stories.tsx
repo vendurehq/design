@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from '../src/components/ui/alert-dialog.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from '../src/components/atoms/alert-dialog.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { TriangleAlert } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Overlays/AlertDialog',
+  title: 'Atoms/Overlays/AlertDialog',
   component: AlertDialog,
   tags: ['autodocs'],
 } satisfies Meta<typeof AlertDialog>;

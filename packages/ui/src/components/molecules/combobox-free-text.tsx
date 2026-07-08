@@ -1,13 +1,17 @@
 'use client';
 
 import { Autocomplete } from '@base-ui/react/autocomplete';
-import { ComboboxContent, ComboboxItem, ComboboxList } from '@vendure-io/ui/components/ui/combobox';
+import {
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxList,
+} from '@vendure-io/ui/components/atoms/combobox';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from '@vendure-io/ui/components/ui/input-group';
-import { Spinner } from '@vendure-io/ui/components/ui/spinner';
+} from '@vendure-io/ui/components/atoms/input-group';
+import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 

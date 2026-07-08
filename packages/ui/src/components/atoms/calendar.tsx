@@ -9,7 +9,7 @@ import {
 } from "react-day-picker"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { Button, buttonVariants } from "@vendure-io/ui/components/ui/button"
+import { Button, buttonVariants } from "@vendure-io/ui/components/atoms/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
 
 function Calendar({

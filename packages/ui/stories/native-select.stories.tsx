@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../src/components/ui/native-select.tsx';
+import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../src/components/atoms/native-select.tsx';
 
 const meta = {
-  title: 'UI/Forms/NativeSelect',
+  title: 'Atoms/Forms/NativeSelect',
   component: NativeSelect,
   tags: ['autodocs'],
 } satisfies Meta<typeof NativeSelect>;

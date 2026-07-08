@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Textarea } from '../src/components/ui/textarea.tsx';
+import { Textarea } from '../src/components/atoms/textarea.tsx';
 
 const meta = {
-  title: 'UI/Forms/Textarea',
+  title: 'Atoms/Forms/Textarea',
   component: Textarea,
   tags: ['autodocs'],
 } satisfies Meta<typeof Textarea>;

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Toggle } from '../src/components/ui/toggle.tsx';
+import { Toggle } from '../src/components/atoms/toggle.tsx';
 import { Bold, Italic, Underline } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Forms/Toggle',
+  title: 'Atoms/Forms/Toggle',
   component: Toggle,
   tags: ['autodocs'],
 } satisfies Meta<typeof Toggle>;

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Switch } from '../src/components/ui/switch.tsx';
-import { Label } from '../src/components/ui/label.tsx';
+import { Switch } from '../src/components/atoms/switch.tsx';
+import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
-  title: 'UI/Forms/Switch',
+  title: 'Atoms/Forms/Switch',
   component: Switch,
   tags: ['autodocs'],
 } satisfies Meta<typeof Switch>;

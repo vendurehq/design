@@ -14,10 +14,10 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from '../src/components/ui/context-menu.tsx';
+} from '../src/components/atoms/context-menu.tsx';
 
 const meta = {
-  title: 'UI/Menus/ContextMenu',
+  title: 'Atoms/Menus/ContextMenu',
   component: ContextMenu,
   tags: ['autodocs'],
 } satisfies Meta<typeof ContextMenu>;

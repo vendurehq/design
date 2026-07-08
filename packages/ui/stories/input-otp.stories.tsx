@@ -4,10 +4,10 @@ import {
   InputOTPGroup,
   InputOTPSlot,
   InputOTPSeparator,
-} from '../src/components/ui/input-otp.tsx';
+} from '../src/components/atoms/input-otp.tsx';
 
 const meta = {
-  title: 'UI/Forms/InputOTP',
+  title: 'Atoms/Forms/InputOTP',
   component: InputOTP,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

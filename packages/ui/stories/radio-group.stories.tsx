@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { RadioGroup, RadioGroupItem } from '../src/components/ui/radio-group.tsx';
-import { Label } from '../src/components/ui/label.tsx';
+import { RadioGroup, RadioGroupItem } from '../src/components/atoms/radio-group.tsx';
+import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
-  title: 'UI/Forms/RadioGroup',
+  title: 'Atoms/Forms/RadioGroup',
   component: RadioGroup,
   tags: ['autodocs'],
 } satisfies Meta<typeof RadioGroup>;

@@ -9,11 +9,11 @@ import {
   ItemActions,
   ItemGroup,
   ItemSeparator,
-} from '../src/components/ui/item.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/item.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Item',
+  title: 'Atoms/Data Display/Item',
   component: Item,
   tags: ['autodocs'],
 } satisfies Meta<typeof Item>;

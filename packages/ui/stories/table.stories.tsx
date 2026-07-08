@@ -8,10 +8,10 @@ import {
   TableRow,
   TableCell,
   TableCaption,
-} from '../src/components/ui/table.tsx';
+} from '../src/components/atoms/table.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Table',
+  title: 'Atoms/Data Display/Table',
   component: Table,
   tags: ['autodocs'],
 } satisfies Meta<typeof Table>;

@@ -6,10 +6,10 @@ import {
   AvatarBadge,
   AvatarGroup,
   AvatarGroupCount,
-} from '../src/components/ui/avatar.tsx';
+} from '../src/components/atoms/avatar.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Avatar',
+  title: 'Atoms/Data Display/Avatar',
   component: Avatar,
   tags: ['autodocs'],
 } satisfies Meta<typeof Avatar>;

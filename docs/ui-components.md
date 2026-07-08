@@ -26,9 +26,9 @@ This applies to both Turbopack and Webpack modes.
 Components use wildcard subpath exports — there are no barrel files. Always import from the specific component path:
 
 ```tsx
-import { Button } from "@vendure-io/ui/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@vendure-io/ui/components/ui/card";
-import { Dialog, DialogTrigger, DialogContent } from "@vendure-io/ui/components/ui/dialog";
+import { Button } from "@vendure-io/ui/components/atoms/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@vendure-io/ui/components/atoms/card";
+import { Dialog, DialogTrigger, DialogContent } from "@vendure-io/ui/components/atoms/dialog";
 ```
 
 Utilities and hooks follow the same pattern:
@@ -111,7 +111,7 @@ import { Search, ChevronDown, X } from "lucide-react";
 ### Button
 
 ```tsx
-import { Button } from "@vendure-io/ui/components/ui/button";
+import { Button } from "@vendure-io/ui/components/atoms/button";
 
 <Button variant="default">Save</Button>
 <Button variant="secondary">Cancel</Button>
@@ -125,7 +125,7 @@ Button's `default` variant is solid brand (primary). Use it for the single prima
 ### Badge
 
 ```tsx
-import { Badge } from "@vendure-io/ui/components/ui/badge";
+import { Badge } from "@vendure-io/ui/components/atoms/badge";
 
 <Badge>Neutral</Badge>
 <Badge variant="primary">Primary</Badge>
@@ -147,8 +147,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@vendure-io/ui/components/ui/dialog";
-import { Button } from "@vendure-io/ui/components/ui/button";
+} from "@vendure-io/ui/components/atoms/dialog";
+import { Button } from "@vendure-io/ui/components/atoms/button";
 
 <Dialog>
   <DialogTrigger asChild>
@@ -176,7 +176,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@vendure-io/ui/components/ui/card";
+} from "@vendure-io/ui/components/atoms/card";
 
 <Card>
   <CardHeader>

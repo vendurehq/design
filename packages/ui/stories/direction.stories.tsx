@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { DirectionProvider, useDirection } from '../src/components/ui/direction.tsx';
+import { DirectionProvider, useDirection } from '../src/components/atoms/direction.tsx';
 
 const meta = {
-  title: 'UI/Layout/Direction',
+  title: 'Atoms/Layout/Direction',
   component: DirectionProvider,
   tags: ['autodocs'],
 } satisfies Meta<typeof DirectionProvider>;
