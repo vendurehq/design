@@ -54,9 +54,12 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
 
   const warned = new Set<string>();
   function resolve(state: string): StateEntry | undefined {
-    const entry = index.get(state.toLowerCase());
-    if (!entry && isDev && !warned.has(state)) {
-      warned.add(state);
+    const key = state.toLowerCase();
+    const entry = index.get(key);
+    // Dedup on the lowercased key so casing variants of the same unknown state
+    // ("Foo" / "foo") warn once — matching the lookup semantics.
+    if (!entry && isDev && !warned.has(key)) {
+      warned.add(key);
       console.warn(
         `[state-dictionary] Unmapped state "${state}" — rendering as neutral. ` +
           'Add it to the domain map or check for a typo.',

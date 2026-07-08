@@ -502,14 +502,17 @@ export const Principles: Story = {
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
+                <th className="p-3 font-medium">#</th>
                 <th className="p-3 font-medium">Conflict</th>
                 <th className="p-3 font-medium">Today</th>
                 <th className="p-3 font-medium">Ruling</th>
               </tr>
             </thead>
             <tbody>
-              {RULINGS.map(({ conflict, today, ruling, note }) => (
+              {/* Numbered: the reference table's notes cite "ruling N" by this index. */}
+              {RULINGS.map(({ conflict, today, ruling, note }, i) => (
                 <tr key={conflict} className="border-b align-top last:border-0">
+                  <td className="text-muted-foreground p-3 text-xs">{i + 1}</td>
                   <td className="p-3 font-mono text-xs">{conflict}</td>
                   <td className="text-muted-foreground p-3 text-xs">{today}</td>
                   <td className="p-3">
