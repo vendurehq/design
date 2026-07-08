@@ -14,8 +14,12 @@ export const Default: Story = {
   args: { children: 'Badge' },
 };
 
-export const Secondary: Story = {
-  args: { variant: 'secondary', children: 'Secondary' },
+export const Primary: Story = {
+  args: { variant: 'primary', children: 'Primary' },
+};
+
+export const Brand: Story = {
+  args: { variant: 'brand', children: 'Brand' },
 };
 
 export const Destructive: Story = {

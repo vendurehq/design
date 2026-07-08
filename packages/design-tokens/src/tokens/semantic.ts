@@ -71,25 +71,25 @@ export const lightTheme = {
 
 export const darkTheme = {
   background: neutral[950],
-  foreground: 'oklch(0.8 0.004 231)',
+  foreground: 'oklch(0.92 0.004 231)',
   // Dark mode expresses all four tiers through lightness (+0.03 L per step).
   surface: 'oklch(0.18 0.007 231)',
   'surface-raised': 'oklch(0.21 0.007 231)',
   overlay: 'oklch(0.24 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   card: 'var(--surface)',
-  'card-foreground': 'oklch(0.8 0.004 231)',
+  'card-foreground': 'oklch(0.92 0.004 231)',
   popover: 'var(--overlay)',
   'popover-foreground': 'oklch(0.95 0.004 231)',
   primary: neutral[100],
   'primary-foreground': neutral[900],
   brand: brand[500],
   'brand-foreground': neutral[950],
-  secondary: 'color-mix(in oklab, var(--foreground) 8%, transparent)',
+  secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
-  muted: 'color-mix(in oklab, var(--foreground) 5%, transparent)',
+  muted: 'color-mix(in oklab, var(--foreground) 4%, transparent)',
   'muted-foreground': 'oklch(0.65 0.005 231)',
-  accent: 'color-mix(in oklab, var(--foreground) 11%, transparent)',
+  accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   destructive: destructive[600],
   'destructive-foreground': 'oklch(0.98 0.01 25)',
@@ -117,10 +117,10 @@ export const darkTheme = {
   'neutral-subtle-foreground': neutral[300],
   'neutral-border': neutral[800],
   // Foreground mixes like the intensity slots — neutral-800 tuned for the
-  // canvas disappears on raised/overlay tiers. 20% renders exactly
-  // neutral-800 on the canvas and degrades correctly above it.
-  border: 'color-mix(in oklab, var(--foreground) 20%, transparent)',
-  input: 'color-mix(in oklab, var(--foreground) 20%, transparent)',
+  // canvas disappears on raised/overlay tiers. 17% renders ~neutral-800
+  // on the canvas and degrades correctly above it.
+  border: 'color-mix(in oklab, var(--foreground) 17%, transparent)',
+  input: 'color-mix(in oklab, var(--foreground) 17%, transparent)',
   ring: neutral[500],
   'chart-1': viz[1],
   'chart-2': viz[2],
