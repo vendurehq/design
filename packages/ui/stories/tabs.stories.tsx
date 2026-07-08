@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../src/components/ui/tabs.tsx';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../src/components/atoms/tabs.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Tabs',
+  title: 'Atoms/Data Display/Tabs',
   component: Tabs,
   tags: ['autodocs'],
 } satisfies Meta<typeof Tabs>;

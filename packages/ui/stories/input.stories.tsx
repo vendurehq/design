@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Input } from '../src/components/ui/input.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 
 const meta = {
-  title: 'UI/Forms/Input',
+  title: 'Atoms/Forms/Input',
   component: Input,
   tags: ['autodocs'],
 } satisfies Meta<typeof Input>;

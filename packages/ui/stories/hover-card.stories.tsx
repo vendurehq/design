@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/ui/hover-card.tsx';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/atoms/hover-card.tsx';
 import { CalendarDays } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Overlays/HoverCard',
+  title: 'Atoms/Overlays/HoverCard',
   component: HoverCard,
   tags: ['autodocs'],
 } satisfies Meta<typeof HoverCard>;

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../src/components/ui/tooltip.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Overlays/Tooltip',
+  title: 'Atoms/Overlays/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
 } satisfies Meta<typeof Tooltip>;

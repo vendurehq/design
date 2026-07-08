@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Kbd, KbdGroup } from '../src/components/ui/kbd.tsx';
+import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
 
 const meta = {
-  title: 'UI/General/Kbd',
+  title: 'Atoms/General/Kbd',
   component: Kbd,
   tags: ['autodocs'],
 } satisfies Meta<typeof Kbd>;

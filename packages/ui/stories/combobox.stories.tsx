@@ -8,10 +8,10 @@ import {
   ComboboxEmpty,
   ComboboxGroup,
   ComboboxLabel,
-} from '../src/components/ui/combobox.tsx';
+} from '../src/components/atoms/combobox.tsx';
 
 const meta = {
-  title: 'UI/Forms/Combobox',
+  title: 'Atoms/Forms/Combobox',
   component: ComboboxInput,
   tags: ['autodocs'],
 } satisfies Meta<typeof ComboboxInput>;

@@ -4,11 +4,11 @@ import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
-} from '../src/components/ui/collapsible.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/collapsible.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Layout/Collapsible',
+  title: 'Atoms/Layout/Collapsible',
   component: Collapsible,
   tags: ['autodocs'],
 } satisfies Meta<typeof Collapsible>;

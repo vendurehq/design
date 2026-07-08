@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AspectRatio } from '../src/components/ui/aspect-ratio.tsx';
+import { AspectRatio } from '../src/components/atoms/aspect-ratio.tsx';
 
 const meta = {
-  title: 'UI/General/AspectRatio',
+  title: 'Atoms/General/AspectRatio',
   component: AspectRatio,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

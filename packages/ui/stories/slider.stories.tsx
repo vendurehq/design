@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Slider } from '../src/components/ui/slider.tsx';
+import { Slider } from '../src/components/atoms/slider.tsx';
 
 const meta = {
-  title: 'UI/Forms/Slider',
+  title: 'Atoms/Forms/Slider',
   component: Slider,
   tags: ['autodocs'],
 } satisfies Meta<typeof Slider>;

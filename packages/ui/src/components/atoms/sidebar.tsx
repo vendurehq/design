@@ -7,22 +7,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile"
 import { cn } from "@vendure-io/ui/lib/utils"
-import { Button } from "@vendure-io/ui/components/ui/button"
-import { Input } from "@vendure-io/ui/components/ui/input"
-import { Separator } from "@vendure-io/ui/components/ui/separator"
+import { Button } from "@vendure-io/ui/components/atoms/button"
+import { Input } from "@vendure-io/ui/components/atoms/input"
+import { Separator } from "@vendure-io/ui/components/atoms/separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@vendure-io/ui/components/ui/sheet"
-import { Skeleton } from "@vendure-io/ui/components/ui/skeleton"
+} from "@vendure-io/ui/components/atoms/sheet"
+import { Skeleton } from "@vendure-io/ui/components/atoms/skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@vendure-io/ui/components/ui/tooltip"
+} from "@vendure-io/ui/components/atoms/tooltip"
 import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"

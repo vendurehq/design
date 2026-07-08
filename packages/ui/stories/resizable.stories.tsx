@@ -3,10 +3,10 @@ import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
-} from '../src/components/ui/resizable.tsx';
+} from '../src/components/atoms/resizable.tsx';
 
 const meta = {
-  title: 'UI/Layout/Resizable',
+  title: 'Atoms/Layout/Resizable',
   component: ResizablePanelGroup,
   tags: ['autodocs'],
 } satisfies Meta<typeof ResizablePanelGroup>;

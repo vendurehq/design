@@ -7,10 +7,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
-} from '../src/components/ui/breadcrumb.tsx';
+} from '../src/components/atoms/breadcrumb.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Breadcrumb',
+  title: 'Atoms/Data Display/Breadcrumb',
   component: Breadcrumb,
   tags: ['autodocs'],
 } satisfies Meta<typeof Breadcrumb>;

@@ -4,10 +4,10 @@ import {
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from '../src/components/ui/accordion.tsx';
+} from '../src/components/atoms/accordion.tsx';
 
 const meta = {
-  title: 'UI/Layout/Accordion',
+  title: 'Atoms/Layout/Accordion',
   component: Accordion,
   tags: ['autodocs'],
 } satisfies Meta<typeof Accordion>;

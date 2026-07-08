@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from '../src/components/ui/button.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { ChevronRight, Mail, Loader2 } from 'lucide-react';
 
 const meta = {
-  title: 'UI/General/Button',
+  title: 'Atoms/General/Button',
   component: Button,
   tags: ['autodocs'],
 } satisfies Meta<typeof Button>;

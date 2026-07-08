@@ -15,12 +15,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '../src/components/ui/dropdown-menu.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/dropdown-menu.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { Cloud, CreditCard, LogOut, Mail, MessageSquare, Plus, Settings, User, UserPlus, Users } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Menus/DropdownMenu',
+  title: 'Atoms/Menus/DropdownMenu',
   component: DropdownMenu,
   tags: ['autodocs'],
 } satisfies Meta<typeof DropdownMenu>;

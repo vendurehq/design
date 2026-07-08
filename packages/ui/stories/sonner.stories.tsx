@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ThemeProvider } from 'next-themes';
 import { toast } from 'sonner';
-import { Button } from '../src/components/ui/button.tsx';
-import { Toaster } from '../src/components/ui/sonner.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
+import { Toaster } from '../src/components/atoms/sonner.tsx';
 
 const meta = {
-  title: 'UI/Feedback/Sonner',
+  title: 'Atoms/Feedback/Sonner',
   component: Toaster,
   tags: ['autodocs'],
   decorators: [

@@ -3,11 +3,11 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
-} from '../src/components/ui/button-group.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/button-group.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/General/ButtonGroup',
+  title: 'Atoms/General/ButtonGroup',
   component: ButtonGroup,
   tags: ['autodocs'],
 } satisfies Meta<typeof ButtonGroup>;

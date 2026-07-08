@@ -4,7 +4,7 @@ import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { Separator } from "@vendure-io/ui/components/ui/separator"
+import { Separator } from "@vendure-io/ui/components/atoms/separator"
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (

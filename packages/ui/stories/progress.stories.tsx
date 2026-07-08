@@ -3,10 +3,10 @@ import {
   Progress,
   ProgressLabel,
   ProgressValue,
-} from '../src/components/ui/progress.tsx';
+} from '../src/components/atoms/progress.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Progress',
+  title: 'Atoms/Data Display/Progress',
   component: Progress,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

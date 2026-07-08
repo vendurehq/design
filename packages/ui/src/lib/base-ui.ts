@@ -1,7 +1,7 @@
 /**
  * Re-exports of `@base-ui/react` primitive namespaces.
  *
- * Why this exists: the wrapper components in `@vendure-io/ui/components/ui/*`
+ * Why this exists: the wrapper components in `@vendure-io/ui/components/atoms/*`
  * are intentionally thin layers over `@base-ui/react` primitives. Consumers
  * (notably `@vendure/dashboard`) often need to override a single subcomponent
  * — e.g. swap `DialogTitle` for one that uses a different font — while

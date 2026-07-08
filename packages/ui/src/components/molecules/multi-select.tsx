@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@vendure-io/ui/components/ui/select';
+} from '@vendure-io/ui/components/atoms/select';
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 

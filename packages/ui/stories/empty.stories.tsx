@@ -7,11 +7,11 @@ import {
   EmptyDescription,
   EmptyContent,
   EmptyMedia,
-} from '../src/components/ui/empty.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/empty.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/General/Empty',
+  title: 'Atoms/General/Empty',
   component: Empty,
   tags: ['autodocs'],
 } satisfies Meta<typeof Empty>;

@@ -8,10 +8,10 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from '../src/components/ui/select.tsx';
+} from '../src/components/atoms/select.tsx';
 
 const meta = {
-  title: 'UI/Forms/Select',
+  title: 'Atoms/Forms/Select',
   component: SelectTrigger,
   tags: ['autodocs'],
 } satisfies Meta<typeof SelectTrigger>;

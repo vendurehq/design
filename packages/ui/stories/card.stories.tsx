@@ -7,11 +7,11 @@ import {
   CardAction,
   CardContent,
   CardFooter,
-} from '../src/components/ui/card.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+} from '../src/components/atoms/card.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Card',
+  title: 'Atoms/Data Display/Card',
   component: Card,
   tags: ['autodocs'],
 } satisfies Meta<typeof Card>;

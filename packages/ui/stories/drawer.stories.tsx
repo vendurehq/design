@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/ui/drawer.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Overlays/Drawer',
+  title: 'Atoms/Overlays/Drawer',
   component: Drawer,
   tags: ['autodocs'],
 } satisfies Meta<typeof Drawer>;

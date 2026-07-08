@@ -5,10 +5,10 @@ import {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-} from '../src/components/ui/carousel.tsx';
+} from '../src/components/atoms/carousel.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Carousel',
+  title: 'Atoms/Data Display/Carousel',
   component: Carousel,
   tags: ['autodocs'],
 } satisfies Meta<typeof Carousel>;

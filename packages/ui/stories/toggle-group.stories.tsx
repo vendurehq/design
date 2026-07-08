@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ToggleGroup, ToggleGroupItem } from '../src/components/ui/toggle-group.tsx';
+import { ToggleGroup, ToggleGroupItem } from '../src/components/atoms/toggle-group.tsx';
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Forms/ToggleGroup',
+  title: 'Atoms/Forms/ToggleGroup',
   component: ToggleGroup,
   tags: ['autodocs'],
 } satisfies Meta<typeof ToggleGroup>;

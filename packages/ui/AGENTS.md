@@ -4,12 +4,12 @@ React component library for Vendure. Built on shadcn/ui (base-vega style) + Tail
 
 ## IMPORTANT: this package is the source of truth
 
-Components in `src/components/ui/` were originally generated from the shadcn registry (base-vega style), but **this package owns them now**. shadcn is an upstream we cherry-pick from, not something we sync with. When a file differs from the registry, treat the difference as an intentional design decision unless git history says otherwise.
+Components in `src/components/atoms/` were originally generated from the shadcn registry (base-vega style), but **this package owns them now**. shadcn is an upstream we cherry-pick from, not something we sync with. When a file differs from the registry, treat the difference as an intentional design decision unless git history says otherwise.
 
 The shadcn CLI is used for exactly two things:
 
 ```sh
-bunx shadcn@latest add <component>    # scaffold a NEW component into src/components/ui/
+bunx shadcn@latest add <component>    # scaffold a NEW component into src/components/atoms/
 bunx shadcn@latest diff <component>   # review what changed upstream, for cherry-picking
 ```
 
@@ -33,20 +33,25 @@ Comment non-obvious decisions in component files like you would anywhere else �
 
 ## Structure
 
-- `src/components/ui/` — shadcn-derived primitives (button, dialog, etc.)
-- `src/components/custom/` — hand-built Vendure-specific components (no shadcn counterpart)
-- `src/lib/` — utilities (cn, etc.)
-- `src/hooks/` — shared React hooks
+The two tiers split by **provenance**, not composition depth (ADR 0002 — `docs/adr/0002-component-taxonomy-atoms-molecules.md`):
+
+- `src/components/atoms/` — shadcn-CLI-managed primitives (button, dialog, etc.); an upstream exists to `diff` against
+- `src/components/molecules/` — hand-written composed components with no shadcn upstream. Multi-file molecules get a subfolder (`molecules/data-table/*`) — wildcard exports match across `/`
+- `src/lib/` — utilities (cn, pure functions)
+- `src/hooks/` — shared React hooks, regardless of which tier consumes them
+
+There is deliberately no `organisms/` — composition depth is not a boundary here. `sidebar.tsx` stays an atom despite being huge (CLI provenance); the DataTable family is molecules.
 
 ## Exports (wildcard, no wrapper barrels)
 
-- `./components/ui/*` → individual ui components
-- `./components/custom/*` → individual custom components
+- `./components/atoms/*` → individual atoms
+- `./components/molecules/*` → individual molecules
+- `./components/ui/*` → **deprecated** alias for atoms, `./components/custom/*` → **deprecated** alias for molecules (same files, no shims; removed at ui v2)
 - `./lib/*` → utilities
 - `./hooks/*` → hooks
 
 The "no barrels" rule applies to **wrapper components**: do not aggregate
-`components/ui/*` or `components/custom/*` behind an index file. The single
+`components/atoms/*` or `components/molecules/*` behind an index file. The single
 exception is `src/lib/base-ui.ts`, which re-exports `@base-ui/react` primitive
 namespaces so consumers can override wrapper subcomponents without taking a
 direct dependency on `@base-ui/react`. Keep that file pure named re-exports
@@ -60,7 +65,9 @@ direct dependency on `@base-ui/react`. Keep that file pure named re-exports
 
 ## Rules
 
-- New generic primitives → use shadcn CLI, goes in `ui/`
-- New Vendure-specific components → hand-write in `custom/`
+- New generic primitives → use shadcn CLI, goes in `atoms/`
+- New Vendure-specific components → hand-write in `molecules/`
+- **Graduation/layer rule**: a component graduates from a consumer into the DS when a second consumer needs it. The layer question is mechanical — exists in the shadcn registry upstream? → scaffold via CLI into `atoms/` (the donor informs the cherry-picking); otherwise → `molecules/`, based on the chosen donor. No composition-depth debate.
+- **Formatters (JSX-or-lib rule)**: renders JSX → `molecules/` (a `<Money>` component is a molecule); pure function → `lib/` (a `formatCurrency()` helper is lib). Same test for anything ambiguous: "does it return JSX?"
 - No barrel files. Wildcard exports only.
 - Peer deps: react, react-dom. next/next-themes/react-hook-form are optional peers.

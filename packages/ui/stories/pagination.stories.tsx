@@ -7,10 +7,10 @@ import {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
-} from '../src/components/ui/pagination.tsx';
+} from '../src/components/atoms/pagination.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Pagination',
+  title: 'Atoms/Data Display/Pagination',
   component: Pagination,
   tags: ['autodocs'],
 } satisfies Meta<typeof Pagination>;

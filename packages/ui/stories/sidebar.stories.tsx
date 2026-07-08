@@ -20,10 +20,10 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
   SidebarInset,
-} from '../src/components/ui/sidebar.tsx';
+} from '../src/components/atoms/sidebar.tsx';
 
 const meta = {
-  title: 'UI/Layout/Sidebar',
+  title: 'Atoms/Layout/Sidebar',
   component: Sidebar,
   tags: ['autodocs'],
 } satisfies Meta<typeof Sidebar>;

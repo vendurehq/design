@@ -3,10 +3,10 @@ import * as React from 'react';
 import {
   ComboboxFreeText,
   type ComboboxFreeTextItem,
-} from '../src/components/custom/combobox-free-text.tsx';
+} from '../src/components/molecules/combobox-free-text.tsx';
 
 const meta = {
-  title: 'UI/Forms/ComboboxFreeText',
+  title: 'Molecules/ComboboxFreeText',
   component: ComboboxFreeText,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

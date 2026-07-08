@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
-import { MultiSelect } from '../src/components/custom/multi-select.tsx';
+import { MultiSelect } from '../src/components/molecules/multi-select.tsx';
 
 const meta = {
-  title: 'UI/Forms/MultiSelect',
+  title: 'Molecules/MultiSelect',
   component: MultiSelect,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

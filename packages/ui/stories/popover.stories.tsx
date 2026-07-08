@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from '../src/components/ui/popover.tsx';
-import { Button } from '../src/components/ui/button.tsx';
+import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from '../src/components/atoms/popover.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
-  title: 'UI/Overlays/Popover',
+  title: 'Atoms/Overlays/Popover',
   component: Popover,
   tags: ['autodocs'],
 } satisfies Meta<typeof Popover>;

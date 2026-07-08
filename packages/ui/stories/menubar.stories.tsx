@@ -13,10 +13,10 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
-} from '../src/components/ui/menubar.tsx';
+} from '../src/components/atoms/menubar.tsx';
 
 const meta = {
-  title: 'UI/Menus/Menubar',
+  title: 'Atoms/Menus/Menubar',
   component: Menubar,
   tags: ['autodocs'],
 } satisfies Meta<typeof Menubar>;

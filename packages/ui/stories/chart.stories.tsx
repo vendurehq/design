@@ -20,10 +20,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from '../src/components/ui/chart.tsx';
+} from '../src/components/atoms/chart.tsx';
 
 const meta = {
-  title: 'UI/Data Display/Chart',
+  title: 'Atoms/Data Display/Chart',
   component: ChartContainer,
   tags: ['autodocs'],
   // baseline args to satisfy required props; all stories use render()

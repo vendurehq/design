@@ -5,11 +5,11 @@ import {
   FieldDescription,
   FieldError,
   FieldContent,
-} from '../src/components/ui/field.tsx';
-import { Input } from '../src/components/ui/input.tsx';
+} from '../src/components/atoms/field.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 
 const meta = {
-  title: 'UI/Forms/Field',
+  title: 'Atoms/Forms/Field',
   component: Field,
   tags: ['autodocs'],
 } satisfies Meta<typeof Field>;

@@ -8,11 +8,11 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from '../src/components/ui/command.tsx';
+} from '../src/components/atoms/command.tsx';
 import { Calculator, Calendar, CreditCard, Settings, Smile, User } from 'lucide-react';
 
 const meta = {
-  title: 'UI/Menus/Command',
+  title: 'Atoms/Menus/Command',
   component: Command,
   tags: ['autodocs'],
 } satisfies Meta<typeof Command>;
