@@ -58,8 +58,10 @@ All colors use the OKLCH color space for perceptual uniformity.
 **Semantic colors** (light/dark mode aware via CSS variables):
 
 - `background`, `foreground` — Page background and text
-- `card`, `card-foreground` — Card surfaces
-- `popover`, `popover-foreground` — Popover/dropdown surfaces
+- `surface`, `surface-raised`, `overlay` — The elevation ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
+- `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
+- `card`, `card-foreground` — Card surfaces (alias of `surface`)
+- `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
 - `primary`, `primary-foreground` — Primary actions
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements

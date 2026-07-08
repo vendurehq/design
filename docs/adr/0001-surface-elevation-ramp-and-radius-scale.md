@@ -1,6 +1,6 @@
 # ADR 0001: Surface/elevation ramp & differentiated radius scale
 
-- **Status**: Proposed (spike output, [OSS-602](https://linear.app/vendure/issue/OSS-602/spike-surfaceelevation-ramp-and-radius-scale-design))
+- **Status**: Accepted (spike output, [OSS-602](https://linear.app/vendure/issue/OSS-602/spike-surfaceelevation-ramp-and-radius-scale-design); implemented in [OSS-609](https://linear.app/vendure/issue/OSS-609/implement-surfaceelevation-ramp-and-restored-radius-scale))
 - **Date**: 2026-07-08
 
 ## Context
@@ -57,15 +57,19 @@ The intensity slots (`muted` < `secondary` < `accent`) are absolute lightness va
 
 Percentages are calibrated per theme to reproduce today's rendered values exactly on the default surfaces — this is a representation change, not a visual one, until a component sits on a raised/overlay tier, where it now degrades correctly instead of vanishing.
 
+The same applies to dark `border`/`input` (implementation finding, OSS-609): atoms pair them with the overlay tier constantly (outline buttons and every form control render `dark:border-input` + `dark:bg-input/30` inside dialogs), and the absolute `neutral-800` (0.28) vanishes on the 0.24 overlay. Dark `border` and `input` become `color-mix(in oklab, var(--foreground) 20%, transparent)` — 20% renders exactly 0.28 on the canvas (and the `/30`, `/50` alpha usages are linear, so they hold parity too). Light mode keeps absolute values; its surfaces collapse to white, so there is no tier to degrade on.
+
 ### Companion: sunken wells (`inset`)
 
 Some components need to read *below* their host surface: the tabs track, and later switch/progress tracks and skeletons. A foreground mix can't express this in dark mode (it lightens), so `inset` is a shade mix:
 
 | Slot | Light | Dark |
 | --- | --- | --- |
-| `inset` | `color-mix(in oklab, black 5%, transparent)` | `color-mix(in oklab, black 25%, transparent)` |
+| `inset` | `color-mix(in oklab, black 5%, transparent)` | `color-mix(in oklab, black 40%, transparent)` |
 
-This fixes the active-tab hierarchy: today the active trigger uses `bg-background`, which on a white `surface` card renders as a hole punched down to the canvas. Proposed treatment: **TabsList sits in an `inset` well; the active trigger lifts to `surface-raised`** — a segmented-control thumb that reads raised out of a sunken track in both themes, on any host surface (light: white thumb on a gray well; dark: 0.21 thumb on a ~0.14 well).
+This fixes the active-tab hierarchy: today the active trigger uses `bg-background`, which on a white `surface` card renders as a hole punched down to the canvas. Proposed treatment: **TabsList sits in an `inset` well; the active trigger lifts to `surface-raised`** — a segmented-control thumb that reads raised out of a sunken track in both themes, on any host surface (light: white thumb on a gray well; dark: 0.21 thumb on a ~0.09 well).
+
+Dark values revised during implementation (OSS-609): the spike's 25% well put everything within a few points of black — well 0.11, thumb 0.21, no edge — and the thumb was judged "hardly visible" in review. The well deepens to 40% and the dark thumb keeps a `border-input` hairline (now a foreground mix, so it holds on any tier); lightness alone can't separate the thumb near the black end of the ramp.
 
 ## Decision 2: differentiated radius scale
 
