@@ -154,4 +154,4 @@ Or via Google Fonts in your HTML `<head>`:
 />
 ```
 
-The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded.
+The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded. For headings, use the `font-heading` utility (Public Sans); the theme deliberately doesn't restyle raw `h1`–`h6` elements, and `@vendure-io/ui` title components apply the utility themselves.
