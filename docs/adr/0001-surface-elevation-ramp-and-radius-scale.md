@@ -1,6 +1,6 @@
 # ADR 0001: Surface/elevation ramp & differentiated radius scale
 
-- **Status**: Proposed (spike output, [OSS-602](https://linear.app/vendure/issue/OSS-602/spike-surfaceelevation-ramp-and-radius-scale-design))
+- **Status**: Accepted (spike output, [OSS-602](https://linear.app/vendure/issue/OSS-602/spike-surfaceelevation-ramp-and-radius-scale-design); implemented in [OSS-609](https://linear.app/vendure/issue/OSS-609/implement-surfaceelevation-ramp-and-restored-radius-scale))
 - **Date**: 2026-07-08
 
 ## Context
