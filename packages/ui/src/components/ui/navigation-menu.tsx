@@ -141,11 +141,15 @@ function NavigationMenuIndicator({
   className,
   ...props
 }: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Icon>) {
+  // [vendure] replaced dead Radix-era data-[state=visible|hidden] selectors — Base UI's
+  // Icon emits data-popup-open while its item's popup is open and stays mounted when
+  // closed (no closed/ending attribute), so the closed state is hidden via opacity
+  // instead of an exit animation
   return (
     <NavigationMenuPrimitive.Icon
       data-slot="navigation-menu-indicator"
       className={cn(
-        "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
+        "data-popup-open:animate-in data-popup-open:fade-in not-data-popup-open:opacity-0 top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
         className
       )}
       {...props}
