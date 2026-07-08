@@ -7,7 +7,7 @@
  * states every app shares (`commonStates`). Domain maps — deployment states,
  * quote states, order states — live in their owning repo, declared with
  * `defineStateEntries` and reviewed against the Storybook reference table.
- * The ui package never learns app enums: Cloud owns what `DEPLOYING` means;
+ * The ui package never learns app enums: the app owns what `DEPLOYING` means;
  * the design system owns what `progress` looks like.
  */
 
@@ -102,8 +102,8 @@ export const commonStates = defineStateEntries({
 
 /**
  * Severity ordering, `neutral` (0) → `critical` (5). Used by `maxTone` to roll
- * a set of child states up to a single parent tone (Cloud's "worst-of"
- * environment/project rollup, generalized).
+ * a set of child states up to a single parent tone (a "worst-of" rollup for
+ * parent status rows, e.g. an environment summarizing its deployments).
  */
 export const TONE_SEVERITY = {
   neutral: 0,
