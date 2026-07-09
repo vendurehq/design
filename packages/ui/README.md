@@ -4,8 +4,8 @@ React component library for Vendure, built on [shadcn/ui](https://ui.shadcn.com/
 
 ## Install
 
-```bash
-npm install @vendure-io/ui
+```sh
+bun add @vendure-io/ui
 ```
 
 ### Peer dependencies
@@ -13,7 +13,7 @@ npm install @vendure-io/ui
 - `react` >= 19
 - `react-dom` >= 19
 
-Optional peers: `next`, `next-themes`, `react-hook-form`
+Optional peers: `next`, `next-themes`
 
 ## Usage
 
@@ -31,6 +31,9 @@ import { cn } from "@vendure-io/ui/lib/utils";
 | `@vendure-io/ui/lib/*` | Utilities (`cn`, etc.) |
 | `@vendure-io/ui/lib/base-ui` | `@base-ui/react` primitive namespaces (see below) |
 | `@vendure-io/ui/hooks/*` | Shared React hooks |
+
+See the repository's [component guide](../../docs/ui-components.md) for the full
+atom and molecule inventory.
 
 ## Customizing wrapper components
 
