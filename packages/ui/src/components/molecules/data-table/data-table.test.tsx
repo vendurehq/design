@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { type ColumnDef, DataTable, type Table } from './data-table.tsx';
+import { type ColumnDef, DataTable, type Table, type TableOptions } from './data-table.tsx';
 import {
   buildDisplayColumns,
   getSelectedOriginals,
@@ -240,6 +240,21 @@ describe('DataTable column visibility (controlled source of truth)', () => {
     expect(markup).not.toContain('>Code<');
     expect(markup).not.toContain('>AX<');
   });
+
+  test('showViewOptions=false keeps controlled visibility but suppresses the built-in control', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        columnVisibility={{ value: { code: false }, onChange: () => {}, showViewOptions: false }}
+        toolbar={() => <span>Dashboard columns</span>}
+      />,
+    );
+    expect(markup).toContain('Dashboard columns');
+    expect(markup).not.toContain('data-slot="data-table-view-options"');
+    expect(markup).not.toContain('>Code<');
+    expect(markup).not.toContain('>AX<');
+  });
 });
 
 describe('DataTable filters', () => {
@@ -267,6 +282,48 @@ describe('DataTable filters', () => {
       />,
     );
     expect(markup).toContain('data-slot="data-table-add-filter"');
+  });
+
+  test('showAddFilter=false keeps formatted chips but suppresses the built-in trigger', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        filters={{
+          value: [{ id: 'name', value: { contains: 'Al' } }],
+          onChange: () => {},
+          columns: [
+            {
+              id: 'name',
+              label: 'Name',
+              formatChip: (value) => <>Name contains {String(value.contains)}</>,
+            },
+          ],
+          showAddFilter: false,
+        }}
+        toolbar={() => <span>Dashboard filter</span>}
+      />,
+    );
+    expect(markup).toContain('Dashboard filter');
+    expect(markup).toContain('Name contains Al');
+    expect(markup).not.toContain('data-slot="data-table-add-filter"');
+  });
+
+  test('showAppliedFilters=false keeps add-filter UI but suppresses the built-in chip row', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        filters={{
+          value: [{ id: 'name', value: { contains: 'Al' } }],
+          onChange: () => {},
+          columns: [{ id: 'name', label: 'Name' }],
+          showAppliedFilters: false,
+        }}
+      />,
+    );
+    expect(markup).toContain('data-slot="data-table-add-filter"');
+    expect(markup).not.toContain('data-slot="list-header-chips"');
   });
 });
 
@@ -321,6 +378,58 @@ describe('DataTable renderRow seam', () => {
     );
     expect(markup).toContain('Aland Islands');
     expect(markup).toContain('Brazil');
+  });
+
+  test('renderRow can read table meta supplied through setTableOptions', () => {
+    type UtilityMeta = { utilityRowIds: Set<string> };
+    const setUtilityMeta = (options: TableOptions<Country>): TableOptions<Country> => ({
+      ...options,
+      meta: { utilityRowIds: new Set(['1']) },
+    });
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        setTableOptions={setUtilityMeta}
+        renderRow={(row, { table, columnCount, defaultRow }) => {
+          const meta = table.options.meta as UtilityMeta | undefined;
+          return meta?.utilityRowIds.has(row.id) ? (
+            <tr>
+              <td colSpan={columnCount}>Utility from meta</td>
+            </tr>
+          ) : (
+            defaultRow
+          );
+        }}
+      />,
+    );
+    expect(markup).toContain('Utility from meta');
+    expect(markup).not.toContain('Aland Islands');
+    expect(markup).toContain('Brazil');
+  });
+});
+
+describe('DataTable selection column', () => {
+  test('selectColumnId customizes the generated display-column id', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value: { '1': true }, onChange: () => {}, selectColumnId: 'selection' }}
+        bulkActions={({ table }) => (
+          <span>
+            {table
+              .getAllLeafColumns()
+              .map((column) => column.id)
+              .join('|')}
+          </span>
+        )}
+      />,
+    );
+    expect(markup).toContain('selection|name|code');
+    expect(markup).not.toContain('select|name|code');
   });
 });
 

@@ -156,6 +156,7 @@ function DataTable<TData>({
     rowSelection,
     {},
   );
+  const selectColumnId = rowSelection?.selectColumnId ?? 'select';
 
   // Inject the select/actions display columns around the data columns. `meta` on
   // the consumer's columns is never touched — it's the dashboard's field-info seam.
@@ -163,7 +164,7 @@ function DataTable<TData>({
     // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
     const selectColumn: ColumnDef<TData, any> | undefined = rowSelection
       ? {
-          id: 'select',
+          id: selectColumnId,
           enableSorting: false,
           enableHiding: false,
           // The checkboxes stay hidden until they're relevant: a header/row
@@ -205,7 +206,15 @@ function DataTable<TData>({
       : undefined;
 
     return buildDisplayColumns(columns, { select: selectColumn, actions: actionsColumn });
-  }, [columns, rowSelection, rowActions, l.selectAllRows, l.selectRow, l.rowActions]);
+  }, [
+    columns,
+    rowSelection,
+    rowActions,
+    selectColumnId,
+    l.selectAllRows,
+    l.selectRow,
+    l.rowActions,
+  ]);
 
   const state: Partial<TableState> = {};
   if (sorting) state.sorting = sortingState;
@@ -273,15 +282,21 @@ function DataTable<TData>({
   // and the revealed checkbox never overlaps the first column's content.
   const leadingColumnId =
     rowSelection != null
-      ? table.getVisibleLeafColumns().find((column) => column.id !== 'select')?.id
+      ? table.getVisibleLeafColumns().find((column) => column.id !== selectColumnId)?.id
       : undefined;
   const columnClass = (id: string): string | undefined =>
-    id === 'select' ? 'relative w-0 p-0' : id === leadingColumnId ? 'pl-8' : undefined;
+    id === selectColumnId ? 'relative w-0 p-0' : id === leadingColumnId ? 'pl-8' : undefined;
 
   const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
-  const hasFilterMenu = Boolean(filters?.columns && filters.columns.length > 0);
-  const showControls = toolbar != null || columnVisibility != null || hasFilterMenu;
-  const showChips = filters != null && table.getState().columnFilters.length > 0;
+  const showViewOptions = columnVisibility != null && columnVisibility.showViewOptions !== false;
+  const hasFilterMenu = Boolean(
+    filters?.showAddFilter !== false && filters?.columns && filters.columns.length > 0,
+  );
+  const showControls = toolbar != null || showViewOptions || hasFilterMenu;
+  const showChips =
+    filters != null &&
+    filters.showAppliedFilters !== false &&
+    table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
   const showBulk = rowSelection != null && bulkActions != null;
 
@@ -296,7 +311,7 @@ function DataTable<TData>({
               {hasFilterMenu && filters?.columns && (
                 <DataTableAddFilter table={table} columns={filters.columns} label={l.addFilter} />
               )}
-              {columnVisibility != null && (
+              {showViewOptions && (
                 <DataTableViewOptions
                   table={table}
                   triggerLabel={l.columnsTrigger}

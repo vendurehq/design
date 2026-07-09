@@ -35,10 +35,18 @@ export type DataTableSorting = ControlledState<SortingState> & {
   mode?: 'server' | 'client';
 };
 
-export type DataTableColumnVisibility = ControlledState<VisibilityState>;
+export type DataTableColumnVisibility = ControlledState<VisibilityState> & {
+  /**
+   * Defaults to true. Set false when a consumer renders its own column-settings
+   * control through `toolbar(table)` while the core still consumes visibility.
+   */
+  showViewOptions?: boolean;
+};
 
 export type DataTableRowSelection<TData> = ControlledState<RowSelectionState> & {
   enableRowSelection?: boolean | ((row: Row<TData>) => boolean);
+  /** Display-column id for the generated selection column. Default: 'select'. */
+  selectColumnId?: string;
 };
 
 /**
@@ -112,6 +120,13 @@ export type DataTableFilters<TData> = ControlledState<ColumnFiltersState> & {
   columns?: DataTableFilterColumn<TData>[];
   /** Collapse chips past this many into an "N filters" popover. Default Infinity. */
   inlineChipLimit?: number;
+  /**
+   * Defaults to true when `columns` is present. Set false when a consumer uses
+   * `columns` for chip labels/formatting but renders its own add-filter UI.
+   */
+  showAddFilter?: boolean;
+  /** Defaults to true. Set false when a consumer renders its own applied-filter UI. */
+  showAppliedFilters?: boolean;
 };
 
 export interface DataTableBulkActionContext<TData> {

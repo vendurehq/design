@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -47,18 +48,22 @@ function DataTableViewOptions<TData>({
         }
       />
       <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel>{heading}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {hideableColumns.map((column) => (
-          <DropdownMenuCheckboxItem
-            key={column.id}
-            className="capitalize"
-            checked={column.getIsVisible()}
-            onCheckedChange={(checked) => column.toggleVisibility(checked)}
-          >
-            {columnLabel(column)}
-          </DropdownMenuCheckboxItem>
-        ))}
+        {/* Base UI ties `GroupLabel` to a `Group` via context: the heading names
+            the toggle group and errors if rendered outside one. */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{heading}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {hideableColumns.map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              className="capitalize"
+              checked={column.getIsVisible()}
+              onCheckedChange={(checked) => column.toggleVisibility(checked)}
+            >
+              {columnLabel(column)}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
