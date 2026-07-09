@@ -40,6 +40,12 @@ import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile";
 
 ## Available Components
 
+Components are split by provenance: atoms track a shadcn upstream; molecules are
+Vendure-owned compositions. Prefer a molecule when it already expresses the
+behavior you need instead of rebuilding it from atoms.
+
+### Atoms
+
 ### Layout & Structure
 `accordion`, `aspect-ratio`, `card`, `collapsible`, `resizable`, `scroll-area`, `separator`, `sidebar`, `tabs`
 
@@ -60,6 +66,23 @@ import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile";
 
 ### Utility
 `direction`, `item`
+
+### Molecules
+
+#### Application structure
+`app-shell`, `page-header`, `skip-link`
+
+#### Forms & selection
+`combobox-free-text`, `entity-combobox`, `file-dropzone`, `multi-select`, `password-input`
+
+#### Date & number entry/display
+`date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `money`, `format-provider`
+
+#### Feedback & identity
+`confirm-dialog`, `state-views/*`, `status-badge`, `chip`, `id-chip`, `copyable-text`, `anonymized-token`
+
+#### Data display
+`data-table/*`, `description-list`, `stat-card`, `illustrations/*`
 
 ## Utilities
 
@@ -136,13 +159,47 @@ import { Badge } from "@vendure-io/ui/components/atoms/badge";
 
 > **Breaking change in ui v2:** Badge's `default` variant is neutral (neutral-subtle), not solid brand. Solid brand is an explicit opt-in via `variant="brand"` and follows the same one-primary-per-view rule as Button. The `secondary` variant was removed — it was visually identical to the new neutral default; migrate `variant="secondary"` to no variant. Status colors belong to the intent variants, not brand.
 
+### StatusBadge and domain states
+
+State words render through `StatusBadge`, not a `Badge` with local color
+classes. The consumer owns the domain meaning; the design system owns how each
+tone looks:
+
+```tsx
+import { StatusBadge } from "@vendure-io/ui/components/molecules/status-badge";
+import { defineStateEntries } from "@vendure-io/ui/lib/state-dictionary";
+
+type DeploymentState = "QUEUED" | "DEPLOYING" | "RUNNING" | "FAILED";
+
+const deploymentStates = defineStateEntries<DeploymentState>({
+  QUEUED: { tone: "neutral", defaultLabel: "Queued" },
+  DEPLOYING: { tone: "progress", defaultLabel: "Deploying" },
+  RUNNING: { tone: "success", defaultLabel: "Running" },
+  FAILED: { tone: "critical", defaultLabel: "Failed" },
+});
+
+<StatusBadge
+  tone={deploymentStates.toneFor(deployment.status)}
+>
+  {deploymentStates.labelFor(deployment.status)}
+</StatusBadge>;
+```
+
+Do not attach ramp colors to states. Unknown wire values deliberately fall back
+to neutral and warn once in development.
+
 ### Dialog
+
+Use `Dialog` for a reversible task or supporting content that temporarily needs
+focus. Use `ConfirmDialog` for a consequential action that the user must
+explicitly confirm.
 
 ```tsx
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
+  DialogClose,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -151,20 +208,33 @@ import {
 import { Button } from "@vendure-io/ui/components/atoms/button";
 
 <Dialog>
-  <DialogTrigger asChild>
-    <Button>Open Dialog</Button>
-  </DialogTrigger>
+  <DialogTrigger render={<Button variant="outline" />}>Edit customer</DialogTrigger>
   <DialogContent>
     <DialogHeader>
-      <DialogTitle>Confirm Action</DialogTitle>
-      <DialogDescription>This action cannot be undone.</DialogDescription>
+      <DialogTitle>Edit customer</DialogTitle>
+      <DialogDescription>Update the customer-facing details.</DialogDescription>
     </DialogHeader>
+    {/* Form fields */}
     <DialogFooter>
-      <Button variant="outline">Cancel</Button>
-      <Button>Confirm</Button>
+      <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+      <Button>Save changes</Button>
     </DialogFooter>
   </DialogContent>
 </Dialog>
+```
+
+```tsx
+import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialog";
+
+<ConfirmDialog
+  title="Delete channel?"
+  description="Products assigned only to this channel will become unavailable."
+  confirmLabel="Delete channel"
+  variant="destructive"
+  onConfirm={deleteChannel}
+>
+  <Button variant="destructive">Delete channel</Button>
+</ConfirmDialog>
 ```
 
 ### Card
@@ -197,4 +267,3 @@ These packages are optional — install them only if you use the features that n
 | ------------------ | ----------- |
 | `next`             | Next.js framework features |
 | `next-themes`      | Dark mode toggle in Next.js (ThemeProvider) |
-| `react-hook-form`  | Form validation and state management |

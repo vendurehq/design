@@ -81,12 +81,10 @@
         "next-themes": "^0.4.6",
         "react": ">=19",
         "react-dom": ">=19",
-        "react-hook-form": ">=7",
       },
       "optionalPeers": [
         "next",
         "next-themes",
-        "react-hook-form",
       ],
     },
   },

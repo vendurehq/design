@@ -18,8 +18,11 @@ import {
 import {
   AppShell,
   AppShellContent,
+  AppShellHeader,
+  AppShellMain,
   AppShellSidebar,
 } from '../src/components/molecules/app-shell.tsx';
+import { SkipLink } from '../src/components/molecules/skip-link.tsx';
 
 const meta = {
   title: 'Molecules/AppShell',
@@ -144,10 +147,16 @@ function Dashboard() {
 export const Default: Story = {
   render: () => (
     <div className="p-6">
+      <SkipLink href="#storybook-shell-main" />
       <AppShell className="h-[620px] min-h-0 overflow-hidden rounded-xl border border-border/60">
         <Nav />
         <AppShellContent>
-          <Dashboard />
+          <AppShellHeader>
+            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+          </AppShellHeader>
+          <AppShellMain id="storybook-shell-main">
+            <Dashboard />
+          </AppShellMain>
         </AppShellContent>
       </AppShell>
     </div>
@@ -169,7 +178,12 @@ export const Anatomy: Story = {
           <span className="text-muted-foreground pointer-events-none absolute right-4 top-3 z-10 font-mono text-[10px] tracking-wide">
             pane · --surface
           </span>
-          <Dashboard />
+          <AppShellHeader>
+            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+          </AppShellHeader>
+          <AppShellMain>
+            <Dashboard />
+          </AppShellMain>
         </AppShellContent>
       </AppShell>
     </div>
@@ -182,38 +196,42 @@ export const Anatomy: Story = {
 export const WithSidebarAtom: Story = {
   name: 'With the Sidebar atom (production shell)',
   render: () => (
-    <SidebarProvider>
-      <Sidebar variant="inset">
-        <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-1.5">
-            <div className="bg-brand size-6 rounded-md" />
-            <span className="text-sm font-semibold">Vendure</span>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {nav.map(({ icon: Icon, label, active }) => (
-                  <SidebarMenuItem key={label}>
-                    <SidebarMenuButton isActive={active}>
-                      <Icon />
-                      <span>{label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 px-4">
-          <SidebarTrigger />
-          <span className="text-muted-foreground text-sm">Marketing / Orders</span>
-        </header>
-        <Dashboard />
-      </SidebarInset>
-    </SidebarProvider>
+    <AppShell className="h-[620px] min-h-0 overflow-hidden">
+      <SidebarProvider className="min-h-0">
+        <Sidebar variant="inset">
+          <SidebarHeader>
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              <div className="bg-brand size-6 rounded-md" />
+              <span className="text-sm font-semibold">Vendure</span>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {nav.map(({ icon: Icon, label, active }) => (
+                    <SidebarMenuItem key={label}>
+                      <SidebarMenuButton isActive={active}>
+                        <Icon />
+                        <span>{label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <AppShellHeader>
+            <SidebarTrigger />
+            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+          </AppShellHeader>
+          <AppShellMain>
+            <Dashboard />
+          </AppShellMain>
+        </SidebarInset>
+      </SidebarProvider>
+    </AppShell>
   ),
 };

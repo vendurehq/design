@@ -15,7 +15,9 @@ import type * as React from 'react';
 // the step instead. That asymmetry is intentional, not a gap.
 //
 // The sidebar slot is deliberately unopinionated: drop the full `Sidebar` atom in
-// for a real app, or use `AppShellSidebar` for a lightweight rail.
+// for a real app, or use `AppShellSidebar` for a lightweight rail. Content owns a
+// header + main anatomy so every consumer gets the same scroll boundary and skip
+// link target without coupling the design system to a router or auth provider.
 
 function AppShell({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -40,16 +42,16 @@ function AppShellSidebar({ className, ...props }: React.ComponentProps<'aside'>)
   );
 }
 
-function AppShellContent({ className, ...props }: React.ComponentProps<'main'>) {
+function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <main
+    <div
       data-slot="app-shell-content"
       className={cn(
         // The missing tier: step up to --surface and inset from the canvas so the
         // shell frames the pane on all sides, including a gutter between the
         // sidebar and the pane. Flat by design: the border carries the tier in
         // light mode (see AGENTS.md "flat look"), so no drop shadow.
-        'bg-surface m-3 flex flex-1 flex-col overflow-hidden rounded-xl border border-border/60',
+        'bg-surface m-3 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/60',
         className,
       )}
       {...props}
@@ -57,4 +59,29 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'main'>) 
   );
 }
 
-export { AppShell, AppShellSidebar, AppShellContent };
+function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
+  return (
+    <header
+      data-slot="app-shell-header"
+      className={cn(
+        'flex h-12 shrink-0 items-center gap-2 border-b border-border/60 px-4',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function AppShellMain({ className, id = 'main-content', ...props }: React.ComponentProps<'main'>) {
+  return (
+    <main
+      id={id}
+      tabIndex={-1}
+      data-slot="app-shell-main"
+      className={cn('min-w-0 flex-1 overflow-auto outline-none', className)}
+      {...props}
+    />
+  );
+}
+
+export { AppShell, AppShellSidebar, AppShellContent, AppShellHeader, AppShellMain };

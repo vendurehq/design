@@ -69,7 +69,7 @@ direct dependency on `@base-ui/react`. Keep that file pure named re-exports
 - **Graduation/layer rule**: a component graduates from a consumer into the DS when a second consumer needs it. The layer question is mechanical — exists in the shadcn registry upstream? → scaffold via CLI into `atoms/` (the donor informs the cherry-picking); otherwise → `molecules/`, based on the chosen donor. No composition-depth debate.
 - **Formatters (JSX-or-lib rule)**: renders JSX → `molecules/` (a `<Money>` component is a molecule); pure function → `lib/` (a `formatCurrency()` helper is lib). Same test for anything ambiguous: "does it return JSX?"
 - No barrel files. Wildcard exports only.
-- Peer deps: react, react-dom. next/next-themes/react-hook-form are optional peers.
+- Peer deps: react, react-dom. next/next-themes are optional peers.
 
 ## Guidance pages (molecules)
 
