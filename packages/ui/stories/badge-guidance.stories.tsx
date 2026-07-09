@@ -164,7 +164,7 @@ export const ChoosingAVariant: Story = {
                       {variant === 'brand'
                         ? 'Partner'
                         : variant === 'destructive'
-                          ? 'Revoked'
+                          ? 'Deprecated'
                           : 'Label'}
                     </Badge>
                   </td>

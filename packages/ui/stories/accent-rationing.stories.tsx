@@ -72,7 +72,7 @@ export const ThreeRoles: Story = {
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border p-4">
-            <Badge>Draft</Badge>
+            <Badge>B2B</Badge>
             <p className="mt-3 text-sm font-medium">Neutral is the default</p>
             <p className="text-muted-foreground mt-1 text-xs">
               Most of the interface: text, controls, classification chips, counts. Contrast between
@@ -93,8 +93,8 @@ export const ThreeRoles: Story = {
             <Badge variant="brand">Partner</Badge>
             <p className="mt-3 text-sm font-medium">Brand is rationed</p>
             <p className="text-muted-foreground mt-1 text-xs">
-              The Vendure blue is a signature, not a highlighter. A component opts into it
-              explicitly for an identity label; it is never a default.
+              Brand is a signature, not a highlighter. A component opts into it explicitly for an
+              identity label; it is never a default.
             </p>
           </div>
         </div>
