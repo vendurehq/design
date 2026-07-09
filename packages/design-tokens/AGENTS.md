@@ -13,6 +13,7 @@ Design tokens for the Vendure design system. Consumed by `@vendure-io/ui` and do
 - `.` → TS tokens (`src/tokens/index.ts`)
 - `./css/variables` → raw CSS variables
 - `./css/theme` → full theme CSS (use this in apps)
+- `./css/fonts` → self-hosted `@font-face` rules (Fontsource) for the three font families; theme.css only declares the `--font-*` tokens, it doesn't load font files — import this alongside it
 
 ## Rules
 

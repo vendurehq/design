@@ -76,7 +76,7 @@ export const darkTheme = {
   // step is +0.03; the upper floating tiers step +0.02 so large popover/overlay
   // panels (e.g. the command palette) don't lift too far off the canvas.
   surface: 'oklch(0.18 0.007 231)',
-  'surface-raised': 'oklch(0.20 0.007 231)',
+  'surface-raised': 'oklch(0.2 0.007 231)',
   overlay: 'oklch(0.22 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   card: 'var(--surface)',

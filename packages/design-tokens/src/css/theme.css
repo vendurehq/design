@@ -155,10 +155,10 @@
   --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.25);
   --shadow-none: none;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-heading: "Public Sans", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-heading: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -186,6 +186,59 @@
   --transition-duration-normal: 200ms;
   --transition-duration-slow: 300ms;
   --transition-duration-slower: 500ms;
+  --animate-shimmer: shimmer 1.75s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@utility text-style-page-title {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+@utility text-style-section-title {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+}
+
+@utility text-style-card-title {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+@utility text-style-body {
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@utility text-style-caption {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+@utility text-style-code {
+  font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 @layer base {

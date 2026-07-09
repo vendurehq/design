@@ -1,3 +1,4 @@
 @import "@vendure-io/design-tokens/css/theme";
+@import "@vendure-io/design-tokens/css/fonts";
 @source "../../../packages/ui/src";
 @source "../../../packages/ui/stories";
