@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@vendure-io/ui/components/atoms/dropdown-menu';
+import { getHideableLeafColumns } from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
 import { SlidersHorizontalIcon } from 'lucide-react';
 
 // The column-visibility gear. Lists only hideable columns (`getCanHide()`), so
@@ -34,7 +35,7 @@ function DataTableViewOptions<TData>({
   triggerLabel = 'Columns',
   heading = 'Toggle columns',
 }: DataTableViewOptionsProps<TData>) {
-  const hideableColumns = table.getAllColumns().filter((column) => column.getCanHide());
+  const hideableColumns = getHideableLeafColumns(table);
 
   return (
     <DropdownMenu>

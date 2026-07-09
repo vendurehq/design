@@ -164,7 +164,8 @@ export interface DataTableProps<TData> {
   rows: TData[]; // current page (server) or full set (client). The core never fetches.
   // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
   columns: ColumnDef<TData, any>[]; // `meta` passed through untouched. THE cell/header seam.
-  getRowId?: (row: TData, index: number) => string; // → TanStack getRowId. Recommended with rowSelection.
+  /** TanStack getRowId. Required with server pagination + rowSelection. */
+  getRowId?: (row: TData, index: number) => string;
 
   isLoading?: boolean; // skeleton rows only while `rows` is empty; never blanks populated rows
   skeletonRowCount?: number; // default 10
@@ -188,6 +189,16 @@ export interface DataTableProps<TData> {
    * (matches the issue's `rowActions={(row) => …}`); `ctx` gives the TanStack row + table.
    */
   rowActions?: (row: TData, ctx: { row: Row<TData>; table: Table<TData> }) => React.ReactNode;
+  /**
+   * Right-click accelerator: wraps each row in a context menu whose content is
+   * the returned nodes (author with `ContextMenuItem`/`ContextMenuSeparator`
+   * from the context-menu atom). Unlike `rowActions`, the trigger is the row
+   * itself, so the consumer supplies only the menu items — the core owns the
+   * `ContextMenu` chrome. Additive to `rowActions`: keep the visible `...` button
+   * as the discoverable, keyboard- and touch-accessible path and use this as a
+   * power-user shortcut for the same actions. `ctx` mirrors `rowActions`.
+   */
+  contextActions?: (row: TData, ctx: { row: Row<TData>; table: Table<TData> }) => React.ReactNode;
   /** Replaces the built-in "No results" cell. */
   emptyState?: React.ReactNode;
 

@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontalIcon, SearchIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { ContextMenuItem, ContextMenuSeparator } from '../src/components/atoms/context-menu.tsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -293,6 +294,60 @@ export const RowActions: Story = {
           </DropdownMenuContent>
         </DropdownMenu>
       )}
+    />
+  ),
+};
+
+// One action list, two triggers. `rowActions` renders the discoverable `...`
+// button (keyboard- and touch-accessible); `contextActions` exposes the SAME
+// actions on right-click of the whole row as a power-user accelerator. Driving
+// both from a single `orderActions` list keeps the two menus from drifting.
+const orderActions = (order: Order) => [
+  { label: `View ${order.code}` },
+  { label: 'Edit' },
+  { label: 'Cancel order', destructive: true },
+];
+
+// Row actions reachable two ways — the trailing `...` button AND a right-click
+// context menu on the row. Right-click any row to open the same menu.
+export const RowActionsWithContextMenu: Story = {
+  render: () => (
+    <DataTable<Order>
+      rows={orders}
+      columns={columns}
+      getRowId={(order) => order.id}
+      rowActions={(order) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon" className="size-8">
+                <MoreHorizontalIcon />
+                <span className="sr-only">Open menu for {order.code}</span>
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end">
+            {orderActions(order).map((action) => (
+              <Fragment key={action.label}>
+                {action.destructive && <DropdownMenuSeparator />}
+                <DropdownMenuItem variant={action.destructive ? 'destructive' : 'default'}>
+                  {action.label}
+                </DropdownMenuItem>
+              </Fragment>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      contextActions={(order) =>
+        orderActions(order).map((action) => (
+          <Fragment key={action.label}>
+            {action.destructive && <ContextMenuSeparator />}
+            <ContextMenuItem variant={action.destructive ? 'destructive' : 'default'}>
+              {action.label}
+            </ContextMenuItem>
+          </Fragment>
+        ))
+      }
     />
   ),
 };

@@ -1,9 +1,11 @@
-import { describe, expect, test } from 'bun:test';
+import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
+import type { Column } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { type ColumnDef, DataTable, type Table, type TableOptions } from './data-table.tsx';
 import {
   buildDisplayColumns,
+  getHideableLeafColumns,
   getSelectedOriginals,
   getSelectedRowIds,
   isControlled,
@@ -34,6 +36,10 @@ const columns: ColumnDef<Country>[] = [
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 const count = (markup: string, needle: RegExp) => markup.match(needle)?.length ?? 0;
+
+afterEach(() => {
+  mock.restore();
+});
 
 describe('DataTable capability absence', () => {
   test('no sorting prop → headers render plain (no sort button, no aria-sort)', () => {
@@ -212,6 +218,36 @@ describe('DataTable row selection (controlled source of truth)', () => {
     // The bulk context materialises the selected original via the cross-page cache.
     expect(markup).toContain('Delete 1 (1)');
   });
+
+  test('server-paginated selection without getRowId warns in development', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        pagination={{ page: 1, pageSize: 2, totalItems: 4, onPageChange: () => {} }}
+        rowSelection={{ value: { '0': true }, onChange: () => {} }}
+      />,
+    );
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).toContain('getRowId');
+  });
+
+  test('partial page selection renders a distinct mixed select-all indicator', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+      />,
+    );
+
+    expect(markup).toContain('aria-checked="mixed"');
+    expect(markup).toContain('lucide-minus');
+  });
 });
 
 describe('DataTable column visibility (controlled source of truth)', () => {
@@ -340,6 +376,40 @@ describe('DataTable row actions', () => {
     expect(markup).toContain('Edit Aland Islands');
     expect(markup).toContain('Edit Brazil');
     expect(markup).toContain('Open row actions');
+  });
+});
+
+describe('DataTable context actions', () => {
+  test('contextActions wraps each row as a context-menu trigger without adding a column', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        contextActions={(row) => <button type="button">{`Ctx ${row.name}`}</button>}
+      />,
+    );
+    // Rows still render, and no trailing actions column is added — that's the
+    // job of `rowActions`; the right-click accelerator adds no visible column.
+    expect(markup).toContain('Aland Islands');
+    expect(markup).toContain('Brazil');
+    expect(markup).not.toContain('Open row actions');
+    // Every row became a context-menu trigger.
+    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2);
+  });
+
+  test('contextActions composes with rowActions (button column AND right-click)', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowActions={(row) => <button type="button">{`Edit ${row.name}`}</button>}
+        contextActions={() => <button type="button">Ctx</button>}
+      />,
+    );
+    expect(markup).toContain('Open row actions'); // rowActions column still present
+    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2); // rows are triggers
   });
 });
 
@@ -502,6 +572,23 @@ describe('getSelectedOriginals', () => {
 
   test('deselected ids are excluded', () => {
     expect(getSelectedOriginals({ '1': true, '2': false }, cache)).toEqual([aland]);
+  });
+});
+
+describe('getHideableLeafColumns', () => {
+  const column = (id: string, canHide = true) =>
+    ({ id, getCanHide: () => canHide }) as Column<Country, unknown>;
+
+  test('returns hideable leaf columns and omits grouped parent columns', () => {
+    const parentColumn = column('identity');
+    const nameColumn = column('name');
+    const selectColumn = column('select', false);
+    const table = {
+      getAllColumns: () => [parentColumn, nameColumn, selectColumn],
+      getAllLeafColumns: () => [nameColumn, selectColumn],
+    } as unknown as Table<Country>;
+
+    expect(getHideableLeafColumns(table).map((item) => item.id)).toEqual(['name']);
   });
 });
 

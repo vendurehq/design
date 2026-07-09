@@ -1,4 +1,4 @@
-import type { ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
+import type { Column, ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
 import type { ControlledState } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 
 // Pure, TanStack-shaped logic for the DataTable core. No JSX and no React state,
@@ -32,6 +32,14 @@ export function buildDisplayColumns<TData>(
     ...columns,
     ...(display.actions ? [display.actions] : []),
   ];
+}
+
+/**
+ * Hideable data columns for the column-visibility menu. Group columns are not
+ * listed because their visibility is derived from leaf columns.
+ */
+export function getHideableLeafColumns<TData>(table: Table<TData>): Column<TData, unknown>[] {
+  return table.getAllLeafColumns().filter((column) => column.getCanHide());
 }
 
 /** Resolve a render-prop-or-node slot against the live table instance. */

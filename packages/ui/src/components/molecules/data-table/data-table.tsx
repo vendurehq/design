@@ -20,6 +20,11 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { Checkbox } from '@vendure-io/ui/components/atoms/checkbox';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from '@vendure-io/ui/components/atoms/context-menu';
 import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
 import {
   Table,
@@ -117,12 +122,29 @@ function DataTable<TData>({
   toolbar,
   bulkActions,
   rowActions,
+  contextActions,
   emptyState,
   renderRow,
   setTableOptions,
   labels,
   className,
 }: DataTableProps<TData>) {
+  const warnedMissingPaginatedSelectionRowId = React.useRef(false);
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    rowSelection != null &&
+    pagination != null &&
+    pagination.mode !== 'client' &&
+    getRowId == null &&
+    !warnedMissingPaginatedSelectionRowId.current
+  ) {
+    warnedMissingPaginatedSelectionRowId.current = true;
+    console.warn(
+      '[DataTable] rowSelection with server pagination requires getRowId. ' +
+        "TanStack's default page-index row ids can resolve bulkActions selection to the wrong row after changing pages.",
+    );
+  }
+
   // Resolve labels once per `labels` identity so the derived closures are stable
   // deps for the display-column memo below.
   const l = React.useMemo(
@@ -397,9 +419,8 @@ function DataTable<TData>({
             </TableRow>
           ) : (
             bodyRows.map((row) => {
-              const defaultRow = (
+              const rowNode = (
                 <TableRow
-                  key={row.id}
                   className="group/row"
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                 >
@@ -410,15 +431,26 @@ function DataTable<TData>({
                   ))}
                 </TableRow>
               );
+              // Right-click accelerator: the row itself is the context-menu
+              // trigger, so the consumer supplies only the items and the core
+              // owns the menu chrome.
+              const defaultRow = contextActions ? (
+                <ContextMenu>
+                  <ContextMenuTrigger render={rowNode} />
+                  <ContextMenuContent>
+                    {contextActions(row.original, { row, table })}
+                  </ContextMenuContent>
+                </ContextMenu>
+              ) : (
+                rowNode
+              );
               // Row-render seam: consumers can swap the default row for a
               // full-width utility row or a per-row wrapper the cell grid can't
               // express. Returning `defaultRow` keeps the built-in rendering.
-              return renderRow ? (
+              return (
                 <React.Fragment key={row.id}>
-                  {renderRow(row, { table, columnCount, defaultRow })}
+                  {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
                 </React.Fragment>
-              ) : (
-                defaultRow
               );
             })
           )}
