@@ -54,7 +54,7 @@ function Chip({
     <Badge
       data-slot="chip"
       variant={variant}
-      data-disabled={disabled || undefined}
+      data-disabled={disabled ? '' : undefined}
       className={cn(
         'max-w-full gap-1',
         onRemove && 'pr-1',

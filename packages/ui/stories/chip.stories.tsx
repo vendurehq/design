@@ -36,7 +36,7 @@ export const Static: Story = {
 export const Removable: Story = {
   args: {
     children: 'Removable',
-    onRemove: () => console.log('remove'),
+    onRemove: () => {},
     removeLabel: 'Remove Removable',
   },
 };
@@ -46,7 +46,7 @@ export const WithIcon: Story = {
   args: {
     icon: <TagIcon />,
     children: 'Featured',
-    onRemove: () => console.log('remove'),
+    onRemove: () => {},
     removeLabel: 'Remove Featured',
   },
 };
@@ -65,7 +65,7 @@ export const Disabled: Story = {
   args: {
     children: 'Pending removal',
     disabled: true,
-    onRemove: () => console.log('remove'),
+    onRemove: () => {},
     removeLabel: 'Remove Pending removal',
   },
 };

@@ -51,6 +51,7 @@ function CopyButton({
       className={cn('text-muted-foreground hover:text-foreground', className)}
       onClick={async (event) => {
         onClick?.(event);
+        if (event.defaultPrevented) return;
         const ok = await copy(value);
         if (ok) onCopied?.();
         else onCopyError?.(new Error('Failed to copy to the clipboard'));

@@ -5,8 +5,9 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 type TruncateMode = 'middle' | 'start' | 'none';
 
-/** Threshold below which truncation is a no-op — the value already fits. */
-const TRUNCATE_THRESHOLD = 12;
+// Middle truncation renders 13 chars (8 + ellipsis + 4), so anything at or
+// below that length would lose information without saving space — skip it.
+const TRUNCATE_THRESHOLD = 13;
 
 function truncateId(value: string, mode: TruncateMode): string {
   if (mode === 'none' || value.length <= TRUNCATE_THRESHOLD) return value;
@@ -55,7 +56,15 @@ function IdChip({
       )}
     >
       <span className="truncate">{text}</span>
-      {copyable ? <CopyButton value={value} onCopied={onCopied} className="size-4" /> : null}
+      {/* 16px visual button to match the chip's density, but the ::after inset
+          extends the hit target to 24px for the WCAG 2.2 AA minimum. */}
+      {copyable ? (
+        <CopyButton
+          value={value}
+          onCopied={onCopied}
+          className="relative size-4 after:absolute after:-inset-1"
+        />
+      ) : null}
     </span>
   );
 }

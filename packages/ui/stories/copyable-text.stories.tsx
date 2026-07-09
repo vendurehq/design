@@ -47,8 +47,8 @@ export const StandaloneButton: Story = {
   render: () => (
     <CopyButton
       value="copied via CopyButton"
-      onCopied={() => console.log('copied')}
-      onCopyError={(e) => console.error(e)}
+      onCopied={() => {}}
+      onCopyError={() => {}}
     />
   ),
 };
