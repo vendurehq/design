@@ -35,7 +35,7 @@ Utilities and hooks follow the same pattern:
 
 ```tsx
 import { cn } from "@vendure-io/ui/lib/utils";
-import { useMobile } from "@vendure-io/ui/hooks/use-mobile";
+import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile";
 ```
 
 ## Available Components
@@ -85,15 +85,15 @@ import { slugify, hashString } from "@vendure-io/ui/lib/utils";
 
 ## Hooks
 
-### `useMobile()`
+### `useIsMobile()`
 
 Responsive hook that returns `true` when the viewport is mobile-sized:
 
 ```tsx
-import { useMobile } from "@vendure-io/ui/hooks/use-mobile";
+import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile";
 
 function MyComponent() {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   return isMobile ? <MobileView /> : <DesktopView />;
 }
 ```

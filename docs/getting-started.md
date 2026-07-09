@@ -18,11 +18,10 @@ In your app's main CSS file, add:
 ```css
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@import "shadcn/tailwind.css";
 @source "../../node_modules/@vendure-io/ui/src";
 ```
 
-The first `@import` loads all design tokens, Tailwind v4, and the theme configuration; the second self-hosts the font families the theme references (see [Fonts](#fonts) below). The `shadcn/tailwind.css` import is required because `@vendure-io/ui` components are built on shadcn/ui.
+The first `@import` loads all design tokens, Tailwind v4, the shadcn Tailwind integration required by `@vendure-io/ui`, and the theme configuration; the second self-hosts the font families the theme references (see [Fonts](#fonts) below).
 
 The `@source` directive tells Tailwind v4 to scan the `@vendure-io/ui` package for class names so it generates the correct utility classes. Without this, components will render unstyled. Adjust the relative path based on your CSS file's location relative to `node_modules`.
 
@@ -36,7 +35,6 @@ The `@source` directive tells Tailwind v4 to scan the `@vendure-io/ui` package f
 /* app/globals.css */
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@import "shadcn/tailwind.css";
 @source "../../node_modules/@vendure-io/ui/src";
 ```
 
@@ -81,7 +79,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* src/index.css */
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@import "shadcn/tailwind.css";
 @source "../../node_modules/@vendure-io/ui/src";
 ```
 

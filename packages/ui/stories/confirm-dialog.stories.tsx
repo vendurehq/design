@@ -56,7 +56,7 @@ export const AsyncPending: Story = {
   ),
 };
 
-// Controlled: drive `open`/`onOpenChange` yourself — the portals/EE pattern for
+// Controlled: drive `open`/`onOpenChange` yourself — the shared pattern for
 // opening a confirm from a menu item or programmatically.
 export const Controlled: Story = {
   render: () => {

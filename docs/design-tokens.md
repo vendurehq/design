@@ -13,17 +13,11 @@ The full Tailwind v4 theme. This is what you should import in your app's CSS. It
 - Tailwind CSS v4
 - `tw-animate-css` animations
 - All CSS custom properties (variables)
+- shadcn Tailwind integration required by `@vendure-io/ui`
 - Tailwind theme mapping (`@theme inline`)
 
 ```css
 @import "@vendure-io/design-tokens/css/theme";
-```
-
-If you're using **shadcn/ui** components, add the shadcn Tailwind import after the theme:
-
-```css
-@import "@vendure-io/design-tokens/css/theme";
-@import "shadcn/tailwind.css";
 ```
 
 If you need the **typography plugin** (`prose` classes), add it separately:
@@ -55,7 +49,7 @@ Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for I
 Token values as TypeScript objects for programmatic access:
 
 ```ts
-import { colors, typography, radii, shadows, motion } from "@vendure-io/design-tokens";
+import { brand, fontFamily, radii, shadows, duration } from "@vendure-io/design-tokens";
 ```
 
 ## Available Tokens
@@ -139,9 +133,10 @@ Once you import the theme CSS, all tokens are available as Tailwind utilities:
 ## Using Tokens in TypeScript
 
 ```ts
-import { colors, motion } from "@vendure-io/design-tokens";
+import { brand, duration, lightTheme } from "@vendure-io/design-tokens";
 
 // Access token values programmatically
-const primaryColor = colors.light.primary;
-const easing = motion.easeOut;
+const brandColor = brand[500];
+const primaryColor = lightTheme.primary;
+const fastDuration = duration.fast;
 ```

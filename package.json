@@ -10,7 +10,9 @@
     "lint": "turbo run lint",
     "format": "biome format --write .",
     "check-types": "turbo run check-types",
+    "check-freshness": "turbo run check-freshness",
     "test": "turbo run test",
+    "pack:check": "turbo run pack:check",
     "storybook": "turbo run storybook",
     "clean": "turbo run clean"
   },

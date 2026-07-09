@@ -74,6 +74,18 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        run: bun run check-types
+
+      - name: Test
+        run: bun run test
+
+      - name: Check generated CSS freshness
+        run: bun run check-freshness
+
       - name: Update package version
         run: |
           jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' \
@@ -87,6 +99,10 @@ jobs:
           TOKENS_VERSION=$(jq -r '.version' packages/design-tokens/package.json)
           jq --arg v "^$TOKENS_VERSION" '.dependencies["@vendure-io/design-tokens"] = $v' \
             packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
+
+      - name: Package smoke test
+        run: bun pm pack --dry-run
+        working-directory: packages/ui
 
       - name: Publish
         run: npm publish --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"

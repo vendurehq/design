@@ -30,7 +30,7 @@ export const Default: Story = {
                   <div className="flex flex-col gap-1">
                     <div className="text-sm font-medium">Introduction</div>
                     <p className="text-xs text-muted-foreground leading-snug">
-                      Re-usable components built with Radix UI and Tailwind CSS.
+                      Re-usable components built with Base UI and Tailwind CSS.
                     </p>
                   </div>
                 </NavigationMenuLink>

@@ -16,6 +16,12 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "check-freshness": {
+      "outputs": []
+    },
+    "pack:check": {
+      "outputs": []
+    },
     "storybook": {
       "cache": false,
       "persistent": true

@@ -29,7 +29,7 @@ Import the theme CSS in your app's global stylesheet, along with the fonts CSS t
 Or use the TypeScript tokens directly:
 
 ```ts
-import { colors, typography } from "@vendure-io/design-tokens";
+import { brand, fontFamily, lightTheme } from "@vendure-io/design-tokens";
 ```
 
 ## License

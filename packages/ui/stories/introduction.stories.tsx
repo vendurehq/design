@@ -82,7 +82,6 @@ const AREAS: { area: string; body: string }[] = [
 const CSS_SETUP = `/* your app's main CSS file */
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@import "shadcn/tailwind.css";
 @source "../../node_modules/@vendure-io/ui/src";`;
 
 // ── the page ──────────────────────────────────────────────────────────────────
@@ -100,8 +99,8 @@ export const Overview: Story = {
         </h1>
         <p className="text-muted-foreground mt-3 max-w-2xl text-sm">
           Design tokens and React components built on shadcn/ui, Base UI, and Tailwind v4. One
-          system, consumed by the dashboard, Cloud, and the ecosystem portals, so the same state
-          looks the same everywhere it appears.
+          system, consumed across Vendure applications and ecosystem surfaces, so the same state
+          looks the same wherever it appears.
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="font-mono">

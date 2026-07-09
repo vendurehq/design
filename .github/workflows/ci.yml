@@ -30,11 +30,17 @@ jobs:
       - name: Type check
         run: bun run check-types
 
+      - name: Check generated CSS freshness
+        run: bun run check-freshness
+
       - name: Build
         run: bun run build
 
       - name: Test
         run: bun run test
+
+      - name: Package smoke test
+        run: bun run pack:check
 
       - name: Build Storybook
         run: cd apps/storybook && bun run build

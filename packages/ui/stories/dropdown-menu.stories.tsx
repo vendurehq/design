@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
-import { Cloud, CreditCard, LogOut, Mail, MessageSquare, Plus, Settings, User, UserPlus, Users } from 'lucide-react';
+import { CreditCard, LogOut, Mail, MessageSquare, Plus, Server, Settings, User, UserPlus, Users } from 'lucide-react';
 
 const meta = {
   title: 'Atoms/Menus/DropdownMenu',
@@ -67,7 +67,7 @@ export const Default: Story = {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Cloud />
+          <Server />
           API
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -150,8 +150,8 @@ export const WithSubmenu: Story = {
         </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Cloud />
-          Cloud
+          <Server />
+          Services
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -40,6 +40,7 @@
     "check-freshness": "bun scripts/generate-css.ts && git diff --exit-code src/css/",
     "lint": "biome check src/",
     "check-types": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "pack:check": "bun run build && bun pm pack --dry-run"
   }
 }

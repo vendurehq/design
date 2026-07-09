@@ -92,7 +92,7 @@ export const AlongsideBadge: Story = {
 const ROWS: { name: string; env: string; tone: Tone; state: string }[] = [
   { name: 'checkout-api', env: 'Production', tone: 'success', state: 'Running' },
   { name: 'search-worker', env: 'Production', tone: 'progress', state: 'Deploying' },
-  { name: 'admin-portal', env: 'Staging', tone: 'warning', state: 'Degraded' },
+  { name: 'staff-console', env: 'Staging', tone: 'warning', state: 'Degraded' },
   { name: 'legacy-import', env: 'Staging', tone: 'critical', state: 'Failed' },
   { name: 'analytics-sync', env: 'Production', tone: 'neutral', state: 'Disabled' },
 ];

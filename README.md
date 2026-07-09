@@ -11,7 +11,7 @@
   The design system powering every Vendure surface.
 </h3>
 <h4 align="center">
-  Design tokens and React components built on shadcn/ui, Base UI, and Tailwind CSS v4, consumed by the Vendure dashboard, Cloud, and ecosystem portals.
+  Design tokens and React components built on shadcn/ui, Base UI, and Tailwind CSS v4, consumed across Vendure applications and ecosystem surfaces.
 </h4>
 <h4 align="center">
   <a href="https://docs.vendure.io">Documentation</a> |
