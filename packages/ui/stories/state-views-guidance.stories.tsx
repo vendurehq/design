@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { InboxIcon, PackageIcon, SearchIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { EmptyCollectionIllustration } from '../src/components/molecules/illustrations/empty-collection.tsx';
+import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
 import { ErrorState } from '../src/components/molecules/state-views/error-state.tsx';
 import { LoadingState } from '../src/components/molecules/state-views/loading-state.tsx';
@@ -356,6 +358,55 @@ export const ErrorsOwnTheFailure: Story = {
               title="No orders yet"
               description="When customers place orders, they will appear here."
             />
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 4 · illustrations are for the whole view ──────────────────────────────────
+
+export const IllustrationUsage: Story = {
+  name: '4 · One illustration, once per view',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="An illustration marks the whole view's moment, not a row"
+        intro="EmptyState and ErrorState default to an illustration from molecules/illustrations/*. Match it to the situation (see the Illustrations gallery for the full set and what each one is for), and use exactly one per region — it announces 'this is the moment', which stops being true the instant it repeats. Never drop an illustration into a table row, a list item, or a card inside an otherwise-populated view; those get the icon-chip fallback (`illustration={null}` with an `icon`), or no media at all."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="One illustration, matched to the scenario, owning the whole empty region."
+          >
+            <EmptyState
+              illustration={<NoResultsIllustration />}
+              title="No customers match “acme”"
+              description="Try a different search or clear your filters."
+            >
+              <Button variant="outline" size="sm">
+                Clear filters
+              </Button>
+            </EmptyState>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="An illustration crammed into a table cell reads as clutter, not identity — the icon-chip fallback (or plain text) is what belongs at row scale."
+          >
+            <div className="w-full overflow-hidden rounded-md border text-sm">
+              <div className="text-muted-foreground border-b px-3 py-2 text-xs font-medium uppercase tracking-wide">
+                Orders
+              </div>
+              <div className="flex items-center gap-3 border-b px-3 py-2">
+                <span>#1024</span>
+                <span className="text-muted-foreground">Fulfilled</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2">
+                <EmptyCollectionIllustration size={40} />
+                <span className="text-muted-foreground">No line items</span>
+              </div>
+            </div>
           </Example>
         </div>
       </Section>

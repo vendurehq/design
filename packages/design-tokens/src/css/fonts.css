@@ -1,0 +1,8 @@
+/* Self-hosted font faces for the Vendure design system type scale.
+   css/theme only declares the --font-* family tokens — it doesn't load the
+   font files. Import this alongside css/theme (or css/variables) to render
+   the intended typefaces instead of falling back to system fonts. */
+
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/public-sans";
+@import "@fontsource-variable/geist-mono";

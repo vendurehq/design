@@ -13,3 +13,18 @@ export const duration = {
   slow: '300ms',
   slower: '500ms',
 } as const;
+
+// Named animations — Tailwind `animate-*` utilities. Each key needs a
+// matching entry in `keyframes` below.
+export const animation = {
+  shimmer: 'shimmer 1.75s linear infinite',
+} as const;
+
+// Keyframe steps for the animations above, generated as top-level
+// `@keyframes` blocks alongside the theme.
+export const keyframes = {
+  shimmer: {
+    from: { backgroundPosition: '-200% 0' },
+    to: { backgroundPosition: '200% 0' },
+  },
+} as const;

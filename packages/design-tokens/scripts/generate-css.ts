@@ -2,8 +2,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brand, neutral, success, warning, destructive, info, viz } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
-import { fontFamily, fontSize, fontWeight, letterSpacing } from '../src/tokens/typography.ts';
-import { easing, duration } from '../src/tokens/motion.ts';
+import { fontFamily, fontSize, fontWeight, letterSpacing, textStyles } from '../src/tokens/typography.ts';
+import { easing, duration, animation, keyframes } from '../src/tokens/motion.ts';
 import { radii } from '../src/tokens/radii.ts';
 import { shadows } from '../src/tokens/shadows.ts';
 
@@ -106,6 +106,12 @@ const durationLines = Object.entries(duration).map(
   ([key, value]) => `  --transition-duration-${key}: ${value};`,
 );
 
+// Animation lines — Tailwind animate-* utilities. Each needs a matching
+// @keyframes block, built below.
+const animationLines = Object.entries(animation).map(
+  ([key, value]) => `  --animate-${kebabCase(key)}: ${value};`,
+);
+
 const themeBlock = [
   ...baseColorLines,
   ...colorLines,
@@ -117,7 +123,32 @@ const themeBlock = [
   ...trackingLines,
   ...easeLines,
   ...durationLines,
+  ...animationLines,
 ].join('\n');
+
+// @keyframes blocks for the --animate-* theme entries above.
+function buildKeyframes(name: string, steps: Record<string, Record<string, string>>): string {
+  const stepBlocks = Object.entries(steps).map(([stepName, props]) => {
+    const lines = Object.entries(props).map(([prop, value]) => `    ${kebabCase(prop)}: ${value};`);
+    return `  ${stepName} {\n${lines.join('\n')}\n  }`;
+  });
+  return `@keyframes ${kebabCase(name)} {\n${stepBlocks.join('\n')}\n}`;
+}
+
+const keyframesCss = Object.entries(keyframes)
+  .map(([name, steps]) => buildKeyframes(name, steps as Record<string, Record<string, string>>))
+  .join('\n\n');
+
+// text-style-* utilities — named type compositions (font, size, weight,
+// tracking, leading). Type only, no color.
+function buildTextStyleUtility(name: string, props: Record<string, string>): string {
+  const lines = Object.entries(props).map(([prop, value]) => `  ${kebabCase(prop)}: ${value};`);
+  return `@utility text-style-${name} {\n${lines.join('\n')}\n}`;
+}
+
+const textStyleCss = Object.entries(textStyles)
+  .map(([name, props]) => buildTextStyleUtility(name, props as Record<string, string>))
+  .join('\n\n');
 
 const themeCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
@@ -138,6 +169,10 @@ const themeCss = [
   '@theme inline {',
   themeBlock,
   '}',
+  '',
+  keyframesCss,
+  '',
+  textStyleCss,
   '',
   '@layer base {',
   '  * {',

@@ -85,10 +85,15 @@ export const info = {
   950: 'oklch(0.2 0.06 250)',
 } as const;
 
+// Chart/data-viz categorical slots. Muted (chroma ~0.12) for a subtle read, with
+// lightness held inside both light and dark bands. Slot ORDER is the colorblind-
+// safety mechanism, not cosmetic — it was picked to maximize the minimum adjacent
+// separation under protanopia/deuteranopia (worst adjacent ΔE ≈ 29, target ≥12).
+// Do not reorder into a hue rainbow: putting red next to green collapses to ΔE ~4.
 export const viz = {
-  1: 'oklch(0.5 0.22 250)',
-  2: 'oklch(0.62 0.2 320)',
-  3: 'oklch(0.62 0.19 25)',
-  4: 'oklch(0.65 0.17 145)',
-  5: 'oklch(0.75 0.17 85)',
+  1: 'oklch(0.56 0.12 250)', // blue (brand-adjacent — first series)
+  2: 'oklch(0.64 0.12 145)', // green
+  3: 'oklch(0.51 0.13 320)', // violet
+  4: 'oklch(0.66 0.12 85)', // gold
+  5: 'oklch(0.58 0.13 25)', // red
 } as const;

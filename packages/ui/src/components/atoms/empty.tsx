@@ -59,7 +59,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="empty-title"
-      className={cn("font-heading text-lg font-semibold tracking-tight", className)}
+      className={cn("text-style-section-title", className)}
       {...props}
     />
   )

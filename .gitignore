@@ -33,6 +33,11 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # storybook
 storybook-static
 
+# playwright — visual snapshots are published as a CI artifact, never committed
+apps/storybook/visual-output
+apps/storybook/test-results
+apps/storybook/playwright-report
+
 # vercel
 .vercel
 

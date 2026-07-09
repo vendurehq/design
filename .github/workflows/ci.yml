@@ -38,3 +38,46 @@ jobs:
 
       - name: Build Storybook
         run: cd apps/storybook && bun run build
+
+      - name: Install Playwright browsers
+        run: cd apps/storybook && bunx playwright install --with-deps chromium
+
+      - name: Serve Storybook static build
+        run: |
+          cd apps/storybook
+          bunx http-server storybook-static --port 6006 --silent &
+          echo $! > "$RUNNER_TEMP/storybook-server.pid"
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:6006 > /dev/null && break
+            sleep 1
+          done
+
+      # Advisory for now: the existing story suite carries pre-existing serious/
+      # critical axe violations (unlabeled controls in isolated stories, icon-only
+      # buttons, etc.). The gate runs and logs them but does not block, so it can
+      # be adopted incrementally. Remove continue-on-error to make it enforcing
+      # once the pre-existing debt is triaged. See docs/testing.md.
+      - name: Storybook a11y smoke test
+        run: cd apps/storybook && bun run test-storybook -- --url http://127.0.0.1:6006 --ci
+        continue-on-error: true
+
+      - name: Stop Storybook static server
+        if: always()
+        run: kill "$(cat "$RUNNER_TEMP/storybook-server.pid")" || true
+
+      # Capture-only: screenshot every story and publish the set as an artifact
+      # for manual review. Not a gate — no committed baselines, no pixel diff.
+      - name: Capture visual snapshots
+        run: cd apps/storybook && bunx playwright test
+        continue-on-error: true
+
+      - name: Upload visual snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-snapshots
+          path: |
+            apps/storybook/visual-output
+            apps/storybook/test-results
+          if-no-files-found: ignore
+          retention-days: 14

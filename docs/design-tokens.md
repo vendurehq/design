@@ -4,7 +4,7 @@
 
 ## Exports
 
-The package provides three entry points:
+The package provides four entry points:
 
 ### `@vendure-io/design-tokens/css/theme` (recommended)
 
@@ -39,6 +39,15 @@ Raw CSS custom properties only, without Tailwind or any theme config. Use this i
 
 ```css
 @import "@vendure-io/design-tokens/css/variables";
+```
+
+### `@vendure-io/design-tokens/css/fonts`
+
+Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for Inter, Public Sans, and Geist Mono. `css/theme` only declares the `--font-*` family tokens — it doesn't load the font files, so import this alongside it (or `css/variables`) or the theme falls back to system fonts:
+
+```css
+@import "@vendure-io/design-tokens/css/theme";
+@import "@vendure-io/design-tokens/css/fonts";
 ```
 
 ### `@vendure-io/design-tokens` (TypeScript)
@@ -81,6 +90,11 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Type scale**: `--text-xs` through `--text-5xl` — Tailwind `text-*` utilities
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
+- **Text styles**: named type compositions (font, size, weight, tracking, leading — no color), applied as a single utility class:
+  - `text-style-page-title`, `text-style-section-title`, `text-style-card-title` — heading font
+  - `text-style-body` — body font
+  - `text-style-caption` — small print
+  - `text-style-code` — mono font
 
 The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Public Sans) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
 
@@ -97,6 +111,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - **Easing**: `--ease-default`, `--ease-in`, `--ease-out`, `--ease-in-out`, `--ease-spring` — Tailwind `ease-*` utilities
 - **Duration**: `--transition-duration-instant`, `-fast`, `-normal`, `-slow`, `-slower` — Tailwind `duration-*` utilities (`duration-fast`, `duration-slow`, …)
+- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`)
 
 ## Dark Mode
 

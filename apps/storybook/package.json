@@ -7,7 +7,9 @@
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
     "build": "storybook build",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test-storybook": "test-storybook",
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@vendure-io/design-tokens": "workspace:*",
@@ -16,12 +18,15 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@storybook/addon-themes": "^10.4.6",
     "@storybook/react": "^10.4.6",
     "@storybook/react-vite": "^10.4.6",
+    "@storybook/test-runner": "^0.24.4",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "axe-playwright": "^2.2.2",
     "storybook": "^10.4.6",
     "tailwindcss": "^4.1.18",
     "vite": "^6.3.5"
