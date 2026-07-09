@@ -5,6 +5,20 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 type TruncateMode = 'middle' | 'start' | 'none';
 
+/**
+ * Shared chrome for the identifier-chip family (`IdChip`, `AnonymizedToken`): a
+ * bordered, `bg-muted`, monospace `text-xs` pill sized to its content. Kept in
+ * one place so the two chips can't drift apart — only their *contents* differ
+ * (a plain value vs a blurred, reveal-on-hover secret).
+ */
+function chipChromeClass(copyable: boolean, className?: string): string {
+  return cn(
+    'inline-flex w-fit items-center gap-1 rounded-md border bg-muted py-0.5 pl-1.5 font-mono text-xs',
+    copyable ? 'pr-0.5' : 'pr-1.5',
+    className,
+  );
+}
+
 // Middle truncation renders 13 chars (8 + ellipsis + 4), so anything at or
 // below that length would lose information without saving space — skip it.
 const TRUNCATE_THRESHOLD = 13;
@@ -46,15 +60,7 @@ function IdChip({
   const text = display ?? truncateId(value, truncate);
 
   return (
-    <span
-      data-slot="id-chip"
-      title={value}
-      className={cn(
-        'inline-flex w-fit items-center gap-1 rounded-md border bg-muted py-0.5 pl-1.5 font-mono text-xs',
-        copyable ? 'pr-0.5' : 'pr-1.5',
-        className,
-      )}
-    >
+    <span data-slot="id-chip" title={value} className={chipChromeClass(copyable, className)}>
       <span className="truncate">{text}</span>
       {/* 16px visual button to match the chip's density, but the ::after inset
           extends the hit target to 24px for the WCAG 2.2 AA minimum. */}
@@ -69,5 +75,5 @@ function IdChip({
   );
 }
 
-export { IdChip };
+export { chipChromeClass, IdChip };
 export type { IdChipProps };

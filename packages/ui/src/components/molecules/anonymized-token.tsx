@@ -4,6 +4,7 @@ import {
   CopyButton,
   type CopyButtonProps,
 } from '@vendure-io/ui/components/molecules/copyable-text';
+import { chipChromeClass } from '@vendure-io/ui/components/molecules/id-chip';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useState } from 'react';
@@ -117,7 +118,7 @@ function AnonymizedToken({
     <span
       data-slot="anonymized-token"
       role="group"
-      className={cn('inline-flex w-fit max-w-full items-center gap-1.5', className)}
+      className={chipChromeClass(copyable, className)}
       onMouseEnter={(event) => {
         onMouseEnter?.(event);
         if (revealOnHover) setPreviewRevealed(true);
@@ -138,11 +139,14 @@ function AnonymizedToken({
       }}
       {...props}
     >
+      {/* Blur is the only thing that sets a token apart from a plain `IdChip`;
+          the pill chrome is shared. No `overflow-hidden` here — it would clip
+          the blur halo — and the full value is never surfaced via `title`. */}
       <code
         data-slot="anonymized-token-value"
         aria-hidden="true"
         data-revealed={showRevealed || undefined}
-        className="bg-muted text-foreground inline-block w-[15ch] overflow-hidden rounded-md px-1.5 py-0.5 text-center font-mono text-sm whitespace-nowrap blur-[1px] transition-[background-color,filter] data-[revealed]:bg-muted/70 data-[revealed]:blur-none"
+        className="blur-[1px] transition-[filter] data-[revealed]:blur-none"
       >
         {preview}
       </code>
@@ -155,6 +159,7 @@ function AnonymizedToken({
           onCopyError={onCopyError}
           copyLabel={copyLabel}
           copiedLabel={copiedLabel}
+          className="relative size-4 after:absolute after:-inset-1"
         />
       ) : null}
     </span>
