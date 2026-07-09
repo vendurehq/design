@@ -303,11 +303,16 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
 }
 
 function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+  // The inset variant is our recessed content pane, built on the surface ramp: it
+  // steps up to --surface while the wrapper stays on --background, so the shell
+  // recedes and cards (--surface-raised) lift off the pane. A border carries the
+  // tier in light mode where the ramp collapses to white; flat by design, no drop
+  // shadow (see AGENTS.md "flat look"). The default variant stays flush on canvas.
   return (
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border/60 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className
       )}
       {...props}
