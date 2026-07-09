@@ -9,8 +9,7 @@
     "build": "storybook build",
     "check-types": "tsc --noEmit",
     "test-storybook": "test-storybook",
-    "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots"
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@vendure-io/design-tokens": "workspace:*",

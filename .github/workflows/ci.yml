@@ -65,27 +65,19 @@ jobs:
         if: always()
         run: kill "$(cat "$RUNNER_TEMP/storybook-server.pid")" || true
 
-      - name: Check for visual regression baselines
-        id: visual-baselines
-        run: |
-          cd apps/storybook
-          if [ -d visual/__screenshots__/linux ] && [ -n "$(ls -A visual/__screenshots__/linux 2>/dev/null)" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Visual regression tests
+      # Capture-only: screenshot every story and publish the set as an artifact
+      # for manual review. Not a gate — no committed baselines, no pixel diff.
+      - name: Capture visual snapshots
         run: cd apps/storybook && bunx playwright test
-        continue-on-error: ${{ steps.visual-baselines.outputs.exists != 'true' }}
+        continue-on-error: true
 
-      - name: Upload visual regression output
+      - name: Upload visual snapshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: visual-regression-output
+          name: visual-snapshots
           path: |
-            apps/storybook/visual/__screenshots__
+            apps/storybook/visual-output
             apps/storybook/test-results
           if-no-files-found: ignore
           retention-days: 14

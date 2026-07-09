@@ -1,13 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Visual baselines are captured on Linux (CI) only, see visual/visual.spec.ts and docs/testing.md.
+// Capture-only visual snapshots published as a CI artifact, see
+// visual/visual.spec.ts and docs/testing.md. No committed baselines.
 export default defineConfig({
   testDir: './visual',
-  snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{arg}{ext}',
   timeout: 30_000,
-  expect: {
-    toHaveScreenshot: { maxDiffPixelRatio: 0.02 },
-  },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
