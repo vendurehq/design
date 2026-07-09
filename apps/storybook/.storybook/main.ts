@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 const config: StorybookConfig = {
   stories: ['../../../packages/ui/stories/**/*.stories.@(ts|tsx)'],
-  addons: ['@storybook/addon-themes'],
+  addons: ['@storybook/addon-themes', '@storybook/addon-mcp'],
   framework: {
     name: '@storybook/react-vite',
     options: {},
