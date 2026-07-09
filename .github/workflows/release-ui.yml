@@ -52,6 +52,14 @@ jobs:
               echo "Prerelease versions must start with a named npm dist-tag, e.g. alpha, beta, rc, or next." >&2
               exit 1
             fi
+          else
+            # Stable release: keep `latest` on the newest major; route older majors to v<major>.
+            RELEASE_MAJOR="${VERSION_WITHOUT_BUILD%%.*}"
+            CURRENT_LATEST="$(npm view @vendure-io/ui@latest version 2>/dev/null || echo "0.0.0")"
+            CURRENT_MAJOR="${CURRENT_LATEST%%.*}"
+            if [[ "$RELEASE_MAJOR" =~ ^[0-9]+$ && "$CURRENT_MAJOR" =~ ^[0-9]+$ && "$RELEASE_MAJOR" -lt "$CURRENT_MAJOR" ]]; then
+              NPM_TAG="v${RELEASE_MAJOR}"
+            fi
           fi
 
           {
@@ -59,6 +67,19 @@ jobs:
             echo "NPM_TAG=$NPM_TAG"
             echo "IS_PRERELEASE=$IS_PRERELEASE"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Determine release branch
+        id: relbranch
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          TARGET="$(gh release view "$GITHUB_REF_NAME" --json targetCommitish --jq .targetCommitish 2>/dev/null || echo "")"
+          if [[ -n "$TARGET" ]] && git ls-remote --exit-code --heads origin "$TARGET" >/dev/null 2>&1; then
+            echo "branch=$TARGET" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=" >> "$GITHUB_OUTPUT"
+            echo "::warning::Release target '$TARGET' is not a branch; skipping version bump-back."
+          fi
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -111,13 +132,16 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit version bump
+        if: steps.relbranch.outputs.branch != ''
         run: |
+          BRANCH="${{ steps.relbranch.outputs.branch }}"
           git config user.name "${{ steps.bot-token.outputs.app-slug }}[bot]"
           git config user.email "${{ steps.get-user.outputs.user-id }}+${{ steps.bot-token.outputs.app-slug }}[bot]@users.noreply.github.com"
-          git checkout -- packages/ui/package.json
+          git checkout -- .
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
           jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' \
             packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
           git add packages/ui/package.json
           git commit -m "chore(ui): bump version to ${{ steps.version.outputs.VERSION }}"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git push origin "HEAD:$BRANCH"
