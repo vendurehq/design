@@ -4,14 +4,14 @@ import { radii } from './radii.js';
 export const lightTheme = {
   background: neutral[50],
   foreground: neutral[950],
-  // Surface ramp (ADR 0001). Light mode deliberately collapses the three upper
-  // tiers to white — tier identity comes from the canvas showing through gaps
-  // and from overlay shadows, not from lightness steps.
+  // Surface ramp: light mode deliberately collapses the three upper tiers to
+  // white — tier identity comes from the canvas showing through gaps and from
+  // overlay shadows, not from lightness steps.
   surface: 'oklch(1 0 0)',
   'surface-raised': 'oklch(1 0 0)',
   overlay: 'oklch(1 0 0)',
   inset: 'color-mix(in oklab, black 5%, transparent)',
-  card: 'var(--surface)',
+  card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': neutral[950],
   popover: 'var(--overlay)',
   'popover-foreground': neutral[950],
@@ -72,14 +72,16 @@ export const lightTheme = {
 export const darkTheme = {
   background: neutral[950],
   foreground: 'oklch(0.92 0.004 231)',
-  // Dark mode expresses all four tiers through lightness. The canvas→surface
-  // step is +0.03; the upper floating tiers step +0.02 so large popover/overlay
-  // panels (e.g. the command palette) don't lift too far off the canvas.
-  surface: 'oklch(0.18 0.007 231)',
-  'surface-raised': 'oklch(0.2 0.007 231)',
-  overlay: 'oklch(0.22 0.007 231)',
+  // Dark mode expresses all four tiers through lightness. Steps of ~+0.04
+  // (canvas→surface→raised) keep each plane perceptibly lighter than the one
+  // below, so a nested card visibly lifts off its pane instead of separating by
+  // border alone. Overlay steps a smaller +0.02: its shadow already sets it
+  // apart, and it keeps large palettes from lifting too far off the canvas.
+  surface: 'oklch(0.19 0.007 231)',
+  'surface-raised': 'oklch(0.23 0.007 231)',
+  overlay: 'oklch(0.25 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
-  card: 'var(--surface)',
+  card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.92 0.004 231)',
   popover: 'var(--overlay)',
   'popover-foreground': 'oklch(0.95 0.004 231)',
