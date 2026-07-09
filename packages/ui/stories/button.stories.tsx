@@ -74,3 +74,14 @@ export const Loading: Story = {
 export const Disabled: Story = {
   args: { disabled: true, children: 'Disabled' },
 };
+
+// Passing `render` swaps the underlying element for an anchor. The Button
+// defaults nativeButton to false in this case, so Base UI doesn't warn.
+export const AsLink: Story = {
+  args: {
+    variant: 'outline',
+    // biome-ignore lint/a11y/useAnchorContent: Button injects the label via render
+    render: <a href="https://vendure.io" />,
+    children: 'Rendered as a link',
+  },
+};
