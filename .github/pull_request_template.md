@@ -13,7 +13,7 @@
 
 Adding or changing a molecule? A component is not done until Storybook says when to reach for it.
 
-- [ ] The Storybook story includes a usage-guidance section: when to use it, when not to, and how it composes (decisions, not just a prop table)
+- [ ] The molecule has a dedicated Guidance page (`stories/<name>-guidance.stories.tsx`, `Molecules/<Name>/Guidance`): when to use it, when not to, and how to choose against its siblings (decisions, not a prop table), or the PR states why there is no decision layer (see `packages/ui/AGENTS.md` → Guidance pages)
 - [ ] Any state semantics follow the state dictionary (Molecules / StatusBadge / Guidance)
 - [ ] Color follows accent rationing (Foundations / Accent Rationing): neutral by default, tone for state, brand only for an identity moment
 

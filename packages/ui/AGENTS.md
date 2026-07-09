@@ -79,8 +79,8 @@ Every molecule with a decision layer ships a dedicated Guidance story page along
 Conventions (match the existing pages, e.g. `stories/status-badge-guidance.stories.tsx`):
 
 - File: `stories/<name>-guidance.stories.tsx`, meta is title-only: `Molecules/<Name>/Guidance`.
-- File doc comment starts with "Guidance, not props." — the page rules on decisions (when to use it, when not to, do/don'ts); the regular stories page documents the API.
-- Content is data-driven const arrays rendered through local `Section`/`Example` (do/don't) helpers copied from an existing guidance page — duplicated per file, no shared import.
+- File doc comment starts with "Guidance, not props.": the page rules on decisions (when to use it, when not to, do/don'ts); the regular stories page documents the API.
+- Content is data-driven const arrays rendered through local `Section`/`Example` (do/don't) helpers copied from an existing guidance page (duplicated per file, no shared import).
 - Stories use numbered display names (`name: '1 · …'`), render live DS components in realistic commerce scenarios, and cross-reference sibling guidance pages in prose.
 - One page can cover a family when the decision is shared (StateViews covers Empty/Error/Loading; DateTime covers RelativeTime).
 - State words only on StatusBadge; color follows accent rationing; terminology follows `CONTEXT.md`.
