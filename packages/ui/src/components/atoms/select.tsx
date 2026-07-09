@@ -71,8 +71,27 @@ function SelectContent({
     SelectPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset" | "alignItemWithTrigger"
   >) {
+  // Force the popup to remount when the set of items changes. Base UI's Select
+  // keeps an internal item registry that doesn't refresh when items change
+  // while the controlled value stays the same (e.g. a value="" fire-and-forget
+  // pattern used for state transitions), leaving stale items selectable.
+  // Re-keying on the children's values remounts the popup so items re-register.
+  // Only inspects top-level children — items nested in a SelectGroup or
+  // fragment won't contribute to the key.
+  const childrenKey = React.useMemo(
+    () =>
+      React.Children.toArray(children)
+        .map((child) =>
+          React.isValidElement(child)
+            ? String((child.props as { value?: unknown }).value ?? child.key)
+            : ""
+        )
+        .join("|"),
+    [children]
+  )
+
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal key={childrenKey}>
       <SelectPrimitive.Positioner
         side={side}
         sideOffset={sideOffset}

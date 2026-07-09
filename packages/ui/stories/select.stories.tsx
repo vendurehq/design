@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useState } from 'react';
+import { Button } from '../src/components/atoms/button.tsx';
 import {
   Select,
   SelectContent,
@@ -36,6 +38,48 @@ export const Default: Story = {
           </SelectGroup>
         </SelectContent>
       </Select>
+    );
+  },
+};
+
+// Swapping the item set while the controlled value stays "" exercises the
+// SelectContent remount fix: without it, Base UI's stale item registry would
+// keep offering the previous fruit set.
+export const DynamicItems: Story = {
+  render: function SelectDynamicItems() {
+    const fruits = ['Apple', 'Banana', 'Blueberry'];
+    const vegetables = ['Carrot', 'Potato', 'Spinach'];
+    const [items, setItems] = useState(fruits);
+
+    return (
+      <div className="flex flex-col items-start gap-3">
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => setItems(fruits)}>
+            Fruits
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setItems(vegetables)}
+          >
+            Vegetables
+          </Button>
+        </div>
+        <Select value="">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select an item" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {items.map((item) => (
+                <SelectItem key={item} value={item.toLowerCase()}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
     );
   },
 };
