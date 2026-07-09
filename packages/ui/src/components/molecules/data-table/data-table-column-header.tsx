@@ -45,12 +45,14 @@ function DataTableColumnHeader<TData, TValue>({
       {...props}
     >
       {children}
+      {/* Active sort reads at full intensity; the idle affordance stays faint so
+          it hints without competing with the header label. */}
       {sorted === 'asc' ? (
         <ArrowUpIcon />
       ) : sorted === 'desc' ? (
         <ArrowDownIcon />
       ) : (
-        <ChevronsUpDownIcon className="text-muted-foreground" />
+        <ChevronsUpDownIcon className="text-muted-foreground/40" />
       )}
     </Button>
   );

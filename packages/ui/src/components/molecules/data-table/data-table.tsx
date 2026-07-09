@@ -166,12 +166,19 @@ function DataTable<TData>({
           id: 'select',
           enableSorting: false,
           enableHiding: false,
+          // The checkboxes stay hidden until they're relevant: a header/row
+          // checkbox reveals on hover of its row (the enclosing `group/*`), on
+          // keyboard focus, or once it carries a checked/indeterminate state —
+          // so an idle table reads as content, not a selection grid. They're
+          // floated absolutely over the (zero-width) select cell so an empty
+          // selection reserves no gutter — no left gap to read as a bug.
           header: ({ table }) => (
             <Checkbox
               checked={table.getIsAllPageRowsSelected()}
               indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
               onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
               aria-label={l.selectAllRows}
+              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
             />
           ),
           cell: ({ row }) => (
@@ -180,6 +187,7 @@ function DataTable<TData>({
               disabled={!row.getCanSelect()}
               onCheckedChange={(checked) => row.toggleSelected(checked)}
               aria-label={l.selectRow(row.index)}
+              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
             />
           ),
         }
@@ -259,6 +267,17 @@ function DataTable<TData>({
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
 
+  // The select checkbox is floated absolutely over a zero-width cell, so the
+  // gutter it needs is folded into the leading data column as left padding —
+  // an idle table reads as an intentional indent, not an empty checkbox cell,
+  // and the revealed checkbox never overlaps the first column's content.
+  const leadingColumnId =
+    rowSelection != null
+      ? table.getVisibleLeafColumns().find((column) => column.id !== 'select')?.id
+      : undefined;
+  const columnClass = (id: string): string | undefined =>
+    id === 'select' ? 'relative w-0 p-0' : id === leadingColumnId ? 'pl-8' : undefined;
+
   const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
   const hasFilterMenu = Boolean(filters?.columns && filters.columns.length > 0);
   const showControls = toolbar != null || columnVisibility != null || hasFilterMenu;
@@ -307,7 +326,7 @@ function DataTable<TData>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="group/header-row">
               {headerGroup.headers.map((headerCell) => {
                 const content = headerCell.isPlaceholder
                   ? null
@@ -316,6 +335,7 @@ function DataTable<TData>({
                   <TableHead
                     key={headerCell.id}
                     aria-sort={ariaSort(sorting != null, headerCell.column)}
+                    className={columnClass(headerCell.column.id)}
                   >
                     {sorting != null && !headerCell.isPlaceholder ? (
                       <DataTableColumnHeader
@@ -356,9 +376,13 @@ function DataTable<TData>({
           ) : (
             bodyRows.map((row) => {
               const defaultRow = (
-                <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined}>
+                <TableRow
+                  key={row.id}
+                  className="group/row"
+                  data-state={row.getIsSelected() ? 'selected' : undefined}
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className={columnClass(cell.column.id)}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
