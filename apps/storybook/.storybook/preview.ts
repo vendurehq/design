@@ -13,6 +13,11 @@ const preview: Preview = {
     }),
   ],
   parameters: {
+    options: {
+      storySort: {
+        order: ['Introduction', 'Foundations', 'Atoms', 'Molecules', '*'],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
