@@ -1,12 +1,25 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { AccessDeniedIllustration } from '../src/components/molecules/illustrations/access-denied.tsx';
 import { EmptyCollectionIllustration } from '../src/components/molecules/illustrations/empty-collection.tsx';
+import { EmptyDatabaseIllustration } from '../src/components/molecules/illustrations/empty-database.tsx';
+import { EmptyMediaIllustration } from '../src/components/molecules/illustrations/empty-media.tsx';
 import { ErrorIllustration } from '../src/components/molecules/illustrations/error.tsx';
 import { FirstRunIllustration } from '../src/components/molecules/illustrations/first-run.tsx';
+import { NoActivityIllustration } from '../src/components/molecules/illustrations/no-activity.tsx';
+import { NoDeploymentsIllustration } from '../src/components/molecules/illustrations/no-deployments.tsx';
+import { NoDocumentsIllustration } from '../src/components/molecules/illustrations/no-documents.tsx';
+import { NoKeysIllustration } from '../src/components/molecules/illustrations/no-keys.tsx';
+import { NoLogsIllustration } from '../src/components/molecules/illustrations/no-logs.tsx';
+import { NoMembersIllustration } from '../src/components/molecules/illustrations/no-members.tsx';
+import { NoNotificationsIllustration } from '../src/components/molecules/illustrations/no-notifications.tsx';
 import { NoOrdersIllustration } from '../src/components/molecules/illustrations/no-orders.tsx';
+import { NoPluginsIllustration } from '../src/components/molecules/illustrations/no-plugins.tsx';
 import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { NotFoundIllustration } from '../src/components/molecules/illustrations/not-found.tsx';
 import { OfflineIllustration } from '../src/components/molecules/illustrations/offline.tsx';
+import { PendingApprovalIllustration } from '../src/components/molecules/illustrations/pending-approval.tsx';
+import { UploadDropzoneIllustration } from '../src/components/molecules/illustrations/upload-dropzone.tsx';
 
 /**
  * The full signature illustration set. Each one is a hand-authored inline
@@ -61,6 +74,71 @@ const SET: { name: string; use: string; render: () => ReactNode }[] = [
     name: 'FirstRunIllustration',
     use: "A genuine onboarding moment — a feature that's never been set up.",
     render: () => <FirstRunIllustration />,
+  },
+  {
+    name: 'EmptyMediaIllustration',
+    use: 'An empty asset/media library or folder.',
+    render: () => <EmptyMediaIllustration />,
+  },
+  {
+    name: 'UploadDropzoneIllustration',
+    use: 'A drag-and-drop upload target with nothing dropped yet.',
+    render: () => <UploadDropzoneIllustration />,
+  },
+  {
+    name: 'NoMembersIllustration',
+    use: "A team/members list that's empty or awaiting invites.",
+    render: () => <NoMembersIllustration />,
+  },
+  {
+    name: 'NoKeysIllustration',
+    use: 'No API keys or access tokens created yet.',
+    render: () => <NoKeysIllustration />,
+  },
+  {
+    name: 'NoDocumentsIllustration',
+    use: 'No licenses, invoices, or certificates issued yet.',
+    render: () => <NoDocumentsIllustration />,
+  },
+  {
+    name: 'NoPluginsIllustration',
+    use: 'No plugins or extensions installed.',
+    render: () => <NoPluginsIllustration />,
+  },
+  {
+    name: 'NoActivityIllustration',
+    use: 'An audit log, history, or timeline with no entries yet.',
+    render: () => <NoActivityIllustration />,
+  },
+  {
+    name: 'NoNotificationsIllustration',
+    use: "An empty notifications panel — you're all caught up.",
+    render: () => <NoNotificationsIllustration />,
+  },
+  {
+    name: 'AccessDeniedIllustration',
+    use: 'A permission/authorization failure (403) — pair with "Go back", not retry.',
+    render: () => <AccessDeniedIllustration />,
+  },
+  {
+    name: 'PendingApprovalIllustration',
+    use: 'An invitation or account awaiting approval/provisioning.',
+    render: () => <PendingApprovalIllustration />,
+  },
+  {
+    name: 'NoDeploymentsIllustration',
+    use: 'An environment that has never been deployed.',
+    render: () => <NoDeploymentsIllustration />,
+  },
+  {
+    name: 'EmptyDatabaseIllustration',
+    use: 'No database provisioned yet, or no backups.',
+    render: () => <EmptyDatabaseIllustration />,
+  },
+  {
+    name: 'NoLogsIllustration',
+    use: 'An empty log stream — nothing captured yet.',
+    render: () => <NoLogsIllustration />,
   },
 ];
 
