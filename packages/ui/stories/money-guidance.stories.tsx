@@ -70,7 +70,7 @@ const PRINCIPLES: { n: number; title: string; body: string }[] = [
   {
     n: 1,
     title: 'Pass the minor units, untouched',
-    body: 'The API returns amounts as integer minor units (2500 is $25.00, not 25). Hand `value={2500}` straight to Money; it scales minor→major internally. Pre-dividing by 100 in the component is the enterprise-portal Price bug: it is wrong for JPY (0 decimals) and BHD (3), and it re-implements what Intl already knows.',
+    body: 'The API returns amounts as integer minor units (2500 is $25.00, not 25). Hand `value={2500}` straight to Money; it scales minor→major internally. Pre-dividing by 100 at the call site is wrong for JPY (0 decimals) and BHD (3), and it re-implements what Intl already knows.',
   },
   {
     n: 2,

@@ -29,9 +29,9 @@ import {
  * TablePagination, and Chip into a working collection view. This page rules on
  * when to reach for it versus composing those primitives yourself, on which
  * capabilities to switch on (each is off until its config is passed), on who owns
- * the state behind every capability — the consumer owns URL, fetching, and
- * persistence; the core never fetches — and on where the line falls between this
- * core and the dashboard's richer table. For the prop-by-prop API, see the
+ * the state behind every capability (the consumer owns URL, fetching, and
+ * persistence; the core never fetches), and on where the line falls between this
+ * core and richer consumer table shells. For the prop-by-prop API, see the
  * DataTable stories.
  */
 const meta = {
@@ -135,7 +135,7 @@ const REACH_FOR: ReachRow[] = [
   {
     need: 'A short, static reference grid (no sorting, no selection)',
     reach: 'Table atom',
-    why: "Rows you only read. DataTable's column model, sort engine, and selection cache are dead weight here — render the atom directly.",
+    why: "Rows you only read. DataTable's column model, sort engine, and selection cache are dead weight here. Render the atom directly.",
   },
   {
     need: 'A list page whose only interaction is prev/next paging',
@@ -145,7 +145,7 @@ const REACH_FOR: ReachRow[] = [
   {
     need: 'A single entity or settings screen',
     reach: 'PageHeader alone',
-    why: 'No collection at all. There is nothing to filter or paginate, so there is no DataTable to reach for — see the PageHeader guidance.',
+    why: 'No collection at all. There is nothing to filter or paginate, so there is no DataTable to reach for. See the PageHeader guidance.',
   },
 ];
 
@@ -161,7 +161,7 @@ const CAPABILITIES: CapabilityRow[] = [
     capability: 'rowSelection',
     enableWhen:
       'A bulkActions overlay or a selection-consuming rowAction will act on the checked rows.',
-    skipWhen: 'Nothing consumes the selection — dead checkboxes that lead nowhere.',
+    skipWhen: 'Nothing consumes the selection: dead checkboxes that lead nowhere.',
   },
   {
     capability: 'filters',
@@ -173,12 +173,12 @@ const CAPABILITIES: CapabilityRow[] = [
     capability: 'columnVisibility',
     enableWhen:
       'The table is wide enough that hiding columns is a real need, and you persist the choice.',
-    skipWhen: 'A handful of columns that always fit — the gear is clutter.',
+    skipWhen: 'A handful of columns that always fit; the gear is clutter.',
   },
   {
     capability: 'pagination',
     enableWhen: 'The backend paginates. Always controlled: `page`/`onPageChange` are required.',
-    skipWhen: 'The full set is already in `rows` and short — render every row, no footer.',
+    skipWhen: 'The full set is already in `rows` and short. Render every row, no footer.',
   },
 ];
 
@@ -208,7 +208,7 @@ const OWNERSHIP: OwnershipRow[] = [
   {
     state: 'pagination',
     controlled: 'Always controlled (URL)',
-    job: 'Own `page`/`pageSize` in the route and refetch on change — 1-based, no uncontrolled branch.',
+    job: 'Own `page`/`pageSize` in the route and refetch on change. Pagination is 1-based, with no uncontrolled branch.',
   },
 ];
 
@@ -228,7 +228,7 @@ const DASHBOARD_MAP: DashboardRow[] = [
   {
     capability: 'Faceted filters, global search, saved views, refresh',
     lives: 'Layered via slot',
-    how: 'Rendered into `toolbar(table)` — a render-prop over the live table — driving `column.setFilterValue` and friends.',
+    how: 'Rendered into `toolbar(table)`, a render-prop over the live table, driving `column.setFilterValue` and friends.',
   },
   {
     capability: 'Bulk actions (permissions, confirm, registry merge)',
@@ -276,7 +276,7 @@ const WHAT_ITS_NOT: NotRow[] = [
       'Operator values are opaque. The core stores and renders them as chips; the backend decides what `contains` or `between` means.',
   },
   {
-    myth: 'The dashboard table',
+    myth: 'A consumer table shell',
     reality:
       'Registries, permissions, GraphQL, and extensions resolve in the shell before props reach the core. This is the presentation and interaction engine only.',
   },
@@ -290,7 +290,7 @@ export const WhenToReachForIt: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Reach for DataTable when you need the engine"
-        intro="DataTable is not a fourth primitive next to ListHeader, the Table atom, and TablePagination — it is the molecule that assembles all three around one TanStack instance. Reach for it when you need sorting, selection, filtering, column visibility, or server pagination over a real collection. Compose the primitives yourself only when you deliberately do not want that engine: a static grid the user only reads, or a paginated list with no columns to model."
+        intro="DataTable is not a fourth primitive next to ListHeader, the Table atom, and TablePagination. It is the molecule that assembles all three around one TanStack instance. Reach for it when you need sorting, selection, filtering, column visibility, or server pagination over a real collection. Compose the primitives yourself only when you deliberately do not want that engine: a static grid the user only reads, or a paginated list with no columns to model."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -315,8 +315,8 @@ export const WhenToReachForIt: Story = {
       </Section>
 
       <Section
-        title="The engine, or a plain Table — not the engine for a plain Table"
-        intro="A collection you interact with is a DataTable: pass rows and columns, switch on the capabilities you need, and the header, sort affordances, and footer come with it. A short reference grid you only read is the Table atom — wrapping it in DataTable stands up a column model and selection cache for rows that never move."
+        title="The engine, or a plain Table"
+        intro="A collection you interact with is a DataTable: pass rows and columns, switch on the capabilities you need, and the header, sort affordances, and footer come with it. A short reference grid you only read is the Table atom. Wrapping it in DataTable stands up a column model and selection cache for rows that never move."
       >
         <div className="grid gap-3 lg:grid-cols-2">
           <Example
@@ -340,7 +340,7 @@ export const WhenToReachForIt: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="Three fixed rows nobody sorts or selects. DataTable's engine is dead weight — render the Table atom directly and keep the surface honest about what it does."
+            caption="Three fixed rows nobody sorts or selects. DataTable's engine is dead weight. Render the Table atom directly and keep the surface honest about what it does."
           >
             <Table>
               <TableHeader>
@@ -375,7 +375,7 @@ export const Capabilities: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Presence of the config is the only switch"
-        intro="Every capability is off until you pass its config, and passing the config turns on both the behavior and its chrome: `sorting` makes headers sortable, `rowSelection` adds the checkbox column, `pagination` renders the footer. There are no feature flags and no disabled placeholders — a capability you do not wire simply is not there. So wire only what a user can act on."
+        intro="Every capability is off until you pass its config, and passing the config turns on both the behavior and its chrome: `sorting` makes headers sortable, `rowSelection` adds the checkbox column, `pagination` renders the footer. There are no feature flags and no disabled placeholders. A capability you do not wire simply is not there. So wire only what a user can act on."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -456,7 +456,7 @@ export const ControlledState: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Controlled means the prop is the source of truth every render"
-        intro="Each capability is either controlled — you pass `value` and `onChange`, and the prop drives every render — or uncontrolled, where you pass `defaultValue` and the core owns the state. Controlled is not a seed: the core reads `value` on every render, so pushing new state from the URL, a saved view, or a reset flows straight through. The consumer owns the URL, the fetching, and any persistence; DataTable renders the numbers it is handed and never fetches."
+        intro="Each capability is either controlled, where you pass `value` and `onChange` and the prop drives every render, or uncontrolled, where you pass `defaultValue` and the core owns the state. Controlled is not a seed: the core reads `value` on every render, so pushing new state from the URL, a saved view, or a reset flows straight through. The consumer owns the URL, the fetching, and any persistence; DataTable renders the numbers it is handed and never fetches."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -482,7 +482,7 @@ export const ControlledState: Story = {
 
       <Section
         title="Control the state the URL owns; default only what is ephemeral"
-        intro="If back/forward, a shareable link, or a saved view must reproduce the table, that state belongs in the URL and must be controlled — `value` bound to the route, `onChange` pushing to it. Reserve `defaultValue` for genuinely uncontrolled, ephemeral state (a client-only sort of an in-memory list). Using `defaultValue` for URL-owned state silently forks the table from the address bar."
+        intro="If back/forward, a shareable link, or a saved view must reproduce the table, that state belongs in the URL and must be controlled: `value` bound to the route, `onChange` pushing to it. Reserve `defaultValue` for genuinely uncontrolled, ephemeral state (a client-only sort of an in-memory list). Using `defaultValue` for URL-owned state silently forks the table from the address bar."
       >
         <div className="grid gap-3 lg:grid-cols-2">
           <Example
@@ -508,21 +508,21 @@ export const ControlledState: Story = {
   ),
 };
 
-// ── 4 · relationship to the dashboard table, and what it is not ───────────────
+// ── 4 · relationship to consumer shells, and what it is not ───────────────────
 
 export const DashboardRelationship: Story = {
-  name: '4 · The dashboard table, and what DataTable is not',
+  name: '4 · Consumer table shells, and what DataTable is not',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="The dashboard wraps this core; it does not replace it"
-        intro="The dashboard's richer table is a shell around this molecule. Generated columns, registries, GraphQL, saved views, and permissions resolve in that shell and reach the core through props and slots — columns as `ColumnDef`s, everything else through `toolbar`, `bulkActions`, `rowActions`, and the `setTableOptions` escape hatch. The core stays the presentation and interaction engine; the data layer stays outside it."
+        title="Consumer shells wrap this core; they do not replace it"
+        intro="A richer application table is a shell around this molecule. Generated columns, registries, GraphQL, saved views, and permissions resolve in that shell and reach the core through props and slots: columns as `ColumnDef`s, everything else through `toolbar`, `bulkActions`, `rowActions`, and the `setTableOptions` escape hatch. The core stays the presentation and interaction engine; the data layer stays outside it."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[600px] text-left text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
-                <th className="p-3 font-medium">Dashboard capability</th>
+                <th className="p-3 font-medium">Consumer capability</th>
                 <th className="p-3 font-medium">Lives in</th>
                 <th className="p-3 font-medium">How it reaches the core</th>
               </tr>
@@ -542,7 +542,7 @@ export const DashboardRelationship: Story = {
 
       <Section
         title="What DataTable is not"
-        intro="Keeping these outside the core is what lets one molecule serve the OSS dashboard, Cloud, and every ecosystem surface. It renders and it interacts; it does not own data, routes, or persistence."
+        intro="Keeping these outside the core is what lets one molecule serve multiple consumer surfaces. It renders and it interacts; it does not own data, routes, or persistence."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
