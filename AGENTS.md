@@ -5,7 +5,7 @@ Monorepo for `@vendure-io/design-tokens` and `@vendure-io/ui` — the design sys
 ## Context
 
 - [CONTEXT.md](./CONTEXT.md) — the project's ubiquitous language (glossary). Use these terms; challenge changes against it.
-- `docs/adr/` — architectural decision records (created with the first ADR).
+- Architectural decisions are tracked internally by the Vendure team, not in-repo.
 - [packages/ui/AGENTS.md](./packages/ui/AGENTS.md) — shadcn CLI workflow, component placement (`ui/` vs `custom/`), export rules.
 - [packages/design-tokens/AGENTS.md](./packages/design-tokens/AGENTS.md) — token pipeline rules.
 - `docs/` — consumer-facing guides (getting started, components, tokens, releasing).

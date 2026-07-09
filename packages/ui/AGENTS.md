@@ -33,7 +33,7 @@ Comment non-obvious decisions in component files like you would anywhere else �
 
 ## Structure
 
-The two tiers split by **provenance**, not composition depth (ADR 0002 — `docs/adr/0002-component-taxonomy-atoms-molecules.md`):
+The two tiers split by **provenance**, not composition depth (per an internally-tracked architectural decision on component taxonomy):
 
 - `src/components/atoms/` — shadcn-CLI-managed primitives (button, dialog, etc.); an upstream exists to `diff` against
 - `src/components/molecules/` — hand-written composed components with no shadcn upstream. Multi-file molecules get a subfolder (`molecules/data-table/*`) — wildcard exports match across `/`
@@ -71,3 +71,16 @@ direct dependency on `@base-ui/react`. Keep that file pure named re-exports
 - **Formatters (JSX-or-lib rule)**: renders JSX → `molecules/` (a `<Money>` component is a molecule); pure function → `lib/` (a `formatCurrency()` helper is lib). Same test for anything ambiguous: "does it return JSX?"
 - No barrel files. Wildcard exports only.
 - Peer deps: react, react-dom. next/next-themes/react-hook-form are optional peers.
+
+## Guidance pages (molecules)
+
+Every molecule with a decision layer ships a dedicated Guidance story page alongside its regular stories. "Decision layer" means there is a real choice to rule on: this component vs a sibling (Chip vs Badge vs StatusBadge), a usage rule (one primary action per view), or semantics (relative vs absolute time). The PR template enforces this; a molecule without one needs a stated reason (e.g. FormatProvider is infrastructure, PasswordInput has no sibling choice).
+
+Conventions (match the existing pages, e.g. `stories/status-badge-guidance.stories.tsx`):
+
+- File: `stories/<name>-guidance.stories.tsx`, meta is title-only: `Molecules/<Name>/Guidance`.
+- File doc comment starts with "Guidance, not props." — the page rules on decisions (when to use it, when not to, do/don'ts); the regular stories page documents the API.
+- Content is data-driven const arrays rendered through local `Section`/`Example` (do/don't) helpers copied from an existing guidance page — duplicated per file, no shared import.
+- Stories use numbered display names (`name: '1 · …'`), render live DS components in realistic commerce scenarios, and cross-reference sibling guidance pages in prose.
+- One page can cover a family when the decision is shared (StateViews covers Empty/Error/Loading; DateTime covers RelativeTime).
+- State words only on StatusBadge; color follows accent rationing; terminology follows `CONTEXT.md`.
