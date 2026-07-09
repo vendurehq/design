@@ -1,7 +1,7 @@
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 
-// Compound-only, by decision (spike OSS-604): there is no simple-props sugar and
+// Compound-only, by decision: there is no simple-props sugar and
 // no dual-mode root. Callers assemble the parts, which keeps one way to build a
 // header and lets variance in the wild (back links, badge rows beside the title,
 // mono subtitles) live as free children rather than as an ever-growing prop set.
