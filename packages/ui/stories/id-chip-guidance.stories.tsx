@@ -4,7 +4,7 @@ import { CopyableText } from '../src/components/molecules/copyable-text.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 
 /**
- * Guidance, not props. When a raw identifier earns screen space at all, how to
+ * Guidance, not props. When a raw non-secret identifier earns screen space at all, how to
  * choose between IdChip, CopyableText, and plain text, and where IdChips belong
  * (detail and support surfaces) versus where they are noise (dense tables where
  * the row already is the entity). For the component API, see the IdChip stories.
@@ -70,7 +70,7 @@ const TOOLS: { tool: string; sample: ReactNode; use: string }[] = [
   {
     tool: 'IdChip',
     sample: <IdChip value={ORDER_UUID} />,
-    use: 'An opaque machine identifier the human reads by shape, not meaning (a UUID, a token, a gateway reference). Monospace and bordered so it reads as data, truncated for density, copied in full.',
+    use: 'An opaque machine identifier the human reads by shape, not meaning (a UUID, a database ID, a gateway reference). Monospace and bordered so it reads as data, truncated for density, copied in full.',
   },
   {
     tool: 'CopyableText',

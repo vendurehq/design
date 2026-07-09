@@ -7,8 +7,8 @@ import { IdChip } from '../src/components/molecules/id-chip.tsx';
 /**
  * Guidance, not props. Which values earn a copy button (things a user
  * transports elsewhere) and which do not, when to reach for CopyableText versus
- * its opaque-identifier sibling IdChip, and why the copy affordance is always
- * visible while only the value hides behind hover.
+ * its opaque-identifier sibling IdChip, and why secret-like values use
+ * AnonymizedToken instead of rendering in full.
  */
 const meta = {
   title: 'Molecules/CopyableText/Guidance',
@@ -67,9 +67,9 @@ function Example({
 // The test for a copy button: does the user carry this value into another tool?
 const EARNS_COPY: { value: string; kind: string; why: string }[] = [
   {
-    value: 'sk_live_51H8xY2eZvKflj9aQ',
-    kind: 'API key / secret',
-    why: 'Pasted into a .env file or a terminal, where a mistyped character fails silently.',
+    value: 'stripe_pi_3QZkL42eZvKYlo2C0j9x',
+    kind: 'Payment reference',
+    why: 'Pasted into a payment-provider search or support ticket.',
   },
   {
     value: 'ORD-100234',
@@ -118,7 +118,7 @@ const SIBLINGS: { aspect: string; copyable: string; idChip: string }[] = [
   {
     aspect: 'Value shape',
     copyable: 'Human-meaningful: order codes, emails, URLs, prices you happen to copy.',
-    idChip: 'Opaque: UUIDs, tokens, database IDs a person never reads in full.',
+    idChip: 'Opaque and non-secret: UUIDs, database IDs, gateway references.',
   },
   {
     aspect: 'Presentation',
