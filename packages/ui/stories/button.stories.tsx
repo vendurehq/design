@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { ChevronRight, Loader2, Mail } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
-import { ChevronRight, Mail, Loader2 } from 'lucide-react';
 
 const meta = {
   title: 'Atoms/General/Button',
@@ -64,11 +64,24 @@ export const IconLg: Story = {
 };
 
 export const WithIcon: Story = {
-  args: { children: <><Mail /> Send Email</> },
+  args: {
+    children: (
+      <>
+        <Mail /> Send Email
+      </>
+    ),
+  },
 };
 
 export const Loading: Story = {
-  args: { disabled: true, children: <><Loader2 className="animate-spin" /> Please wait</> },
+  args: {
+    disabled: true,
+    children: (
+      <>
+        <Loader2 className="animate-spin" /> Please wait
+      </>
+    ),
+  },
 };
 
 export const Disabled: Story = {

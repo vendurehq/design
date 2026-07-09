@@ -44,11 +44,7 @@ export const ControlledFromNull: Story = {
     const [checked, setChecked] = useState<boolean | null>(null);
     return (
       <div className="flex items-center gap-2">
-        <Checkbox
-          id="subscribe"
-          checked={checked}
-          onCheckedChange={(next) => setChecked(next)}
-        />
+        <Checkbox id="subscribe" checked={checked} onCheckedChange={(next) => setChecked(next)} />
         <Label htmlFor="subscribe">Subscribe (starts null)</Label>
       </div>
     );

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Switch } from '../src/components/atoms/switch.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
+import { Switch } from '../src/components/atoms/switch.tsx';
 
 const meta = {
   title: 'Atoms/Forms/Switch',
@@ -52,11 +52,7 @@ export const ControlledFromNull: Story = {
     const [checked, setChecked] = useState<boolean | null>(null);
     return (
       <div className="flex items-center gap-2">
-        <Switch
-          id="notifications"
-          checked={checked}
-          onCheckedChange={(next) => setChecked(next)}
-        />
+        <Switch id="notifications" checked={checked} onCheckedChange={(next) => setChecked(next)} />
         <Label htmlFor="notifications">Notifications (starts null)</Label>
       </div>
     );

@@ -57,11 +57,7 @@ export const DynamicItems: Story = {
           <Button size="sm" variant="outline" onClick={() => setItems(fruits)}>
             Fruits
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setItems(vegetables)}
-          >
+          <Button size="sm" variant="outline" onClick={() => setItems(vegetables)}>
             Vegetables
           </Button>
         </div>
@@ -69,14 +65,15 @@ export const DynamicItems: Story = {
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select an item" />
           </SelectTrigger>
+          {/* Items sit directly under SelectContent: the remount key only
+              inspects top-level children, so a SelectGroup wrapper would hide
+              the item values and the remount would never fire. */}
           <SelectContent>
-            <SelectGroup>
-              {items.map((item) => (
-                <SelectItem key={item} value={item.toLowerCase()}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectGroup>
+            {items.map((item) => (
+              <SelectItem key={item} value={item.toLowerCase()}>
+                {item}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

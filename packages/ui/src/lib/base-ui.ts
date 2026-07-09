@@ -32,6 +32,7 @@ export { Collapsible as CollapsiblePrimitive } from '@base-ui/react/collapsible'
 export { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox';
 export { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu';
 export { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
+// Standalone escape hatch: the Input atom renders a plain <input> and no longer builds on this primitive; kept for consumer compat.
 export { Input as InputPrimitive } from '@base-ui/react/input';
 export { Menu as MenuPrimitive } from '@base-ui/react/menu';
 export { Menubar as MenubarPrimitive } from '@base-ui/react/menubar';

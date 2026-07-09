@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { PasswordInput } from '../src/components/molecules/password-input.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
+import { PasswordInput } from '../src/components/molecules/password-input.tsx';
 
 const meta = {
   title: 'Molecules/PasswordInput',
