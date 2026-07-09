@@ -367,7 +367,7 @@ function DataTable<TData>({
         <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
       )}
 
-      <div className="bg-card overflow-hidden rounded-xl border">
+      <div className="bg-card overflow-hidden rounded-xl border border-border/60">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
