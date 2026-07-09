@@ -25,7 +25,7 @@ export const neutral = {
   700: 'oklch(0.37 0.007 231)',
   800: 'oklch(0.28 0.007 231)',
   900: 'oklch(0.2 0.007 231)',
-  950: 'oklch(0.15 0.007 231)',
+  950: 'oklch(0.13 0.007 231)',
 } as const;
 
 export const success = {

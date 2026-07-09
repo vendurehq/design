@@ -78,9 +78,9 @@ export const darkTheme = {
   // below, so a nested card visibly lifts off its pane instead of separating by
   // border alone. Overlay steps a smaller +0.02: its shadow already sets it
   // apart, and it keeps large palettes from lifting too far off the canvas.
-  surface: 'oklch(0.19 0.007 231)',
-  'surface-raised': 'oklch(0.23 0.007 231)',
-  overlay: 'oklch(0.25 0.007 231)',
+  surface: 'oklch(0.17 0.007 231)',
+  'surface-raised': 'oklch(0.21 0.007 231)',
+  overlay: 'oklch(0.23 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.92 0.004 231)',
@@ -138,7 +138,7 @@ export const darkTheme = {
   'sidebar-foreground': 'oklch(0.85 0.004 231)',
   'sidebar-primary': neutral[100],
   'sidebar-primary-foreground': neutral[900],
-  'sidebar-accent': 'oklch(0.25 0.007 231)',
+  'sidebar-accent': 'oklch(0.23 0.007 231)',
   'sidebar-accent-foreground': 'oklch(0.95 0.004 231)',
   'sidebar-border': neutral[800],
   'sidebar-ring': neutral[500],
