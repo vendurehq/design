@@ -20,6 +20,10 @@ function currencyFractionDigits(currency?: string): number {
   }
 }
 
+// Dev-warn once per session, not once per render — a table of currency-less
+// cells would otherwise flood the console.
+let warnedMissingCurrency = false;
+
 interface MoneyProps extends ComponentProps<'span'> {
   /** Amount in integer minor units (Vendure convention), e.g. `2500` = $25.00. */
   value: number;
@@ -36,6 +40,11 @@ interface MoneyProps extends ComponentProps<'span'> {
   currencyDisplay?: Intl.NumberFormatOptions['currencyDisplay'];
 }
 
+/**
+ * SSR note: output depends on locale, so server and client renders can disagree
+ * when it falls back to the runtime default. SSR consumers should pin `locale`
+ * via `FormatProvider` (or the prop) to avoid hydration mismatches.
+ */
 function Money({
   value,
   currency,
@@ -51,7 +60,8 @@ function Money({
   const resolvedPrecision =
     precision ?? settings.currencyPrecision ?? currencyFractionDigits(resolvedCurrency);
 
-  if (!resolvedCurrency && process.env.NODE_ENV !== 'production') {
+  if (!resolvedCurrency && !warnedMissingCurrency && process.env.NODE_ENV !== 'production') {
+    warnedMissingCurrency = true;
     console.warn(
       '<Money> was rendered without a `currency` prop or a `FormatProvider` currency; ' +
         'the amount is shown as a plain number.',

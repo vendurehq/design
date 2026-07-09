@@ -68,6 +68,29 @@ export const Responsive: Story = {
   ),
 };
 
+// Regression case: a responsive list inside a narrow side panel on a wide
+// viewport. The wrapper div (not the dl) carries `@container`, so the dl's
+// `@md:grid` and the items' `@md:contents` query the same box — the list must
+// stay stacked here, never scatter dt/dds across grid columns.
+export const ResponsiveInNarrowPanel: Story = {
+  args: { orientation: 'responsive' },
+  render: (args) => (
+    <div className="flex gap-6">
+      <div className="w-72 shrink-0 rounded-md border p-4">
+        <DescriptionList {...args}>
+          <DescriptionListItem label="Environment">Production</DescriptionListItem>
+          <DescriptionListItem label="Region">eu-central-1</DescriptionListItem>
+          <DescriptionListItem label="Created by">jane@vendure.io</DescriptionListItem>
+        </DescriptionList>
+      </div>
+      <p className="text-muted-foreground max-w-sm text-sm">
+        Main content — wide enough that a viewport query would wrongly flip the side panel's list
+        into grid mode.
+      </p>
+    </div>
+  ),
+};
+
 // The compound parts are available directly when the convenience wrapper isn't
 // enough — e.g. multiple detail lines under one term.
 export const CompoundParts: Story = {

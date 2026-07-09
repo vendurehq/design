@@ -15,8 +15,7 @@ const descriptionListVariants = cva('text-sm', {
     orientation: {
       vertical: 'flex flex-col gap-4',
       horizontal: 'grid grid-cols-[auto_1fr] gap-x-6 gap-y-3',
-      responsive:
-        '@container flex flex-col gap-4 @md:grid @md:grid-cols-[auto_1fr] @md:gap-x-6 @md:gap-y-3',
+      responsive: 'flex flex-col gap-4 @md:grid @md:grid-cols-[auto_1fr] @md:gap-x-6 @md:gap-y-3',
     },
   },
   defaultVariants: {
@@ -31,14 +30,29 @@ function DescriptionList({
   orientation = 'vertical',
   ...props
 }: ComponentProps<'dl'> & VariantProps<typeof descriptionListVariants>) {
+  const list = (
+    <dl
+      data-slot="description-list"
+      data-orientation={orientation}
+      className={cn(descriptionListVariants({ orientation }), className)}
+      {...props}
+    />
+  );
   return (
     <DescriptionListContext.Provider value={orientation ?? 'vertical'}>
-      <dl
-        data-slot="description-list"
-        data-orientation={orientation}
-        className={cn(descriptionListVariants({ orientation }), className)}
-        {...props}
-      />
+      {orientation === 'responsive' ? (
+        // An element cannot respond to its own container query: if the dl
+        // carried `@container`, its `@md:grid` would resolve against the nearest
+        // ANCESTOR container while the items' `@md:contents` resolve against the
+        // dl — and the two can disagree (narrow side panel inside a wide page).
+        // A wrapper div is the container, so the dl and every item query the
+        // same box.
+        <div data-slot="description-list-container" className="@container">
+          {list}
+        </div>
+      ) : (
+        list
+      )}
     </DescriptionListContext.Provider>
   );
 }

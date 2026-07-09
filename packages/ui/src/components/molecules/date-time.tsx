@@ -23,8 +23,14 @@ interface DateTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   fallback?: ReactNode;
 }
 
-// A single semantic `<time>` — the one presentation everyone shares. Callers
-// that want the old two-line date-over-muted-time stack compose it themselves.
+/**
+ * A single semantic `<time>` — the one presentation everyone shares. Callers
+ * that want the old two-line date-over-muted-time stack compose it themselves.
+ *
+ * SSR note: output depends on locale/timeZone, so server and client renders can
+ * disagree when either falls back to the runtime default. SSR consumers should
+ * pin both via `FormatProvider` (or props) to avoid hydration mismatches.
+ */
 function DateTime({
   value,
   locale,
@@ -39,7 +45,9 @@ function DateTime({
   const date = toDate(value);
   if (!date) return <>{fallback}</>;
 
-  const resolvedTimeZone = timeZone ?? settings.timeZone;
+  // Explicit wins over context: an escape-hatch `formatOptions.timeZone` must
+  // not be clobbered by the provider's zone.
+  const resolvedTimeZone = timeZone ?? formatOptions?.timeZone ?? settings.timeZone;
   const options: Intl.DateTimeFormatOptions = {
     ...(formatOptions ?? {
       dateStyle: dateStyle ?? 'medium',
@@ -56,7 +64,7 @@ function DateTime({
   }
 
   return (
-    <time dateTime={date.toISOString()} {...props}>
+    <time data-slot="date-time" dateTime={date.toISOString()} {...props}>
       {formatted}
     </time>
   );

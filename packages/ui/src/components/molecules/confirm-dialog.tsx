@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from '@vendure-io/ui/components/atoms/alert-dialog';
 import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
-import { type ReactElement, type ReactNode, useState } from 'react';
+import { type ReactElement, type ReactNode, useRef, useState } from 'react';
 
 interface ConfirmDialogProps {
   title: ReactNode;
@@ -47,6 +47,9 @@ function ConfirmDialog({
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  // State alone can't stop a fast double-click: both clicks land before the
+  // re-render disables the button, so the in-flight flag lives in a ref too.
+  const pendingRef = useRef(false);
   const actualOpen = isControlled ? open : internalOpen;
 
   const setOpen = (next: boolean) => {
@@ -55,6 +58,8 @@ function ConfirmDialog({
   };
 
   const handleConfirm = async () => {
+    if (pendingRef.current) return;
+    pendingRef.current = true;
     try {
       setPending(true);
       await onConfirm();
@@ -62,6 +67,7 @@ function ConfirmDialog({
     } catch {
       // Stay open on rejection so the user can retry or cancel.
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   };
@@ -75,7 +81,7 @@ function ConfirmDialog({
       }}
     >
       {children ? <AlertDialogTrigger render={children} /> : null}
-      <AlertDialogContent>
+      <AlertDialogContent data-slot="confirm-dialog">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
@@ -84,7 +90,12 @@ function ConfirmDialog({
           <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
           {/* AlertDialogAction is a plain Button (not a Close), so closing stays
               under our control — the promise decides when the dialog leaves. */}
-          <AlertDialogAction variant={variant} disabled={pending} onClick={handleConfirm}>
+          <AlertDialogAction
+            variant={variant}
+            disabled={pending}
+            aria-busy={pending || undefined}
+            onClick={handleConfirm}
+          >
             {pending ? <Spinner /> : null}
             {confirmLabel}
           </AlertDialogAction>

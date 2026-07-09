@@ -52,9 +52,14 @@ function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDel
   return (
     <span data-slot="stat-card-delta" className={statCardDeltaVariants({ tone })}>
       {direction === 'up' ? (
-        <ArrowUp className="size-3" />
+        <ArrowUp aria-hidden="true" className="size-3" />
       ) : direction === 'down' ? (
-        <ArrowDown className="size-3" />
+        <ArrowDown aria-hidden="true" className="size-3" />
+      ) : null}
+      {/* Math.abs strips the sign and the arrow is visual-only, so screen
+          readers need the direction spelled out. */}
+      {direction !== 'flat' ? (
+        <span className="sr-only">{direction === 'up' ? 'up' : 'down'} </span>
       ) : null}
       {Math.abs(value).toFixed(1)}
       {label}
