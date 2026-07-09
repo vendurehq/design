@@ -38,3 +38,48 @@ jobs:
 
       - name: Build Storybook
         run: cd apps/storybook && bun run build
+
+      - name: Install Playwright browsers
+        run: cd apps/storybook && bunx playwright install --with-deps chromium
+
+      - name: Serve Storybook static build
+        run: |
+          cd apps/storybook
+          bunx http-server storybook-static --port 6006 --silent &
+          echo $! > "$RUNNER_TEMP/storybook-server.pid"
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:6006 > /dev/null && break
+            sleep 1
+          done
+
+      - name: Storybook a11y smoke test
+        run: cd apps/storybook && bun run test-storybook -- --url http://127.0.0.1:6006 --ci
+
+      - name: Stop Storybook static server
+        if: always()
+        run: kill "$(cat "$RUNNER_TEMP/storybook-server.pid")" || true
+
+      - name: Check for visual regression baselines
+        id: visual-baselines
+        run: |
+          cd apps/storybook
+          if [ -d visual/__screenshots__/linux ] && [ -n "$(ls -A visual/__screenshots__/linux 2>/dev/null)" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Visual regression tests
+        run: cd apps/storybook && bunx playwright test
+        continue-on-error: ${{ steps.visual-baselines.outputs.exists != 'true' }}
+
+      - name: Upload visual regression output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-output
+          path: |
+            apps/storybook/visual/__screenshots__
+            apps/storybook/test-results
+          if-no-files-found: ignore
+          retention-days: 14

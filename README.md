@@ -51,6 +51,7 @@ To consume the design system in your app, follow the [getting started guide](./d
 
 - [Design tokens](./docs/design-tokens.md): token pipeline, CSS theme, usage
 - [UI components](./docs/ui-components.md): component catalog and usage
+- [Testing](./docs/testing.md): CI quality gates (a11y, visual regression) and baselines
 - [Releasing](./docs/releasing.md): how packages are versioned and published
 
 ## Development
