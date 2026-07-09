@@ -284,8 +284,15 @@ function DataTable<TData>({
     rowSelection != null
       ? table.getVisibleLeafColumns().find((column) => column.id !== selectColumnId)?.id
       : undefined;
-  const columnClass = (id: string): string | undefined =>
-    id === selectColumnId ? 'relative w-0 p-0' : id === leadingColumnId ? 'pl-8' : undefined;
+  const columnClass = (id: string): string | undefined => {
+    if (id === selectColumnId) return 'relative w-0 p-0';
+    if (id === leadingColumnId) return 'pl-8';
+    // Actions cells drop vertical padding so a row-action button (taller than a
+    // text line) sits inside the natural row height rather than inflating every
+    // row; `align-middle` on the cell keeps it centred.
+    if (id === 'actions') return 'py-0';
+    return undefined;
+  };
 
   const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
   const showViewOptions = columnVisibility != null && columnVisibility.showViewOptions !== false;
