@@ -2,12 +2,13 @@ import { brand, destructive, info, neutral, success, viz, warning } from './colo
 import { radii } from './radii.js';
 
 export const lightTheme = {
-  background: neutral[50],
+  background: 'oklch(0.96 0.004 231)',
   foreground: neutral[950],
-  // Surface ramp: light mode deliberately collapses the three upper tiers to
-  // white — tier identity comes from the canvas showing through gaps and from
-  // overlay shadows, not from lightness steps.
-  surface: 'oklch(1 0 0)',
+  // Surface ramp. Light mode holds an even near-white ramp (canvas 0.96 to
+  // surface 0.98 to pure white) so nested tiers stay distinct: a light-gray
+  // canvas, an off-white content pane, and white raised cards. Overlays are
+  // white too and separate by shadow, not lightness.
+  surface: 'oklch(0.98 0.004 231)',
   'surface-raised': 'oklch(1 0 0)',
   overlay: 'oklch(1 0 0)',
   inset: 'color-mix(in oklab, black 5%, transparent)',

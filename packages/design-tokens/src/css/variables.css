@@ -72,9 +72,9 @@
   --viz-3: oklch(0.51 0.13 320);
   --viz-4: oklch(0.66 0.12 85);
   --viz-5: oklch(0.58 0.13 25);
-  --background: oklch(0.97 0.004 231);
+  --background: oklch(0.96 0.004 231);
   --foreground: oklch(0.15 0.007 231);
-  --surface: oklch(1 0 0);
+  --surface: oklch(0.98 0.004 231);
   --surface-raised: oklch(1 0 0);
   --overlay: oklch(1 0 0);
   --inset: color-mix(in oklab, black 5%, transparent);
