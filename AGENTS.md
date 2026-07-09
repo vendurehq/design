@@ -30,6 +30,12 @@ gh release create ui/v1.2.3 --title "@vendure-io/ui v1.2.3" --generate-notes
 
 # Release @vendure-io/design-tokens
 gh release create design-tokens/v1.2.3 --title "@vendure-io/design-tokens v1.2.3" --generate-notes
+
+# Prerelease @vendure-io/ui to the beta npm dist-tag
+gh release create ui/v1.3.0-beta.0 --title "@vendure-io/ui v1.3.0-beta.0" --generate-notes --prerelease
+
+# Prerelease @vendure-io/design-tokens to the beta npm dist-tag
+gh release create design-tokens/v1.3.0-beta.0 --title "@vendure-io/design-tokens v1.3.0-beta.0" --generate-notes --prerelease
 ```
 
-The CI workflow handles version bumping in `package.json`, publishing to npm, and committing the version bump back to `main`.
+The CI workflow handles version bumping in `package.json`, publishing to npm, and committing the version bump back to `main`. Stable releases publish to npm's `latest` dist-tag; prereleases publish to the first semver prerelease identifier (`beta` for `1.3.0-beta.0`, `rc` for `1.3.0-rc.0`).

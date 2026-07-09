@@ -35,9 +35,30 @@ jobs:
         with:
           token: ${{ steps.bot-token.outputs.token }}
 
-      - name: Extract version from tag
+      - name: Extract release metadata
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#design-tokens/v}" >> "$GITHUB_OUTPUT"
+        run: |
+          VERSION="${GITHUB_REF_NAME#design-tokens/v}"
+          NPM_TAG="latest"
+          IS_PRERELEASE="false"
+          VERSION_WITHOUT_BUILD="${VERSION%%+*}"
+
+          if [[ "$VERSION_WITHOUT_BUILD" == *-* ]]; then
+            PRERELEASE="${VERSION_WITHOUT_BUILD#*-}"
+            NPM_TAG="${PRERELEASE%%.*}"
+            IS_PRERELEASE="true"
+
+            if [[ ! "$NPM_TAG" =~ ^[a-z][a-z0-9-]*$ ]]; then
+              echo "Prerelease versions must start with a named npm dist-tag, e.g. alpha, beta, rc, or next." >&2
+              exit 1
+            fi
+          fi
+
+          {
+            echo "VERSION=$VERSION"
+            echo "NPM_TAG=$NPM_TAG"
+            echo "IS_PRERELEASE=$IS_PRERELEASE"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -62,7 +83,7 @@ jobs:
         run: bun run build
 
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"
         working-directory: packages/design-tokens
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -87,7 +87,7 @@ Packages are released independently by creating a [GitHub Release](https://githu
 | `@vendure-io/design-tokens` | `design-tokens/v{version}` | `design-tokens/v1.2.0` |
 | `@vendure-io/ui` | `ui/v{version}` | `ui/v1.3.0` |
 
-See [docs/releasing.md](./docs/releasing.md) for the full workflow, including release ordering when both packages change.
+Prerelease tags such as `ui/v1.4.0-beta.0` publish to the matching npm dist-tag (`beta`) instead of `latest`. See [docs/releasing.md](./docs/releasing.md) for the full workflow, including release ordering when both packages change.
 
 ## License
 
