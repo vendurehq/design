@@ -8,7 +8,7 @@ import {
   EmptyTitle,
 } from '@vendure-io/ui/components/atoms/empty';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { AlertTriangleIcon } from 'lucide-react';
+import { TriangleAlertIcon } from 'lucide-react';
 
 // `title` is redefined as `ReactNode`, so drop the native string `title` attr.
 export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
@@ -32,7 +32,7 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
  * retry CTA. Same anatomy as `EmptyState` so failed and empty states line up.
  */
 function ErrorState({
-  icon = <AlertTriangleIcon />,
+  icon = <TriangleAlertIcon />,
   title = 'Something went wrong',
   description,
   onRetry,

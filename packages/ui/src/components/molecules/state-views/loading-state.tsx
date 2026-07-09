@@ -52,12 +52,22 @@ function LoadingState({
       <span className="sr-only">Loading…</span>
       {variant === 'spinner' ? (
         <>
-          <Spinner />
-          {label ? <span className="text-muted-foreground text-sm">{label}</span> : null}
+          {/* aria-hidden overrides the atom's role="status": the <output> is
+              already the live region, so the spinner must not double-announce. */}
+          <Spinner aria-hidden="true" />
+          {label ? (
+            <span data-slot="loading-state-label" className="text-muted-foreground text-sm">
+              {label}
+            </span>
+          ) : null}
         </>
       ) : (
         <>
-          {label ? <span className="text-muted-foreground text-sm">{label}</span> : null}
+          {label ? (
+            <span data-slot="loading-state-label" className="text-muted-foreground text-sm">
+              {label}
+            </span>
+          ) : null}
           {Array.from({ length: rows }).map((_, i) => (
             <Skeleton key={i} className={cn('h-14 w-full rounded-md', rowClassName)} />
           ))}
