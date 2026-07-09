@@ -73,7 +73,7 @@ behavior you need instead of rebuilding it from atoms.
 `app-shell`, `page-header`, `skip-link`
 
 #### Forms & selection
-`combobox-free-text`, `entity-combobox`, `file-dropzone`, `multi-select`, `password-input`
+`combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
 
 #### Date & number entry/display
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `money`, `format-provider`
