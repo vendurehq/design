@@ -32,7 +32,7 @@ function PageHeaderTitle({ className, ...props }: React.ComponentProps<'h1'>) {
   return (
     <h1
       data-slot="page-header-title"
-      className={cn('font-heading break-words text-2xl font-semibold tracking-tight', className)}
+      className={cn('text-style-page-title break-words', className)}
       {...props}
     />
   );
