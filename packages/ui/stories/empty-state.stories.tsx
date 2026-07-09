@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { InboxIcon, PackageIcon, SearchIcon } from 'lucide-react';
+import { InboxIcon, PackageIcon } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { NoOrdersIllustration } from '../src/components/molecules/illustrations/no-orders.tsx';
+import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
 
 const meta = {
@@ -8,8 +10,8 @@ const meta = {
   component: EmptyState,
   tags: ['autodocs'],
   args: {
-    title: 'No orders yet',
-    description: 'When customers place orders, they will appear here.',
+    title: 'No products yet',
+    description: 'Add your first product to start selling.',
   },
   argTypes: {
     title: { control: 'text' },
@@ -20,23 +22,51 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// No `icon` or `illustration` passed — the default illustration
+// (`EmptyCollectionIllustration`) fills the media slot.
 export const Playground: Story = {
   args: {
-    icon: <PackageIcon />,
+    children: <Button>Add product</Button>,
   },
 };
 
-// Title + description only — the minimum an empty panel needs.
+// Title + description only. Still gets the default illustration — there's no
+// bare, media-less rendering unless you opt out (see `WithoutIllustration`).
 export const TitleOnly: Story = {
   args: {
-    icon: undefined,
     description: undefined,
-    title: 'No results',
+    title: 'No products',
   },
 };
 
-// Icon chip above the headline. Pass any element; it lands in the muted
-// `EmptyMedia` icon slot.
+// A search/filter miss gets `NoResultsIllustration`, not the "nothing exists
+// yet" default — the recovery is different (widen the query, not create one).
+export const NoSearchResults: Story = {
+  args: {
+    illustration: <NoResultsIllustration />,
+    title: 'No customers match “acme”',
+    description: 'Try a different search or clear your filters.',
+    children: (
+      <Button variant="outline" size="sm">
+        Clear filters
+      </Button>
+    ),
+  },
+};
+
+// Swap in any illustration from `molecules/illustrations/*` for the scenario —
+// here, an orders list with nothing in it yet.
+export const NoOrders: Story = {
+  args: {
+    illustration: <NoOrdersIllustration />,
+    title: 'No orders yet',
+    description: 'When customers check out, their orders will appear here.',
+  },
+};
+
+// `icon` is the pre-illustration API: a small icon in the muted chip. Passing
+// it (without `illustration`) keeps working exactly as it did before
+// illustrations existed — no migration required.
 export const WithIcon: Story = {
   args: {
     icon: <InboxIcon />,
@@ -45,26 +75,14 @@ export const WithIcon: Story = {
   },
 };
 
-// Actions/CTA are passed as children and render in the content slot.
-export const WithAction: Story = {
+// `illustration={null}` opts out entirely, falling back to `icon` (or nothing,
+// if `icon` is also absent). Reach for this in tight spaces — a table cell or
+// a card — where a full illustration would be clutter; see the guidance page.
+export const WithoutIllustration: Story = {
   args: {
+    illustration: null,
     icon: <PackageIcon />,
     title: 'No products yet',
     description: 'Create your first product to start selling.',
-    children: <Button>Create product</Button>,
-  },
-};
-
-// Filtered/search empties reuse the same shell.
-export const NoSearchResults: Story = {
-  args: {
-    icon: <SearchIcon />,
-    title: 'No results found',
-    description: 'Try adjusting your search or filters.',
-    children: (
-      <Button variant="outline" size="sm">
-        Clear filters
-      </Button>
-    ),
   },
 };
