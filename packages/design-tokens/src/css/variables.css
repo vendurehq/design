@@ -155,7 +155,7 @@
   --muted-foreground: oklch(0.65 0.005 231);
   --accent: color-mix(in oklab, var(--foreground) 9%, transparent);
   --accent-foreground: oklch(0.95 0.004 231);
-  --destructive: oklch(0.48 0.18 25);
+  --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0.01 25);
   --destructive-subtle: color-mix(in oklab, oklch(0.27 0.09 25) 40%, transparent);
   --destructive-subtle-foreground: oklch(0.78 0.12 25);

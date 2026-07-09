@@ -91,7 +91,9 @@ export const darkTheme = {
   'muted-foreground': 'oklch(0.65 0.005 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
-  destructive: destructive[600],
+  // One step lighter than light mode (600 → 500): the mid-dark red reads as
+  // muddy on a near-black canvas, so lift it up the ramp to hold its weight.
+  destructive: destructive[500],
   'destructive-foreground': 'oklch(0.98 0.01 25)',
   // Subtle backgrounds are 40% alpha so they sit on any surface tier instead
   // of only matching the canvas.
