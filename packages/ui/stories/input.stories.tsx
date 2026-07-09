@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useState } from 'react';
 import { Input } from '../src/components/atoms/input.tsx';
 
 const meta = {
@@ -28,4 +29,20 @@ export const WithValue: Story = {
 
 export const File: Story = {
   args: { type: 'file' },
+};
+
+// The Input is a plain <input>, so controlled usage (and react-hook-form's
+// isDirty) works as expected. A null value is coerced to "" rather than
+// flipping the field to uncontrolled.
+export const Controlled: Story = {
+  render: function InputControlled() {
+    const [value, setValue] = useState('');
+    return (
+      <Input
+        placeholder="Type something..."
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    );
+  },
 };
