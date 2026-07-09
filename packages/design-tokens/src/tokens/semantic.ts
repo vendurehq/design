@@ -78,7 +78,7 @@ export const darkTheme = {
   // temporary overlays take the brightest step to remain clearly distinct.
   surface: 'oklch(0.16 0.007 231)',
   'surface-raised': 'oklch(0.18 0.007 231)',
-  overlay: 'oklch(0.20 0.007 231)',
+  overlay: 'oklch(0.2 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.92 0.004 231)',

@@ -139,7 +139,7 @@
   --foreground: oklch(0.92 0.004 231);
   --surface: oklch(0.16 0.007 231);
   --surface-raised: oklch(0.18 0.007 231);
-  --overlay: oklch(0.20 0.007 231);
+  --overlay: oklch(0.2 0.007 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.92 0.004 231);
