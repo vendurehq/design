@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
@@ -35,18 +34,4 @@ export const WithLabel: Story = {
       <Label htmlFor="terms">Accept terms and conditions</Label>
     </div>
   ),
-};
-
-// A form field can start as null; the Checkbox coerces null to false so it
-// stays controlled instead of warning about a controlled/uncontrolled switch.
-export const ControlledFromNull: Story = {
-  render: function CheckboxControlledFromNull() {
-    const [checked, setChecked] = useState<boolean | null>(null);
-    return (
-      <div className="flex items-center gap-2">
-        <Checkbox id="subscribe" checked={checked} onCheckedChange={(next) => setChecked(next)} />
-        <Label htmlFor="subscribe">Subscribe (starts null)</Label>
-      </div>
-    );
-  },
 };
