@@ -367,95 +367,97 @@ function DataTable<TData>({
         <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
       )}
 
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="group/header-row">
-              {headerGroup.headers.map((headerCell) => {
-                const content = headerCell.isPlaceholder
-                  ? null
-                  : flexRender(headerCell.column.columnDef.header, headerCell.getContext());
-                return (
-                  <TableHead
-                    key={headerCell.id}
-                    aria-sort={ariaSort(sorting != null, headerCell.column)}
-                    className={columnClass(headerCell.column.id)}
-                  >
-                    {sorting != null && !headerCell.isPlaceholder ? (
-                      <DataTableColumnHeader
-                        column={headerCell.column}
-                        sortLabel={l.sortLabel(headerLabelText(headerCell.column))}
-                      >
-                        {content}
-                      </DataTableColumnHeader>
-                    ) : (
-                      content
-                    )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {isLoading && rows.length === 0 ? (
-            Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
-              <TableRow key={`skeleton-${rowIndex}`}>
-                {Array.from({ length: Math.max(columnCount, 1) }).map((__, cellIndex) => (
-                  <TableCell key={`skeleton-cell-${cellIndex}`}>
-                    <Skeleton className="h-4 w-full" />
-                  </TableCell>
-                ))}
+      <div className="bg-card overflow-hidden rounded-xl border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="group/header-row">
+                {headerGroup.headers.map((headerCell) => {
+                  const content = headerCell.isPlaceholder
+                    ? null
+                    : flexRender(headerCell.column.columnDef.header, headerCell.getContext());
+                  return (
+                    <TableHead
+                      key={headerCell.id}
+                      aria-sort={ariaSort(sorting != null, headerCell.column)}
+                      className={columnClass(headerCell.column.id)}
+                    >
+                      {sorting != null && !headerCell.isPlaceholder ? (
+                        <DataTableColumnHeader
+                          column={headerCell.column}
+                          sortLabel={l.sortLabel(headerLabelText(headerCell.column))}
+                        >
+                          {content}
+                        </DataTableColumnHeader>
+                      ) : (
+                        content
+                      )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : bodyRows.length === 0 ? (
-            <TableRow className="hover:bg-transparent">
-              <TableCell
-                colSpan={Math.max(columnCount, 1)}
-                className="text-muted-foreground h-24 text-center"
-              >
-                {emptyState ?? l.empty}
-              </TableCell>
-            </TableRow>
-          ) : (
-            bodyRows.map((row) => {
-              const rowNode = (
-                <TableRow
-                  className="group/row"
-                  data-state={row.getIsSelected() ? 'selected' : undefined}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className={columnClass(cell.column.id)}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading && rows.length === 0 ? (
+              Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+                <TableRow key={`skeleton-${rowIndex}`}>
+                  {Array.from({ length: Math.max(columnCount, 1) }).map((__, cellIndex) => (
+                    <TableCell key={`skeleton-cell-${cellIndex}`}>
+                      <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>
-              );
-              // Right-click accelerator: the row itself is the context-menu
-              // trigger, so the consumer supplies only the items and the core
-              // owns the menu chrome.
-              const defaultRow = contextActions ? (
-                <ContextMenu>
-                  <ContextMenuTrigger render={rowNode} />
-                  <ContextMenuContent>
-                    {contextActions(row.original, { row, table })}
-                  </ContextMenuContent>
-                </ContextMenu>
-              ) : (
-                rowNode
-              );
-              // Row-render seam: consumers can swap the default row for a
-              // full-width utility row or a per-row wrapper the cell grid can't
-              // express. Returning `defaultRow` keeps the built-in rendering.
-              return (
-                <React.Fragment key={row.id}>
-                  {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
-                </React.Fragment>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+              ))
+            ) : bodyRows.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={Math.max(columnCount, 1)}
+                  className="text-muted-foreground h-24 text-center"
+                >
+                  {emptyState ?? l.empty}
+                </TableCell>
+              </TableRow>
+            ) : (
+              bodyRows.map((row) => {
+                const rowNode = (
+                  <TableRow
+                    className="group/row"
+                    data-state={row.getIsSelected() ? 'selected' : undefined}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className={columnClass(cell.column.id)}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+                // Right-click accelerator: the row itself is the context-menu
+                // trigger, so the consumer supplies only the items and the core
+                // owns the menu chrome.
+                const defaultRow = contextActions ? (
+                  <ContextMenu>
+                    <ContextMenuTrigger render={rowNode} />
+                    <ContextMenuContent>
+                      {contextActions(row.original, { row, table })}
+                    </ContextMenuContent>
+                  </ContextMenu>
+                ) : (
+                  rowNode
+                );
+                // Row-render seam: consumers can swap the default row for a
+                // full-width utility row or a per-row wrapper the cell grid can't
+                // express. Returning `defaultRow` keeps the built-in rendering.
+                return (
+                  <React.Fragment key={row.id}>
+                    {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       {pagination && (
         <TablePagination
