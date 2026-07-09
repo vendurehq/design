@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useState } from 'react';
 import { Switch } from '../src/components/atoms/switch.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
@@ -42,4 +43,22 @@ export const WithLabel: Story = {
       <Label htmlFor="airplane-mode">Airplane Mode</Label>
     </div>
   ),
+};
+
+// A form field can start as null; the Switch coerces null to false so it stays
+// controlled instead of warning about a controlled/uncontrolled switch.
+export const ControlledFromNull: Story = {
+  render: function SwitchControlledFromNull() {
+    const [checked, setChecked] = useState<boolean | null>(null);
+    return (
+      <div className="flex items-center gap-2">
+        <Switch
+          id="notifications"
+          checked={checked}
+          onCheckedChange={(next) => setChecked(next)}
+        />
+        <Label htmlFor="notifications">Notifications (starts null)</Label>
+      </div>
+    );
+  },
 };
