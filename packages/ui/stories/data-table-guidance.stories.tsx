@@ -1,46 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ListFilterIcon, PlusIcon, SearchIcon, TagIcon } from 'lucide-react';
+import { ArchiveIcon, Trash2Icon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from '../src/components/atoms/input-group.tsx';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../src/components/atoms/table.tsx';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '../src/components/atoms/pagination.tsx';
-import { Chip } from '../src/components/molecules/chip.tsx';
-import {
-  ListHeader,
-  ListHeaderChips,
-  ListHeaderControls,
-} from '../src/components/molecules/data-table/list-header.tsx';
-import { TablePagination } from '../src/components/molecules/data-table/table-pagination.tsx';
+  type ColumnDef,
+  DataTable,
+  type SortingState,
+} from '../src/components/molecules/data-table/data-table.tsx';
 import {
   PageHeader,
-  PageHeaderActions,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
 
 /**
- * Guidance, not props. One page for the DataTable family because the decision
- * layer is shared: ListHeader and TablePagination are the layout and value-prop
- * shell of a list page, not a table engine. This page rules on which header a
- * page gets (ListHeader for lists, PageHeader alone for details), on the three
- * zones and the chip row that appears only when filters are applied, on the
- * capability-props contract that decides which pagination controls render, and
- * on what these primitives deliberately are not. For each component's API, see
- * its own stories page.
+ * Guidance, not props. The DataTable molecule is the batteries-included list
+ * engine: one TanStack instance that assembles ListHeader, the Table atom,
+ * TablePagination, and Chip into a working collection view. This page rules on
+ * when to reach for it versus composing those primitives yourself, on which
+ * capabilities to switch on (each is off until its config is passed), on who owns
+ * the state behind every capability — the consumer owns URL, fetching, and
+ * persistence; the core never fetches — and on where the line falls between this
+ * core and the dashboard's richer table. For the prop-by-prop API, see the
+ * DataTable stories.
  */
 const meta = {
   title: 'Molecules/DataTable/Guidance',
@@ -94,97 +86,169 @@ function Example({
   );
 }
 
-// A search field reused across the header examples; not part of the family, just
-// realistic filler for the control row.
-function SearchField({ placeholder }: { placeholder: string }) {
+// ── data (a realistic products collection, reused across examples) ────────────
+
+type Product = {
+  id: string;
+  name: string;
+  sku: string;
+  stock: string;
+};
+
+const PRODUCTS: Product[] = [
+  { id: '1', name: 'Merino Crew Sweater', sku: 'AP-MCS-001', stock: 'In stock' },
+  { id: '2', name: 'Oxford Shirt', sku: 'AP-OXS-014', stock: 'Low stock' },
+  { id: '3', name: 'Wool Overcoat', sku: 'AP-WOC-039', stock: 'In stock' },
+  { id: '4', name: 'Leather Belt', sku: 'AC-LBT-102', stock: 'Out of stock' },
+];
+
+const productColumns: ColumnDef<Product>[] = [
+  { accessorKey: 'name', header: 'Product' },
+  { accessorKey: 'sku', header: 'SKU' },
+  { accessorKey: 'stock', header: 'Availability' },
+];
+
+// A tiny controlled-sorting host: the URL would own `sorting` in a real page; a
+// local state stands in for it here so the controlled example is live.
+function ControlledSortingTable() {
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }]);
   return (
-    <InputGroup className="flex-1">
-      <InputGroupAddon align="inline-start">
-        <InputGroupText>
-          <SearchIcon />
-        </InputGroupText>
-      </InputGroupAddon>
-      <InputGroupInput placeholder={placeholder} />
-    </InputGroup>
+    <DataTable
+      rows={PRODUCTS}
+      columns={productColumns}
+      getRowId={(p) => p.id}
+      sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+    />
   );
 }
 
-// ── data ─────────────────────────────────────────────────────────────────────
+// ── decision-table data ───────────────────────────────────────────────────────
 
-type HeaderChoice = { page: string; header: string; why: string };
+type ReachRow = { need: string; reach: string; why: string };
 
-const HEADER_CHOICES: HeaderChoice[] = [
+const REACH_FOR: ReachRow[] = [
   {
-    page: 'List / collection page',
-    header: 'ListHeader',
-    why: 'Orders, Customers, Products: a collection you search, filter, and paginate. Needs the control row and the conditional chip row on top of a title row.',
+    need: 'A collection you sort, select, filter, or paginate',
+    reach: 'DataTable',
+    why: 'The engine you want. It owns the TanStack instance and wires ListHeader, the Table atom, TablePagination, and Chip together for you.',
   },
   {
-    page: 'Detail / settings page',
-    header: 'PageHeader alone',
-    why: 'A single entity (one order, one product) or a settings screen. There is no collection to filter or paginate, so there is no control or chip row to add.',
+    need: 'A short, static reference grid (no sorting, no selection)',
+    reach: 'Table atom',
+    why: "Rows you only read. DataTable's column model, sort engine, and selection cache are dead weight here — render the atom directly.",
+  },
+  {
+    need: 'A list page whose only interaction is prev/next paging',
+    reach: 'ListHeader + TablePagination',
+    why: 'No columns to model. Compose the header and footer primitives directly rather than stand up a table engine to render plain rows.',
+  },
+  {
+    need: 'A single entity or settings screen',
+    reach: 'PageHeader alone',
+    why: 'No collection at all. There is nothing to filter or paginate, so there is no DataTable to reach for — see the PageHeader guidance.',
   },
 ];
 
-type Zone = { zone: string; component: string; holds: string };
+type CapabilityRow = { capability: string; enableWhen: string; skipWhen: string };
 
-const ZONES: Zone[] = [
+const CAPABILITIES: CapabilityRow[] = [
   {
-    zone: 'Title row',
-    component: 'PageHeader (composed)',
-    holds: 'The list name, its actions, and any description — the existing PageHeader compound, dropped in as the first child. Not re-implemented here.',
+    capability: 'sorting',
+    enableWhen: 'A column is meaningfully orderable and the backend (or client) can sort by it.',
+    skipWhen: 'Order is fixed or curated; sortable headers on an unsortable column mislead.',
   },
   {
-    zone: 'Control row',
-    component: 'ListHeaderControls',
-    holds: 'Search input, filter triggers, view options. A layout-only flex row; the controls themselves are free children.',
+    capability: 'rowSelection',
+    enableWhen:
+      'A bulkActions overlay or a selection-consuming rowAction will act on the checked rows.',
+    skipWhen: 'Nothing consumes the selection — dead checkboxes that lead nowhere.',
   },
   {
-    zone: 'Chip row',
-    component: 'ListHeaderChips',
-    holds: 'The applied-filter Chips. Rendered by the consumer only when filters are active — there is no empty chip-row placeholder.',
+    capability: 'filters',
+    enableWhen:
+      'Users narrow a large set; pass `columns` for the built-in add-filter menu, or omit it and supply your own trigger in `toolbar`.',
+    skipWhen: 'The set is small enough to scan, or search alone suffices.',
+  },
+  {
+    capability: 'columnVisibility',
+    enableWhen:
+      'The table is wide enough that hiding columns is a real need, and you persist the choice.',
+    skipWhen: 'A handful of columns that always fit — the gear is clutter.',
+  },
+  {
+    capability: 'pagination',
+    enableWhen: 'The backend paginates. Always controlled: `page`/`onPageChange` are required.',
+    skipWhen: 'The full set is already in `rows` and short — render every row, no footer.',
   },
 ];
 
-type ContractRow = { feature: string; renders: string; absent: string };
+type OwnershipRow = { state: string; controlled: string; job: string };
 
-const PAGINATION_CONTRACT: ContractRow[] = [
+const OWNERSHIP: OwnershipRow[] = [
   {
-    feature: 'Range text ("1–25 of 132")',
-    renders: 'Always',
-    absent: 'The one guaranteed element; the footer’s reason to exist.',
+    state: 'sorting',
+    controlled: 'Controlled (URL) or uncontrolled',
+    job: 'Server mode: push the new sort to the URL and refetch. Client mode: hand it `defaultValue` and let the core sort `rows`.',
   },
   {
-    feature: 'Page-size selector',
-    renders: 'onPageSizeChange is wired',
-    absent: 'No size control — the backend serves a fixed page size.',
+    state: 'filters',
+    controlled: 'Controlled (URL)',
+    job: 'Push filters to the URL, reset pagination to page 1, and refetch. The core stores opaque `{ [operator]: value }` and never interprets it.',
   },
   {
-    feature: 'Previous / next',
-    renders: 'onPageChange or getPageHref is wired',
-    absent: 'Range text only — no controls to move between pages.',
+    state: 'columnVisibility',
+    controlled: 'Controlled (persisted)',
+    job: 'Persist the visibility map to user settings and prune the GraphQL selection set yourself; the core only shows and hides.',
   },
   {
-    feature: 'The whole footer',
-    renders: 'The backend can paginate at all',
-    absent: 'Render no TablePagination. Its absence is the switch, never a disabled placeholder.',
+    state: 'rowSelection',
+    controlled: 'Controlled (local)',
+    job: 'Hold selection in local state so bulk actions can read it. Pass `getRowId` so ids survive across pages.',
+  },
+  {
+    state: 'pagination',
+    controlled: 'Always controlled (URL)',
+    job: 'Own `page`/`pageSize` in the route and refetch on change — 1-based, no uncontrolled branch.',
   },
 ];
 
-type PaginationSibling = { component: string; use: string; vocabulary: string };
+type DashboardRow = { capability: string; lives: string; how: string };
 
-const PAGINATION_SIBLINGS: PaginationSibling[] = [
+const DASHBOARD_MAP: DashboardRow[] = [
   {
-    component: 'TablePagination',
-    use: 'List pages and data tables: orders, customers, products.',
-    vocabulary:
-      'Range text plus prev/next, capability-gated. Sequential paging, where the total count and "the next page" are what a user needs — not a specific page number.',
+    capability: 'Generated / custom-field / registry columns',
+    lives: 'Shell only',
+    how: 'The shell resolves them to `ColumnDef`s (cell components baked in) and hands the array to `columns`.',
   },
   {
-    component: 'Pagination (atom)',
-    use: 'Long-form and content contexts: paginated articles, search results.',
-    vocabulary:
-      'Numbered page links with an ellipsis, for jumping to an arbitrary page. Reach for it only where landing on page 7 directly is meaningful — never under a list-page table.',
+    capability: 'Typed filter editors, human-readable chip text',
+    lives: 'Layered via slot',
+    how: 'Injected through `filters.columns[].renderInput` / `formatChip`, or rendered into `toolbar(table)`.',
+  },
+  {
+    capability: 'Faceted filters, global search, saved views, refresh',
+    lives: 'Layered via slot',
+    how: 'Rendered into `toolbar(table)` — a render-prop over the live table — driving `column.setFilterValue` and friends.',
+  },
+  {
+    capability: 'Bulk actions (permissions, confirm, registry merge)',
+    lives: 'Core chrome + slot',
+    how: 'The core owns the overlay and cross-page selection cache; content comes from `bulkActions({ selection, table, clearSelection })`.',
+  },
+  {
+    capability: 'Row actions, delete mutations',
+    lives: 'Core slot',
+    how: '`rowActions(row, { row, table })` appends the actions column; the mutation wiring stays in the shell.',
+  },
+  {
+    capability: 'GraphQL, query pruning, URL sync, persistence',
+    lives: 'Shell only',
+    how: 'The shell owns all of it and feeds the core through the controlled pairs; the core never fetches, routes, or persists.',
+  },
+  {
+    capability: 'Expanded rows, drag reorder, utility rows',
+    lives: 'Layered via escape hatch',
+    how: '`setTableOptions` mutates `TableOptions` before `useReactTable`, preserving the donor row-render seams.',
   },
 ];
 
@@ -192,51 +256,56 @@ type NotRow = { myth: string; reality: string };
 
 const WHAT_ITS_NOT: NotRow[] = [
   {
-    myth: 'A TanStack table',
-    reality: 'These take value props (page, pageSize, totalItems), not a table instance. No column model, no row model, no sorting engine.',
-  },
-  {
     myth: 'A data fetcher',
-    reality: 'The route or loader owns the query. The components never fetch; they render the numbers they are handed.',
-  },
-  {
-    myth: 'Filter logic',
-    reality: 'The consumer decides what a filter is and computes the active set. ListHeaderChips holds no filter state and does no children introspection.',
+    reality:
+      'The route or loader owns the query. `rows` is the current page (server) or the full set (client); the core renders what it is handed.',
   },
   {
     myth: 'A URL-state owner',
-    reality: 'Page and filter state live in the route. getPageHref and onPageChange only report intent; the consumer maps that to the URL.',
+    reality:
+      'Controlled configs report intent through `onChange`; the consumer maps that to the URL. The core holds no route state.',
   },
   {
-    myth: 'The full DataTable',
-    reality: 'Columns, sorting, row selection, and the toolbar wiring are a later phase. This is the layout and pagination shell only.',
+    myth: 'A persistence layer',
+    reality:
+      'Column visibility, page size, and saved views are persisted by the shell. The core forgets everything on unmount.',
+  },
+  {
+    myth: 'A filter interpreter',
+    reality:
+      'Operator values are opaque. The core stores and renders them as chips; the backend decides what `contains` or `between` means.',
+  },
+  {
+    myth: 'The dashboard table',
+    reality:
+      'Registries, permissions, GraphQL, and extensions resolve in the shell before props reach the core. This is the presentation and interaction engine only.',
   },
 ];
 
-// ── 1 · which header for which page ───────────────────────────────────────────
+// ── 1 · DataTable vs the primitives it composes ───────────────────────────────
 
-export const WhichHeader: Story = {
-  name: '1 · Which header for which page',
+export const WhenToReachForIt: Story = {
+  name: '1 · DataTable vs composing the primitives',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="ListHeader for lists, PageHeader for details"
-        intro="ListHeader is the three-zone header of a list page: a title row, a control row, and a chip row. PageHeader alone is the header of a detail or settings page, where there is no collection to filter. ListHeader does not replace PageHeader — the title row is a PageHeader composed as the first child, so there is one header vocabulary, not two."
+        title="Reach for DataTable when you need the engine"
+        intro="DataTable is not a fourth primitive next to ListHeader, the Table atom, and TablePagination — it is the molecule that assembles all three around one TanStack instance. Reach for it when you need sorting, selection, filtering, column visibility, or server pagination over a real collection. Compose the primitives yourself only when you deliberately do not want that engine: a static grid the user only reads, or a paginated list with no columns to model."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
-                <th className="p-3 font-medium">Page</th>
-                <th className="p-3 font-medium">Header</th>
+                <th className="p-3 font-medium">You need</th>
+                <th className="p-3 font-medium">Reach for</th>
                 <th className="p-3 font-medium">Why</th>
               </tr>
             </thead>
             <tbody>
-              {HEADER_CHOICES.map(({ page, header, why }) => (
-                <tr key={page} className="border-b align-top last:border-0">
-                  <td className="p-3 text-xs">{page}</td>
-                  <td className="p-3 font-mono text-xs">{header}</td>
+              {REACH_FOR.map(({ need, reach, why }) => (
+                <tr key={need} className="border-b align-top last:border-0">
+                  <td className="p-3 text-xs">{need}</td>
+                  <td className="p-3 font-mono text-xs">{reach}</td>
                   <td className="text-muted-foreground p-3 text-xs">{why}</td>
                 </tr>
               ))}
@@ -246,24 +315,83 @@ export const WhichHeader: Story = {
       </Section>
 
       <Section
-        title="The three zones, top to bottom"
-        intro="ListHeader is a vertical stack: PageHeader, then ListHeaderControls, then (only when filters are applied) ListHeaderChips. Each zone is layout only — it holds free children and no logic."
+        title="The engine, or a plain Table — not the engine for a plain Table"
+        intro="A collection you interact with is a DataTable: pass rows and columns, switch on the capabilities you need, and the header, sort affordances, and footer come with it. A short reference grid you only read is the Table atom — wrapping it in DataTable stands up a column model and selection cache for rows that never move."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A products list with client sorting and a header: DataTable owns the sortable columns and the ListHeader title zone through the header slot."
+          >
+            <DataTable
+              rows={PRODUCTS}
+              columns={productColumns}
+              getRowId={(p) => p.id}
+              sorting={{ defaultValue: [], mode: 'client' }}
+              header={
+                <PageHeader>
+                  <PageHeaderContent>
+                    <PageHeaderTitle>Products</PageHeaderTitle>
+                    <PageHeaderDescription>Everything in the catalog.</PageHeaderDescription>
+                  </PageHeaderContent>
+                </PageHeader>
+              }
+            />
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Three fixed rows nobody sorts or selects. DataTable's engine is dead weight — render the Table atom directly and keep the surface honest about what it does."
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Setting</TableHead>
+                  <TableHead>Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Currency</TableCell>
+                  <TableCell>USD</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Weight unit</TableCell>
+                  <TableCell>kg</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 2 · capabilities are opt-in ───────────────────────────────────────────────
+
+export const Capabilities: Story = {
+  name: '2 · Capabilities are opt-in',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Presence of the config is the only switch"
+        intro="Every capability is off until you pass its config, and passing the config turns on both the behavior and its chrome: `sorting` makes headers sortable, `rowSelection` adds the checkbox column, `pagination` renders the footer. There are no feature flags and no disabled placeholders — a capability you do not wire simply is not there. So wire only what a user can act on."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
-                <th className="p-3 font-medium">Zone</th>
-                <th className="p-3 font-medium">Component</th>
-                <th className="p-3 font-medium">Holds</th>
+                <th className="p-3 font-medium">Capability</th>
+                <th className="p-3 font-medium">Enable when</th>
+                <th className="p-3 font-medium">Skip when</th>
               </tr>
             </thead>
             <tbody>
-              {ZONES.map(({ zone, component, holds }) => (
-                <tr key={zone} className="border-b align-top last:border-0">
-                  <td className="p-3 text-xs">{zone}</td>
-                  <td className="p-3 font-mono text-xs">{component}</td>
-                  <td className="text-muted-foreground p-3 text-xs">{holds}</td>
+              {CAPABILITIES.map(({ capability, enableWhen, skipWhen }) => (
+                <tr key={capability} className="border-b align-top last:border-0">
+                  <td className="p-3 font-mono text-xs">{capability}</td>
+                  <td className="p-3 text-xs">{enableWhen}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{skipWhen}</td>
                 </tr>
               ))}
             </tbody>
@@ -272,57 +400,47 @@ export const WhichHeader: Story = {
       </Section>
 
       <Section
-        title="Compose PageHeader; never build a second header"
-        intro="The title row carries everything a detail page's header does — the name, the one primary action, the description — so it is the PageHeader compound, unchanged (see PageHeader / Guidance for the one-primary-action rule). Hand-rolling a bespoke title bar inside ListHeader forks the header vocabulary and drifts from the one primary-action contract."
+        title="Enable selection only when something acts on it"
+        intro="Row selection exists to feed an action: a bulk overlay, or a row action that operates on the checked set. Wire `rowSelection` together with the thing that consumes it. Checkboxes with nowhere to go are a control that promises an action the table cannot perform."
       >
         <div className="grid gap-3 lg:grid-cols-2">
           <Example
             verdict="do"
-            caption="The title row is a PageHeader composed as the first child: one primary action, consistent with every detail page. The control row sits below it."
+            caption="Selection plus a bulkActions overlay: checking rows reveals archive and delete, so the checkboxes lead somewhere real."
           >
-            <ListHeader>
-              <PageHeader>
-                <PageHeaderContent>
-                  <PageHeaderTitle>Orders</PageHeaderTitle>
-                  <PageHeaderDescription>Track and fulfill customer orders.</PageHeaderDescription>
-                </PageHeaderContent>
-                <PageHeaderActions>
-                  <Button variant="outline">Export</Button>
-                  <Button>
-                    <PlusIcon />
-                    New order
+            <DataTable
+              rows={PRODUCTS}
+              columns={productColumns}
+              getRowId={(p) => p.id}
+              rowSelection={{ defaultValue: {} }}
+              bulkActions={({ selection, clearSelection }) => (
+                <>
+                  <span className="text-sm font-medium">{selection.length} selected</span>
+                  <Button size="sm" variant="outline">
+                    <ArchiveIcon />
+                    Archive
                   </Button>
-                </PageHeaderActions>
-              </PageHeader>
-              <ListHeaderControls>
-                <SearchField placeholder="Search orders" />
-                <Button variant="outline">
-                  <ListFilterIcon />
-                  Filter
-                </Button>
-              </ListHeaderControls>
-            </ListHeader>
+                  <Button size="sm" variant="outline">
+                    <Trash2Icon />
+                    Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={clearSelection}>
+                    Clear
+                  </Button>
+                </>
+              )}
+            />
           </Example>
           <Example
             verdict="dont"
-            caption="A hand-rolled title bar re-invents what PageHeader already owns: two filled buttons compete, the type scale drifts, and the list page no longer matches the detail pages next to it."
+            caption="rowSelection wired with no bulkActions and no selection-consuming rowAction. The checkbox column renders, users tick rows, and nothing can ever act on them."
           >
-            <ListHeader>
-              <div className="flex items-center justify-between border-b pb-4">
-                <h1 className="text-2xl font-bold">Orders</h1>
-                <div className="flex gap-2">
-                  <Button>Export</Button>
-                  <Button>New order</Button>
-                </div>
-              </div>
-              <ListHeaderControls>
-                <SearchField placeholder="Search orders" />
-                <Button variant="outline">
-                  <ListFilterIcon />
-                  Filter
-                </Button>
-              </ListHeaderControls>
-            </ListHeader>
+            <DataTable
+              rows={PRODUCTS}
+              columns={productColumns}
+              getRowId={(p) => p.id}
+              rowSelection={{ defaultValue: {} }}
+            />
           </Example>
         </div>
       </Section>
@@ -330,137 +448,31 @@ export const WhichHeader: Story = {
   ),
 };
 
-// ── 2 · the chip row is applied filters ───────────────────────────────────────
+// ── 3 · who owns the state ────────────────────────────────────────────────────
 
-export const TheChipRow: Story = {
-  name: '2 · The chip row is the Chip molecule',
+export const ControlledState: Story = {
+  name: '3 · Who owns the state',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="Applied filters are Chips, rendered only when active"
-        intro="There is deliberately no FilterChip component. A removable applied filter is the Chip molecule: onRemove plus removeLabel for the × , and the field/operator as secondary text in a muted span (see Chip / Guidance). The consumer renders ListHeaderChips only while filters are applied — there is no empty chip-row placeholder holding blank space above the table."
-      >
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Example
-            verdict="do"
-            caption="Each applied filter is a Chip: the × removes it, and the field reads as muted secondary text. The row is present only because filters are active."
-          >
-            <ListHeaderChips>
-              <Chip icon={<TagIcon />} onRemove={() => {}} removeLabel="Remove Status is Paid">
-                Paid <span className="text-muted-foreground">in Status</span>
-              </Chip>
-              <Chip icon={<TagIcon />} onRemove={() => {}} removeLabel="Remove Channel is Europe">
-                Europe <span className="text-muted-foreground">in Channel</span>
-              </Chip>
-            </ListHeaderChips>
-          </Example>
-          <Example
-            verdict="dont"
-            caption="A bespoke filter pill re-invents the Chip: no accessible remove button, no shared styling, and none of the removability contract the Chip guarantees."
-          >
-            <ListHeaderChips>
-              <span className="bg-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-                Status: Paid ✕
-              </span>
-              <span className="bg-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-                Channel: Europe ✕
-              </span>
-            </ListHeaderChips>
-          </Example>
-        </div>
-      </Section>
-    </div>
-  ),
-};
-
-// ── 3 · pagination renders by capability ──────────────────────────────────────
-
-export const CapabilityProps: Story = {
-  name: '3 · Pagination renders by capability',
-  render: () => (
-    <div className="text-foreground max-w-4xl p-1">
-      <Section
-        title="TablePagination vs the Pagination atom"
-        intro="The library ships both a TablePagination molecule and a numbered-links Pagination atom, and they are not interchangeable. A list page or data table always uses TablePagination: sequential prev/next with a running range, where the count and the next page are what matters. The numbered Pagination atom — page links with an ellipsis for jumping to an arbitrary page — is for long-form and content contexts, and never sits under a list-page table. TablePagination deliberately excludes numbered links precisely because arbitrary-page jumps are not a list-table concern."
-      >
-        <div className="mb-4 overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[560px] text-left text-sm">
-            <thead>
-              <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
-                <th className="p-3 font-medium">Component</th>
-                <th className="p-3 font-medium">Use for</th>
-                <th className="p-3 font-medium">Vocabulary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PAGINATION_SIBLINGS.map(({ component, use, vocabulary }) => (
-                <tr key={component} className="border-b align-top last:border-0">
-                  <td className="p-3 font-mono text-xs">{component}</td>
-                  <td className="p-3 text-xs">{use}</td>
-                  <td className="text-muted-foreground p-3 text-xs">{vocabulary}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Example
-            verdict="do"
-            caption="A data table paginates with TablePagination: the running range answers “where am I in 132 orders?”, and prev/next walk the result."
-          >
-            <TablePagination page={2} pageSize={25} totalItems={132} onPageChange={() => {}} />
-          </Example>
-          <Example
-            verdict="dont"
-            caption="Numbered page links under a list table invite jumping to page 6 of a live-filtered result — a meaningless target — and drop the range and total the table actually needs."
-          >
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#" />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">1</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    2
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href="#">3</PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </Example>
-        </div>
-      </Section>
-
-      <Section
-        title="A feature renders only if its prop is wired"
-        intro="TablePagination has no feature flags. Each control is gated by the presence of its callback: wire the prop and the control appears; omit it and the control is simply absent. When the backend cannot paginate at all, render no TablePagination — the prop's absence is the switch, never a disabled placeholder for a capability the backend lacks."
+        title="Controlled means the prop is the source of truth every render"
+        intro="Each capability is either controlled — you pass `value` and `onChange`, and the prop drives every render — or uncontrolled, where you pass `defaultValue` and the core owns the state. Controlled is not a seed: the core reads `value` on every render, so pushing new state from the URL, a saved view, or a reset flows straight through. The consumer owns the URL, the fetching, and any persistence; DataTable renders the numbers it is handed and never fetches."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
-                <th className="p-3 font-medium">Feature</th>
-                <th className="p-3 font-medium">Renders when</th>
-                <th className="p-3 font-medium">Absent means</th>
+                <th className="p-3 font-medium">State</th>
+                <th className="p-3 font-medium">Typically</th>
+                <th className="p-3 font-medium">Consumer's job</th>
               </tr>
             </thead>
             <tbody>
-              {PAGINATION_CONTRACT.map(({ feature, renders, absent }) => (
-                <tr key={feature} className="border-b align-top last:border-0">
-                  <td className="p-3 text-xs">{feature}</td>
-                  <td className="p-3 font-mono text-xs">{renders}</td>
-                  <td className="text-muted-foreground p-3 text-xs">{absent}</td>
+              {OWNERSHIP.map(({ state, controlled, job }) => (
+                <tr key={state} className="border-b align-top last:border-0">
+                  <td className="p-3 font-mono text-xs">{state}</td>
+                  <td className="p-3 text-xs">{controlled}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{job}</td>
                 </tr>
               ))}
             </tbody>
@@ -469,26 +481,25 @@ export const CapabilityProps: Story = {
       </Section>
 
       <Section
-        title="Absence is the switch, not a disabled control"
-        intro="A backend that serves a fixed page size has no page-size capability. Express that by omitting onPageSizeChange, which drops the selector entirely. A disabled selector is worse than no selector: it advertises a control the user can never use."
+        title="Control the state the URL owns; default only what is ephemeral"
+        intro="If back/forward, a shareable link, or a saved view must reproduce the table, that state belongs in the URL and must be controlled — `value` bound to the route, `onChange` pushing to it. Reserve `defaultValue` for genuinely uncontrolled, ephemeral state (a client-only sort of an in-memory list). Using `defaultValue` for URL-owned state silently forks the table from the address bar."
       >
         <div className="grid gap-3 lg:grid-cols-2">
           <Example
             verdict="do"
-            caption="Fixed page size, so onPageSizeChange is omitted and no selector renders. Prev/next stay because onPageChange is wired. The footer shows only what the backend can actually do."
+            caption="Controlled sorting: `value` comes from the route (local state stands in here), `onChange` writes back. New sorts are shareable and survive navigation."
           >
-            <TablePagination page={2} pageSize={25} totalItems={132} onPageChange={() => {}} />
+            <ControlledSortingTable />
           </Example>
           <Example
             verdict="dont"
-            caption="Wiring onPageSizeChange to render a selector for a size the backend ignores dangles a dead control. If the capability isn't there, the prop shouldn't be either."
+            caption="defaultValue seeds a sort the core then owns alone. The URL never learns about it, so a shared link and the back button both land on a differently-sorted table."
           >
-            <TablePagination
-              page={2}
-              pageSize={25}
-              totalItems={132}
-              onPageChange={() => {}}
-              onPageSizeChange={() => {}}
+            <DataTable
+              rows={PRODUCTS}
+              columns={productColumns}
+              getRowId={(p) => p.id}
+              sorting={{ defaultValue: [{ id: 'name', desc: false }], mode: 'client' }}
             />
           </Example>
         </div>
@@ -497,46 +508,41 @@ export const CapabilityProps: Story = {
   ),
 };
 
-// ── 4 · anchor vs button, and what these are not ──────────────────────────────
+// ── 4 · relationship to the dashboard table, and what it is not ───────────────
 
-export const AnchorVsButton: Story = {
-  name: '4 · Anchor mode, button mode, and what these are not',
+export const DashboardRelationship: Story = {
+  name: '4 · The dashboard table, and what DataTable is not',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="getPageHref for links, onPageChange for client tables"
-        intro="Prev/next render as real <a href> elements when getPageHref is set, so full-page and RSC navigation work with a plain click (getPageHref wins over onPageChange for how the controls render). Pass onPageChange instead for a client-driven table that updates in place. Either way the route owns the page state — the component reports the target page, it does not store it."
+        title="The dashboard wraps this core; it does not replace it"
+        intro="The dashboard's richer table is a shell around this molecule. Generated columns, registries, GraphQL, saved views, and permissions resolve in that shell and reach the core through props and slots — columns as `ColumnDef`s, everything else through `toolbar`, `bulkActions`, `rowActions`, and the `setTableOptions` escape hatch. The core stays the presentation and interaction engine; the data layer stays outside it."
       >
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Example
-            verdict="do"
-            caption="Anchor mode: getPageHref makes prev/next real links, so a full-page products list paginates through the router with no client state."
-          >
-            <TablePagination
-              page={3}
-              pageSize={25}
-              totalItems={132}
-              getPageHref={(page) => `/products?page=${page}`}
-            />
-          </Example>
-          <Example
-            verdict="do"
-            caption="Button mode: onPageChange drives a client table that re-renders in place. The handler updates the route's state; the component holds none of its own."
-          >
-            <TablePagination
-              page={3}
-              pageSize={25}
-              totalItems={132}
-              onPageChange={() => {}}
-              onPageSizeChange={() => {}}
-            />
-          </Example>
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[600px] text-left text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
+                <th className="p-3 font-medium">Dashboard capability</th>
+                <th className="p-3 font-medium">Lives in</th>
+                <th className="p-3 font-medium">How it reaches the core</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DASHBOARD_MAP.map(({ capability, lives, how }) => (
+                <tr key={capability} className="border-b align-top last:border-0">
+                  <td className="p-3 text-xs">{capability}</td>
+                  <td className="p-3 font-mono text-xs">{lives}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{how}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Section>
 
       <Section
-        title="What these primitives are not"
-        intro="ListHeader and TablePagination are layout and value props. They carry no table engine, no data fetching, and no filter logic — that keeps them router-agnostic and reusable across every list surface. Reach for the full DataTable molecule, a later phase, when you need columns and sorting."
+        title="What DataTable is not"
+        intro="Keeping these outside the core is what lets one molecule serve the OSS dashboard, Cloud, and every ecosystem surface. It renders and it interacts; it does not own data, routes, or persistence."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">

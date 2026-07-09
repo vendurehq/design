@@ -1,0 +1,422 @@
+'use client';
+
+import {
+  type Column,
+  type ColumnDef,
+  type ColumnFiltersState,
+  flexRender,
+  functionalUpdate,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type OnChangeFn,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+  type TableOptions,
+  type TableState,
+  useReactTable,
+  type VisibilityState,
+} from '@tanstack/react-table';
+import { Checkbox } from '@vendure-io/ui/components/atoms/checkbox';
+import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@vendure-io/ui/components/atoms/table';
+import {
+  DataTableBulkActions,
+  useSelectionCache,
+} from '@vendure-io/ui/components/molecules/data-table/data-table-bulk-actions';
+import { DataTableColumnHeader } from '@vendure-io/ui/components/molecules/data-table/data-table-column-header';
+import {
+  DataTableAddFilter,
+  DataTableAppliedFilters,
+} from '@vendure-io/ui/components/molecules/data-table/data-table-filters';
+import {
+  buildDisplayColumns,
+  resolveSlot,
+} from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
+import type {
+  ControlledState,
+  DataTableProps,
+} from '@vendure-io/ui/components/molecules/data-table/data-table-types';
+import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
+import {
+  ListHeader,
+  ListHeaderChips,
+  ListHeaderControls,
+} from '@vendure-io/ui/components/molecules/data-table/list-header';
+import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
+import { cn } from '@vendure-io/ui/lib/utils';
+import * as React from 'react';
+
+// The composition root. Owns the single `useReactTable` instance and the
+// controlled/uncontrolled bridge, then lays out header → controls → chips →
+// bulk overlay → Table → footer. Every capability follows the Phase-1 rule
+// verbatim: a feature renders only if its config is wired — no feature flags, no
+// disabled placeholders. Only this folder imports TanStack; the composed
+// ListHeader/TablePagination/Chip primitives stay TanStack-free.
+
+/**
+ * Bridge a capability config to a `[value, onChange]` pair TanStack can consume
+ * as fully controlled. Controlled configs (`value`) are the source of truth every
+ * render; uncontrolled configs (`defaultValue` or nothing) get internal state the
+ * core owns, with any `onChange` observing. This fixes the donor's seed-then-emit
+ * bug: the prop, not a one-time seed, drives every render.
+ */
+function useControlledTableState<T>(
+  config: ControlledState<T> | undefined,
+  fallback: T,
+): readonly [T, OnChangeFn<T>] {
+  const controlled = config?.value !== undefined;
+  const [internal, setInternal] = React.useState<T>(config?.defaultValue ?? fallback);
+  const value = controlled ? (config?.value as T) : internal;
+  const onChange = React.useCallback<OnChangeFn<T>>(
+    (updater) => {
+      if (!controlled) setInternal((old) => functionalUpdate(updater, old));
+      config?.onChange?.(updater);
+    },
+    [controlled, config],
+  );
+  return [value, onChange] as const;
+}
+
+/** A string label for a column, from a string `header`, else the column id. */
+function headerLabelText<TData>(column: Column<TData, unknown>): string {
+  const header = column.columnDef.header;
+  return typeof header === 'string' ? header : column.id;
+}
+
+function ariaSort<TData>(
+  hasSorting: boolean,
+  column: Column<TData, unknown>,
+): 'ascending' | 'descending' | 'none' | undefined {
+  if (!hasSorting || !column.getCanSort()) return undefined;
+  const sorted = column.getIsSorted();
+  return sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none';
+}
+
+function DataTable<TData>({
+  rows,
+  columns,
+  getRowId,
+  isLoading,
+  skeletonRowCount = 10,
+  pagination,
+  sorting,
+  filters,
+  columnVisibility,
+  rowSelection,
+  header,
+  toolbar,
+  bulkActions,
+  rowActions,
+  emptyState,
+  renderRow,
+  setTableOptions,
+  labels,
+  className,
+}: DataTableProps<TData>) {
+  // Resolve labels once per `labels` identity so the derived closures are stable
+  // deps for the display-column memo below.
+  const l = React.useMemo(
+    () => ({
+      empty: labels?.empty ?? 'No results',
+      selectAllRows: labels?.selectAllRows ?? 'Select all rows',
+      selectRow: labels?.selectRow ?? ((index: number) => `Select row ${index + 1}`),
+      rowActions: labels?.rowActions ?? 'Open row actions',
+      columnsTrigger: labels?.columnsTrigger ?? 'Columns',
+      columnsHeading: labels?.columnsHeading ?? 'Toggle columns',
+      addFilter: labels?.addFilter ?? 'Add filter',
+      removeFilter:
+        labels?.removeFilter ?? ((columnLabel: string) => `Remove ${columnLabel} filter`),
+      sortLabel: labels?.sortLabel ?? ((columnLabel: string) => `Sort by ${columnLabel}`),
+      filtersCollapsed: labels?.filtersCollapsed ?? ((count: number) => `${count} filters`),
+      pagination: labels?.pagination,
+    }),
+    [labels],
+  );
+
+  const [sortingState, onSortingChange] = useControlledTableState<SortingState>(sorting, []);
+  const [filtersState, onColumnFiltersChange] = useControlledTableState<ColumnFiltersState>(
+    filters,
+    [],
+  );
+  const [visibilityState, onColumnVisibilityChange] = useControlledTableState<VisibilityState>(
+    columnVisibility,
+    {},
+  );
+  const [selectionState, onRowSelectionChange] = useControlledTableState<RowSelectionState>(
+    rowSelection,
+    {},
+  );
+
+  // Inject the select/actions display columns around the data columns. `meta` on
+  // the consumer's columns is never touched — it's the dashboard's field-info seam.
+  const displayColumns = React.useMemo(() => {
+    // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
+    const selectColumn: ColumnDef<TData, any> | undefined = rowSelection
+      ? {
+          id: 'select',
+          enableSorting: false,
+          enableHiding: false,
+          header: ({ table }) => (
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+              onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
+              aria-label={l.selectAllRows}
+            />
+          ),
+          cell: ({ row }) => (
+            <Checkbox
+              checked={row.getIsSelected()}
+              disabled={!row.getCanSelect()}
+              onCheckedChange={(checked) => row.toggleSelected(checked)}
+              aria-label={l.selectRow(row.index)}
+            />
+          ),
+        }
+      : undefined;
+
+    // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
+    const actionsColumn: ColumnDef<TData, any> | undefined = rowActions
+      ? {
+          id: 'actions',
+          enableSorting: false,
+          enableHiding: false,
+          header: () => <span className="sr-only">{l.rowActions}</span>,
+          cell: ({ row, table }) => rowActions(row.original, { row, table }),
+        }
+      : undefined;
+
+    return buildDisplayColumns(columns, { select: selectColumn, actions: actionsColumn });
+  }, [columns, rowSelection, rowActions, l.selectAllRows, l.selectRow, l.rowActions]);
+
+  const state: Partial<TableState> = {};
+  if (sorting) state.sorting = sortingState;
+  if (filters) state.columnFilters = filtersState;
+  if (columnVisibility) state.columnVisibility = visibilityState;
+  if (rowSelection) state.rowSelection = selectionState;
+  if (pagination) {
+    state.pagination = { pageIndex: pagination.page - 1, pageSize: pagination.pageSize };
+  }
+
+  const onPaginationChange: OnChangeFn<PaginationState> = (updater) => {
+    if (!pagination) return;
+    const current: PaginationState = {
+      pageIndex: pagination.page - 1,
+      pageSize: pagination.pageSize,
+    };
+    const next = functionalUpdate(updater, current);
+    if (next.pageSize !== current.pageSize) pagination.onPageSizeChange?.(next.pageSize);
+    if (next.pageIndex !== current.pageIndex) pagination.onPageChange(next.pageIndex + 1);
+  };
+
+  const baseOptions: TableOptions<TData> = {
+    data: rows,
+    columns: displayColumns,
+    state,
+    getRowId,
+    getCoreRowModel: getCoreRowModel(),
+    enableSorting: sorting != null,
+    enableFilters: filters != null,
+    // Server mode (default) emits only; client mode enables the matching engine.
+    manualSorting: sorting ? sorting.mode !== 'client' : undefined,
+    manualFiltering: filters ? filters.mode !== 'client' : undefined,
+    manualPagination: pagination ? pagination.mode !== 'client' : undefined,
+    rowCount: pagination && pagination.mode !== 'client' ? pagination.totalItems : undefined,
+  };
+
+  if (sorting) {
+    baseOptions.onSortingChange = onSortingChange;
+    if (sorting.mode === 'client') baseOptions.getSortedRowModel = getSortedRowModel();
+  }
+  if (filters) {
+    baseOptions.onColumnFiltersChange = onColumnFiltersChange;
+    if (filters.mode === 'client') baseOptions.getFilteredRowModel = getFilteredRowModel();
+  }
+  if (columnVisibility) baseOptions.onColumnVisibilityChange = onColumnVisibilityChange;
+  if (rowSelection) {
+    baseOptions.onRowSelectionChange = onRowSelectionChange;
+    baseOptions.enableRowSelection = rowSelection.enableRowSelection ?? true;
+  }
+  if (pagination) {
+    baseOptions.onPaginationChange = onPaginationChange;
+    if (pagination.mode === 'client') baseOptions.getPaginationRowModel = getPaginationRowModel();
+  }
+
+  const table = useReactTable(setTableOptions ? setTableOptions(baseOptions) : baseOptions);
+
+  const selectionCache = useSelectionCache(table);
+
+  const bodyRows = table.getRowModel().rows;
+  const columnCount = table.getVisibleLeafColumns().length;
+
+  const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
+  const hasFilterMenu = Boolean(filters?.columns && filters.columns.length > 0);
+  const showControls = toolbar != null || columnVisibility != null || hasFilterMenu;
+  const showChips = filters != null && table.getState().columnFilters.length > 0;
+  const showHeader = header != null || showControls || showChips;
+  const showBulk = rowSelection != null && bulkActions != null;
+
+  return (
+    <div data-slot="data-table" className={cn('flex flex-col gap-4', className)}>
+      {showHeader && (
+        <ListHeader>
+          {header}
+          {showControls && (
+            <ListHeaderControls>
+              {toolbarNode}
+              {hasFilterMenu && filters?.columns && (
+                <DataTableAddFilter table={table} columns={filters.columns} label={l.addFilter} />
+              )}
+              {columnVisibility != null && (
+                <DataTableViewOptions
+                  table={table}
+                  triggerLabel={l.columnsTrigger}
+                  heading={l.columnsHeading}
+                />
+              )}
+            </ListHeaderControls>
+          )}
+          {showChips && (
+            <ListHeaderChips>
+              <DataTableAppliedFilters
+                table={table}
+                columns={filters?.columns}
+                inlineChipLimit={filters?.inlineChipLimit}
+                removeLabel={l.removeFilter}
+                collapsedLabel={l.filtersCollapsed}
+              />
+            </ListHeaderChips>
+          )}
+        </ListHeader>
+      )}
+
+      {showBulk && bulkActions && (
+        <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
+      )}
+
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((headerCell) => {
+                const content = headerCell.isPlaceholder
+                  ? null
+                  : flexRender(headerCell.column.columnDef.header, headerCell.getContext());
+                return (
+                  <TableHead
+                    key={headerCell.id}
+                    aria-sort={ariaSort(sorting != null, headerCell.column)}
+                  >
+                    {sorting != null && !headerCell.isPlaceholder ? (
+                      <DataTableColumnHeader
+                        column={headerCell.column}
+                        sortLabel={l.sortLabel(headerLabelText(headerCell.column))}
+                      >
+                        {content}
+                      </DataTableColumnHeader>
+                    ) : (
+                      content
+                    )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {isLoading && rows.length === 0 ? (
+            Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+              <TableRow key={`skeleton-${rowIndex}`}>
+                {Array.from({ length: Math.max(columnCount, 1) }).map((__, cellIndex) => (
+                  <TableCell key={`skeleton-cell-${cellIndex}`}>
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : bodyRows.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell
+                colSpan={Math.max(columnCount, 1)}
+                className="text-muted-foreground h-24 text-center"
+              >
+                {emptyState ?? l.empty}
+              </TableCell>
+            </TableRow>
+          ) : (
+            bodyRows.map((row) => {
+              const defaultRow = (
+                <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+              // Row-render seam: consumers can swap the default row for a
+              // full-width utility row or a per-row wrapper the cell grid can't
+              // express. Returning `defaultRow` keeps the built-in rendering.
+              return renderRow ? (
+                <React.Fragment key={row.id}>
+                  {renderRow(row, { table, columnCount, defaultRow })}
+                </React.Fragment>
+              ) : (
+                defaultRow
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+
+      {pagination && (
+        <TablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalItems={pagination.totalItems ?? table.getPrePaginationRowModel().rows.length}
+          onPageChange={pagination.onPageChange}
+          onPageSizeChange={pagination.onPageSizeChange}
+          pageSizeOptions={pagination.pageSizeOptions}
+          getPageHref={pagination.getPageHref}
+          formatRange={pagination.formatRange}
+          navLabel={l.pagination?.navLabel}
+          previousLabel={l.pagination?.previousLabel}
+          nextLabel={l.pagination?.nextLabel}
+          pageSizeLabel={l.pagination?.pageSizeLabel}
+        />
+      )}
+    </div>
+  );
+}
+
+export { DataTable };
+
+// Re-export the consumer-facing TanStack types so columns can be authored from
+// the same import as `DataTable` — no direct `@tanstack/react-table` dependency
+// in consumer code just to type a `ColumnDef`.
+export type {
+  CellContext,
+  ColumnDef,
+  ColumnFiltersState,
+  HeaderContext,
+  OnChangeFn,
+  Row,
+  RowSelectionState,
+  SortingState,
+  Table,
+  TableOptions,
+  VisibilityState,
+} from '@tanstack/react-table';
+// Re-export the full DataTable type surface so a consumer imports everything
+// (props, capability configs, contexts, labels) from this one module.
+export type * from '@vendure-io/ui/components/molecules/data-table/data-table-types';
