@@ -46,7 +46,6 @@ There is deliberately no `organisms/` — composition depth is not a boundary he
 
 - `./components/atoms/*` → individual atoms
 - `./components/molecules/*` → individual molecules
-- `./components/ui/*` → **deprecated** alias for atoms, `./components/custom/*` → **deprecated** alias for molecules (same files, no shims; removed at ui v2)
 - `./lib/*` → utilities
 - `./hooks/*` → hooks
 

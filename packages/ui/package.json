@@ -14,8 +14,6 @@
   "exports": {
     "./components/atoms/*": "./src/components/atoms/*.tsx",
     "./components/molecules/*": "./src/components/molecules/*.tsx",
-    "./components/ui/*": "./src/components/atoms/*.tsx",
-    "./components/custom/*": "./src/components/molecules/*.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts"
   },
