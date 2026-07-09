@@ -137,9 +137,9 @@
 .dark {
   --background: oklch(0.13 0.007 231);
   --foreground: oklch(0.92 0.004 231);
-  --surface: oklch(0.17 0.007 231);
-  --surface-raised: oklch(0.21 0.007 231);
-  --overlay: oklch(0.23 0.007 231);
+  --surface: oklch(0.16 0.007 231);
+  --surface-raised: oklch(0.18 0.007 231);
+  --overlay: oklch(0.20 0.007 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.92 0.004 231);
@@ -190,7 +190,7 @@
   --sidebar-foreground: oklch(0.85 0.004 231);
   --sidebar-primary: oklch(0.93 0.004 231);
   --sidebar-primary-foreground: oklch(0.2 0.007 231);
-  --sidebar-accent: oklch(0.23 0.007 231);
+  --sidebar-accent: oklch(0.18 0.007 231);
   --sidebar-accent-foreground: oklch(0.95 0.004 231);
   --sidebar-border: oklch(0.28 0.007 231);
   --sidebar-ring: oklch(0.55 0.005 231);
