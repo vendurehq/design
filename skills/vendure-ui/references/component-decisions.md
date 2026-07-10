@@ -44,10 +44,12 @@ Compose actions as an emphasis ladder with one primary action per view.
 - **One primary action per view:** Choose the single most-important action and give it the default filled Button. Step every other action down.
 - **Variant expresses weight, not color preference:** Choose variants relative to neighboring actions; do not use filled or destructive styling merely to attract attention.
 - **Destructive means loss:** Reserve destructive for irreversible or removing actions. An outward-facing action is not automatically destructive.
+- **Brand is an identity spend, not a louder primary:** Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.
 
 **Choose:**
 
 - `default`: The single primary action of the view.
+- `brand`: A deliberate identity or marketing CTA (start a trial, upgrade to Cloud), never a louder in-app primary.
 - `secondary`: A supporting action that still deserves a filled surface.
 - `outline`: The common neutral partner: cancel, back, or dismiss.
 - `ghost`: Tertiary, overflow, or icon actions that should recede.

@@ -11,6 +11,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // Identity/marketing CTA only ("Start free trial", "Upgrade to Cloud"):
+        // a deliberate brand moment, not a louder `default` primary. Brand is a
+        // signature, not a wallpaper; see Button guidance before reaching for it.
+        brand: "bg-brand text-brand-foreground hover:bg-brand/80",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:

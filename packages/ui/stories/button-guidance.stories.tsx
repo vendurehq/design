@@ -161,3 +161,34 @@ export const ChoosingAVariant: Story = {
     </div>
   ),
 };
+
+// ── brand is identity, not emphasis ──────────────────────────────────────────
+
+export const BrandIsIdentity: Story = {
+  name: '3 · Brand is identity, not emphasis',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="The brand variant is an identity spend"
+        intro="brand is not a step above default; it sits off the emphasis ladder entirely. Reserve it for a deliberate identity or marketing CTA (start a trial, upgrade to Cloud) where the button itself is the brand moment. Using it to make an in-app primary louder erodes the signature, the exact busy-app problem accent rationing exists to prevent."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A marketing or entry surface where the button is the brand moment. Neutral partners keep it singular."
+          >
+            <Button variant="brand">Start free trial</Button>
+            <Button variant="outline">Contact sales</Button>
+          </Example>
+          <Example
+            verdict="dont"
+            caption='Brand used as "primary but shinier" in a routine in-app toolbar. It spends the signature on a Save button, so every screen ends up competing for attention.'
+          >
+            <Button variant="brand">Save</Button>
+            <Button variant="outline">Cancel</Button>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
