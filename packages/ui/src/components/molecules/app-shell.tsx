@@ -73,16 +73,38 @@ function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>)
   );
 }
 
-function AppShellMain({ className, id = 'main-content', ...props }: React.ComponentProps<'main'>) {
+interface AppShellMainProps extends React.ComponentProps<'main'> {
+  /** The element responsible for scrolling the main content region. */
+  scrollOwner?: 'main' | 'container';
+}
+
+function AppShellMain({
+  className,
+  id = 'main-content',
+  scrollOwner = 'main',
+  ...props
+}: AppShellMainProps) {
   return (
     <main
       id={id}
       tabIndex={-1}
       data-slot="app-shell-main"
-      className={cn('min-h-0 min-w-0 flex-1 overflow-auto outline-none', className)}
+      className={cn(
+        scrollOwner === 'main'
+          ? 'min-h-0 min-w-0 flex-1 overflow-auto outline-none'
+          : 'min-w-0 flex-1 outline-none',
+        className,
+      )}
       {...props}
     />
   );
 }
 
-export { AppShell, AppShellSidebar, AppShellContent, AppShellHeader, AppShellMain };
+export {
+  AppShell,
+  AppShellSidebar,
+  AppShellContent,
+  AppShellHeader,
+  AppShellMain,
+  type AppShellMainProps,
+};

@@ -196,42 +196,45 @@ export const Anatomy: Story = {
 export const WithSidebarAtom: Story = {
   name: 'With the Sidebar atom (production shell)',
   render: () => (
-    <AppShell className="h-[620px] min-h-0 overflow-hidden">
-      <SidebarProvider className="min-h-0">
-        <Sidebar variant="inset">
-          <SidebarHeader>
-            <div className="flex items-center gap-2 px-2 py-1.5">
-              <div className="bg-brand size-6 rounded-md" />
-              <span className="text-sm font-semibold">Vendure</span>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {nav.map(({ icon: Icon, label, active }) => (
-                    <SidebarMenuItem key={label}>
-                      <SidebarMenuButton isActive={active}>
-                        <Icon />
-                        <span>{label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-        <SidebarInset>
-          <AppShellHeader>
-            <SidebarTrigger />
-            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
-          </AppShellHeader>
-          <AppShellMain>
-            <Dashboard />
-          </AppShellMain>
-        </SidebarInset>
-      </SidebarProvider>
-    </AppShell>
+    <>
+      <SkipLink />
+      <AppShell className="h-[620px] min-h-0 overflow-hidden">
+        <SidebarProvider className="min-h-0">
+          <Sidebar variant="inset">
+            <SidebarHeader>
+              <div className="flex items-center gap-2 px-2 py-1.5">
+                <div className="bg-brand size-6 rounded-md" />
+                <span className="text-sm font-semibold">Vendure</span>
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {nav.map(({ icon: Icon, label, active }) => (
+                      <SidebarMenuItem key={label}>
+                        <SidebarMenuButton isActive={active}>
+                          <Icon />
+                          <span>{label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
+          <SidebarInset render={<div />}>
+            <AppShellHeader>
+              <SidebarTrigger />
+              <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+            </AppShellHeader>
+            <AppShellMain>
+              <Dashboard />
+            </AppShellMain>
+          </SidebarInset>
+        </SidebarProvider>
+      </AppShell>
+    </>
   ),
 };

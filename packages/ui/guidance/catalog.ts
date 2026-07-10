@@ -31,7 +31,11 @@ export const uiGuidance = [
     rules: [
       {
         title: 'The shell owns anatomy',
-        body: 'AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. It stays viewport-bound; within the content pane, AppShellMain owns content scrolling so the header and canvas inset remain visible.',
+        body: 'AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. Prefer AppShellMain as the scroll owner so the viewport-bound shell keeps its header and canvas inset visible; use container ownership only when integrating with an established shell that already owns scrolling.',
+      },
+      {
+        title: 'Compose one main landmark with Sidebar',
+        body: 'When using the collapsible Sidebar atom, render SidebarInset as a div and keep AppShellMain as the single focusable main landmark.',
       },
       {
         title: 'The consumer owns application state',

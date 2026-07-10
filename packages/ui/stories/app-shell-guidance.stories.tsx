@@ -35,9 +35,11 @@ export const Ownership: Story = {
       <Section title="The invariant anatomy">
         <p className="text-muted-foreground max-w-2xl text-sm">
           Every authenticated surface gets one skip link, one navigation region, one compact header,
-          and one focusable main region that owns content scrolling while the viewport-bound shell
-          keeps its canvas inset visible. Apps fill those slots with their own router links,
-          organization switcher, user menu, and route outlet.
+          and one focusable main region. Prefer AppShellMain as the scroll owner so the
+          viewport-bound shell keeps its header and canvas inset visible. When integrating with an
+          established shell that already owns scrolling, set scrollOwner=&quot;container&quot;. Apps
+          fill the slots with their own router links, organization switcher, user menu, and route
+          outlet.
         </p>
         <div className="h-80 overflow-hidden rounded-xl border">
           <SkipLink href="#guidance-main" />
@@ -65,7 +67,8 @@ export const Ownership: Story = {
             <p className="text-success-subtle-foreground font-semibold">Do</p>
             <p className="text-muted-foreground mt-2">
               Compose router-specific links inside the shared slots and keep the surface, focus,
-              scroll, and responsive rules intact.
+              scroll, and responsive rules intact. With the Sidebar atom, render SidebarInset as a
+              div so AppShellMain remains the only main landmark.
             </p>
           </div>
           <div className="rounded-lg border p-4 text-sm">
