@@ -1,11 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import cases from './cases.json';
 
 const fixtureRoot = join(tmpdir(), `vendure-design-lint-${process.pid}`);
-const pluginPath = join(import.meta.dir, '..', 'biome', 'no-raw-colors.grit');
+const errorPluginPath = join(import.meta.dir, '..', 'biome', 'no-raw-colors.grit');
+const warningPluginPath = join(import.meta.dir, '..', 'biome', 'no-raw-colors-warn.grit');
 
 beforeAll(async () => {
   await mkdir(fixtureRoot, { recursive: true });
@@ -15,7 +16,7 @@ afterAll(async () => {
   await rm(fixtureRoot, { recursive: true, force: true });
 });
 
-async function lint(code: string) {
+async function lint(code: string, pluginPath = errorPluginPath) {
   const fixturePath = join(fixtureRoot, 'fixture.tsx');
   const configPath = join(fixtureRoot, 'biome.json');
   await Bun.write(fixturePath, code);
@@ -54,4 +55,18 @@ describe('Biome no-raw-colors', () => {
       expect(result.output.match(/Use a semantic Vendure color slot/g)).toHaveLength(1);
     });
   }
+
+  test('offers a warning-level variant for gradual adoption', async () => {
+    const result = await lint("const color = '#fff';", warningPluginPath);
+    expect(result.exitCode, result.output).toBe(0);
+    expect(result.output.match(/Use a semantic Vendure color slot/g)).toHaveLength(1);
+  });
+
+  test('keeps the error and warning variants behaviorally identical', async () => {
+    const [errorPlugin, warningPlugin] = await Promise.all([
+      readFile(errorPluginPath, 'utf8'),
+      readFile(warningPluginPath, 'utf8'),
+    ]);
+    expect(warningPlugin.replaceAll('severity="warn"', 'severity="error"')).toBe(errorPlugin);
+  });
 });
