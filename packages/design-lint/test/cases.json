@@ -1,0 +1,18 @@
+{
+  "valid": [
+    "const view = <div className='bg-background text-foreground border-border' />;",
+    "const view = <div className='bg-success-subtle text-success-subtle-foreground border-success-border' />;",
+    "const view = <StatusBadge tone='success'>Active</StatusBadge>;",
+    "const view = <a href='#feed'>Activity</a>;",
+    "const view = <div className={`bg-${surface}`} />;"
+  ],
+  "invalid": [
+    "const view = <div className='bg-blue-500 text-white' />;",
+    "const view = <div className='bg-black/80' />;",
+    "const view = <span className='text-white'>Label</span>;",
+    "const view = <div className='dark:hover:border-zinc-700' />;",
+    "const view = <div style={{ color: '#ffffff' }} />;",
+    "const color = 'oklch(0.76 0.15 231)';",
+    "const color = 'var(--brand-500)';"
+  ]
+}

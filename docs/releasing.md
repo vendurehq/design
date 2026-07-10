@@ -8,6 +8,7 @@ Each package is released independently by creating a GitHub Release with a packa
 |---|---|---|
 | `@vendure-io/design-tokens` | `design-tokens/v{version}` | `design-tokens/v1.2.0` |
 | `@vendure-io/ui` | `ui/v{version}` | `ui/v2.0.0` |
+| `@vendure-io/design-lint` | `design-lint/v{version}` | `design-lint/v1.0.0` |
 
 Prereleases use the same tag format with a semver prerelease suffix:
 
@@ -15,6 +16,7 @@ Prereleases use the same tag format with a semver prerelease suffix:
 |---|---|---|
 | `@vendure-io/design-tokens` | `design-tokens/v1.3.0-beta.0` | `beta` |
 | `@vendure-io/ui` | `ui/v2.1.0-rc.0` | `rc` |
+| `@vendure-io/design-lint` | `design-lint/v1.0.0-beta.0` | `beta` |
 
 The first prerelease identifier becomes the npm dist-tag. Use named channels such as `alpha`, `beta`, `rc`, or `next`; avoid numeric-only prerelease identifiers like `1.3.0-0`.
 
@@ -32,6 +34,7 @@ For prereleases, use a prerelease version in the tag and check **Set as a pre-re
 ```sh
 gh release create ui/v2.1.0-beta.0 --title "@vendure-io/ui v2.1.0-beta.0" --generate-notes --prerelease
 gh release create design-tokens/v1.3.0-beta.0 --title "@vendure-io/design-tokens v1.3.0-beta.0" --generate-notes --prerelease
+gh release create design-lint/v1.0.0-beta.0 --title "@vendure-io/design-lint v1.0.0-beta.0" --generate-notes --prerelease
 ```
 
 The workflow will:
@@ -71,6 +74,14 @@ Two behaviors make this safe:
 
 Packages follow independent semver. A design-tokens bump does not require a ui bump unless the ui package needs the new tokens.
 
+## Agent Skills
+
+The skills install from `main` rather than npm and do not have a separate release line. When a package change affects consumer decisions, imports, composition, or token ownership:
+
+1. Update the corresponding structured guidance in the same pull request.
+2. Run `bun run skills:generate` and commit the generated references.
+3. Mention `npx skills update --global vendure-ui vendure-tokens` in the package release notes.
+
 ## Workspace Dependency Resolution
 
 `@vendure-io/ui` depends on `@vendure-io/design-tokens` via `workspace:*` in the repo. During the ui release workflow, this is resolved to a caret range (e.g. `^1.2.0`) in the published tarball. The `workspace:*` value stays in the repo — only the npm tarball gets the resolved version.
@@ -78,7 +89,7 @@ Packages follow independent semver. A design-tokens bump does not require a ui b
 ## Troubleshooting
 
 ### Workflow didn't run
-Check the tag format. Tags must match `design-tokens/v*` or `ui/v*` exactly. Old-style `v1.0.0` tags won't trigger either workflow.
+Check the tag format. Tags must match `design-tokens/v*`, `ui/v*`, or `design-lint/v*` exactly. Old-style `v1.0.0` tags won't trigger a workflow.
 
 ### Prerelease published as latest
 The workflow derives the npm dist-tag from the first prerelease identifier. A tag like `ui/v2.1.0-beta.0` publishes with `--tag beta`; stable tags publish with `--tag latest`.

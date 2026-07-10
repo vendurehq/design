@@ -1,0 +1,6 @@
+interface:
+  display_name: "Vendure Tokens"
+  short_description: "Apply Vendure semantic design tokens"
+  default_prompt: "Use $vendure-tokens to review this styling against Vendure token rules."
+policy:
+  allow_implicit_invocation: true

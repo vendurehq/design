@@ -1,0 +1,124 @@
+{
+  "status": "phase-two-hardening",
+  "cases": [
+    {
+      "skill": "vendure-ui",
+      "prompt": "Build a product list page in a Vendure Dashboard extension with filtering, pagination, loading, empty, and error states.",
+      "context": "The code imports defineDashboardExtension from @vendure/dashboard.",
+      "expect": [
+        "Imports UI from @vendure/dashboard",
+        "Uses the collection/list recipe and the dashboard page host",
+        "Keeps fetching and URL state consumer-owned",
+        "Distinguishes loading, first-run empty, filtered empty, and error"
+      ],
+      "reject": [
+        "Direct @vendure-io/ui imports",
+        "A hand-built table engine when DataTable fits",
+        "One generic no-data state for every outcome"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Create a standalone customer detail form with save, cancel, account status, and delete actions.",
+      "context": "The app uses @vendure-io/ui and an existing form-state library.",
+      "expect": [
+        "Uses exact @vendure-io/ui subpaths",
+        "Preserves the existing form-state library",
+        "Uses Field composition and StatusBadge",
+        "Keeps one primary save action and separates destructive delete"
+      ],
+      "reject": [
+        "A new form-state dependency",
+        "Multiple filled primary actions",
+        "A Badge or raw color class for account state"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Review this screen where an API error is rendered as 'No orders yet' with a create button and an illustration in every table row.",
+      "context": "Review only; do not edit files.",
+      "expect": [
+        "Reports ErrorState instead of EmptyState",
+        "Reports the incorrect create recovery",
+        "Reports repeated row illustrations",
+        "Remains read-only"
+      ],
+      "reject": [
+        "Edits files",
+        "Treats the failure as successful emptiness",
+        "Leaves the repeated illustrations unreported"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "A locally composed export panel is now needed by a second consumer. Implement the second copy.",
+      "context": "No existing molecule currently represents the panel.",
+      "expect": [
+        "Flags the composition for graduation",
+        "Selects a donor rather than creating a second divergent copy",
+        "Keeps domain-specific data consumer-owned"
+      ],
+      "reject": [
+        "Creates another independent copy without comment",
+        "Debates atom versus molecule by composition depth"
+      ]
+    },
+    {
+      "skill": "vendure-tokens",
+      "prompt": "Change a card in a vendurehq repository from bg-slate-100 to the appropriate design-system styling.",
+      "context": "The origin remote is git@github.com:vendurehq/cloud.git.",
+      "expect": [
+        "Classifies the repository as Vendure-owned",
+        "Replaces the ramp utility with a semantic surface slot",
+        "Does not redefine published token values"
+      ],
+      "reject": [
+        "Keeps a ramp class in component markup",
+        "Overrides the shared slate or surface values"
+      ]
+    },
+    {
+      "skill": "vendure-tokens",
+      "prompt": "Brand a standalone partner portal with a custom theme while continuing to use Vendure UI components.",
+      "context": "The repository is external and does not define a Dashboard extension.",
+      "expect": [
+        "Classifies the app as standalone external",
+        "Allows deliberate semantic slot remapping",
+        "Keeps component classes semantic",
+        "Uses a namespaced semantic slot for a genuinely product-specific color concept"
+      ],
+      "reject": [
+        "Uses literals or ramp steps in component markup",
+        "Applies Vendure-owned no-override policy"
+      ]
+    },
+    {
+      "skill": "vendure-tokens",
+      "prompt": "Add custom blue values inside a third-party Vendure Dashboard extension so it matches the plugin brand.",
+      "context": "The task file calls defineDashboardExtension from @vendure/dashboard.",
+      "expect": [
+        "Classifies the code as a Dashboard extension",
+        "Requires inherited dashboard semantic values",
+        "Explains why embedded extensions do not remap the host theme"
+      ],
+      "reject": [
+        "Allows overrides because the repository owner is external",
+        "Uses plugin-brand literals in component code"
+      ]
+    },
+    {
+      "skill": "vendure-tokens",
+      "prompt": "Review a component containing text-green-600, style={{ color: '#fff' }}, and var(--brand-500).",
+      "context": "These usages are outside approved theme-definition files.",
+      "expect": [
+        "Reports all three mechanical violations",
+        "Asks for semantic replacements based on meaning",
+        "Distinguishes component code from theme-definition exceptions"
+      ],
+      "reject": [
+        "Approves a literal because it looks correct",
+        "Suggests an automatic color-to-color rewrite without semantic context"
+      ]
+    }
+  ]
+}
