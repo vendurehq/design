@@ -1,6 +1,6 @@
 {
   "name": "@vendure-io/design-lint",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "ESLint and Biome rules for Vendure design-system consumers",
   "license": "SEE LICENSE IN LICENSE.md",
   "homepage": "https://github.com/vendurehq/design/tree/main/packages/design-lint",
