@@ -56,6 +56,24 @@ To consume the design system in your app, follow the [getting started guide](./d
 - [Testing](./docs/testing.md): CI quality gates (a11y, visual regression) and baselines
 - [Releasing](./docs/releasing.md): how packages are versioned and published
 
+## Agent setup
+
+Install the portable UI composition and token skills globally for Codex, Claude Code, or another supported agent:
+
+```sh
+npx skills add vendurehq/design --skill vendure-ui --skill vendure-tokens --global
+```
+
+The skills are model-invoked, so developers can describe the screen they want to build or review without selecting a skill manually. See [Agent Skills](./docs/agent-skills.md) for non-interactive installation and host-specific behavior.
+
+Add the mechanical semantic-color checks to a consuming app:
+
+```sh
+bun add --dev @vendure-io/design-lint
+```
+
+Enable either the recommended ESLint config or the Biome GritQL plugin as shown in the [`@vendure-io/design-lint` package guide](./packages/design-lint/README.md).
+
 ## Development
 
 This repo uses [Bun](https://bun.sh) and [Turborepo](https://turborepo.com).
