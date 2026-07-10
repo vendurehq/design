@@ -40,7 +40,7 @@ export const Ownership: Story = {
         </p>
         <div className="h-80 overflow-hidden rounded-xl border">
           <SkipLink href="#guidance-main" />
-          <AppShell className="min-h-0">
+          <AppShell className="h-full">
             <AppShellSidebar className="w-44">
               <div className="flex items-center gap-2 px-2 text-sm font-medium">
                 <LayoutDashboardIcon className="size-4" /> Vendure

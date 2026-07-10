@@ -20,3 +20,17 @@ test('AppShell exposes a matching skip link and focus target', () => {
   expect(html).toContain('tabindex="-1"');
   expect(html).toContain('data-slot="app-shell-header"');
 });
+
+test('AppShell keeps its canvas inset visible while main scrolls', () => {
+  const html = renderToStaticMarkup(
+    <AppShell>
+      <AppShellContent>
+        <AppShellMain>Content</AppShellMain>
+      </AppShellContent>
+    </AppShell>,
+  );
+
+  expect(html).toContain('h-svh');
+  expect(html).toContain('overflow-hidden');
+  expect(html).toContain('min-h-0 min-w-0 flex-1 overflow-auto');
+});

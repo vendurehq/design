@@ -17,13 +17,14 @@ import type * as React from 'react';
 // The sidebar slot is deliberately unopinionated: drop the full `Sidebar` atom in
 // for a real app, or use `AppShellSidebar` for a lightweight rail. Content owns a
 // header + main anatomy so every consumer gets the same scroll boundary and skip
-// link target without coupling the design system to a router or auth provider.
+// link target without coupling the design system to a router or auth provider. The
+// shell is viewport-bound so the canvas inset remains visible while main scrolls.
 
 function AppShell({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="app-shell"
-      className={cn('bg-background text-foreground flex min-h-svh w-full', className)}
+      className={cn('bg-background text-foreground flex h-svh w-full overflow-hidden', className)}
       {...props}
     />
   );
@@ -78,7 +79,7 @@ function AppShellMain({ className, id = 'main-content', ...props }: React.Compon
       id={id}
       tabIndex={-1}
       data-slot="app-shell-main"
-      className={cn('min-w-0 flex-1 overflow-auto outline-none', className)}
+      className={cn('min-h-0 min-w-0 flex-1 overflow-auto outline-none', className)}
       {...props}
     />
   );
