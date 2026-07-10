@@ -31,7 +31,7 @@ export const uiGuidance = [
     rules: [
       {
         title: 'The shell owns anatomy',
-        body: 'AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination.',
+        body: 'AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. It stays viewport-bound; within the content pane, AppShellMain owns content scrolling so the header and canvas inset remain visible.',
       },
       {
         title: 'The consumer owns application state',

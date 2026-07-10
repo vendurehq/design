@@ -16,7 +16,7 @@ Related decisions: `copyable-text`, `id-chip`.
 
 Use the shared application anatomy without moving app-owned routing or context into the shell.
 
-- **The shell owns anatomy:** AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination.
+- **The shell owns anatomy:** AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. It stays viewport-bound; within the content pane, AppShellMain owns content scrolling so the header and canvas inset remain visible.
 - **The consumer owns application state:** Keep routing, navigation data, authentication, permissions, and context switching in the consumer.
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
 

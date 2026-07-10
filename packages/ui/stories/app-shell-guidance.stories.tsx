@@ -35,8 +35,9 @@ export const Ownership: Story = {
       <Section title="The invariant anatomy">
         <p className="text-muted-foreground max-w-2xl text-sm">
           Every authenticated surface gets one skip link, one navigation region, one compact header,
-          and one focusable scrolling main region. Apps fill those slots with their own router
-          links, organization switcher, user menu, and route outlet.
+          and one focusable main region that owns content scrolling while the viewport-bound shell
+          keeps its canvas inset visible. Apps fill those slots with their own router links,
+          organization switcher, user menu, and route outlet.
         </p>
         <div className="h-80 overflow-hidden rounded-xl border">
           <SkipLink href="#guidance-main" />
