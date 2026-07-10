@@ -1,6 +1,6 @@
 # Vendure Design System
 
-Monorepo for `@vendure-io/design-tokens` and `@vendure-io/ui` — the design system consumed by all Vendure surfaces (OSS/Platform dashboard, Cloud, ecosystem portals).
+Monorepo for `@vendure-io/design-tokens`, `@vendure-io/ui`, and `@vendure-io/design-lint` — the design system consumed by all Vendure surfaces (OSS/Platform dashboard, Cloud, ecosystem portals).
 
 ## Context
 
@@ -8,6 +8,7 @@ Monorepo for `@vendure-io/design-tokens` and `@vendure-io/ui` — the design sys
 - Architectural decisions are tracked internally by the Vendure team, not in-repo.
 - [packages/ui/AGENTS.md](./packages/ui/AGENTS.md) — shadcn CLI workflow, component placement (`ui/` vs `custom/`), export rules.
 - [packages/design-tokens/AGENTS.md](./packages/design-tokens/AGENTS.md) — token pipeline rules.
+- [packages/design-lint/AGENTS.md](./packages/design-lint/AGENTS.md) — equivalent ESLint/Biome enforcement rules.
 - `docs/` — consumer-facing guides (getting started, components, tokens, releasing).
 
 ## Conventions
@@ -31,11 +32,17 @@ gh release create ui/v1.2.3 --title "@vendure-io/ui v1.2.3" --generate-notes
 # Release @vendure-io/design-tokens
 gh release create design-tokens/v1.2.3 --title "@vendure-io/design-tokens v1.2.3" --generate-notes
 
+# Release @vendure-io/design-lint
+gh release create design-lint/v1.2.3 --title "@vendure-io/design-lint v1.2.3" --generate-notes
+
 # Prerelease @vendure-io/ui to the beta npm dist-tag
 gh release create ui/v1.3.0-beta.0 --title "@vendure-io/ui v1.3.0-beta.0" --generate-notes --prerelease
 
 # Prerelease @vendure-io/design-tokens to the beta npm dist-tag
 gh release create design-tokens/v1.3.0-beta.0 --title "@vendure-io/design-tokens v1.3.0-beta.0" --generate-notes --prerelease
+
+# Prerelease @vendure-io/design-lint to the beta npm dist-tag
+gh release create design-lint/v1.3.0-beta.0 --title "@vendure-io/design-lint v1.3.0-beta.0" --generate-notes --prerelease
 ```
 
 The CI workflow handles version bumping in `package.json`, publishing to npm, and committing the version bump back to `main`. Stable releases publish to npm's `latest` dist-tag; prereleases publish to the first semver prerelease identifier (`beta` for `1.3.0-beta.0`, `rc` for `1.3.0-rc.0`).

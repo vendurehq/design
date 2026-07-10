@@ -3,17 +3,22 @@
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.9",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "biome format --write .",
     "check-types": "turbo run check-types",
-    "check-freshness": "turbo run check-freshness",
+    "check-freshness": "turbo run check-freshness && bun run skills:check",
     "test": "turbo run test",
     "pack:check": "turbo run pack:check",
     "storybook": "turbo run storybook",
+    "skills:generate": "bun scripts/generate-skill-references.ts",
+    "skills:check": "bun scripts/generate-skill-references.ts --check && bun scripts/validate-skills.ts",
     "clean": "turbo run clean"
   },
   "devDependencies": {

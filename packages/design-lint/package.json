@@ -1,0 +1,41 @@
+{
+  "name": "@vendure-io/design-lint",
+  "version": "0.1.0",
+  "description": "ESLint and Biome rules for Vendure design-system consumers",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "homepage": "https://github.com/vendurehq/design/tree/main/packages/design-lint",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vendurehq/design.git",
+    "directory": "packages/design-lint"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./eslint/index.js",
+    "./eslint": "./eslint/index.js",
+    "./biome/no-raw-colors": "./biome/no-raw-colors.grit"
+  },
+  "files": [
+    "eslint",
+    "biome",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "biome check eslint test",
+    "check-types": "tsc --noEmit --allowJs --checkJs --module ESNext --moduleResolution bundler --target ESNext eslint/index.js",
+    "test": "bun test",
+    "pack:check": "bun pm pack --dry-run"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/estree": "^1.0.8",
+    "eslint": "^9.0.0"
+  }
+}
