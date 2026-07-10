@@ -13,7 +13,8 @@
   "exports": {
     ".": "./eslint/index.js",
     "./eslint": "./eslint/index.js",
-    "./biome/no-raw-colors": "./biome/no-raw-colors.grit"
+    "./biome/no-raw-colors": "./biome/no-raw-colors.grit",
+    "./biome/no-raw-colors-warn": "./biome/no-raw-colors-warn.grit"
   },
   "files": [
     "eslint",

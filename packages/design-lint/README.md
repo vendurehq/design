@@ -25,6 +25,29 @@ Add the GritQL plugin to `biome.json`:
 }
 ```
 
+The default plugin reports violations as errors. For gradual adoption, use the warning-level variant instead:
+
+```json
+{
+  "plugins": ["./node_modules/@vendure-io/design-lint/biome/no-raw-colors-warn.grit"]
+}
+```
+
+Biome does not expose per-plugin diagnostic severity in configuration, so choose the error or warning plugin explicitly. The variants enforce the same rule.
+
 The string form works with Biome 2.0 and later. Biome 2.5+ consumers may use the object form with `path` and `includes` to exclude JavaScript or TypeScript theme-definition files while keeping other lint rules active there.
+
+### Monorepos
+
+Declare the plugin in the root `biome.json`. A nested Biome configuration must extend the root with Biome's root shorthand:
+
+```json
+{
+  "root": false,
+  "extends": ["//"]
+}
+```
+
+Do not use a relative path such as `"../../biome.json"`: inherited plugin paths are re-resolved from the nested configuration's directory and Biome will fail with `Cannot read file`. Inherited exclusion globs also match relative to the nested workspace, not the repository root, so verify exclusions from each workspace that owns a nested configuration.
 
 The rule rejects generic Tailwind palette utilities, literal colors, and direct generic ramp CSS variables in JavaScript and TypeScript component code. Vendure's published `brand`, `success`, `warning`, `destructive`, and `info` ramps are allowed because they carry semantic meaning. The rule does not suggest a replacement because choosing the correct semantic slot requires domain context.
