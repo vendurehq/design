@@ -5,6 +5,14 @@ const meta = {
   title: 'Atoms/General/ScrollArea',
   component: ScrollArea,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Overlay-style scrollbars: invisible at rest, fading in while you hover the scroll area or actively scroll. Hover either story below to reveal the scrollbar.',
+      },
+    },
+  },
 } satisfies Meta<typeof ScrollArea>;
 
 export default meta;

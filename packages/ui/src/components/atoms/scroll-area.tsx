@@ -39,7 +39,10 @@ function ScrollBar({
       data-orientation={orientation}
       orientation={orientation}
       className={cn(
-        "flex touch-none p-px transition-colors select-none data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent",
+        // Overlay scrollbars: invisible at rest, fade in while the pointer is over
+        // the scroll area (data-hovering) or during active scrolling (data-scrolling).
+        // Base UI omits data-scrolling on programmatic scrolls, so route changes don't flash.
+        "flex touch-none p-px select-none opacity-0 transition-opacity data-hovering:opacity-100 data-scrolling:opacity-100 data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent",
         className
       )}
       {...props}
