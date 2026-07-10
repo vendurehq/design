@@ -80,6 +80,15 @@ for (const skillName of skillNames) {
   await validateSkill(skillName);
 }
 
+const screenRecipes = await Bun.file(
+  new URL('skills/vendure-ui/references/screen-recipes.md', root),
+).text();
+if (screenRecipes.includes("from '@vendure/dashboard'")) {
+  fail(
+    'screen-recipes.md must defer exact Dashboard imports to the installed package owned by the Dashboard repository.',
+  );
+}
+
 const evalCases = (await Bun.file(new URL('evals/skills/cases.json', root)).json()) as {
   cases?: Array<{ skill?: string; prompt?: string; expect?: string[]; reject?: string[] }>;
 };

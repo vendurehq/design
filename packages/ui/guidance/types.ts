@@ -28,6 +28,6 @@ export interface ScreenRecipe {
   title: string;
   purpose: string;
   invariants: string[];
-  dashboardSkeleton: string;
+  dashboardIntent: string[];
   standaloneSkeleton: string;
 }

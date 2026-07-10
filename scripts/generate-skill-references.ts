@@ -59,11 +59,11 @@ function renderScreenRecipes() {
       '',
       ...recipe.invariants.map((invariant) => `- ${invariant}`),
       '',
-      '### Dashboard extension skeleton',
+      '### Dashboard extension integration',
       '',
-      '```tsx',
-      recipe.dashboardSkeleton,
-      '```',
+      'The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:',
+      '',
+      ...recipe.dashboardIntent.map((intent) => `- ${intent}`),
       '',
       '### Standalone consumer skeleton',
       '',
@@ -156,6 +156,17 @@ function validateCatalog() {
         .filter(Boolean)
         .join('\n'),
     );
+  }
+
+  for (const recipe of screenRecipes) {
+    if (recipe.dashboardIntent.length === 0) {
+      throw new Error(`Screen recipe ${recipe.id} needs Dashboard integration intent.`);
+    }
+    if (recipe.dashboardIntent.some((intent) => intent.includes("from '@vendure/dashboard'"))) {
+      throw new Error(
+        `Screen recipe ${recipe.id} must not claim exact Dashboard imports owned by another repository.`,
+      );
+    }
   }
 }
 

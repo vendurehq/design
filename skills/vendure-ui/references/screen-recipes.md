@@ -15,28 +15,13 @@ Find, filter, inspect, and act on a collection of domain records.
 - Render LoadingState while the query is in flight, ErrorState on failure, a first-run EmptyState when nothing exists, and a filtered EmptyState when the query hides existing records.
 - Use a scenario illustration only for the whole empty region; never repeat it in rows.
 
-### Dashboard extension skeleton
+### Dashboard extension integration
 
-```tsx
-import { Page, PageLayout, PageTitle } from '@vendure/dashboard';
-import { DataTable, FullWidthPageBlock } from '@vendure/dashboard';
+The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:
 
-export function EntityListPage() {
-  return (
-    <Page pageId='entity-list'>
-      <PageTitle>Entities</PageTitle>
-      <PageLayout>
-        <FullWidthPageBlock blockId='entity-list-table'>
-          <DataTable /* consumer-owned data and URL state */ />
-        </FullWidthPageBlock>
-      </PageLayout>
-    </Page>
-  );
-}
-
-// Register page-level actions through the dashboard action APIs when the host
-// owns their placement; import all UI from @vendure/dashboard.
-```
+- Map page identity, the collection region, and responsive width to the current page-layout primitives exported by the installed Dashboard package.
+- Use the Dashboard-exported table and page-action APIs so filtering, navigation, and action placement remain native to the host.
+- Keep query state and domain behavior in the extension while following the shared loading, failure, and empty-state decisions.
 
 ### Standalone consumer skeleton
 
@@ -75,28 +60,13 @@ Understand one entity, edit its fields, and perform consequential actions.
 - Keep destructive actions outside the normal save path and confirm only when the consequence earns interruption.
 - Render the detail region through explicit loading, error, not-found, and permission states.
 
-### Dashboard extension skeleton
+### Dashboard extension integration
 
-```tsx
-import { Page, PageLayout, PageTitle } from '@vendure/dashboard';
-import { PageBlock } from '@vendure/dashboard';
+The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:
 
-export function EntityDetailPage() {
-  return (
-    <Page pageId='entity-detail'>
-      <PageTitle>Entity name</PageTitle>
-      <PageLayout>
-        <PageBlock column='main' blockId='entity-form'>
-          <form>{/* dashboard form context and grouped fields */}</form>
-        </PageBlock>
-        <PageBlock column='side' blockId='entity-metadata'>
-          {/* status, identifiers, and read-only facts */}
-        </PageBlock>
-      </PageLayout>
-    </Page>
-  );
-}
-```
+- Map the main editing region and supporting metadata to the current Dashboard page-layout regions instead of recreating a standalone shell.
+- Use the form, save-action, permission, and navigation APIs exposed by the installed Dashboard package.
+- Keep destructive actions separate from the routine Dashboard save path and preserve the shared state handling.
 
 ### Standalone consumer skeleton
 
@@ -137,25 +107,13 @@ Guide a user through entering and validating a new domain object.
 - Keep form-state plumbing host-owned: dashboard form APIs for extensions and the existing library for standalone apps.
 - Place a neutral cancel before the single primary submit action; preserve values and prevent duplicate submission while pending.
 
-### Dashboard extension skeleton
+### Dashboard extension integration
 
-```tsx
-import { Page, PageLayout, PageTitle } from '@vendure/dashboard';
-import { PageBlock } from '@vendure/dashboard';
+The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:
 
-export function CreateEntityPage() {
-  return (
-    <Page pageId='create-entity'>
-      <PageTitle>Create entity</PageTitle>
-      <PageLayout>
-        <PageBlock column='main' blockId='create-entity-form'>
-          <form>{/* dashboard form context, fields, cancel, and submit */}</form>
-        </PageBlock>
-      </PageLayout>
-    </Page>
-  );
-}
-```
+- Use the installed Dashboard package’s current creation-page, form, validation, and navigation conventions.
+- Place fields in the host-owned page layout and register submit or cancel actions through the supported Dashboard extension APIs.
+- Preserve the shared field anatomy, validation, pending-submission, and action-hierarchy rules.
 
 ### Standalone consumer skeleton
 
@@ -202,27 +160,13 @@ Orient the user with a small number of high-value metrics and next actions.
 - Use sections with descriptive headings and keep the single primary action in the page header.
 - Give each data region its own loading, empty, and error handling without repeating whole-view illustrations.
 
-### Dashboard extension skeleton
+### Dashboard extension integration
 
-```tsx
-import { Page, PageLayout, PageTitle } from '@vendure/dashboard';
-import { PageBlock, StatCard } from '@vendure/dashboard';
+The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:
 
-export function OverviewPage() {
-  return (
-    <Page pageId='overview'>
-      <PageTitle>Overview</PageTitle>
-      <PageLayout>
-        <PageBlock column='full' blockId='key-metrics'>
-          <div className='grid gap-4 md:grid-cols-3'>{/* a few StatCards */}</div>
-        </PageBlock>
-        <PageBlock column='main' blockId='activity'>{/* primary trend or activity */}</PageBlock>
-        <PageBlock column='side' blockId='attention'>{/* items needing attention */}</PageBlock>
-      </PageLayout>
-    </Page>
-  );
-}
-```
+- Map key metrics, primary activity, and attention regions to the current Dashboard page-layout primitives.
+- Use metric, chart, action, and async-state components exported by the installed Dashboard package when available.
+- Keep each data region independently stateful while preserving the shared hierarchy and comparison-context rules.
 
 ### Standalone consumer skeleton
 
@@ -264,28 +208,13 @@ Organize durable configuration into understandable sections with safe save behav
 - Clarify whether save applies per section or to the whole page; never mix both models silently.
 - Separate destructive resets, disconnects, and removals from routine saving and confirm only consequential outcomes.
 
-### Dashboard extension skeleton
+### Dashboard extension integration
 
-```tsx
-import { Page, PageLayout, PageTitle } from '@vendure/dashboard';
-import { PageBlock } from '@vendure/dashboard';
+The Dashboard owns the exact page-layout, registration, form, navigation, and action APIs. Inspect the installed `@vendure/dashboard` source and types, then apply this intent without recreating a standalone page shell:
 
-export function SettingsPage() {
-  return (
-    <Page pageId='settings'>
-      <PageTitle>Settings</PageTitle>
-      <PageLayout>
-        <PageBlock column='main' blockId='general-settings'>
-          <form>{/* one clearly scoped settings form */}</form>
-        </PageBlock>
-        <PageBlock column='side' blockId='settings-context'>
-          {/* inherited values, scope, and consequences */}
-        </PageBlock>
-      </PageLayout>
-    </Page>
-  );
-}
-```
+- Map settings groups and supporting scope information to the installed Dashboard package’s current page-layout regions.
+- Use Dashboard-owned form and save conventions, choosing either section-level or page-level persistence consistently.
+- Keep destructive settings actions outside the routine save path and preserve host navigation behavior.
 
 ### Standalone consumer skeleton
 

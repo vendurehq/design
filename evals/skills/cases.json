@@ -8,11 +8,13 @@
       "expect": [
         "Imports UI from @vendure/dashboard",
         "Uses the collection/list recipe and the dashboard page host",
+        "Inspects the installed Dashboard package for current layout and extension APIs",
         "Keeps fetching and URL state consumer-owned",
         "Distinguishes loading, first-run empty, filtered empty, and error"
       ],
       "reject": [
         "Direct @vendure-io/ui imports",
+        "Copies unverified Dashboard API names from the design-system recipe",
         "A hand-built table engine when DataTable fits",
         "One generic no-data state for every outcome"
       ]
