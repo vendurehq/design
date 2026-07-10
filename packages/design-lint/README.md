@@ -27,4 +27,4 @@ Add the GritQL plugin to `biome.json`:
 
 The string form works with Biome 2.0 and later. Biome 2.5+ consumers may use the object form with `path` and `includes` to exclude JavaScript or TypeScript theme-definition files while keeping other lint rules active there.
 
-The rule rejects Tailwind ramp utilities, literal colors, and direct ramp CSS variables in JavaScript and TypeScript component code. It does not suggest a replacement because choosing the correct semantic slot requires domain context.
+The rule rejects generic Tailwind palette utilities, literal colors, and direct generic ramp CSS variables in JavaScript and TypeScript component code. Vendure's published `brand`, `success`, `warning`, `destructive`, and `info` ramps are allowed because they carry semantic meaning. The rule does not suggest a replacement because choosing the correct semantic slot requires domain context.

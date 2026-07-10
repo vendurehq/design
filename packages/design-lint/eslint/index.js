@@ -1,19 +1,22 @@
 const rampNames =
-  '(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand|success|warning|info)';
+  '(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)';
 const rampSteps = '(?:50|100|200|300|400|500|600|700|800|900|950)';
 const utilityPrefixes =
   '(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)';
 
 const rampUtilityPattern = new RegExp(
-  `(?:^|\\s)(?:[a-z-]+:)*${utilityPrefixes}-${rampNames}-${rampSteps}(?:\\/[0-9.]+)?(?=\\s|$)`,
+  `(?:^|[\\s:!])${utilityPrefixes}-${rampNames}-${rampSteps}(?:\\/[0-9.]+)?!?(?=\\s|$)`,
   'i',
 );
 const namedUtilityPattern = new RegExp(
-  `(?:^|\\s)(?:[a-z-]+:)*${utilityPrefixes}-(?:black|white)(?:\\/[0-9.]+)?(?=\\s|$)`,
+  `(?:^|[\\s:!])${utilityPrefixes}-(?:black|white)(?:\\/[0-9.]+)?!?(?=\\s|$)`,
   'i',
 );
-const rampVariablePattern = new RegExp(`var\\(\\s*--${rampNames}-${rampSteps}\\s*\\)`, 'i');
-const hexPattern = /(?:^|[\s:,(])#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![0-9a-f])/i;
+const rampVariablePattern = new RegExp(
+  `var\\(\\s*--(?:color-)?${rampNames}-${rampSteps}\\s*\\)`,
+  'i',
+);
+const hexPattern = /(?:^|[\s:,([])#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![0-9a-f])/i;
 const colorFunctionPattern = /\b(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\(/i;
 
 /** @typedef {import('estree').Node | { type: 'JSXAttribute'; name: { type: 'JSXIdentifier'; name: string } }} ParentNode */

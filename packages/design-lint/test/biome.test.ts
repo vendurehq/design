@@ -51,7 +51,7 @@ describe('Biome no-raw-colors', () => {
     test(`rejects ${code}`, async () => {
       const result = await lint(code);
       expect(result.exitCode, result.output).not.toBe(0);
-      expect(result.output).toContain('Use a semantic Vendure color slot');
+      expect(result.output.match(/Use a semantic Vendure color slot/g)).toHaveLength(1);
     });
   }
 });

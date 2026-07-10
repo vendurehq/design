@@ -25,13 +25,14 @@ Complete classification when one mode is selected from evidence.
 
 All component and page code uses semantic color slots.
 
-- Never use a ramp step or literal color directly in component markup.
-- Reference ramps or literals only while defining or remapping a theme.
+- Never use a generic palette ramp step or literal color directly in component markup.
+- Published Vendure semantic ramps (`brand`, `success`, `warning`, `destructive`, and `info`) are allowed when a deliberate fixed intensity is required; prefer role slots for routine component states.
+- Reference generic ramps or literals only while defining or remapping a theme.
 - Map domain states through the state dictionary and six shared tones rather than choosing color classes locally.
 - In a standalone external app, a product-specific color concept must still be a named semantic slot mapped through theme values.
 - Flag a local semantic slot for graduation when a second consumer needs the same concept.
 
-Treat direct Tailwind ramp utilities, literal hex/RGB/HSL/OKLCH values, or ramp CSS variables in component markup as review findings.
+Treat direct generic Tailwind palette utilities, literal hex/RGB/HSL/OKLCH values, or generic ramp CSS variables in component markup as review findings. Do not report published Vendure semantic ramps as raw colors.
 
 ## Read the relevant decisions
 
@@ -61,7 +62,7 @@ When asked to review, remain read-only unless changes are also requested. Audit:
 - theme and font imports;
 - host ownership classification;
 - forbidden value overrides;
-- direct ramp or literal color use;
+- direct generic palette or literal color use;
 - incorrect state color selection;
 - surface hierarchy and border/shadow misuse;
 - typography roles and font rebinding;

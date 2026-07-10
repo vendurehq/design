@@ -55,4 +55,4 @@ Skill changes that accompany consumer-facing package behavior are maintained in 
 - Dashboard extensions inherit the host theme without overriding it.
 - Standalone external apps may remap semantic slot values while component code continues to use semantic colors.
 
-All consumers use semantic colors in component code. Raw ramp steps and literal colors belong only in approved theme definitions.
+All consumers use semantic colors in component code. Vendure's published semantic ramps are allowed for deliberate fixed intensity; generic palette ramps and literal colors belong only in approved theme definitions.

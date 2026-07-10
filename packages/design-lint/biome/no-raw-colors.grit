@@ -3,23 +3,16 @@ language js(typescript, jsx)
 
 or {
   JsxAttribute() as $attribute where {
-    $attribute <: r"(?i)(?:className|style)=.*(?:(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand|success|warning|info)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9.]+)?|(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:black|white)(?:/[0-9.]+)?|var\(\s*--(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand|success|warning|info)-(?:50|100|200|300|400|500|600|700|800|900|950)\s*\)|#[0-9a-fA-F]{3,8}|(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\().*",
+    $attribute <: r"(?i)(?:className|style)=(?:\"[^\"]*\"|'[^']*')",
+    $attribute <: r"(?i).*(?:(?:^|[^a-z0-9_-])(?:(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9.]+)?!?|(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:black|white)(?:/[0-9.]+)?!?)|(?:^|[^a-z0-9_])var\(\s*--(?:color-)?(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)\s*\)|#[0-9a-fA-F]{3,4}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{6}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{8}(?:[^0-9a-fA-F]|$)|(?:^|[^a-z0-9_])(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\().*",
     register_diagnostic(span=$attribute, message="Use a semantic Vendure color slot. Raw colors belong only in theme definitions.", severity="error")
   },
   string() as $literal where {
-    $literal <: r"(?i).*(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand|success|warning|info)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9.]+)?.*",
+    $literal <: r"(?i).*(?:(?:^|[^a-z0-9_-])(?:(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9.]+)?!?|(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:black|white)(?:/[0-9.]+)?!?)|(?:^|[^a-z0-9_])var\(\s*--(?:color-)?(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)\s*\)|#[0-9a-fA-F]{3,4}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{6}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{8}(?:[^0-9a-fA-F]|$)|(?:^|[^a-z0-9_])(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\().*",
     register_diagnostic(span=$literal, message="Use a semantic Vendure color slot. Raw colors belong only in theme definitions.", severity="error")
   },
-  string() as $literal where {
-    $literal <: r"(?i).*(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:black|white)(?:/[0-9.]+)?.*",
-    register_diagnostic(span=$literal, message="Use a semantic Vendure color slot. Raw colors belong only in theme definitions.", severity="error")
-  },
-  string() as $literal where {
-    $literal <: r"(?i).*var\(\s*--(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|brand|success|warning|info)-(?:50|100|200|300|400|500|600|700|800|900|950)\s*\).*",
-    register_diagnostic(span=$literal, message="Use a semantic Vendure color slot. Raw colors belong only in theme definitions.", severity="error")
-  },
-  string() as $literal where {
-    $literal <: r"(?i).*(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\(.*",
+  JsTemplateChunkElement() as $literal where {
+    $literal <: r"(?i).*(?:(?:^|[^a-z0-9_-])(?:(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9.]+)?!?|(?:bg|text|border|divide|outline|ring|shadow|accent|caret|fill|stroke|decoration|from|via|to)-(?:black|white)(?:/[0-9.]+)?!?)|(?:^|[^a-z0-9_])var\(\s*--(?:color-)?(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)\s*\)|#[0-9a-fA-F]{3,4}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{6}(?:[^0-9a-fA-F]|$)|#[0-9a-fA-F]{8}(?:[^0-9a-fA-F]|$)|(?:^|[^a-z0-9_])(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\().*",
     register_diagnostic(span=$literal, message="Use a semantic Vendure color slot. Raw colors belong only in theme definitions.", severity="error")
   }
 }

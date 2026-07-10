@@ -7,8 +7,8 @@ Apply these decisions to theme setup, styling, implementation, and review. Actua
 
 Map raw color through semantic slots before any component or page consumes it.
 
-- **Component code consumes slots:** Use semantic utilities such as background, foreground, border, muted, primary, success, warning, and destructive. Never use a ramp step or literal color in component markup.
-- **Ramps exist only to define themes:** A ramp is raw material. Reference ramp steps only while mapping theme values to semantic slots.
+- **Component code consumes slots:** Use semantic utilities such as background, foreground, border, muted, primary, success, warning, and destructive. Published Vendure semantic ramps are allowed when a deliberate fixed intensity is required; never use generic palette ramps or literal colors in component markup.
+- **Generic ramps exist only to define themes:** Generic palette ramps are raw material and belong in theme mapping. The named brand, success, warning, destructive, and info ramps are part of Vendure’s semantic vocabulary, though role slots remain the default for routine component states.
 - **Neutral by default, tone for state, brand for identity:** Spend color only when it reports state or marks a deliberate identity moment. Routine interface structure remains neutral.
 - **State uses the tone vocabulary:** Map domain states through neutral, info, success, warning, critical, or progress. Do not choose arbitrary state colors at the call site.
 - **Subtle is the default status treatment:** Use the matching subtle background, readable foreground, and border slots for status surfaces instead of full-strength fills.

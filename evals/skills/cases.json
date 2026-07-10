@@ -73,7 +73,7 @@
         "Does not redefine published token values"
       ],
       "reject": [
-        "Keeps a ramp class in component markup",
+        "Keeps a generic palette class in component markup",
         "Overrides the shared slate or surface values"
       ]
     },
@@ -88,7 +88,7 @@
         "Uses a namespaced semantic slot for a genuinely product-specific color concept"
       ],
       "reject": [
-        "Uses literals or ramp steps in component markup",
+        "Uses literals or generic palette steps in component markup",
         "Applies Vendure-owned no-override policy"
       ]
     },
@@ -108,7 +108,7 @@
     },
     {
       "skill": "vendure-tokens",
-      "prompt": "Review a component containing text-green-600, style={{ color: '#fff' }}, and var(--brand-500).",
+      "prompt": "Review a component containing text-green-600, style={{ color: '#fff' }}, and var(--color-blue-500).",
       "context": "These usages are outside approved theme-definition files.",
       "expect": [
         "Reports all three mechanical violations",
