@@ -532,6 +532,10 @@ export const uiGuidance = [
         body: 'When data exists but filters hide it, offer clear filters or a broader search rather than a create action.',
       },
       {
+        title: 'Tables own their perimeter',
+        body: "When EmptyState replaces a table body, render it flush and borderless within the table container. Do not add an inset dashed outline.",
+      },
+      {
         title: 'Errors own the failure',
         body: 'Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.',
       },

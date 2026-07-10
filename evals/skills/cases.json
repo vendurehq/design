@@ -53,6 +53,20 @@
     },
     {
       "skill": "vendure-ui",
+      "prompt": "Build the empty state for a data table that already has a bordered outer container.",
+      "context": "The empty state replaces the table body inside the existing table perimeter.",
+      "expect": [
+        "Renders EmptyState flush within the table container",
+        "Removes the EmptyState border",
+        "Keeps the table container as the single perimeter"
+      ],
+      "reject": [
+        "Adds a dashed border around the EmptyState",
+        "Nests another outlined panel inside the table"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
       "prompt": "A locally composed export panel is now needed by a second consumer. Implement the second copy.",
       "context": "No existing molecule currently represents the panel.",
       "expect": [

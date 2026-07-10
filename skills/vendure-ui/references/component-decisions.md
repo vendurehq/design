@@ -221,6 +221,7 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Ask waiting, empty, or failed in that order:** Loading means the answer is in flight, Empty means the request succeeded with nothing, and Error means the system failed.
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
+- **Tables own their perimeter:** When EmptyState replaces a table body, render it flush and borderless within the table container. Do not add an inset dashed outline.
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.
