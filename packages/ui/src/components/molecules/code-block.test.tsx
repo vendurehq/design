@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { processCode, transformCommand } from './code-block.tsx';
+import { matchFileTypeIcon, processCode, transformCommand } from './code-block.tsx';
 
 describe('transformCommand', () => {
   describe('npx → dlx / bunx', () => {
@@ -228,5 +228,37 @@ describe('processCode', () => {
       const result = processCode(input, 'bash');
       expect(result.cleanCode).toContain('[!code ++]');
     });
+  });
+});
+
+describe('matchFileTypeIcon', () => {
+  test('matches by extension', () => {
+    expect(matchFileTypeIcon('vendure-config.ts')?.title).toBe('TypeScript');
+    expect(matchFileTypeIcon('ProductList.tsx')?.title).toBe('React');
+    expect(matchFileTypeIcon('package.json')?.title).toBe('JSON');
+    expect(matchFileTypeIcon('docker-compose.yml')?.title).toBe('YAML');
+    expect(matchFileTypeIcon('order.graphql')?.title).toBe('GraphQL');
+    expect(matchFileTypeIcon('deploy.sh')?.title).toBe('Bash');
+  });
+
+  test('matches on the basename of a path with dots in it', () => {
+    expect(matchFileTypeIcon('src/plugins/reviews/reviews.plugin.spec.ts')?.title).toBe(
+      'TypeScript',
+    );
+  });
+
+  test('is case-insensitive', () => {
+    expect(matchFileTypeIcon('README.MD')?.title).toBe('Markdown');
+  });
+
+  test('matches Dockerfile by basename, with or without a directory', () => {
+    expect(matchFileTypeIcon('Dockerfile')?.title).toBe('Docker');
+    expect(matchFileTypeIcon('docker/Dockerfile')?.title).toBe('Docker');
+  });
+
+  test('returns undefined for unknown extensions, dotfiles and extensionless names', () => {
+    expect(matchFileTypeIcon('main.rs')).toBeUndefined();
+    expect(matchFileTypeIcon('.env')).toBeUndefined();
+    expect(matchFileTypeIcon('LICENSE')).toBeUndefined();
   });
 });

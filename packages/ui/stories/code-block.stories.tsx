@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SparklesIcon } from 'lucide-react';
-import {
-  CodeBlock,
-  CodeBlockAction,
-} from '../src/components/molecules/code-block.tsx';
+import { CodeBlock, CodeBlockAction } from '../src/components/molecules/code-block.tsx';
 
 const CONFIG_SNIPPET = `import { VendureConfig } from '@vendure/core';
 
@@ -40,12 +37,37 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-// filename prop drives the header label (FileIcon + path). Use it when the code
+// filename prop drives the header label (file icon + path). Use it when the code
 // is the contents of a file the reader is meant to create or edit.
 export const WithFilename: Story = {
   args: {
     filename: 'src/vendure-config.ts',
   },
+};
+
+// Filenames with a recognized extension get a brand glyph (TypeScript, React,
+// JSON, YAML, Docker, ...) instead of the generic file icon. The mapping is
+// built in; unknown extensions and dotfiles fall back to the generic icon.
+export const FileTypeIcons: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <CodeBlock language="typescript" filename="src/vendure-config.ts">
+        {'export const config: VendureConfig = { plugins: [] };'}
+      </CodeBlock>
+      <CodeBlock language="tsx" filename="src/components/ProductList.tsx">
+        {'export function ProductList() {\n  return <ul />;\n}'}
+      </CodeBlock>
+      <CodeBlock language="yaml" filename="docker-compose.yml">
+        {'services:\n  postgres:\n    image: postgres:16'}
+      </CodeBlock>
+      <CodeBlock language="dockerfile" filename="Dockerfile">
+        {'FROM node:22-alpine\nWORKDIR /app'}
+      </CodeBlock>
+      <CodeBlock language="text" filename=".env">
+        {'APP_ENV=dev'}
+      </CodeBlock>
+    </div>
+  ),
 };
 
 // The same header, sourced from a `// filename:` directive on the first line of
@@ -174,13 +196,7 @@ export const WithActions: Story = {
     language: 'bash',
     filename: 'Terminal',
     children: 'npx @vendure/create my-shop',
-    actions: (
-      <CodeBlockAction
-        icon={<SparklesIcon />}
-        label="Ask AI"
-        onClick={() => {}}
-      />
-    ),
+    actions: <CodeBlockAction icon={<SparklesIcon />} label="Ask AI" onClick={() => {}} />,
   },
 };
 
