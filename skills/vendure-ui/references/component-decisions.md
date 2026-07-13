@@ -68,6 +68,17 @@ Use Chip for removable members of an editable set or applied filters.
 - **Disabled means a pending mutation:** Disable a Chip while membership removal is in flight, not to represent a deactivated entity.
 
 Related decisions: `badge`, `id-chip`, `status-badge`.
+## CodeBlock
+
+Present multi-line code for reading, with the switcher reserved for runnable instructions and one annotation intent per block.
+
+- **Blocks are for reading, not transport:** Use CodeBlock for multi-line code the reader studies or copies whole. Use CopyableText for single values users move elsewhere, and inline code for references inside prose.
+- **The switcher is for instructions, not output:** Enable packageManagerSwitcher only on shell blocks the reader should run under their own package manager. Terminal output and logs stay plain.
+- **App actions live in the actions slot:** The DS ships only the copy button. Hang app-specific controls such as an Ask AI button on the actions slot using CodeBlockAction.
+- **A filename names a real file:** Set the filename header when the snippet is the contents of a file in the reader’s project. It takes precedence over the switcher tabs, so never combine the two.
+- **One notation intent per block:** Choose one Shiki notation intent per block: highlight, diff, focus, or word. Stacked intents bury the point of the annotation.
+
+Related decisions: `copyable-text`.
 ## ComboboxFreeText
 
 Use free-text selection only when a brand-new value is a legitimate domain answer.

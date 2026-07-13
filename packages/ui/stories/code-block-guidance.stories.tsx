@@ -162,7 +162,8 @@ export const WhichComponent: Story = {
             caption="A prop named in prose does not need a block. Set the migrations flag with <code>runMigrations: true</code>, or press Kbd to run them."
           >
             <p className="text-sm">
-              Set <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">runMigrations</code>{' '}
+              Set{' '}
+              <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">runMigrations</code>{' '}
               to true, then press <Kbd>⌘ R</Kbd> to apply.
             </p>
           </Example>
@@ -202,10 +203,7 @@ export const SwitcherIsForInstructions: Story = {
         </div>
       </Section>
 
-      <Section
-        title="When the switcher belongs"
-        intro="A quick reference for the call."
-      >
+      <Section title="When the switcher belongs" intro="A quick reference for the call.">
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
@@ -277,7 +275,7 @@ export const ActionsAndFilename: Story = {
 
       <Section
         title="Show a filename when the reader is meant to create or edit that file"
-        intro="The filename header (a FileIcon plus the path) tells the reader that this code is the contents of a specific file: put it here and name it this. Set it whenever the snippet maps to a real file in their project. Leave it off for throwaway REPL snippets, shell commands, or output, where there is no file to name. The filename can come from the prop or from a `// filename:` directive on the first line of the code."
+        intro="The filename header (a file type icon plus the path) tells the reader that this code is the contents of a specific file: put it here and name it this. Common extensions get a brand glyph automatically; anything else falls back to a generic file icon. Set it whenever the snippet maps to a real file in their project. Leave it off for throwaway REPL snippets, shell commands, or output, where there is no file to name. The filename can come from the prop or from a `// filename:` directive on the first line of the code."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example

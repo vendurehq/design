@@ -141,6 +141,36 @@ export const uiGuidance = [
     related: ['badge', 'id-chip', 'status-badge'],
   },
   {
+    id: 'code-block',
+    title: 'CodeBlock',
+    summary:
+      'Present multi-line code for reading, with the switcher reserved for runnable instructions and one annotation intent per block.',
+    sourceStory: 'code-block-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Blocks are for reading, not transport',
+        body: 'Use CodeBlock for multi-line code the reader studies or copies whole. Use CopyableText for single values users move elsewhere, and inline code for references inside prose.',
+      },
+      {
+        title: 'The switcher is for instructions, not output',
+        body: 'Enable packageManagerSwitcher only on shell blocks the reader should run under their own package manager. Terminal output and logs stay plain.',
+      },
+      {
+        title: 'App actions live in the actions slot',
+        body: 'The DS ships only the copy button. Hang app-specific controls such as an Ask AI button on the actions slot using CodeBlockAction.',
+      },
+      {
+        title: 'A filename names a real file',
+        body: 'Set the filename header when the snippet is the contents of a file in the reader’s project. It takes precedence over the switcher tabs, so never combine the two.',
+      },
+      {
+        title: 'One notation intent per block',
+        body: 'Choose one Shiki notation intent per block: highlight, diff, focus, or word. Stacked intents bury the point of the annotation.',
+      },
+    ],
+    related: ['copyable-text'],
+  },
+  {
     id: 'combobox-free-text',
     title: 'ComboboxFreeText',
     summary: 'Use free-text selection only when a brand-new value is a legitimate domain answer.',
@@ -537,7 +567,7 @@ export const uiGuidance = [
       },
       {
         title: 'Tables own their perimeter',
-        body: "When EmptyState replaces a table body, render it flush and borderless within the table container. Do not add an inset dashed outline.",
+        body: 'When EmptyState replaces a table body, render it flush and borderless within the table container. Do not add an inset dashed outline.',
       },
       {
         title: 'Errors own the failure',
