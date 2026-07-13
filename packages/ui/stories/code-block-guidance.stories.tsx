@@ -125,12 +125,12 @@ export const WhichComponent: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Multi-line code earns CodeBlock; one value does not"
-        intro="CodeBlock is the heaviest of the copy-affordance family: a framed, syntax-highlighted, header-bearing block. It pays for that weight when the content is code a reader studies or lifts wholesale — a config file, a plugin, a GraphQL query, an install command. Drop a rung for a single opaque value (an API key, a webhook URL, an ID): that is CopyableText or its IdChip sibling. Drop another for a token named inside a sentence: that is inline <code> or, for a keystroke, Kbd. See the CopyableText guidance for the value-shaped choice between CopyableText and IdChip."
+        intro="CodeBlock is the heaviest of the copy-affordance family: a framed, syntax-highlighted, header-bearing block. It pays for that weight when the content is code a reader studies or lifts wholesale, such as a config file, a plugin, a GraphQL query, or an install command. Drop a rung for a single opaque value (an API key, a webhook URL, an ID): that is CopyableText or its IdChip sibling. Drop another for a token named inside a sentence: that is inline <code> or, for a keystroke, Kbd. See the CopyableText guidance for the value-shaped choice between CopyableText and IdChip."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="Multi-line code the reader transports wholesale — the frame, highlighting, and copy all earn their place."
+            caption="Multi-line code the reader transports wholesale: the frame, highlighting, and copy all earn their place."
           >
             <CodeBlock language="typescript" filename="src/vendure-config.ts">
               {`export const config: VendureConfig = {
@@ -178,7 +178,7 @@ export const SwitcherIsForInstructions: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Turn the switcher on only when the reader runs the command"
-        intro="packageManagerSwitcher adds npm → pnpm/yarn/bun tabs that rewrite the command in place. It exists for docs surfaces telling a reader to install or scaffold something — the reader picks their manager and copies the rewritten line. It is meaningless, and actively wrong, for terminal output: no one re-runs a log, and rewriting the npm lines inside one would corrupt it. Gate it on a single question: is this a command I am asking the reader to run?"
+        intro="packageManagerSwitcher adds npm → pnpm/yarn/bun tabs that rewrite the command in place. It exists for docs surfaces telling a reader to install or scaffold something. The reader picks their manager and copies the rewritten line. It is meaningless, and actively wrong, for terminal output: no one re-runs a log, and rewriting the npm lines inside one would corrupt it. Gate it on a single question: is this a command I am asking the reader to run?"
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -245,7 +245,7 @@ export const ActionsAndFilename: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="The actions slot is the consumer's, not the design system's"
-        intro="CodeBlock ships exactly one built-in toolbar control: Copy. The actions slot is where a consuming app hangs its own — an 'Ask AI' button in a docs site, an 'Open in playground' link, a 'Run' trigger. The design system deliberately does not ship these; they are app-specific and belong to the surface, wired through CodeBlockAction (a tooltip icon button). Keep the slot to one or two genuine actions — it is a toolbar, not a menu."
+        intro="CodeBlock ships exactly one built-in toolbar control: Copy. The actions slot is where a consuming app hangs its own: an 'Ask AI' button in a docs site, an 'Open in playground' link, or a 'Run' trigger. The design system deliberately does not ship these; they are app-specific and belong to the surface, wired through CodeBlockAction (a tooltip icon button). Keep the slot to one or two genuine actions. It is a toolbar, not a menu."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -277,7 +277,7 @@ export const ActionsAndFilename: Story = {
 
       <Section
         title="Show a filename when the reader is meant to create or edit that file"
-        intro="The filename header (a FileIcon plus the path) tells the reader this code is the contents of a specific file — put it here, name it this. Set it whenever the snippet maps to a real file in their project. Leave it off for throwaway REPL snippets, shell commands, or output, where there is no file to name. The filename can come from the prop or from a `// filename:` directive on the first line of the code."
+        intro="The filename header (a FileIcon plus the path) tells the reader that this code is the contents of a specific file: put it here and name it this. Set it whenever the snippet maps to a real file in their project. Leave it off for throwaway REPL snippets, shell commands, or output, where there is no file to name. The filename can come from the prop or from a `// filename:` directive on the first line of the code."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -293,7 +293,7 @@ export class LoyaltyPlugin {}`}
           </Example>
           <Example
             verdict="dont"
-            caption="A filename on a shell command implies you should save it to a file. It is a command to run — no header, or just 'Terminal'."
+            caption="A filename on a shell command implies you should save it to a file. It is a command to run. Show no header, or just 'Terminal'."
           >
             <CodeBlock language="bash" filename="install.ts">
               npm run migration:generate

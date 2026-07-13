@@ -50,7 +50,7 @@ export const WithFilename: Story = {
 
 // The same header, sourced from a `// filename:` directive on the first line of
 // the code instead of a prop. The directive line is stripped from the rendered
-// code — handy when the snippet is copy-pasted from a real file.
+// code, which is handy when the snippet is copy-pasted from a real file.
 export const FilenameDirective: Story = {
   args: {
     language: 'typescript',
@@ -87,7 +87,7 @@ export const PackageManagerSwitcherOff: Story = {
 
 // Shiki notations annotate lines without leaving the code string: highlight a
 // line, mark diffs (++/--), focus (dims the rest), and highlight a word. Keep
-// one intent per block — see the guidance page on notation restraint.
+// one intent per block. See the guidance page on notation restraint.
 export const Notations: Story = {
   args: {
     language: 'typescript',
@@ -184,8 +184,8 @@ export const WithActions: Story = {
   },
 };
 
-// hideHeader drops the header bar entirely — filename, language label, tabs and
-// all — leaving just the code and its copy button. For dense inline embeds.
+// hideHeader drops the header bar entirely (filename, language label, tabs and
+// all), leaving just the code and its copy button. For dense inline embeds.
 export const HideHeader: Story = {
   args: {
     hideHeader: true,
@@ -199,7 +199,7 @@ export const HideHeader: Story = {
   },
 };
 
-// Copy is always present. onCopied fires after a successful copy — wire your
+// Copy is always present. onCopied fires after a successful copy. Wire your
 // toast here; the DS never toasts. onCopyError fires if the clipboard write
 // throws (e.g. an insecure context).
 export const CopyFeedback: Story = {
@@ -218,7 +218,7 @@ export const CopyFeedback: Story = {
   }
 }`,
     onCopied: () => {
-      // wire your toast here — the DS never toasts
+      // wire your toast here. The DS never toasts
     },
     onCopyError: (error) => {
       // surface the failure through your own toast/logging

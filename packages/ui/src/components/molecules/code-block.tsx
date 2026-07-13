@@ -46,7 +46,7 @@ type CodeBlockProps = PropsWithChildren<ComponentProps<'div'>> & {
   language?: string;
   /**
    * Filename shown in the header (overrides a `// filename:` first-line directive).
-   * Takes precedence over the package-manager tabs — a block with a filename never
+   * Takes precedence over the package-manager tabs. A block with a filename never
    * shows the switcher, even when `packageManagerSwitcher` is set.
    */
   filename?: string;
@@ -56,7 +56,7 @@ type CodeBlockProps = PropsWithChildren<ComponentProps<'div'>> & {
   packageManagerSwitcher?: boolean;
   /** Extra toolbar actions rendered before the built-in copy button. Compose with CodeBlockAction. */
   actions?: ReactNode;
-  /** Called after a successful copy. Wire your toast here — the DS never toasts. */
+  /** Called after a successful copy. Wire your toast here. The DS never toasts. */
   onCopied?: () => void;
   /** Called when the clipboard write fails. */
   onCopyError?: (error: Error) => void;
@@ -845,7 +845,7 @@ function SyntaxHighlightedContent({ code, language }: SyntaxHighlightedContentPr
  * long snippets, and an optional npm→pnpm/yarn/bun package-manager switcher.
  * Highlighting is lazy (a shared highlighter singleton + per-snippet cache), and
  * line/diff/focus/word decorations use Shiki's `[!code ...]` notations. The DS
- * never toasts — wire `onCopied`/`onCopyError` to your own feedback.
+ * never toasts. Wire `onCopied`/`onCopyError` to your own feedback.
  */
 export function CodeBlock({
   className,
