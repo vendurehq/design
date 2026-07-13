@@ -38,10 +38,16 @@ function flattenColorRanges(ranges: Record<string, Record<string, string>>): Rec
 
 const baseColorVars = flattenColorRanges(colorRanges);
 
+// Radius scale as runtime :root vars — @theme inline never emits its variables,
+// so consumers reading var(--radius-*) at runtime need these declared here.
+const radiusVars = Object.fromEntries(
+  Object.entries(radii).map(([key, value]) => [`radius-${key}`, value]),
+);
+
 const variablesCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '',
-  buildBlock(':root', { ...baseColorVars, ...lightTheme }),
+  buildBlock(':root', { ...baseColorVars, ...radiusVars, ...lightTheme }),
   '',
   buildBlock('.dark', darkTheme),
   '',
@@ -63,9 +69,10 @@ const colorKeys = Object.keys(lightTheme).filter((k) => k !== 'radius');
 
 const colorLines = colorKeys.map((key) => `  --color-${key}: var(--${key});`);
 
-// Radius lines — driven directly from radii tokens
-const radiusLines = Object.entries(radii).map(
-  ([key, value]) => `  --radius-${key}: ${value};`,
+// Radius lines — reference the :root vars from variables.css so utilities
+// track runtime overrides of --radius-*
+const radiusLines = Object.keys(radii).map(
+  (key) => `  --radius-${key}: var(--radius-${key});`,
 );
 
 // Shadow lines — override Tailwind defaults with our tokens
