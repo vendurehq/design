@@ -762,7 +762,11 @@ interface PackageManagerTabsProps {
 
 function PackageManagerTabs({ activeManager, onSelect, id }: PackageManagerTabsProps) {
   return (
-    <div className="bg-background border-border inline-flex overflow-hidden rounded-md border text-xs">
+    // clip-path instead of overflow-hidden: overflow clips children at the
+    // padding box, so the active-tab underline could never cover the bottom
+    // border. Clipping at the border box lets it overlay the border row while
+    // the corners stay rounded.
+    <div className="bg-background border-border inline-flex rounded-md border text-xs [clip-path:inset(0_round_var(--radius-md))]">
       {PACKAGE_MANAGERS.map((pm, index) => (
         <div key={pm} className="flex items-center">
           {index > 0 && <div className="bg-border h-4 w-px" aria-hidden="true" />}
@@ -780,7 +784,7 @@ function PackageManagerTabs({ activeManager, onSelect, id }: PackageManagerTabsP
             {pm}
             {activeManager === pm && (
               <motion.div
-                className="bg-brand absolute inset-x-0 bottom-0 mx-auto h-0.5 w-full"
+                className="bg-brand absolute inset-x-0 -bottom-px mx-auto h-0.5 w-full"
                 layoutId={`codeblock-pm-tab-${id}`}
                 initial={false}
                 transition={{
