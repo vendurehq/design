@@ -1,0 +1,44 @@
+name: "CLA Assistant"
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, closed, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  CLAAssistant:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CI_BOT_APP_ID }}
+          private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          # Least privilege: the CLA assistant stores signatures (contents), comments on PRs
+          # (pull-requests), and sets the CLA commit status that gates merge (statuses).
+          # Do NOT request `actions: write` — the vendure-ci-automation-bot App only grants
+          # `actions: read`, and requesting a permission the App lacks hard-fails token
+          # creation. It isn't needed anyway: the "recheck" flow is driven by the
+          # issue_comment trigger, not by an API workflow re-run.
+          permission-contents: write
+          permission-pull-requests: write
+          permission-statuses: write
+
+      - name: "CLA Assistant"
+        if: (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA') || github.event_name == 'pull_request_target'
+        uses: contributor-assistant/github-action@v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ steps.bot-token.outputs.token }}
+        with:
+          path-to-signatures: "license/signatures/version1/cla.json"
+          # The CLA covers "any and all Vendure open source projects", so we link the
+          # canonical document in the core repo instead of maintaining a copy here.
+          path-to-document: "https://github.com/vendurehq/vendure/blob/master/license/CLA.md"
+          branch: "main"
+          allowlist: bot*,*[bot]
