@@ -217,7 +217,9 @@ export const HideHeader: Story = {
 
 // Copy is always present. onCopied fires after a successful copy. Wire your
 // toast here; the DS never toasts. onCopyError fires if the clipboard write
-// throws (e.g. an insecure context).
+// throws (e.g. an insecure context). From server components, function props
+// can't be passed — mount CopyFeedbackProvider once in a client component
+// instead; the props, when given, take precedence over the provider.
 export const CopyFeedback: Story = {
   args: {
     language: 'graphql',

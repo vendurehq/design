@@ -53,9 +53,9 @@ interface AnonymizedTokenProps extends Omit<React.ComponentProps<'span'>, 'child
   copyable?: boolean;
   /** How long the check-mark feedback stays visible, in ms. */
   timeout?: CopyButtonProps['timeout'];
-  /** Called after a successful copy. Wire your toast here. */
+  /** Called after a successful copy. Wire your toast here. Falls back to `CopyFeedbackProvider`. */
   onCopied?: CopyButtonProps['onCopied'];
-  /** Called when the clipboard write fails. */
+  /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: CopyButtonProps['onCopyError'];
   /** Accessible label before copying. @default "Copy token" */
   copyLabel?: CopyButtonProps['copyLabel'];

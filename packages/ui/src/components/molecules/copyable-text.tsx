@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@vendure-io/ui/components/atoms/button';
+import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CheckIcon, CopyIcon } from 'lucide-react';
@@ -11,9 +12,16 @@ interface CopyButtonProps extends Omit<React.ComponentProps<typeof Button>, 'val
   value: string;
   /** How long the check-mark feedback stays visible, in ms. @default 2000 */
   timeout?: number;
-  /** Called after a successful copy. Wire your toast here — the DS never toasts. */
+  /**
+   * Called after a successful copy. Wire your toast here — the DS never toasts.
+   * Falls back to `CopyFeedbackProvider` when omitted (the RSC-safe path, since
+   * function props can't be passed from server components).
+   */
   onCopied?: () => void;
-  /** Called when the clipboard write fails (e.g. permissions, insecure context). */
+  /**
+   * Called when the clipboard write fails (e.g. permissions, insecure context).
+   * Falls back to `CopyFeedbackProvider` when omitted.
+   */
   onCopyError?: (error: Error) => void;
   /** Accessible label before copying. @default "Copy" */
   copyLabel?: string;
@@ -40,6 +48,7 @@ function CopyButton({
   ...props
 }: CopyButtonProps) {
   const { copied, copy } = useCopy({ timeout });
+  const copyFeedback = useCopyFeedback();
 
   return (
     <Button
@@ -53,8 +62,9 @@ function CopyButton({
         onClick?.(event);
         if (event.defaultPrevented) return;
         const ok = await copy(value);
-        if (ok) onCopied?.();
-        else onCopyError?.(new Error('Failed to copy to the clipboard'));
+        if (ok) (onCopied ?? copyFeedback.onCopied)?.();
+        else
+          (onCopyError ?? copyFeedback.onCopyError)?.(new Error('Failed to copy to the clipboard'));
       }}
       {...props}
     >
@@ -71,9 +81,9 @@ interface CopyableTextProps {
   className?: string;
   /** How long the check-mark feedback stays visible, in ms. @default 2000 */
   timeout?: number;
-  /** Called after a successful copy. Wire your toast here — the DS never toasts. */
+  /** Called after a successful copy. Wire your toast here — the DS never toasts. Falls back to `CopyFeedbackProvider`. */
   onCopied?: () => void;
-  /** Called when the clipboard write fails. */
+  /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
 }
 

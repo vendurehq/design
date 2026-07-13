@@ -40,7 +40,7 @@ interface IdChipProps {
   /** Render the copy affordance. @default true */
   copyable?: boolean;
   className?: string;
-  /** Called after a successful copy. Wire your toast here — the DS never toasts. */
+  /** Called after a successful copy. Wire your toast here — the DS never toasts. Falls back to `CopyFeedbackProvider`. */
   onCopied?: () => void;
 }
 

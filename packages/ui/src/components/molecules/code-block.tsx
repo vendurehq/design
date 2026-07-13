@@ -10,6 +10,7 @@ import {
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
+import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
@@ -56,9 +57,14 @@ type CodeBlockProps = PropsWithChildren<ComponentProps<'div'>> & {
   packageManagerSwitcher?: boolean;
   /** Extra toolbar actions rendered before the built-in copy button. Compose with CodeBlockAction. */
   actions?: ReactNode;
-  /** Called after a successful copy. Wire your toast here. The DS never toasts. */
+  /**
+   * Called after a successful copy. Wire your toast here. The DS never toasts.
+   * Function props can't cross an RSC boundary — when rendering from a server
+   * component, omit this and mount `CopyFeedbackProvider` instead; it is the
+   * fallback when no prop is passed.
+   */
   onCopied?: () => void;
-  /** Called when the clipboard write fails. */
+  /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
 };
 
@@ -975,7 +981,9 @@ function SyntaxHighlightedContent({ code, language }: SyntaxHighlightedContentPr
  * long snippets, and an optional npm→pnpm/yarn/bun package-manager switcher.
  * Highlighting is lazy (a shared highlighter singleton + per-snippet cache), and
  * line/diff/focus/word decorations use Shiki's `[!code ...]` notations. The DS
- * never toasts. Wire `onCopied`/`onCopyError` to your own feedback.
+ * never toasts. Wire `onCopied`/`onCopyError` to your own feedback — or, when
+ * rendering from server components (where function props can't be passed),
+ * mount `CopyFeedbackProvider` once and leave the props off.
  */
 export function CodeBlock({
   className,
@@ -990,6 +998,7 @@ export function CodeBlock({
   ...props
 }: CodeBlockProps) {
   const { copied, copy } = useCopy();
+  const copyFeedback = useCopyFeedback();
   const [activePackageManager, setActivePackageManager] = usePackageManager();
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1035,8 +1044,8 @@ export function CodeBlock({
 
   const handleCopy = async () => {
     const ok = await copy(displayCode);
-    if (ok) onCopied?.();
-    else onCopyError?.(new Error('Failed to copy to the clipboard'));
+    if (ok) (onCopied ?? copyFeedback.onCopied)?.();
+    else (onCopyError ?? copyFeedback.onCopyError)?.(new Error('Failed to copy to the clipboard'));
   };
 
   const toolbar = <CodeBlockToolbar onCopy={handleCopy} isCopied={copied} actions={actions} />;
