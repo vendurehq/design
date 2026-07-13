@@ -115,6 +115,12 @@
   --neutral-subtle: oklch(0.93 0.004 231);
   --neutral-subtle-foreground: oklch(0.2 0.007 231);
   --neutral-border: oklch(0.87 0.004 231);
+  --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
+  --code-highlight-accent: oklch(0.55 0.19 250);
+  --code-diff-add: color-mix(in oklab, oklch(0.55 0.17 145) 10%, transparent);
+  --code-diff-add-accent: oklch(0.55 0.17 145);
+  --code-diff-remove: color-mix(in oklab, oklch(0.55 0.2 25) 10%, transparent);
+  --code-diff-remove-accent: oklch(0.55 0.2 25);
   --border: oklch(0.86 0.004 231);
   --input: oklch(0.86 0.004 231);
   --ring: oklch(0.68 0.005 231);
@@ -178,6 +184,12 @@
   --neutral-subtle: color-mix(in oklab, oklch(0.2 0.007 231) 40%, transparent);
   --neutral-subtle-foreground: oklch(0.78 0.004 231);
   --neutral-border: oklch(0.28 0.007 231);
+  --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
+  --code-highlight-accent: oklch(0.55 0.19 250);
+  --code-diff-add: color-mix(in oklab, oklch(0.55 0.17 145) 10%, transparent);
+  --code-diff-add-accent: oklch(0.55 0.17 145);
+  --code-diff-remove: color-mix(in oklab, oklch(0.55 0.2 25) 10%, transparent);
+  --code-diff-remove-accent: oklch(0.55 0.2 25);
   --border: color-mix(in oklab, var(--foreground) 17%, transparent);
   --input: color-mix(in oklab, var(--foreground) 17%, transparent);
   --ring: oklch(0.55 0.005 231);

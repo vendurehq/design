@@ -122,6 +122,12 @@
   --color-neutral-subtle: var(--neutral-subtle);
   --color-neutral-subtle-foreground: var(--neutral-subtle-foreground);
   --color-neutral-border: var(--neutral-border);
+  --color-code-highlight: var(--code-highlight);
+  --color-code-highlight-accent: var(--code-highlight-accent);
+  --color-code-diff-add: var(--code-diff-add);
+  --color-code-diff-add-accent: var(--code-diff-add-accent);
+  --color-code-diff-remove: var(--code-diff-remove);
+  --color-code-diff-remove-accent: var(--code-diff-remove-accent);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

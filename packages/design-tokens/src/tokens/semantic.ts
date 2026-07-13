@@ -51,6 +51,15 @@ export const lightTheme = {
   'neutral-subtle': neutral[100],
   'neutral-subtle-foreground': neutral[900],
   'neutral-border': neutral[200],
+  // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
+  // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
+  // the syntax-highlighted text legible; accents draw the solid gutter bar.
+  'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
+  'code-highlight-accent': info[500],
+  'code-diff-add': `color-mix(in oklab, ${success[500]} 10%, transparent)`,
+  'code-diff-add-accent': success[500],
+  'code-diff-remove': `color-mix(in oklab, ${destructive[500]} 10%, transparent)`,
+  'code-diff-remove-accent': destructive[500],
   border: 'oklch(0.86 0.004 231)',
   input: 'oklch(0.86 0.004 231)',
   ring: neutral[400],
@@ -121,6 +130,14 @@ export const darkTheme = {
   'neutral-subtle': `color-mix(in oklab, ${neutral[900]} 40%, transparent)`,
   'neutral-subtle-foreground': neutral[300],
   'neutral-border': neutral[800],
+  // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
+  // to read as tint on the dark surface ramp without drowning the token colors.
+  'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
+  'code-highlight-accent': info[500],
+  'code-diff-add': `color-mix(in oklab, ${success[500]} 10%, transparent)`,
+  'code-diff-add-accent': success[500],
+  'code-diff-remove': `color-mix(in oklab, ${destructive[500]} 10%, transparent)`,
+  'code-diff-remove-accent': destructive[500],
   // Foreground mixes like the intensity slots — neutral-800 tuned for the
   // canvas disappears on raised/overlay tiers. 17% renders ~neutral-800
   // on the canvas and degrades correctly above it.
