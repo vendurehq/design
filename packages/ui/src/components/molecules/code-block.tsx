@@ -44,7 +44,11 @@ type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 type CodeBlockProps = PropsWithChildren<ComponentProps<'div'>> & {
   /** Programming language for syntax highlighting */
   language?: string;
-  /** Filename shown in the header (overrides a `// filename:` first-line directive) */
+  /**
+   * Filename shown in the header (overrides a `// filename:` first-line directive).
+   * Takes precedence over the package-manager tabs — a block with a filename never
+   * shows the switcher, even when `packageManagerSwitcher` is set.
+   */
   filename?: string;
   /** Hide the header bar completely */
   hideHeader?: boolean;

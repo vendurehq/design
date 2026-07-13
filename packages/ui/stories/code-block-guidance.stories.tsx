@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { SparklesIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Kbd } from '../src/components/atoms/kbd.tsx';
-import { CodeBlock } from '../src/components/molecules/code-block.tsx';
+import { CodeBlock, CodeBlockAction } from '../src/components/molecules/code-block.tsx';
 import { CopyableText } from '../src/components/molecules/copyable-text.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 
@@ -251,7 +252,17 @@ export const ActionsAndFilename: Story = {
             verdict="do"
             caption="A docs app adds its own 'Ask AI' action; Copy stays the design-system default beside it."
           >
-            <CodeBlock language="bash" filename="Terminal" packageManagerSwitcher>
+            <CodeBlock
+              language="bash"
+              packageManagerSwitcher
+              actions={
+                <CodeBlockAction
+                  icon={<SparklesIcon className="size-4" />}
+                  label="Ask AI"
+                  onClick={() => {}}
+                />
+              }
+            >
               npm install @vendure/core
             </CodeBlock>
           </Example>
