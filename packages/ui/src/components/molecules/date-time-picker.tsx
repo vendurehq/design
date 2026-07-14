@@ -84,7 +84,9 @@ function DateTimePicker({
               variant="outline"
               disabled={disabled}
               aria-invalid={invalid || undefined}
-              className="min-w-0 flex-1 justify-start font-normal"
+              // Pickers sit in forms next to Inputs, so mirror the Input/Select
+              // trigger look (transparent bg) instead of the outline button fill.
+              className="min-w-0 flex-1 justify-start border-input bg-transparent font-normal hover:bg-transparent aria-expanded:bg-transparent"
             />
           }
         >
