@@ -1,6 +1,10 @@
 engine biome(1.0)
 language js(typescript, jsx)
 
+// The 3/4-digit hex alternatives enumerate the position of the first a-f
+// letter because this regex flavor has no lookahead. A purely decimal 3/4-digit
+// run (e.g. a GitHub issue ref like `(#2608)`) is not treated as a #RGB(A)
+// color; the 6/8-digit branches stay permissive. Mirrors eslint/index.js.
 or {
   JsxAttribute() as $attribute where {
     $attribute <: r"(?i)(?:className|style)=(?:\"[^\"]*\"|'[^']*')",
