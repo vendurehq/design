@@ -182,7 +182,11 @@ export interface DataTableProps<TData> {
   header?: React.ReactNode;
   /** Controls row (search, faceted filters, custom buttons). Render-prop gets the live table. */
   toolbar?: React.ReactNode | ((table: Table<TData>) => React.ReactNode);
-  /** Overlay content when selection is non-empty. Only meaningful with `rowSelection` wired. */
+  /**
+   * Replaces the controls row inside the header band while selection is
+   * non-empty (title and applied-filter chips stay). Only meaningful with
+   * `rowSelection` wired.
+   */
   bulkActions?: (ctx: DataTableBulkActionContext<TData>) => React.ReactNode;
   /**
    * Per-row actions → appends an actions column. First arg is `row.original`
@@ -225,8 +229,31 @@ export interface DataTableProps<TData> {
    */
   setTableOptions?: (options: TableOptions<TData>) => TableOptions<TData>;
 
+  /**
+   * The table's frame. `'card'` (default) renders the band anatomy on a real
+   * `Card`: a `CardHeader` (border-b) hosting the header/controls/chips zones,
+   * `CardTable` hosting the table flush to the card edges, and a `CardFooter`
+   * (border-t) hosting pagination when it is wired — no footer means the last
+   * row sits flush against the card's bottom edge. `'plain'` renders the same
+   * band structure without any card chrome, for a table embedded in an
+   * existing card (e.g. a dashboard widget): it MUST sit inside a `Card`,
+   * whose spacing variables (`--card-px`/`--card-gap`) drive the bands and
+   * edge-cell alignment — the host card is the frame.
+   */
+  frame?: 'card' | 'plain';
+  /**
+   * Extra `<TableRow>`s appended inside `TableBody` after the data rows — e.g.
+   * an order table's subtotal/shipping/total rows. Rendered only alongside
+   * real rows, never with the skeleton or empty states, and has no interaction
+   * with selection, sorting, or pagination. Use the function form to receive
+   * `columnCount` for `colSpan`s — display columns (select, actions) are
+   * injected around your columns, so a hard-coded count desyncs. Rows are
+   * presentational: give them `hover:bg-transparent`.
+   */
+  footerRows?: React.ReactNode | ((ctx: { columnCount: number }) => React.ReactNode);
+
   labels?: DataTableLabels;
-  className?: string; // outer div[data-slot="data-table"]
+  className?: string; // the frame root (data-slot="data-table")
 }
 
 /**

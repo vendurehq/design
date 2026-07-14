@@ -9,11 +9,12 @@ import type { DataTableBulkActionContext } from '@vendure-io/ui/components/molec
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 
-// The selection overlay that replaces the controls row while rows are selected.
-// The cross-page selection cache lives here (donor parity): `rows` only ever
-// holds the current page, so we accumulate `row.original` by id as pages are
-// seen, letting `bulkActions` receive every selected original — not just the
-// ones still on screen.
+// The selection bar that replaces the controls row inside the header band
+// while rows are selected (returns null with an empty selection; the core
+// decides where it renders). The cross-page selection cache lives here (donor
+// parity): `rows` only ever holds the current page, so we accumulate
+// `row.original` by id as pages are seen, letting `bulkActions` receive every
+// selected original — not just the ones still on screen.
 
 /**
  * Accumulate `row.original` keyed by row id across page changes. Populated during
@@ -53,12 +54,12 @@ function DataTableBulkActions<TData>({
   };
 
   return (
+    // A plain band row, not a box: it takes the controls row's place inside
+    // the header band, so it carries no chrome of its own. min-h-9 matches
+    // the controls row's h-9 inputs so the swap holds the band height steady.
     <div
       data-slot="data-table-bulk-actions"
-      className={cn(
-        'bg-muted/50 flex flex-wrap items-center gap-2 rounded-md border px-3 py-2',
-        className,
-      )}
+      className={cn('flex min-h-9 flex-wrap items-center gap-2', className)}
       {...props}
     >
       {render(ctx)}

@@ -515,6 +515,128 @@ describe('DataTable pagination', () => {
     expect(markup).toContain('data-slot="table-pagination"');
     expect(markup.replace(/<[^>]+>/g, '')).toContain('1–25 of 132');
   });
+
+  test('the footer is a CardFooter band; absent without pagination', () => {
+    const paged = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        pagination={{ page: 1, pageSize: 25, totalItems: 132, onPageChange: () => {} }}
+      />,
+    );
+    expect(paged).toContain('data-slot="card-footer"');
+    const unpaged = html(<DataTable rows={rows} columns={columns} />);
+    expect(unpaged).not.toContain('data-slot="card-footer"');
+  });
+});
+
+describe('DataTable card frame', () => {
+  test('the root is the card frame; the header band renders only with header content', () => {
+    const bare = html(<DataTable rows={rows} columns={columns} />);
+    expect(bare).toContain('data-slot="data-table"');
+    expect(bare).toContain('data-slot="card-table"');
+    expect(bare).not.toContain('data-slot="card-header"');
+
+    const withHeader = html(<DataTable rows={rows} columns={columns} header={<h2>Orders</h2>} />);
+    expect(withHeader).toContain('data-slot="card-header"');
+  });
+
+  test('controls alone open the header band (no header slot)', () => {
+    const markup = html(<DataTable rows={rows} columns={columns} columnVisibility={{}} />);
+    expect(markup).toContain('data-slot="card-header"');
+    expect(markup).toContain('data-slot="data-table-view-options"');
+  });
+
+  test('bulk selection alone opens the header band; empty selection leaves no band', () => {
+    const bulk = (
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        bulkActions={() => <span>Archive</span>}
+      />
+    );
+    const selected = html(bulk);
+    expect(selected).toContain('data-slot="card-header"');
+    expect(selected).toContain('data-slot="data-table-bulk-actions"');
+
+    const idle = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value: {}, onChange: () => {} }}
+        bulkActions={() => <span>Archive</span>}
+      />,
+    );
+    expect(idle).not.toContain('data-slot="card-header"');
+  });
+
+  test('the bulk bar replaces the controls row while rows are selected', () => {
+    const props = {
+      rows,
+      columns,
+      getRowId: (row: Country) => row.id,
+      columnVisibility: {},
+      bulkActions: () => <span>Archive</span>,
+    };
+    const selected = html(
+      <DataTable {...props} rowSelection={{ value: { '1': true }, onChange: () => {} }} />,
+    );
+    expect(selected).toContain('data-slot="data-table-bulk-actions"');
+    expect(selected).not.toContain('data-slot="list-header-controls"');
+
+    const idle = html(<DataTable {...props} rowSelection={{ value: {}, onChange: () => {} }} />);
+    expect(idle).toContain('data-slot="list-header-controls"');
+    expect(idle).not.toContain('data-slot="data-table-bulk-actions"');
+  });
+
+  test('frame="plain" renders a chrome-less stack, not a nested card', () => {
+    const markup = html(<DataTable rows={rows} columns={columns} frame="plain" />);
+    const rootClass = markup.match(/data-slot="data-table"[^>]*class="([^"]*)"/)?.[1] ?? '';
+    expect(rootClass).not.toContain('bg-card');
+    expect(rootClass).not.toContain('border');
+    expect(rootClass).not.toContain('rounded');
+    expect(markup).not.toContain('data-slot="card"'); // no Card root at all
+    expect(markup).toContain('data-slot="card-table"');
+  });
+
+  test('footerRows function form receives the injected column count', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value: {}, onChange: () => {} }}
+        rowActions={() => <span>edit</span>}
+        footerRows={({ columnCount }) => (
+          <tr data-slot="footer-row">
+            <td colSpan={columnCount}>Total</td>
+          </tr>
+        )}
+      />,
+    );
+    // 2 data columns + select + actions
+    expect(markup.toLowerCase()).toContain('colspan="4"');
+  });
+
+  test('footerRows render after the data rows, only alongside real rows', () => {
+    const footer = (
+      <tr data-slot="footer-row">
+        <td colSpan={2}>Total</td>
+      </tr>
+    );
+    const withRows = html(<DataTable rows={rows} columns={columns} footerRows={footer} />);
+    expect(withRows).toContain('data-slot="footer-row"');
+    expect(withRows.indexOf('data-slot="footer-row"')).toBeGreaterThan(withRows.indexOf('Brazil'));
+
+    const empty = html(<DataTable rows={[]} columns={columns} footerRows={footer} />);
+    expect(empty).not.toContain('data-slot="footer-row"');
+
+    const loading = html(<DataTable rows={[]} columns={columns} isLoading footerRows={footer} />);
+    expect(loading).not.toContain('data-slot="footer-row"');
+  });
 });
 
 // --- pure helper units (the getRange/clampPage precedent) ---
