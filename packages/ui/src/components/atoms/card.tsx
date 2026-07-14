@@ -2,6 +2,12 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
+// The size variant publishes the card's spacing contract as CSS variables
+// (--card-px: horizontal content padding, --card-gap: vertical rhythm shared
+// by the root padding and the flex gap). Slots consume the variables instead
+// of `group-data-[size=sm]` hooks so that nested cards resolve to the NEAREST
+// card — a group selector matches any ancestor and leaks the outer card's
+// size into an inner one.
 function Card({
   className,
   size = "default",
@@ -12,7 +18,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground group/card flex flex-col gap-6 overflow-hidden rounded-xl border border-border/60 py-6 text-sm has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "bg-card text-card-foreground group/card [--card-gap:--spacing(6)] [--card-px:--spacing(6)] data-[size=sm]:[--card-gap:--spacing(4)] data-[size=sm]:[--card-px:--spacing(4)] flex flex-col gap-(--card-gap) overflow-hidden rounded-xl border border-border/60 py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         className
       )}
       {...props}
@@ -28,7 +34,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-6 group-data-[size=sm]/card:px-4 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:border-border/50 [.border-b]:pb-6 group-data-[size=sm]/card:[.border-b]:pb-4",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:border-border/50 [.border-b]:pb-(--card-gap)",
         className
       )}
       {...props}
@@ -76,7 +82,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-6 group-data-[size=sm]/card:px-4", className)}
+      className={cn("px-(--card-px)", className)}
       {...props}
     />
   )
@@ -87,15 +93,19 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 // the card's own padding when the table is the first/last child, so rows and
 // band dividers run edge to edge (the card's overflow-hidden clips the
 // corners). Edge cells get the card's content padding so cell content aligns
-// with CardHeader/CardFooter content. The gap cancellation is unconditional:
-// an adjacent CardHeader/CardFooter must carry its band border (border-b /
-// border-t), otherwise the table sits directly against the band's content.
+// with CardHeader/CardFooter content. Two contract notes:
+// - The gap cancellation is unconditional: an adjacent CardHeader/CardFooter
+//   must carry its band border (border-b / border-t), otherwise the table
+//   sits directly against the band's content.
+// - The edge-cell selector ((0,2,1)) out-specifies a plain padding utility on
+//   the cell ((0,1,0)): a `pl-*`/`pr-*` on a first/last cell silently loses —
+//   override with the important modifier (`pl-0!`) when a cell must opt out.
 function CardTable({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-table"
       className={cn(
-        "-my-6 group-data-[size=sm]/card:-my-4 [&_tr>*:first-child]:pl-6 group-data-[size=sm]/card:[&_tr>*:first-child]:pl-4 [&_tr>*:last-child]:pr-6 group-data-[size=sm]/card:[&_tr>*:last-child]:pr-4",
+        "-my-(--card-gap) [&_tr>*:first-child]:pl-(--card-px) [&_tr>*:last-child]:pr-(--card-px)",
         className
       )}
       {...props}
@@ -108,7 +118,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl px-6 group-data-[size=sm]/card:px-4 [.border-t]:border-border/50 [.border-t]:pt-6 group-data-[size=sm]/card:[.border-t]:pt-4",
+        "flex items-center rounded-b-xl px-(--card-px) [.border-t]:border-border/50 [.border-t]:pt-(--card-gap)",
         className
       )}
       {...props}
