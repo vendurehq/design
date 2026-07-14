@@ -24,13 +24,16 @@ export interface LoadingStateProps
   rows?: number;
   /** Classes applied to each skeleton row (e.g. `h-10` for tighter lists). */
   rowClassName?: string;
-  /** Visible label. An sr-only "Loading…" is always rendered for assistive tech. */
+  /** Visible label. An sr-only `srLabel` is always rendered for assistive tech. */
   label?: React.ReactNode;
+  /** Sr-only label announced to assistive tech. Override for host i18n. @default "Loading…" */
+  srLabel?: string;
 }
 
 /**
  * Placeholder shell for in-flight list/detail queries. Renders as an
- * `aria-live` `<output>` with an always-present sr-only "Loading…" label.
+ * `aria-live` `<output>` with an always-present sr-only `srLabel` (defaults to
+ * "Loading…", overridable for host i18n).
  * `skeleton` (default) draws N shimmer rows; `spinner` centers the `Spinner`
  * atom for compact or unknown-height regions.
  */
@@ -39,6 +42,7 @@ function LoadingState({
   rows = 5,
   rowClassName,
   label,
+  srLabel = 'Loading…',
   className,
   ...props
 }: LoadingStateProps) {
@@ -49,7 +53,7 @@ function LoadingState({
       className={cn(loadingStateVariants({ variant }), className)}
       {...props}
     >
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{srLabel}</span>
       {variant === 'spinner' ? (
         <>
           {/* aria-hidden overrides the atom's role="status": the <output> is
