@@ -13,7 +13,13 @@
     "const preview = 'preview-#1234';",
     "const view = <div className='bg-destructive-500 text-success-700' />;",
     "const brand = 'var(--brand-500)';",
-    "const info = 'var(--color-info-500)';"
+    "const info = 'var(--color-info-500)';",
+    "test('should default sort by updatedAt (#4393)', run);",
+    "const ref = 'see (#2608) for details';",
+    "const note = 'issue #123 is fixed';",
+    "const shorthand = '#000';",
+    "const run5 = 'hash #123ab tail';",
+    "const run7 = 'hash #123abcd tail';"
   ],
   "invalid": [
     "const view = <div className='bg-blue-500 text-white' />;",
@@ -28,6 +34,16 @@
     "const color = '#fff';",
     "const view = <div style={{ color: '#ffffff' }} />;",
     "const color = 'oklch(0.76 0.15 231)';",
-    "const color = 'var(--color-blue-500)';"
+    "const color = 'var(--color-blue-500)';",
+    "const color = '#abc';",
+    "const color = '#abcd';",
+    "const color = '#1a2';",
+    "const color = '#12a';",
+    "const color = '#12a3';",
+    "const color = '#123a';",
+    "const color = '#ABC';",
+    "const color = '#112233';",
+    "const color = '#11223344';",
+    "const view = <div style={{ color: '#f00' }} />;"
   ]
 }
