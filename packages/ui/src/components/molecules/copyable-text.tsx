@@ -85,6 +85,10 @@ interface CopyableTextProps {
   onCopied?: () => void;
   /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
+  /** Accessible label before copying, forwarded to the inner `CopyButton`. @default "Copy" */
+  copyLabel?: string;
+  /** Accessible label shown while the copied state is active, forwarded to the inner `CopyButton`. @default "Copied" */
+  copiedLabel?: string;
 }
 
 /**
@@ -99,11 +103,20 @@ function CopyableText({
   timeout,
   onCopied,
   onCopyError,
+  copyLabel,
+  copiedLabel,
 }: CopyableTextProps) {
   return (
     <span data-slot="copyable-text" className={cn('inline-flex items-center gap-1.5', className)}>
       {children ?? value}
-      <CopyButton value={value} timeout={timeout} onCopied={onCopied} onCopyError={onCopyError} />
+      <CopyButton
+        value={value}
+        timeout={timeout}
+        onCopied={onCopied}
+        onCopyError={onCopyError}
+        copyLabel={copyLabel}
+        copiedLabel={copiedLabel}
+      />
     </span>
   );
 }
