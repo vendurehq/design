@@ -16,7 +16,12 @@ const rampVariablePattern = new RegExp(
   `var\\(\\s*--(?:color-)?${rampNames}-${rampSteps}\\s*\\)`,
   'i',
 );
-const hexPattern = /(?:^|[\s:,([])#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![0-9a-f])/i;
+// The 3/4-digit branch requires at least one a-f letter so that pure-decimal
+// runs (e.g. GitHub issue refs like `(#2608)`) are not treated as #RGB(A) colors.
+// The 6/8-digit branches stay permissive because those lengths are almost
+// always literal colors even when fully decimal (e.g. `#112233`).
+const hexPattern =
+  /(?:^|[\s:,([])#(?:(?=[0-9a-f]*[a-f])[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![0-9a-f])/i;
 const colorFunctionPattern = /\b(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\s*\(/i;
 
 /** @typedef {import('estree').Node | { type: 'JSXAttribute'; name: { type: 'JSXIdentifier'; name: string } }} ParentNode */
