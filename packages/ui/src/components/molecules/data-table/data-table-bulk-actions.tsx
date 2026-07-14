@@ -9,11 +9,12 @@ import type { DataTableBulkActionContext } from '@vendure-io/ui/components/molec
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 
-// The selection overlay that replaces the controls row while rows are selected.
-// The cross-page selection cache lives here (donor parity): `rows` only ever
-// holds the current page, so we accumulate `row.original` by id as pages are
-// seen, letting `bulkActions` receive every selected original — not just the
-// ones still on screen.
+// The selection bar that replaces the controls row inside the header band
+// while rows are selected (returns null with an empty selection; the core
+// decides where it renders). The cross-page selection cache lives here (donor
+// parity): `rows` only ever holds the current page, so we accumulate
+// `row.original` by id as pages are seen, letting `bulkActions` receive every
+// selected original — not just the ones still on screen.
 
 /**
  * Accumulate `row.original` keyed by row id across page changes. Populated during

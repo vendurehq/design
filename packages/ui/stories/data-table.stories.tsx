@@ -463,10 +463,10 @@ export const FooterRows: Story = {
         rows={items}
         columns={columns}
         getRowId={(order) => order.id}
-        footerRows={
+        footerRows={({ columnCount }) => (
           <>
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={4} className="text-muted-foreground text-right">
+              <TableCell colSpan={columnCount - 1} className="text-muted-foreground text-right">
                 Subtotal
               </TableCell>
               <TableCell>
@@ -474,7 +474,7 @@ export const FooterRows: Story = {
               </TableCell>
             </TableRow>
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={4} className="text-muted-foreground text-right">
+              <TableCell colSpan={columnCount - 1} className="text-muted-foreground text-right">
                 Shipping
               </TableCell>
               <TableCell>
@@ -482,7 +482,7 @@ export const FooterRows: Story = {
               </TableCell>
             </TableRow>
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={4} className="text-right font-medium">
+              <TableCell colSpan={columnCount - 1} className="text-right font-medium">
                 Total
               </TableCell>
               <TableCell className="font-medium">
@@ -490,7 +490,7 @@ export const FooterRows: Story = {
               </TableCell>
             </TableRow>
           </>
-        }
+        )}
       />
     );
   },

@@ -340,35 +340,44 @@ function DataTable<TData>({
   const showHeader = header != null || showControls || showChips;
   // Unlike the other zones, the bulk bar exists only while rows are selected,
   // so it opens the header band on its own only then — a controls-less
-  // selectable table must not render an empty band.
+  // selectable table must not render an empty band. (Deliberate trade-off:
+  // for a table with no header content at all, the band pops in on first
+  // selection rather than reserving empty space.)
   const showBulk =
     rowSelection != null &&
     bulkActions != null &&
     getSelectedRowIds(table.getState().rowSelection).length > 0;
 
-  return (
-    <Card
-      data-slot="data-table"
-      className={cn(frame === 'plain' && 'rounded-none border-0 bg-transparent', className)}
-    >
+  const bands = (
+    <>
       {(showHeader || showBulk) && (
         <CardHeader className="border-b">
           <ListHeader>
             {header}
-            {showControls && (
-              <ListHeaderControls>
-                {toolbarNode}
-                {hasFilterMenu && filters?.columns && (
-                  <DataTableAddFilter table={table} columns={filters.columns} label={l.addFilter} />
-                )}
-                {showViewOptions && (
-                  <DataTableViewOptions
-                    table={table}
-                    triggerLabel={l.columnsTrigger}
-                    heading={l.columnsHeading}
-                  />
-                )}
-              </ListHeaderControls>
+            {/* Replace-on-select: while rows are selected the bulk bar takes
+                the controls row's place; title and applied-filter chips stay. */}
+            {showBulk && bulkActions ? (
+              <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
+            ) : (
+              showControls && (
+                <ListHeaderControls>
+                  {toolbarNode}
+                  {hasFilterMenu && filters?.columns && (
+                    <DataTableAddFilter
+                      table={table}
+                      columns={filters.columns}
+                      label={l.addFilter}
+                    />
+                  )}
+                  {showViewOptions && (
+                    <DataTableViewOptions
+                      table={table}
+                      triggerLabel={l.columnsTrigger}
+                      heading={l.columnsHeading}
+                    />
+                  )}
+                </ListHeaderControls>
+              )
             )}
             {showChips && (
               <ListHeaderChips>
@@ -380,9 +389,6 @@ function DataTable<TData>({
                   collapsedLabel={l.filtersCollapsed}
                 />
               </ListHeaderChips>
-            )}
-            {showBulk && bulkActions && (
-              <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
             )}
           </ListHeader>
         </CardHeader>
@@ -476,7 +482,7 @@ function DataTable<TData>({
                     </React.Fragment>
                   );
                 })}
-                {footerRows}
+                {typeof footerRows === 'function' ? footerRows({ columnCount }) : footerRows}
               </>
             )}
           </TableBody>
@@ -502,6 +508,31 @@ function DataTable<TData>({
           />
         </CardFooter>
       )}
+    </>
+  );
+
+  // `plain` renders a chrome-less stack instead of a Card so the bands and
+  // CardTable consume the HOST card's spacing variables (--card-px /
+  // --card-gap): edge cells align with the host's padding regardless of its
+  // size, and a trailing CardTable's negative margin reaches through the
+  // host's bottom padding so the last row sits flush against the host's edge.
+  // With no header band the leading CardTable's negative margin would eat the
+  // host's flex gap too and press the rows against the preceding content, so
+  // the stack restores that one gap as padding.
+  return frame === 'plain' ? (
+    <div
+      data-slot="data-table"
+      className={cn(
+        'flex flex-col gap-(--card-gap)',
+        !(showHeader || showBulk) && 'pt-(--card-gap)',
+        className,
+      )}
+    >
+      {bands}
+    </div>
+  ) : (
+    <Card data-slot="data-table" className={className}>
+      {bands}
     </Card>
   );
 }
