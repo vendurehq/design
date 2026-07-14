@@ -355,7 +355,9 @@ export const RowActionsWithContextMenu: Story = {
 };
 
 // Row selection + bulk actions — a controlled `RowSelectionState`, a leading
-// checkbox column, and an overlay that surfaces the selection to `bulkActions`.
+// checkbox column, and replace-on-select: while rows are selected the bulk bar
+// takes the controls row's place in the header band (select a row to watch the
+// search input and columns gear swap out); clearing the selection restores them.
 export const RowSelection: Story = {
   render: () => {
     const [selection, setSelection] = useState<RowSelectionState>({});
@@ -365,6 +367,17 @@ export const RowSelection: Story = {
         columns={columns}
         getRowId={(order) => order.id}
         rowSelection={{ value: selection, onChange: setSelection }}
+        toolbar={
+          <InputGroup className="flex-1">
+            <InputGroupAddon align="inline-start">
+              <InputGroupText>
+                <SearchIcon />
+              </InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput placeholder="Search orders" />
+          </InputGroup>
+        }
+        columnVisibility={{ defaultValue: {} }}
         bulkActions={({ selection: selected, clearSelection }) => (
           <>
             <span className="text-sm font-medium">{selected.length} selected</span>
