@@ -87,7 +87,9 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 // the card's own padding when the table is the first/last child, so rows and
 // band dividers run edge to edge (the card's overflow-hidden clips the
 // corners). Edge cells get the card's content padding so cell content aligns
-// with CardHeader/CardFooter content.
+// with CardHeader/CardFooter content. The gap cancellation is unconditional:
+// an adjacent CardHeader/CardFooter must carry its band border (border-b /
+// border-t), otherwise the table sits directly against the band's content.
 function CardTable({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
