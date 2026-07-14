@@ -4,6 +4,13 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../src/components/atoms/card.tsx';
+import {
   Table,
   TableBody,
   TableCell,
@@ -30,9 +37,10 @@ import {
  * when to reach for it versus composing those primitives yourself, on which
  * capabilities to switch on (each is off until its config is passed), on who owns
  * the state behind every capability (the consumer owns URL, fetching, and
- * persistence; the core never fetches), and on where the line falls between this
- * core and richer consumer table shells. For the prop-by-prop API, see the
- * DataTable stories.
+ * persistence; the core never fetches), on the frame (the card is the table's
+ * frame; frame="plain" only inside an existing card), and on where the line
+ * falls between this core and richer consumer table shells. For the
+ * prop-by-prop API, see the DataTable stories.
  */
 const meta = {
   title: 'Molecules/DataTable/Guidance',
@@ -561,6 +569,61 @@ export const DashboardRelationship: Story = {
               ))}
             </tbody>
           </table>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 5 · the frame: card or plain ──────────────────────────────────────────────
+
+export const FrameChoice: Story = {
+  name: '5 · The frame: card or plain',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="The card is the table's frame — never a second box"
+        intro="DataTable renders its own card frame: a header band anchoring the controls, the rows flush to the card edges, and a footer band for pagination. The default frame=&quot;card&quot; is right everywhere the table stands on its own — list pages, detail-page blocks, sheets. Switch to frame=&quot;plain&quot; only when the table sits inside a card that already exists (a dashboard widget, an insights panel): the band structure stays, the chrome comes from the host. If you are wrapping a DataTable in a Card, you want plain — two frames is a box in a box."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A widget card hosts the table with frame=&quot;plain&quot;: the host card is the only frame, and the rows still bleed to its edges."
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Latest orders</CardTitle>
+                <CardAction>
+                  <Button variant="ghost" size="xs">
+                    View all
+                  </Button>
+                </CardAction>
+              </CardHeader>
+              <DataTable
+                rows={PRODUCTS.slice(0, 3)}
+                columns={productColumns}
+                getRowId={(p) => p.id}
+                frame="plain"
+              />
+            </Card>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="The default card frame inside another card draws a border and background inside a border and background — the box-in-box the frame exists to remove."
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Latest orders</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DataTable
+                  rows={PRODUCTS.slice(0, 3)}
+                  columns={productColumns}
+                  getRowId={(p) => p.id}
+                />
+              </CardContent>
+            </Card>
+          </Example>
         </div>
       </Section>
     </div>

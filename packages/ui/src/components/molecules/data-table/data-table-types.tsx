@@ -225,8 +225,26 @@ export interface DataTableProps<TData> {
    */
   setTableOptions?: (options: TableOptions<TData>) => TableOptions<TData>;
 
+  /**
+   * The table's frame. `'card'` (default) renders the band anatomy on a real
+   * `Card`: a `CardHeader` (border-b) hosting the header/controls/chips zones,
+   * `CardTable` hosting the table flush to the card edges, and a `CardFooter`
+   * (border-t) hosting pagination when it is wired — no footer means the last
+   * row sits flush against the card's bottom edge. `'plain'` keeps the same
+   * band structure but strips the card chrome (border, background, radius),
+   * for tables embedded in an existing card such as dashboard widgets.
+   */
+  frame?: 'card' | 'plain';
+  /**
+   * Extra `<TableRow>`s appended inside `TableBody` after the data rows — e.g.
+   * an order table's subtotal/shipping/total rows. Rendered only alongside
+   * real rows, never with the skeleton or empty states, and has no interaction
+   * with selection, sorting, or pagination.
+   */
+  footerRows?: React.ReactNode;
+
   labels?: DataTableLabels;
-  className?: string; // outer div[data-slot="data-table"]
+  className?: string; // the frame root (data-slot="data-table")
 }
 
 /**

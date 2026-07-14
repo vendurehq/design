@@ -515,6 +515,56 @@ describe('DataTable pagination', () => {
     expect(markup).toContain('data-slot="table-pagination"');
     expect(markup.replace(/<[^>]+>/g, '')).toContain('1–25 of 132');
   });
+
+  test('the footer is a CardFooter band; absent without pagination', () => {
+    const paged = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        pagination={{ page: 1, pageSize: 25, totalItems: 132, onPageChange: () => {} }}
+      />,
+    );
+    expect(paged).toContain('data-slot="card-footer"');
+    const unpaged = html(<DataTable rows={rows} columns={columns} />);
+    expect(unpaged).not.toContain('data-slot="card-footer"');
+  });
+});
+
+describe('DataTable card frame', () => {
+  test('the root is the card frame; the header band renders only with header content', () => {
+    const bare = html(<DataTable rows={rows} columns={columns} />);
+    expect(bare).toContain('data-slot="data-table"');
+    expect(bare).toContain('data-slot="card-table"');
+    expect(bare).not.toContain('data-slot="card-header"');
+
+    const withHeader = html(<DataTable rows={rows} columns={columns} header={<h2>Orders</h2>} />);
+    expect(withHeader).toContain('data-slot="card-header"');
+  });
+
+  test('frame="plain" strips the card chrome but keeps the band structure', () => {
+    const markup = html(<DataTable rows={rows} columns={columns} frame="plain" />);
+    const rootClass = markup.match(/data-slot="data-table"[^>]*class="([^"]*)"/)?.[1] ?? '';
+    expect(rootClass).toContain('border-0');
+    expect(rootClass).toContain('bg-transparent');
+    expect(markup).toContain('data-slot="card-table"');
+  });
+
+  test('footerRows render after the data rows, only alongside real rows', () => {
+    const footer = (
+      <tr data-slot="footer-row">
+        <td colSpan={2}>Total</td>
+      </tr>
+    );
+    const withRows = html(<DataTable rows={rows} columns={columns} footerRows={footer} />);
+    expect(withRows).toContain('data-slot="footer-row"');
+    expect(withRows.indexOf('data-slot="footer-row"')).toBeGreaterThan(withRows.indexOf('Brazil'));
+
+    const empty = html(<DataTable rows={[]} columns={columns} footerRows={footer} />);
+    expect(empty).not.toContain('data-slot="footer-row"');
+
+    const loading = html(<DataTable rows={[]} columns={columns} isLoading footerRows={footer} />);
+    expect(loading).not.toContain('data-slot="footer-row"');
+  });
 });
 
 // --- pure helper units (the getRange/clampPage precedent) ---

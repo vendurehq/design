@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontalIcon, SearchIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { ContextMenuItem, ContextMenuSeparator } from '../src/components/atoms/context-menu.tsx';
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
+import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -446,4 +448,74 @@ export const FiltersWithAppliedChips: Story = {
       />
     );
   },
+};
+
+// footerRows — presentational rows appended after the data rows: the
+// order-detail totals shape. They render only alongside real rows (never with
+// the skeleton or empty states) and ignore selection, sorting, and pagination.
+export const FooterRows: Story = {
+  render: () => {
+    const items = orders.slice(0, 4);
+    const subtotal = items.reduce((sum, order) => sum + order.total, 0);
+    const shipping = 950;
+    return (
+      <DataTable<Order>
+        rows={items}
+        columns={columns}
+        getRowId={(order) => order.id}
+        footerRows={
+          <>
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={4} className="text-muted-foreground text-right">
+                Subtotal
+              </TableCell>
+              <TableCell>
+                <Money value={subtotal} currency="USD" locale="en-US" />
+              </TableCell>
+            </TableRow>
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={4} className="text-muted-foreground text-right">
+                Shipping
+              </TableCell>
+              <TableCell>
+                <Money value={shipping} currency="USD" locale="en-US" />
+              </TableCell>
+            </TableRow>
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={4} className="text-right font-medium">
+                Total
+              </TableCell>
+              <TableCell className="font-medium">
+                <Money value={subtotal + shipping} currency="USD" locale="en-US" />
+              </TableCell>
+            </TableRow>
+          </>
+        }
+      />
+    );
+  },
+};
+
+// frame="plain" — the same band structure without the card chrome, for a table
+// embedded in an existing card (dashboard-widget shape): the host card is the
+// frame, and the table still bleeds to its edges.
+export const PlainFrame: Story = {
+  render: () => (
+    <Card className="w-[640px]">
+      <CardHeader>
+        <CardTitle>Latest orders</CardTitle>
+        <CardAction>
+          <Button variant="ghost" size="xs">
+            View all
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <DataTable<Order>
+        rows={orders.slice(0, 5)}
+        columns={columns}
+        getRowId={(order) => order.id}
+        frame="plain"
+      />
+    </Card>
+  ),
 };

@@ -19,6 +19,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
+import { Card, CardFooter, CardHeader, CardTable } from '@vendure-io/ui/components/atoms/card';
 import { Checkbox } from '@vendure-io/ui/components/atoms/checkbox';
 import {
   ContextMenu,
@@ -45,6 +46,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/data-table-filters';
 import {
   buildDisplayColumns,
+  getSelectedRowIds,
   resolveSlot,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
 import type {
@@ -62,10 +64,13 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
 
 // The composition root. Owns the single `useReactTable` instance and the
-// controlled/uncontrolled bridge, then lays out header → controls → chips →
-// bulk overlay → Table → footer. Every capability follows the Phase-1 rule
-// verbatim: a feature renders only if its config is wired — no feature flags, no
-// disabled placeholders. Only this folder imports TanStack; the composed
+// controlled/uncontrolled bridge, then lays out the card-framed table anatomy:
+// a CardHeader band (header → controls → chips → bulk overlay), a CardTable
+// hosting the Table flush to the card edges, and a CardFooter band for
+// pagination. `frame="plain"` keeps the band structure without the card
+// chrome. Every capability follows the Phase-1 rule verbatim: a feature
+// renders only if its config is wired — no feature flags, no disabled
+// placeholders. Only this folder imports TanStack; the composed
 // ListHeader/TablePagination/Chip primitives stay TanStack-free.
 
 /**
@@ -126,6 +131,8 @@ function DataTable<TData>({
   emptyState,
   renderRow,
   setTableOptions,
+  frame = 'card',
+  footerRows,
   labels,
   className,
 }: DataTableProps<TData>) {
@@ -307,7 +314,11 @@ function DataTable<TData>({
       ? table.getVisibleLeafColumns().find((column) => column.id !== selectColumnId)?.id
       : undefined;
   const columnClass = (id: string): string | undefined => {
-    if (id === selectColumnId) return 'relative w-0 p-0';
+    // `pl-0!`: the select cell is the first child, so CardTable's edge-cell
+    // padding would otherwise widen the zero-width cell and push the whole
+    // gutter arrangement out; important because CardTable's descendant rule
+    // out-specifies a plain utility on the cell.
+    if (id === selectColumnId) return 'relative w-0 p-0 pl-0!';
     if (id === leadingColumnId) return 'pl-8';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
@@ -327,47 +338,57 @@ function DataTable<TData>({
     filters.showAppliedFilters !== false &&
     table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
-  const showBulk = rowSelection != null && bulkActions != null;
+  // Unlike the other zones, the bulk bar exists only while rows are selected,
+  // so it opens the header band on its own only then — a controls-less
+  // selectable table must not render an empty band.
+  const showBulk =
+    rowSelection != null &&
+    bulkActions != null &&
+    getSelectedRowIds(table.getState().rowSelection).length > 0;
 
   return (
-    <div data-slot="data-table" className={cn('flex flex-col gap-4', className)}>
-      {showHeader && (
-        <ListHeader>
-          {header}
-          {showControls && (
-            <ListHeaderControls>
-              {toolbarNode}
-              {hasFilterMenu && filters?.columns && (
-                <DataTableAddFilter table={table} columns={filters.columns} label={l.addFilter} />
-              )}
-              {showViewOptions && (
-                <DataTableViewOptions
+    <Card
+      data-slot="data-table"
+      className={cn(frame === 'plain' && 'rounded-none border-0 bg-transparent', className)}
+    >
+      {(showHeader || showBulk) && (
+        <CardHeader className="border-b">
+          <ListHeader>
+            {header}
+            {showControls && (
+              <ListHeaderControls>
+                {toolbarNode}
+                {hasFilterMenu && filters?.columns && (
+                  <DataTableAddFilter table={table} columns={filters.columns} label={l.addFilter} />
+                )}
+                {showViewOptions && (
+                  <DataTableViewOptions
+                    table={table}
+                    triggerLabel={l.columnsTrigger}
+                    heading={l.columnsHeading}
+                  />
+                )}
+              </ListHeaderControls>
+            )}
+            {showChips && (
+              <ListHeaderChips>
+                <DataTableAppliedFilters
                   table={table}
-                  triggerLabel={l.columnsTrigger}
-                  heading={l.columnsHeading}
+                  columns={filters?.columns}
+                  inlineChipLimit={filters?.inlineChipLimit}
+                  removeLabel={l.removeFilter}
+                  collapsedLabel={l.filtersCollapsed}
                 />
-              )}
-            </ListHeaderControls>
-          )}
-          {showChips && (
-            <ListHeaderChips>
-              <DataTableAppliedFilters
-                table={table}
-                columns={filters?.columns}
-                inlineChipLimit={filters?.inlineChipLimit}
-                removeLabel={l.removeFilter}
-                collapsedLabel={l.filtersCollapsed}
-              />
-            </ListHeaderChips>
-          )}
-        </ListHeader>
+              </ListHeaderChips>
+            )}
+            {showBulk && bulkActions && (
+              <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
+            )}
+          </ListHeader>
+        </CardHeader>
       )}
 
-      {showBulk && bulkActions && (
-        <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
-      )}
-
-      <div className="bg-card overflow-hidden rounded-xl border border-border/60">
+      <CardTable>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -419,63 +440,69 @@ function DataTable<TData>({
                 </TableCell>
               </TableRow>
             ) : (
-              bodyRows.map((row) => {
-                const rowNode = (
-                  <TableRow
-                    className="group/row"
-                    data-state={row.getIsSelected() ? 'selected' : undefined}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className={columnClass(cell.column.id)}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-                // Right-click accelerator: the row itself is the context-menu
-                // trigger, so the consumer supplies only the items and the core
-                // owns the menu chrome.
-                const defaultRow = contextActions ? (
-                  <ContextMenu>
-                    <ContextMenuTrigger render={rowNode} />
-                    <ContextMenuContent>
-                      {contextActions(row.original, { row, table })}
-                    </ContextMenuContent>
-                  </ContextMenu>
-                ) : (
-                  rowNode
-                );
-                // Row-render seam: consumers can swap the default row for a
-                // full-width utility row or a per-row wrapper the cell grid can't
-                // express. Returning `defaultRow` keeps the built-in rendering.
-                return (
-                  <React.Fragment key={row.id}>
-                    {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
-                  </React.Fragment>
-                );
-              })
+              <>
+                {bodyRows.map((row) => {
+                  const rowNode = (
+                    <TableRow
+                      className="group/row"
+                      data-state={row.getIsSelected() ? 'selected' : undefined}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className={columnClass(cell.column.id)}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                  // Right-click accelerator: the row itself is the context-menu
+                  // trigger, so the consumer supplies only the items and the core
+                  // owns the menu chrome.
+                  const defaultRow = contextActions ? (
+                    <ContextMenu>
+                      <ContextMenuTrigger render={rowNode} />
+                      <ContextMenuContent>
+                        {contextActions(row.original, { row, table })}
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  ) : (
+                    rowNode
+                  );
+                  // Row-render seam: consumers can swap the default row for a
+                  // full-width utility row or a per-row wrapper the cell grid can't
+                  // express. Returning `defaultRow` keeps the built-in rendering.
+                  return (
+                    <React.Fragment key={row.id}>
+                      {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
+                    </React.Fragment>
+                  );
+                })}
+                {footerRows}
+              </>
             )}
           </TableBody>
         </Table>
-      </div>
+      </CardTable>
 
       {pagination && (
-        <TablePagination
-          page={pagination.page}
-          pageSize={pagination.pageSize}
-          totalItems={pagination.totalItems ?? table.getPrePaginationRowModel().rows.length}
-          onPageChange={pagination.onPageChange}
-          onPageSizeChange={pagination.onPageSizeChange}
-          pageSizeOptions={pagination.pageSizeOptions}
-          getPageHref={pagination.getPageHref}
-          formatRange={pagination.formatRange}
-          navLabel={l.pagination?.navLabel}
-          previousLabel={l.pagination?.previousLabel}
-          nextLabel={l.pagination?.nextLabel}
-          pageSizeLabel={l.pagination?.pageSizeLabel}
-        />
+        <CardFooter className="border-t">
+          <TablePagination
+            className="w-full"
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            totalItems={pagination.totalItems ?? table.getPrePaginationRowModel().rows.length}
+            onPageChange={pagination.onPageChange}
+            onPageSizeChange={pagination.onPageSizeChange}
+            pageSizeOptions={pagination.pageSizeOptions}
+            getPageHref={pagination.getPageHref}
+            formatRange={pagination.formatRange}
+            navLabel={l.pagination?.navLabel}
+            previousLabel={l.pagination?.previousLabel}
+            nextLabel={l.pagination?.nextLabel}
+            pageSizeLabel={l.pagination?.pageSizeLabel}
+          />
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 }
 
