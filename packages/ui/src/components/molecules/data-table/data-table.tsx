@@ -61,6 +61,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { cn } from '@vendure-io/ui/lib/utils';
+import { AnimatePresence, motion } from 'motion/react';
 import * as React from 'react';
 
 // The composition root. Owns the single `useReactTable` instance and the
@@ -102,6 +103,15 @@ function headerLabelText<TData>(column: Column<TData, unknown>): string {
   const header = column.columnDef.header;
   return typeof header === 'string' ? header : column.id;
 }
+
+// Opacity-only fade for the controls/bulk replace-on-select swap: crossfades
+// stay legible under prefers-reduced-motion, unlike movement.
+const bandRowFade = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.1, ease: 'easeOut' },
+} as const;
 
 function ariaSort<TData>(
   hasSorting: boolean,
@@ -355,29 +365,42 @@ function DataTable<TData>({
           <ListHeader>
             {header}
             {/* Replace-on-select: while rows are selected the bulk bar takes
-                the controls row's place; title and applied-filter chips stay. */}
-            {showBulk && bulkActions ? (
-              <DataTableBulkActions table={table} cache={selectionCache} render={bulkActions} />
-            ) : (
-              showControls && (
-                <ListHeaderControls>
-                  {toolbarNode}
-                  {hasFilterMenu && filters?.columns && (
-                    <DataTableAddFilter
+                the controls row's place (title and applied-filter chips stay).
+                The swap fades out then in — one --transition-duration-fast
+                (100ms) per phase; mode="wait" keeps the rows sequential so
+                they never stack. */}
+            {(showControls || (rowSelection != null && bulkActions != null)) && (
+              <AnimatePresence initial={false} mode="wait">
+                {showBulk && bulkActions ? (
+                  <motion.div key="bulk-actions" {...bandRowFade}>
+                    <DataTableBulkActions
                       table={table}
-                      columns={filters.columns}
-                      label={l.addFilter}
+                      cache={selectionCache}
+                      render={bulkActions}
                     />
-                  )}
-                  {showViewOptions && (
-                    <DataTableViewOptions
-                      table={table}
-                      triggerLabel={l.columnsTrigger}
-                      heading={l.columnsHeading}
-                    />
-                  )}
-                </ListHeaderControls>
-              )
+                  </motion.div>
+                ) : showControls ? (
+                  <motion.div key="controls" {...bandRowFade}>
+                    <ListHeaderControls>
+                      {toolbarNode}
+                      {hasFilterMenu && filters?.columns && (
+                        <DataTableAddFilter
+                          table={table}
+                          columns={filters.columns}
+                          label={l.addFilter}
+                        />
+                      )}
+                      {showViewOptions && (
+                        <DataTableViewOptions
+                          table={table}
+                          triggerLabel={l.columnsTrigger}
+                          heading={l.columnsHeading}
+                        />
+                      )}
+                    </ListHeaderControls>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             )}
             {showChips && (
               <ListHeaderChips>
