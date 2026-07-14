@@ -104,12 +104,13 @@ function headerLabelText<TData>(column: Column<TData, unknown>): string {
   return typeof header === 'string' ? header : column.id;
 }
 
-// Opacity-only fade for the controls/bulk replace-on-select swap: crossfades
-// stay legible under prefers-reduced-motion, unlike movement.
+// The controls/bulk replace-on-select swap: the outgoing row drifts slightly
+// up as it fades, the incoming row rises in from below — a subtle vertical
+// hand-off (4px) rather than a plain crossfade.
 const bandRowFade = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
   transition: { duration: 0.1, ease: 'easeOut' },
 } as const;
 
