@@ -25,6 +25,7 @@ import {
   type DataTableFilterColumn,
   type RowSelectionState,
   type SortingState,
+  type Table,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
@@ -505,6 +506,39 @@ export const FooterRows: Story = {
           </>
         )}
       />
+    );
+  },
+};
+
+// onTableReady — capture the referentially stable TanStack table instance for
+// controls that live OUTSIDE the DataTable (saved-view controls, an external
+// toolbar) without rendering a slot just to reach the table. The callback fires
+// once after mount; the captured instance stays live, so the external "Clear
+// sorting" button drives the same table the header sort toggles do.
+export const OnTableReady: Story = {
+  render: () => {
+    const [sorting, setSorting] = useState<SortingState>([{ id: 'total', desc: true }]);
+    const [table, setTable] = useState<Table<Order> | null>(null);
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={sorting.length === 0}
+            onClick={() => table?.resetSorting()}
+          >
+            Clear sorting
+          </Button>
+        </div>
+        <DataTable<Order>
+          rows={orders}
+          columns={columns}
+          getRowId={(order) => order.id}
+          sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+          onTableReady={setTable}
+        />
+      </div>
     );
   },
 };

@@ -230,6 +230,27 @@ export interface DataTableProps<TData> {
   setTableOptions?: (options: TableOptions<TData>) => TableOptions<TData>;
 
   /**
+   * Receives the core's TanStack {@link Table} instance so consumers (saved-view
+   * controls, external toolbars) can drive it without rendering a slot to
+   * capture it — the supported alternative to reading `table` off the `toolbar`
+   * render-prop purely for its side effect.
+   *
+   * Fires from an effect after the first commit — never during render or SSR —
+   * so it is safe to call setState from here. `useReactTable` returns a
+   * referentially stable instance for the component's lifetime, so this fires
+   * once per mount (twice under React StrictMode in development, like any
+   * effect — keep the callback idempotent): never on a plain rerender, and not
+   * again when the callback prop's identity changes. Treat it as a "ready"
+   * capture, not a subscription — the latest callback as of that single fire is
+   * used (an inline function is fine), but a callback swapped in after mount is
+   * never invoked. TanStack mutates the instance in place as state changes, so
+   * the reference you capture here stays current — read live state through it
+   * (e.g. inside an event handler) rather than expecting a fresh object on each
+   * change.
+   */
+  onTableReady?: (table: Table<TData>) => void;
+
+  /**
    * The table's frame. `'card'` (default) renders the band anatomy on a real
    * `Card`: a `CardHeader` (border-b) hosting the header/controls/chips zones,
    * `CardTable` hosting the table flush to the card edges, and a `CardFooter`
