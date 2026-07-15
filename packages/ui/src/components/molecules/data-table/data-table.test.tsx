@@ -480,6 +480,24 @@ describe('DataTable renderRow seam', () => {
   });
 });
 
+describe('DataTable onTableReady', () => {
+  test('does not fire during render/SSR — an effect-only "ready" capture', () => {
+    const onTableReady = mock(() => {});
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        onTableReady={onTableReady}
+      />,
+    );
+    // The prop must be render-inert: the callback fires from an effect after
+    // commit, so a server render produces the same markup and no invocation.
+    expect(markup).toContain('Aland Islands');
+    expect(onTableReady).not.toHaveBeenCalled();
+  });
+});
+
 describe('DataTable selection column', () => {
   test('selectColumnId customizes the generated display-column id', () => {
     const markup = html(

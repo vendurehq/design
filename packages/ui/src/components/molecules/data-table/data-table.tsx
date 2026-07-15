@@ -142,6 +142,7 @@ function DataTable<TData>({
   emptyState,
   renderRow,
   setTableOptions,
+  onTableReady,
   frame = 'card',
   footerRows,
   labels,
@@ -310,6 +311,16 @@ function DataTable<TData>({
   }
 
   const table = useReactTable(setTableOptions ? setTableOptions(baseOptions) : baseOptions);
+
+  // Hand the table instance to the consumer once it exists. A ref holds the
+  // latest callback so the effect can key on `table` alone — do NOT add
+  // `onTableReady` to the deps: that would re-fire the "ready" notification
+  // whenever an inline callback gets a new identity on rerender.
+  const onTableReadyRef = React.useRef(onTableReady);
+  onTableReadyRef.current = onTableReady;
+  React.useEffect(() => {
+    onTableReadyRef.current?.(table);
+  }, [table]);
 
   const selectionCache = useSelectionCache(table);
 
