@@ -201,6 +201,37 @@ export const CapturingTheRecord: Story = {
   },
 };
 
+// Mirrors the dashboard's variant option editor: a pick-or-create field over a
+// small, known option set. The caller returns the full set for an empty query
+// and for a committed value (exact match), so focusing or clicking the field
+// always shows the alternatives — no typing needed; a partial query filters.
+const sizes = ['Small', 'Medium', 'Large', 'Extra Large'];
+
+export const KnownOptionSet: Story = {
+  render: function ComboboxFreeTextKnownOptionSet() {
+    const [value, setValue] = React.useState('Medium');
+    const q = value.trim().toLowerCase();
+    const showAll = !q || sizes.some((s) => s.toLowerCase() === q);
+    const items = (showAll ? sizes : sizes.filter((s) => s.toLowerCase().includes(q))).map((s) => ({
+      value: s,
+      label: s,
+    }));
+    return (
+      <div className="w-[320px]">
+        <ComboboxFreeText
+          value={value}
+          onValueChange={setValue}
+          items={items}
+          placeholder="Pick a size or type a new one…"
+        />
+        <p className="text-muted-foreground mt-2 text-xs">
+          Value: <span className="font-mono">{value || '—'}</span>
+        </p>
+      </div>
+    );
+  },
+};
+
 // Live example: suggestions come from the public DummyJSON users API. Type "jo"
 // to see real matches, or type any other email — the free text stays as the
 // value and the popup closes when nothing matches.
