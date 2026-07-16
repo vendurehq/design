@@ -137,6 +137,13 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
           placeholder={placeholder}
           disabled={disabled}
           aria-invalid={invalid || undefined}
+          // Base UI only requests open on a keystroke; for pick-or-create
+          // fields the suggestions should also show on focus/click so a small
+          // known option set is discoverable without typing. The
+          // `items.length > 0` gate on `open` keeps an empty popup from
+          // flashing when there is nothing to pick.
+          onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
         />
         {loading ? (
           <InputGroupAddon align="inline-end">
