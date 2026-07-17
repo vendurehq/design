@@ -144,6 +144,17 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
           // flashing when there is nothing to pick.
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
+          // Enter has a local meaning here — commit the highlighted suggestion
+          // or keep the typed text — so it must never double as the browser's
+          // implicit form submission (Base UI deliberately lets Enter fall
+          // through to submit when nothing is highlighted). preventDefault
+          // cancels only the native submit; Base UI's own Enter handling runs
+          // regardless, since merged handlers ignore defaultPrevented.
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+            }
+          }}
         />
         {loading ? (
           <InputGroupAddon align="inline-end">
