@@ -32,8 +32,8 @@ describe('SidebarMenuButton icons', () => {
       </SidebarProvider>,
     );
 
-    expect(html).toContain('[&amp;&gt;svg:first-child]:size-5');
-    expect(html).toContain('[&amp;&gt;svg:first-child]:[stroke-width:2.25]');
-    expect(html).not.toContain('[&amp;_svg]:size-5');
+    expect(html).toContain('[&amp;&gt;svg:first-child]:size-4.5');
+    expect(html).toContain('[&amp;&gt;svg:first-child]:[stroke-width:2.125]');
+    expect(html).not.toContain('[&amp;_svg]:size-4.5');
   });
 });
