@@ -7,6 +7,12 @@ const meta = {
   title: 'Molecules/ConfirmDialog',
   component: ConfirmDialog,
   tags: ['autodocs'],
+  // Every story is render-based (the dialog needs a trigger child), so these
+  // args exist only to satisfy the required-prop contract of `Story`.
+  args: {
+    title: 'Publish changes?',
+    onConfirm: () => {},
+  },
 } satisfies Meta<typeof ConfirmDialog>;
 
 export default meta;

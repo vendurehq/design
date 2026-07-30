@@ -115,7 +115,8 @@ const orders: Order[] = [
 
 // A larger set for the pagination story.
 const pagedOrders: Order[] = Array.from({ length: 43 }, (_, index) => {
-  const base = orders[index % orders.length];
+  // The modulo keeps the index in bounds, which the indexed-access check can't see.
+  const base = orders[index % orders.length] as Order;
   return {
     ...base,
     id: `p${index + 1}`,
@@ -174,6 +175,13 @@ const meta = {
   component: DataTable,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
+  // Every story is render-based (DataTable is generic over the row type, which
+  // args can't express), so these args exist only to satisfy the required-prop
+  // contract of `Story`.
+  args: {
+    rows: orders,
+    columns: columns as ColumnDef<unknown>[],
+  },
 } satisfies Meta<typeof DataTable>;
 
 export default meta;

@@ -645,6 +645,10 @@ export const uiGuidance = [
   },
 ] as const satisfies readonly GuidanceEntry[];
 
+type GuidanceId = (typeof uiGuidance)[number]['id'];
+
+// Keyed by the literal id union so lookups are statically checked and never
+// `undefined` under noUncheckedIndexedAccess.
 export const uiGuidanceById = Object.fromEntries(
   uiGuidance.map((entry) => [entry.id, entry]),
-) as Record<string, GuidanceEntry>;
+) as Record<string, GuidanceEntry> as Record<GuidanceId, GuidanceEntry>;

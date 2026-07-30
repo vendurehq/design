@@ -31,6 +31,8 @@ Never run `add --overwrite` on an existing component — it discards our design 
 
 Comment non-obvious decisions in component files like you would anywhere else — no special markers needed; the whole file is ours.
 
+The root `biome.json` deliberately excludes `src/components/atoms/` and `src/hooks/use-mobile.ts` from formatting and linting: keeping upstream's formatting in vendored files keeps `shadcn diff` output clean when cherry-picking. Don't reformat those files or add them back to the lint scope.
+
 ## Structure
 
 The two tiers split by **provenance**, not composition depth (per an internally-tracked architectural decision on component taxonomy):

@@ -98,14 +98,6 @@ function MyComponent({ className }: { className?: string }) {
 }
 ```
 
-### `slugify()` and `hashString()`
-
-String utilities available from the same path:
-
-```tsx
-import { slugify, hashString } from "@vendure-io/ui/lib/utils";
-```
-
 ## Hooks
 
 ### `useIsMobile()`

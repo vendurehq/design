@@ -7,6 +7,5 @@
       "@vendure-io/ui/*": ["./src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.stories.tsx"]
+  "include": ["src"]
 }

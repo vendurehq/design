@@ -21,11 +21,12 @@
     "src",
     "!src/**/*.test.ts",
     "!src/**/*.test.tsx",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "scripts": {
     "lint": "biome check src/",
-    "check-types": "tsc --noEmit",
+    "check-types": "tsc --noEmit && tsc --noEmit -p tsconfig.stories.json",
     "test": "bun test",
     "pack:check": "bun pm pack --dry-run"
   },
