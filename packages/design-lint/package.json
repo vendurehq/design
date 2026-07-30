@@ -19,11 +19,14 @@
   "files": [
     "eslint",
     "biome",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "scripts": {
-    "lint": "biome check eslint test",
+    "lint": "biome check eslint scripts test",
     "check-types": "tsc --noEmit --allowJs --checkJs --module ESNext --moduleResolution bundler --target ESNext eslint/index.js",
+    "generate": "bun scripts/generate-grit.ts",
+    "check-freshness": "bun scripts/generate-grit.ts && git diff --exit-code biome/",
     "test": "bun test",
     "pack:check": "bun pm pack --dry-run"
   },
@@ -36,6 +39,7 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
     "@types/estree": "^1.0.8",
     "eslint": "^9.0.0"
   }
