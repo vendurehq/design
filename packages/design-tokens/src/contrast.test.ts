@@ -143,6 +143,8 @@ const themes = {
 };
 
 const tones = ['destructive', 'success', 'warning', 'info'] as const;
+// neutral has subtle slots but no solid `neutral`/`neutral-foreground` pair.
+const subtleTones = [...tones, 'neutral'] as const;
 
 for (const [themeName, theme] of Object.entries(themes)) {
   describe(`${themeName} theme contrast`, () => {
@@ -162,11 +164,27 @@ for (const [themeName, theme] of Object.entries(themes)) {
       );
     });
 
+    test('brand-foreground on brand >= 4.5', () => {
+      expect(contrastOf(theme, 'brand-foreground', 'brand')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    });
+
+    test('secondary-foreground on secondary >= 4.5', () => {
+      expect(contrastOf(theme, 'secondary-foreground', 'secondary')).toBeGreaterThanOrEqual(
+        MIN_CONTRAST,
+      );
+    });
+
+    test('accent-foreground on accent >= 4.5', () => {
+      expect(contrastOf(theme, 'accent-foreground', 'accent')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    });
+
     for (const tone of tones) {
       test(`${tone}-foreground on ${tone} >= 4.5`, () => {
         expect(contrastOf(theme, `${tone}-foreground`, tone)).toBeGreaterThanOrEqual(MIN_CONTRAST);
       });
+    }
 
+    for (const tone of subtleTones) {
       test(`${tone}-subtle-foreground on ${tone}-subtle >= 4.5`, () => {
         expect(
           contrastOf(theme, `${tone}-subtle-foreground`, `${tone}-subtle`),

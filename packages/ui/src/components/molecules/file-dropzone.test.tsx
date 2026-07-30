@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { FileDropzone, fileMatchesAccept, formatFileSize } from './file-dropzone.tsx';
 
@@ -25,5 +25,23 @@ describe('FileDropzone', () => {
     expect(html).toContain('for="asset"');
     expect(html).toContain('data-slot="file-dropzone-target"');
     expect(html).toContain('Accepted: image/*');
+  });
+
+  test('two distinct files with identical metadata do not collide on the list key', () => {
+    const options = { type: 'image/png', lastModified: 1700000000000 };
+    const first = new File(['a'], 'store-logo.png', options);
+    const second = new File(['b'], 'store-logo.png', options);
+    // React reports duplicate keys through console.error during render.
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const html = renderToStaticMarkup(<FileDropzone multiple value={[first, second]} />);
+      expect(html.match(/<li/g)).toHaveLength(2);
+      const keyWarnings = errorSpy.mock.calls.filter((call) =>
+        String(call[0]).includes('same key'),
+      );
+      expect(keyWarnings).toHaveLength(0);
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });

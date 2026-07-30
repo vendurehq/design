@@ -137,5 +137,38 @@ function normalizeLanguage(lang?: string): SupportedLanguage {
   return 'ini';
 }
 
-export { getHighlighter, highlightCode, normalizeLanguage };
+/**
+ * Bundled grammars whose `//` / `#` comment syntax lets the `[!code ...]`
+ * notation transformers match. Only languages with a loader above can qualify:
+ * anything else falls back to the `ini` grammar, which renders the notation
+ * comment as literal text instead of consuming it.
+ */
+const NOTATION_TRANSFORMER_LANGUAGES = new Set<SupportedLanguage>([
+  'javascript',
+  'typescript',
+  'jsx',
+  'tsx',
+  'python',
+  'bash',
+  'shellscript',
+  'yaml',
+]);
+
+/**
+ * Whether `[!code ...]` notations in `lang` survive highlighting. Alias-aware:
+ * the check runs on the normalized language, so `ts`, `py`, `sh`, … qualify
+ * through their canonical grammar. Callers should strip notations when this
+ * returns false, or they render as literal text.
+ */
+function supportsNotationComments(lang?: string): boolean {
+  return NOTATION_TRANSFORMER_LANGUAGES.has(normalizeLanguage(lang));
+}
+
+export {
+  NOTATION_TRANSFORMER_LANGUAGES,
+  getHighlighter,
+  highlightCode,
+  normalizeLanguage,
+  supportsNotationComments,
+};
 export type { SupportedLanguage };

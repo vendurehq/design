@@ -28,14 +28,14 @@ async function lint(code: string, pluginPath = errorPluginPath) {
     }),
   );
 
-  const process = Bun.spawn(['bunx', 'biome', 'lint', '--config-path', configPath, fixturePath], {
+  const proc = Bun.spawn(['bunx', 'biome', 'lint', '--config-path', configPath, fixturePath], {
     stdout: 'pipe',
     stderr: 'pipe',
   });
   const [exitCode, stdout, stderr] = await Promise.all([
-    process.exited,
-    new Response(process.stdout).text(),
-    new Response(process.stderr).text(),
+    proc.exited,
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
   ]);
   return { exitCode, output: `${stdout}\n${stderr}` };
 }
@@ -55,6 +55,12 @@ describe('Biome no-raw-colors', () => {
       expect(result.output.match(/Use a semantic Vendure color slot/g)).toHaveLength(1);
     });
   }
+
+  test('loads the plugin and reports through it (guards against silent load failure)', async () => {
+    const result = await lint("const color = '#ff0000';");
+    expect(result.exitCode, result.output).not.toBe(0);
+    expect(result.output).toContain('Use a semantic Vendure color slot');
+  });
 
   test('offers a warning-level variant for gradual adoption', async () => {
     const result = await lint("const color = '#fff';", warningPluginPath);

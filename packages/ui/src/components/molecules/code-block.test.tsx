@@ -80,6 +80,12 @@ describe('transformCommand', () => {
         'bun add -d typescript',
       );
     });
+
+    test('a package name containing "-D" is not treated as the dev flag', () => {
+      expect(transformCommand('npm install my-Dashboard-widget', 'pnpm')).toBe(
+        'pnpm add my-Dashboard-widget',
+      );
+    });
   });
 
   describe('bare npm install | i | ci → install', () => {
@@ -155,6 +161,16 @@ describe('transformCommand', () => {
       const input = 'cd my-shop\ngit init\ncode .';
       expect(transformCommand(input, 'bun')).toBe(input);
     });
+
+    test('preserves the leading whitespace of indented command lines', () => {
+      const input = 'if [ -d my-shop ]; then\n  npx create-vendure-app my-shop\nfi';
+      expect(transformCommand(input, 'bun')).toBe(
+        'if [ -d my-shop ]; then\n  bunx create-vendure-app my-shop\nfi',
+      );
+      expect(transformCommand('\tnpm install @vendure/core', 'pnpm')).toBe(
+        '\tpnpm add @vendure/core',
+      );
+    });
   });
 
   describe('npm target is the identity transform', () => {
@@ -213,6 +229,13 @@ describe('processCode', () => {
       const result = processCode('plain value # [!code ++]', 'text');
       expect(result.cleanCode).not.toContain('[!code');
       expect(result.cleanCode).toContain('plain value');
+    });
+
+    test('strips notations for languages without a bundled grammar (e.g. java)', () => {
+      // java falls back to the 'ini' grammar, where the notation comment would
+      // render as literal text instead of being consumed by the transformer.
+      const result = processCode('int port = 3000; // [!code highlight]', 'java');
+      expect(result.cleanCode).toBe('int port = 3000;');
     });
   });
 

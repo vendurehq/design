@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@vendure-io/ui/*": ["./src/*"],
+      // Storybook is installed (and hoisted) under apps/storybook, not here, so
+      // node_modules lookup from stories/ can't find it. Alias the renderer's
+      // types explicitly; its own imports (storybook/internal/*) resolve from
+      // that location.
+      "@storybook/react": ["../../apps/storybook/node_modules/@storybook/react/dist/index.d.ts"]
+    }
+  },
+  "include": ["stories", "guidance"]
+}

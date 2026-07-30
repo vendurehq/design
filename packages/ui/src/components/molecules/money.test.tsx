@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { FormatProvider } from './format-provider.tsx';
@@ -40,9 +40,19 @@ describe('Money precision', () => {
     expect(html).toBe('€1.99');
   });
 
-  test('without a currency it renders a plain, unsymboled number', () => {
-    const html = text(<Money value={2500} precision={2} locale="en-US" />);
-    expect(html).toBe('25.00');
-    expect(html).not.toContain('$');
+  test('without a currency it renders a plain, unsymboled number and dev-warns', () => {
+    // The missing-currency warning is module-level once-per-session; this is
+    // the suite's only currency-less render, so it fires here. The spy both
+    // asserts it and keeps the test output clean.
+    const warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const html = text(<Money value={2500} precision={2} locale="en-US" />);
+      expect(html).toBe('25.00');
+      expect(html).not.toContain('$');
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(String(warnSpy.mock.calls[0]?.[0])).toContain('<Money> was rendered without');
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });

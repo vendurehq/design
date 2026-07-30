@@ -19,7 +19,13 @@
     "const note = 'issue #123 is fixed';",
     "const shorthand = '#000';",
     "const run5 = 'hash #123ab tail';",
-    "const run7 = 'hash #123abcd tail';"
+    "const run7 = 'hash #123abcd tail';",
+    "const label = 'Background color (hex)';",
+    "const note = 'Results from the lab (2024)';",
+    "const hint = 'Choose a color (optional)';",
+    "const view = <div title='#fff' />;",
+    "const view = <div title='Choose a color (optional)' />;",
+    "const view = <div className='border-t-border placeholder-muted-foreground' />;"
   ],
   "invalid": [
     "const view = <div className='bg-blue-500 text-white' />;",
@@ -44,6 +50,12 @@
     "const color = '#ABC';",
     "const color = '#112233';",
     "const color = '#11223344';",
-    "const view = <div style={{ color: '#f00' }} />;"
+    "const view = <div style={{ color: '#f00' }} />;",
+    "const view = <div style='color: #fff' />;",
+    "const view = <div className='bg-blue-500/50' />;",
+    "const view = <div className='bg-blue-500/[0.06]' />;",
+    "const view = <div className='border-t-zinc-200' />;",
+    "const view = <div className='placeholder-red-500' />;",
+    "const view = <div className='inset-ring-blue-500' />;"
   ]
 }

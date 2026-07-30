@@ -91,9 +91,13 @@ function FileDropzone({
   const [validating, setValidating] = React.useState(false);
   const [rejections, setRejections] = React.useState<FileRejection[]>([]);
   const dragDepth = React.useRef(0);
+  // Synchronous mirror of `validating`: a drop while an async validateFile is
+  // in flight would otherwise start a second addFiles against a stale `value`.
+  const busy = React.useRef(false);
 
   async function addFiles(incoming: readonly File[]) {
-    if (disabled || incoming.length === 0) return;
+    if (disabled || busy.current || incoming.length === 0) return;
+    busy.current = true;
     setValidating(true);
     const accepted: File[] = [];
     const rejected: FileRejection[] = [];
@@ -118,11 +122,15 @@ function FileDropzone({
 
     if (incoming.length > remaining) {
       for (const file of incoming.slice(remaining)) {
-        rejected.push({ file, messages: [`You can select up to ${maxFiles} files.`] });
+        rejected.push({
+          file,
+          messages: [`You can select up to ${maxFiles} ${maxFiles === 1 ? 'file' : 'files'}.`],
+        });
       }
     }
 
     setRejections(rejected);
+    busy.current = false;
     setValidating(false);
     if (rejected.length > 0) onRejected?.(rejected);
     if (accepted.length > 0) {
@@ -211,7 +219,9 @@ function FileDropzone({
       {value.length > 0 ? (
         <ul data-slot="file-dropzone-files" className="flex flex-col gap-2">
           {value.map((file, index) => (
-            <li key={`${file.name}-${file.size}-${file.lastModified}`}>
+            // Metadata alone can collide (two distinct files with identical
+            // name, size and mtime), so the index disambiguates the key.
+            <li key={`${file.name}-${file.size}-${file.lastModified}-${index}`}>
               {renderFile ? (
                 renderFile(file, () => removeFile(index))
               ) : (
@@ -240,8 +250,8 @@ function FileDropzone({
 
       {rejections.length > 0 ? (
         <div id={errorId} role="alert" className="text-destructive text-sm">
-          {rejections.map(({ file, messages }) => (
-            <p key={`${file.name}-${file.size}`}>
+          {rejections.map(({ file, messages }, index) => (
+            <p key={`${file.name}-${file.size}-${index}`}>
               <span className="font-medium">{file.name}:</span> {messages.join(' ')}
             </p>
           ))}
