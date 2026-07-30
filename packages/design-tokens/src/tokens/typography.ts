@@ -63,6 +63,8 @@ export const textStyles = {
     lineHeight: '1.5',
   },
   caption: {
+    // No fontFamily on purpose — captions inherit the ambient font so they
+    // match whatever context they annotate (body copy or code).
     fontSize: fontSize.xs,
     fontWeight: fontWeight.normal,
     lineHeight: '1.4',

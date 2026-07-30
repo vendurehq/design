@@ -8,10 +8,7 @@ import { radii } from '../src/tokens/radii.ts';
 import { shadows } from '../src/tokens/shadows.ts';
 
 // Base color ranges — static across light/dark themes
-const colorRanges = { brand, neutral, success, warning, destructive, info, viz } as Record<
-  string,
-  Record<string, string>
->;
+const colorRanges = { brand, neutral, success, warning, destructive, info, viz };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const cssDir = resolve(__dirname, '../src/css');
@@ -44,16 +41,50 @@ const radiusVars = Object.fromEntries(
   Object.entries(radii).map(([key, value]) => [`radius-${key}`, value]),
 );
 
+// Semantic default radius — shared across light/dark, so it lives outside the
+// theme maps and gets its own emission path like the radius scale above.
+const semanticRadiusVars = { radius: radii.md };
+
 const variablesCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '',
-  buildBlock(':root', { ...baseColorVars, ...radiusVars, ...lightTheme }),
+  buildBlock(':root', { ...baseColorVars, ...radiusVars, ...semanticRadiusVars, ...lightTheme }),
   '',
   buildBlock('.dark', darkTheme),
   '',
 ].join('\n');
 
 await Bun.write(resolve(cssDir, 'variables.css'), variablesCss);
+
+// ---------------------------------------------------------------------------
+// shadcn.css — vendored from the shadcn package
+// ---------------------------------------------------------------------------
+
+// Vendored so `shadcn` (the whole CLI) stays a dev-only dependency and the
+// file ships in the tarball. Regenerating embeds the installed version and
+// content, so `check-freshness` fails when a shadcn upgrade changes the file
+// instead of letting it drift silently.
+// `shadcn` exposes ./tailwind.css only under the "style" export condition, so
+// resolve the package's main entry and take the sibling file from dist/.
+const shadcnDistDir = dirname(Bun.resolveSync('shadcn', __dirname));
+const shadcnCssPath = resolve(shadcnDistDir, 'tailwind.css');
+const shadcnPkg = await Bun.file(resolve(shadcnDistDir, '../package.json')).json();
+const shadcnCss = [
+  '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
+  '/*',
+  ` * Vendored verbatim from shadcn@${shadcnPkg.version}'s tailwind.css. It defines`,
+  ' * the @custom-variant data-* selectors (data-open, data-horizontal, ...), the',
+  ' * no-scrollbar utility, and Base UI-aware accordion keyframes that the',
+  ' * base-vega components in @vendure-io/ui rely on. Without it, e.g.',
+  ' * data-horizontal: compiles to [data-horizontal] instead of',
+  ' * [data-orientation="horizontal"] and never matches. theme.css imports this',
+  " * after tw-animate-css so shadcn's accordion keyframes win the cascade.",
+  ' */',
+  '',
+  await Bun.file(shadcnCssPath).text(),
+].join('\n');
+
+await Bun.write(resolve(cssDir, 'shadcn.css'), shadcnCss);
 
 // ---------------------------------------------------------------------------
 // theme.css
@@ -64,10 +95,8 @@ const baseColorLines = Object.keys(baseColorVars).map(
   (key) => `  --color-${key}: var(--${key});`,
 );
 
-// Semantic color mappings — every semantic key except "radius" gets a --color-* alias
-const colorKeys = Object.keys(lightTheme).filter((k) => k !== 'radius');
-
-const colorLines = colorKeys.map((key) => `  --color-${key}: var(--${key});`);
+// Semantic color mappings — every semantic key gets a --color-* alias
+const colorLines = Object.keys(lightTheme).map((key) => `  --color-${key}: var(--${key});`);
 
 // Radius lines — reference the :root vars from variables.css so utilities
 // track runtime overrides of --radius-*
@@ -162,13 +191,9 @@ const themeCss = [
   '',
   '@import "tailwindcss";',
   '@import "tw-animate-css";',
-  // shadcn/tailwind.css defines the @custom-variant data-* selectors (data-open,
-  // data-horizontal, ...), the no-scrollbar utility, and Base UI-aware accordion
-  // keyframes that the base-vega components in @vendure-io/ui rely on. Without it,
-  // e.g. data-horizontal: compiles to [data-horizontal] instead of
-  // [data-orientation="horizontal"] and never matches. Must come after
-  // tw-animate-css so shadcn's accordion keyframes win the cascade.
-  '@import "shadcn/tailwind.css";',
+  // Vendored shadcn/tailwind.css — see the header in shadcn.css for why. Must
+  // come after tw-animate-css so shadcn's accordion keyframes win the cascade.
+  '@import "./shadcn.css";',
   '@import "./variables.css";',
   '',
   '@custom-variant dark (&:is(.dark *));',
@@ -197,21 +222,24 @@ const themeCss = [
 await Bun.write(resolve(cssDir, 'theme.css'), themeCss);
 
 // ---------------------------------------------------------------------------
-// Validation — warn if semantic keys changed unexpectedly
+// Validation — fail if semantic keys diverge between themes
 // ---------------------------------------------------------------------------
-const sharedKeys = new Set(['radius']);
 const lightKeys = new Set(Object.keys(lightTheme));
 const darkKeys = new Set(Object.keys(darkTheme));
 
-const missingInDark = [...lightKeys].filter((k) => !darkKeys.has(k) && !sharedKeys.has(k));
+const missingInDark = [...lightKeys].filter((k) => !darkKeys.has(k));
 const missingInLight = [...darkKeys].filter((k) => !lightKeys.has(k));
 
 if (missingInDark.length > 0) {
-  console.warn(`⚠ Keys in lightTheme missing from darkTheme: ${missingInDark.join(', ')}`);
+  console.error(`✗ Keys in lightTheme missing from darkTheme: ${missingInDark.join(', ')}`);
 }
 if (missingInLight.length > 0) {
-  console.warn(`⚠ Keys in darkTheme missing from lightTheme: ${missingInLight.join(', ')}`);
+  console.error(`✗ Keys in darkTheme missing from lightTheme: ${missingInLight.join(', ')}`);
+}
+if (missingInDark.length > 0 || missingInLight.length > 0) {
+  process.exit(1);
 }
 
 console.log('✓ Generated src/css/variables.css');
+console.log('✓ Generated src/css/shadcn.css');
 console.log('✓ Generated src/css/theme.css');

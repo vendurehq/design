@@ -1,5 +1,4 @@
 import { brand, destructive, info, neutral, success, viz, warning } from './colors.js';
-import { radii } from './radii.js';
 
 export const lightTheme = {
   background: 'oklch(0.96 0.004 231)',
@@ -63,7 +62,6 @@ export const lightTheme = {
   border: 'oklch(0.86 0.004 231)',
   input: 'oklch(0.86 0.004 231)',
   ring: neutral[400],
-  radius: radii.md,
   'chart-1': viz[1],
   'chart-2': viz[2],
   'chart-3': viz[3],
