@@ -17,6 +17,7 @@
     },
     "./css/variables": "./src/css/variables.css",
     "./css/theme": "./src/css/theme.css",
+    "./css/shadcn": "./src/css/shadcn.css",
     "./css/fonts": "./src/css/fonts.css"
   },
   "files": [
