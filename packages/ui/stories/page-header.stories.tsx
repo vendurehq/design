@@ -115,3 +115,25 @@ export const LongTitle: Story = {
     </div>
   ),
 };
+
+// The row wraps: when title and actions do not fit side by side, the actions
+// move to the next line instead of squeezing the title.
+export const NarrowViewport: Story = {
+  render: () => (
+    <div className="max-w-xs">
+      <PageHeader>
+        <PageHeaderContent>
+          <PageHeaderTitle>Shipping methods</PageHeaderTitle>
+          <PageHeaderDescription>Carriers, zones, and delivery rates.</PageHeaderDescription>
+        </PageHeaderContent>
+        <PageHeaderActions>
+          <Button variant="outline">Export</Button>
+          <Button>
+            <PlusIcon />
+            New method
+          </Button>
+        </PageHeaderActions>
+      </PageHeader>
+    </div>
+  ),
+};

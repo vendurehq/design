@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../src/components/atoms/tabs.tsx';
+import { useState } from 'react';
+import {
+  Tabs,
+  TabsContent,
+  TabsLink,
+  TabsList,
+  TabsNav,
+  TabsTrigger,
+} from '../src/components/atoms/tabs.tsx';
 
 const meta = {
   title: 'Atoms/Data Display/Tabs',
@@ -89,4 +97,32 @@ export const Vertical: Story = {
       </TabsContent>
     </Tabs>
   ),
+};
+
+// Link tabs: each tab is a route, so this is a <nav> of links with
+// aria-current="page" on the current one, not a tablist. Compose a router link
+// with `render`, for example `render={<Link to="/billing/invoices" />}`. A
+// router that sets aria-current itself does not need `active`.
+export const LinkTabs: Story = {
+  render: function LinkTabsStory() {
+    const sections = ['Overview', 'Invoices', 'Payment methods', 'Tax details'];
+    const [current, setCurrent] = useState(sections[0]);
+    return (
+      <TabsNav aria-label="Account sections">
+        {sections.map((section) => (
+          <TabsLink
+            key={section}
+            href={`#${section.toLowerCase().replace(/ /g, '-')}`}
+            active={section === current}
+            onClick={(event) => {
+              event.preventDefault();
+              setCurrent(section);
+            }}
+          >
+            {section}
+          </TabsLink>
+        ))}
+      </TabsNav>
+    );
+  },
 };

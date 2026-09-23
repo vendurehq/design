@@ -6,12 +6,16 @@ import type * as React from 'react';
 // header and lets variance in the wild (back links, badge rows beside the title,
 // mono subtitles) live as free children rather than as an ever-growing prop set.
 
-/** The header row: title/description on the left, actions on the right. */
+/**
+ * The header row: title/description on the left, actions on the right. The row
+ * wraps, so on a narrow screen the actions move below the title instead of
+ * squeezing it.
+ */
 function PageHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="page-header"
-      className={cn('flex items-start justify-between gap-4', className)}
+      className={cn('flex flex-wrap items-start justify-between gap-4', className)}
       {...props}
     />
   );
@@ -48,7 +52,7 @@ function PageHeaderDescription({ className, ...props }: React.ComponentProps<'p'
   );
 }
 
-/** Right-hand action slot (buttons, menus). Stays put as the title wraps. */
+/** Right-hand action slot (buttons, menus). Moves below the title when the row has no room. */
 function PageHeaderActions({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div

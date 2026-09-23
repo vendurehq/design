@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   Combobox,
-  ComboboxInput,
   ComboboxContent,
-  ComboboxList,
-  ComboboxItem,
   ComboboxEmpty,
   ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
   ComboboxLabel,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
 } from '../src/components/atoms/combobox.tsx';
 
 const meta = {
@@ -43,6 +45,33 @@ export const Default: Story = {
                 </ComboboxItem>
               ))}
             </ComboboxGroup>
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    );
+  },
+};
+
+const countries = ['Austria', 'France', 'Germany', 'Netherlands', 'Switzerland'];
+
+// A select-like combobox: the trigger shows the value and has field styling
+// (the same as SelectTrigger), and the search input sits in the popup.
+export const FieldTrigger: Story = {
+  render: function ComboboxFieldTrigger() {
+    return (
+      <Combobox items={countries}>
+        <ComboboxTrigger aria-label="Country" className="w-64">
+          <ComboboxValue placeholder="Select a country" />
+        </ComboboxTrigger>
+        <ComboboxContent>
+          <ComboboxInput aria-label="Search countries" placeholder="Search" showTrigger={false} />
+          <ComboboxEmpty>No country matches.</ComboboxEmpty>
+          <ComboboxList>
+            {(country: string) => (
+              <ComboboxItem key={country} value={country}>
+                {country}
+              </ComboboxItem>
+            )}
           </ComboboxList>
         </ComboboxContent>
       </Combobox>

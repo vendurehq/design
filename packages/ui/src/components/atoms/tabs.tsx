@@ -1,6 +1,8 @@
 "use client"
 
+import { mergeProps } from "@base-ui/react/merge-props"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
@@ -82,4 +84,65 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   )
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+// Link tabs: section navigation where each tab is a route. They look like the
+// line variant, but they are a <nav> of links with aria-current="page", not a
+// tablist. Base UI Tabs would put role="tab" on a link and expect a panel for
+// each tab, and the router already owns which section shows.
+function TabsNav({ className, ...props }: React.ComponentProps<"nav">) {
+  return (
+    <nav
+      data-slot="tabs-nav"
+      className={cn(
+        // The padding keeps the focus ring and the underline inside the
+        // scroll box, which clips everything outside it.
+        "text-muted-foreground flex h-9 max-w-full items-center gap-1 overflow-x-auto p-[3px]",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// `active` sets aria-current="page". The style reads aria-current, so a router
+// link that sets it on the active route (TanStack Router, React Router's
+// NavLink) works through `render` without `active`.
+function TabsLink({
+  className,
+  active,
+  render,
+  ...props
+}: useRender.ComponentProps<"a"> & { active?: boolean }) {
+  return useRender({
+    defaultTagName: "a",
+    render,
+    props: mergeProps<"a">(
+      {
+        // Leave the attribute to the router link unless `active` is set.
+        ...(active !== undefined && {
+          "aria-current": active ? ("page" as const) : undefined,
+        }),
+        className: cn(
+          "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-foreground/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground relative inline-flex h-full shrink-0 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-[3px] focus-visible:outline-1 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          "aria-[current=page]:text-foreground dark:aria-[current=page]:text-foreground",
+          // The underline sits on the bottom edge of the nav, like the line variant.
+          "after:bg-foreground after:absolute after:inset-x-0 after:bottom-[-4px] after:h-0.5 after:opacity-0 after:transition-opacity aria-[current=page]:after:opacity-100",
+          className
+        ),
+      },
+      props
+    ),
+    state: {
+      slot: "tabs-link",
+    },
+  })
+}
+
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  TabsNav,
+  TabsLink,
+  tabsListVariants,
+}

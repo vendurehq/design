@@ -567,7 +567,7 @@ export const uiGuidance = [
       },
       {
         title: 'Tables own their perimeter',
-        body: 'When EmptyState replaces a table body, render it flush and borderless within the table container. Do not add an inset dashed outline.',
+        body: 'When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.',
       },
       {
         title: 'Errors own the failure',
