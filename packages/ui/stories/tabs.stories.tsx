@@ -108,7 +108,7 @@ export const LinkTabs: Story = {
     const sections = ['Overview', 'Invoices', 'Payment methods', 'Tax details'];
     const [current, setCurrent] = useState(sections[0]);
     return (
-      <TabsNav aria-label="Billing Profile sections">
+      <TabsNav aria-label="Account sections">
         {sections.map((section) => (
           <TabsLink
             key={section}

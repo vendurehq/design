@@ -123,14 +123,14 @@ export const NarrowViewport: Story = {
     <div className="max-w-xs">
       <PageHeader>
         <PageHeaderContent>
-          <PageHeaderTitle>Billing Profiles</PageHeaderTitle>
-          <PageHeaderDescription>Invoices, payment methods, and tax details.</PageHeaderDescription>
+          <PageHeaderTitle>Shipping methods</PageHeaderTitle>
+          <PageHeaderDescription>Carriers, zones, and delivery rates.</PageHeaderDescription>
         </PageHeaderContent>
         <PageHeaderActions>
           <Button variant="outline">Export</Button>
           <Button>
             <PlusIcon />
-            New profile
+            New method
           </Button>
         </PageHeaderActions>
       </PageHeader>
