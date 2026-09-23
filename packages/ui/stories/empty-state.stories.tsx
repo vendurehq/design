@@ -1,6 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { InboxIcon, PackageIcon } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../src/components/atoms/table.tsx';
 import { NoOrdersIllustration } from '../src/components/molecules/illustrations/no-orders.tsx';
 import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
@@ -85,4 +93,35 @@ export const WithoutIllustration: Story = {
     title: 'No products yet',
     description: 'Create your first product to start selling.',
   },
+};
+
+// Inside a table body the table owns the perimeter: `bordered={false}` drops the
+// dashed box so the empty state sits flush in the table frame.
+export const InTableBody: Story = {
+  args: {
+    bordered: false,
+    illustration: null,
+    icon: <InboxIcon />,
+    title: 'No invoices yet',
+    description: 'Invoices appear here after the first billing period.',
+  },
+  render: (args) => (
+    <div className="overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Invoice</TableHead>
+            <TableHead>Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={2} className="p-0">
+              <EmptyState {...args} />
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  ),
 };

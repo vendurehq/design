@@ -25,6 +25,12 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
   description?: React.ReactNode;
   /** Actions/CTA — rendered in the content slot below the header. */
   children?: React.ReactNode;
+  /**
+   * Draw the dashed box. Defaults to `true`. Set `false` when the empty state
+   * fills a region that already has a frame, such as a table body: the table
+   * owns its perimeter.
+   */
+  bordered?: boolean;
 }
 
 /**
@@ -42,6 +48,7 @@ function EmptyState({
   title,
   description,
   children,
+  bordered = true,
   className,
   ...props
 }: EmptyStateProps) {
@@ -57,7 +64,11 @@ function EmptyState({
     ) : null;
 
   return (
-    <Empty data-slot="empty-state" className={cn('border', className)} {...props}>
+    <Empty
+      data-slot="empty-state"
+      className={cn(bordered ? 'border' : 'rounded-none', className)}
+      {...props}
+    >
       <EmptyHeader>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
