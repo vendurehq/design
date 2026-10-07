@@ -25,7 +25,12 @@
     "const hint = 'Choose a color (optional)';",
     "const view = <div title='#fff' />;",
     "const view = <div title='Choose a color (optional)' />;",
-    "const view = <div className='border-t-border placeholder-muted-foreground' />;"
+    "const view = <div className='border-t-border placeholder-muted-foreground' />;",
+    "const title = 'A noun phrase, like \"Order #100234\"';",
+    "const ref = 'Invoice #12345678';",
+    "const view = <path fill='currentColor' stroke='var(--color-border)' />;",
+    "const view = <stop stopColor='var(--color-chart-1)' />;",
+    "const view = <div className='shadow-[0_1px_var(--shadow-color)]' />;"
   ],
   "invalid": [
     "const view = <div className='bg-blue-500 text-white' />;",
@@ -56,6 +61,16 @@
     "const view = <div className='bg-blue-500/[0.06]' />;",
     "const view = <div className='border-t-zinc-200' />;",
     "const view = <div className='placeholder-red-500' />;",
-    "const view = <div className='inset-ring-blue-500' />;"
+    "const view = <div className='inset-ring-blue-500' />;",
+    "const view = <path fill='#ccc' />;",
+    "const view = <path stroke='#ccc' />;",
+    "const view = <stop stopColor='#1a2b3c' />;",
+    "const view = <path fill='rgb(0 0 0)' />;",
+    "const view = <div className='shadow-[0_1px_rgba(0,0,0,0.1)]' />;",
+    "const view = <div className='shadow-[0_0_0_1px_hsl(var(--sidebar-border))]' />;",
+    "const view = <div className='shadow-[0_0_0_1px_#fafafa]' />;",
+    "const view = <div className='shadow-[0_0_0_1px_var(--blue-500)]' />;",
+    "const color = '#100234';",
+    "const shadow = '0 1px 2px #1a1a1a';"
   ]
 }
