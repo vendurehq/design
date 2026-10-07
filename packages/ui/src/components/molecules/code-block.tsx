@@ -510,7 +510,7 @@ export function CodeBlock({
       data-slot="code-block"
       {...props}
       className={cn(
-        'bg-card not-prose border-border relative mb-4 w-full contain-inline-size overflow-hidden rounded-md border text-sm lg:text-base',
+        'bg-card not-prose border-border relative w-full contain-inline-size overflow-hidden rounded-md border text-sm lg:text-base',
         className,
       )}
     >

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import { processCode } from './code-block/process-code.ts';
 import { transformCommand } from './code-block/transform-command.tsx';
@@ -291,5 +292,14 @@ describe('matchFileTypeIcon', () => {
 describe('CodeBlock', () => {
   test('the module exports only the component API', () => {
     expect(Object.keys(codeBlock).sort()).toEqual(['CodeBlock', 'CodeBlockAction']);
+  });
+
+  test('the root sets no outer margin', () => {
+    const html = renderToStaticMarkup(
+      <codeBlock.CodeBlock language="bash">npm install</codeBlock.CodeBlock>,
+    );
+    const root = html.match(/<div[^>]*data-slot="code-block"[^>]*>/)?.[0] ?? '';
+    expect(root).not.toBe('');
+    expect(root).not.toMatch(/\bm[trblxy]?-\d/);
   });
 });

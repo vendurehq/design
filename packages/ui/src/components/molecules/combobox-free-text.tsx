@@ -52,6 +52,8 @@ export interface ComboboxFreeTextProps<T extends ComboboxFreeTextItem = Combobox
    */
   items: readonly T[];
   /** Async state of the suggestion source. Shows a trailing spinner while true. */
+  isLoading?: boolean;
+  /** @deprecated Use `isLoading`. Kept as an alias until the next major. */
   loading?: boolean;
   /** Render a suggestion row. Defaults to `label` over `description`. */
   renderItem?: (item: T) => React.ReactNode;
@@ -92,7 +94,8 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   onValueChange,
   onSelectItem,
   items,
-  loading = false,
+  isLoading,
+  loading,
   renderItem = defaultRenderItem,
   id,
   placeholder,
@@ -156,7 +159,7 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
             }
           }}
         />
-        {loading ? (
+        {(isLoading ?? loading) ? (
           <InputGroupAddon align="inline-end">
             <Spinner />
           </InputGroupAddon>

@@ -6,7 +6,9 @@ import type { VariantProps } from 'class-variance-authority';
 import { XIcon } from 'lucide-react';
 import type * as React from 'react';
 
-interface ChipProps extends React.ComponentProps<'span'>, VariantProps<typeof badgeVariants> {
+interface ChipProps extends React.ComponentProps<'span'> {
+  /** Badge variants a tag can take. `link` and `ghost` are not tag treatments. */
+  variant?: Exclude<VariantProps<typeof badgeVariants>['variant'], 'link' | 'ghost'>;
   /** Leading icon slot. */
   icon?: React.ReactNode;
   /**
