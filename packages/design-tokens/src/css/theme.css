@@ -169,6 +169,7 @@
   --font-heading: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --font-mono--font-feature-settings: "liga" 0, "calt" 0;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;

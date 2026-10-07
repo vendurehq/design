@@ -1,6 +1,7 @@
 /* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */
 
 :root {
+  color-scheme: light;
   --brand-50: oklch(0.97 0.02 231);
   --brand-100: oklch(0.93 0.04 231);
   --brand-200: oklch(0.87 0.08 231);
@@ -154,6 +155,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.13 0.007 231);
   --foreground: oklch(0.92 0.004 231);
   --surface: oklch(0.16 0.007 231);
