@@ -138,3 +138,24 @@ export const Invalid: Story = {
     </LightAndDark>
   ),
 };
+
+/**
+ * The destructive variant keeps its tinted fill; its text uses
+ * destructive-subtle-foreground, which reaches 4.5:1 in both modes. Pinned to
+ * the light page theme.
+ */
+export const DestructiveLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex gap-3">
+          <Button variant="destructive">Delete order</Button>
+          <Button variant="destructive" size="sm">
+            Remove
+          </Button>
+        </div>
+      )}
+    </LightAndDark>
+  ),
+};
