@@ -397,9 +397,11 @@ const codeBlockContentClassName = cn(
   'bg-transparent text-sm',
   '[&_pre]:py-4',
   '[&_.shiki]:!bg-transparent',
-  '[&_code]:w-full',
+  // The code sizes to its longest line, so the ScrollArea viewport scrolls it.
+  // A scrolling <code> inside the viewport could not take keyboard focus.
+  '[&_code]:w-max',
+  '[&_code]:min-w-full',
   '[&_code]:grid',
-  '[&_code]:overflow-x-auto',
   '[&_code]:bg-transparent',
   '[&_.line]:px-4',
   '[&_.line]:w-full',
@@ -428,7 +430,7 @@ function SyntaxHighlightedContent({ code, language }: SyntaxHighlightedContentPr
     // Show fallback while loading
     return (
       <pre className="shiki py-4">
-        <code className="grid w-full overflow-x-auto bg-transparent">
+        <code className="grid w-max min-w-full bg-transparent">
           {code.split('\n').map((line, i) => (
             <span key={i} className="line relative w-full px-4">
               {line}
