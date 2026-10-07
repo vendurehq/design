@@ -9,7 +9,17 @@
       "cache": false,
       "persistent": true
     },
-    "lint": {},
+    "lint": {
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/biome.json", "$TURBO_ROOT$/packages/design-lint/biome/**"]
+    },
+    "@vendure-io/storybook#lint": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/biome.json",
+        "$TURBO_ROOT$/packages/design-lint/biome/**",
+        "$TURBO_ROOT$/packages/ui/stories/**"
+      ]
+    },
     "check-types": {
       "dependsOn": ["^build"]
     },
