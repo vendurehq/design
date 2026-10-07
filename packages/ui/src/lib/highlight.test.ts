@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
+  highlightCode,
   NOTATION_TRANSFORMER_LANGUAGES,
   normalizeLanguage,
   supportsNotationComments,
@@ -53,5 +54,14 @@ describe('supportsNotationComments', () => {
     for (const language of ['json', 'html', 'css', 'text', undefined]) {
       expect(supportsNotationComments(language)).toBe(false);
     }
+  });
+});
+
+describe('highlightCode', () => {
+  test('light theme tokens meet 4.5:1 on a white card', async () => {
+    // github-light colors GraphQL fields e36209 (3.5:1 on white).
+    const html = await highlightCode('query Q {\n  activeOrder {\n    id\n  }\n}', 'graphql');
+    expect(html).not.toMatch(/color:#e36209/i);
+    expect(html).toMatch(/color:#a35200/i);
   });
 });
