@@ -88,6 +88,7 @@
   --surface-raised: oklch(1 0 0);
   --overlay: oklch(1 0 0);
   --inset: color-mix(in oklab, black 5%, transparent);
+  --scrim: color-mix(in oklab, black 10%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.13 0.007 231);
   --popover: var(--overlay);
@@ -131,9 +132,12 @@
   --code-diff-add-accent: oklch(0.55 0.17 145);
   --code-diff-remove: color-mix(in oklab, oklch(0.55 0.2 25) 10%, transparent);
   --code-diff-remove-accent: oklch(0.55 0.2 25);
+  --code-inline: var(--secondary);
+  --code-inline-border: var(--border);
   --border: oklch(0.86 0.004 231);
   --input: oklch(0.86 0.004 231);
-  --ring: oklch(0.68 0.005 231);
+  --control-border: oklch(0.62 0.005 231);
+  --ring: oklch(0.55 0.005 231);
   --chart-1: oklch(0.56 0.12 250);
   --chart-2: oklch(0.64 0.12 145);
   --chart-3: oklch(0.51 0.13 320);
@@ -146,7 +150,7 @@
   --sidebar-accent: oklch(0.935 0.004 231);
   --sidebar-accent-foreground: oklch(0.2 0.007 231);
   --sidebar-border: oklch(0.86 0.004 231);
-  --sidebar-ring: oklch(0.68 0.005 231);
+  --sidebar-ring: oklch(0.55 0.005 231);
 }
 
 .dark {
@@ -156,6 +160,7 @@
   --surface-raised: oklch(0.18 0.007 231);
   --overlay: oklch(0.2 0.007 231);
   --inset: color-mix(in oklab, black 40%, transparent);
+  --scrim: color-mix(in oklab, black 40%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.92 0.004 231);
   --popover: var(--overlay);
@@ -199,8 +204,11 @@
   --code-diff-add-accent: oklch(0.55 0.17 145);
   --code-diff-remove: color-mix(in oklab, oklch(0.55 0.2 25) 10%, transparent);
   --code-diff-remove-accent: oklch(0.55 0.2 25);
+  --code-inline: var(--secondary);
+  --code-inline-border: var(--border);
   --border: color-mix(in oklab, var(--foreground) 17%, transparent);
   --input: color-mix(in oklab, var(--foreground) 17%, transparent);
+  --control-border: color-mix(in oklab, var(--foreground) 40%, transparent);
   --ring: oklch(0.55 0.005 231);
   --chart-1: oklch(0.56 0.12 250);
   --chart-2: oklch(0.64 0.12 145);
