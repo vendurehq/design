@@ -6,7 +6,7 @@ Monorepo for `@vendure-io/design-tokens`, `@vendure-io/ui`, and `@vendure-io/des
 
 - [CONTEXT.md](./CONTEXT.md) — the project's ubiquitous language (glossary). Use these terms; challenge changes against it.
 - Architectural decisions are tracked internally by the Vendure team, not in-repo.
-- [packages/ui/AGENTS.md](./packages/ui/AGENTS.md) — shadcn CLI workflow, component placement (`ui/` vs `custom/`), export rules.
+- [packages/ui/AGENTS.md](./packages/ui/AGENTS.md) — shadcn CLI workflow, component placement (`atoms/` vs `molecules/`), export rules.
 - [packages/design-tokens/AGENTS.md](./packages/design-tokens/AGENTS.md) — token pipeline rules.
 - [packages/design-lint/AGENTS.md](./packages/design-lint/AGENTS.md) — equivalent ESLint/Biome enforcement rules.
 - `docs/` — consumer-facing guides (getting started, components, tokens, releasing).
