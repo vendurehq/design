@@ -44,9 +44,9 @@ export const Horizontal: Story = {
 export const WithError: Story = {
   render: () => (
     <Field data-invalid="true">
-      <FieldLabel>Password</FieldLabel>
+      <FieldLabel htmlFor="password-error">Password</FieldLabel>
       <FieldContent>
-        <Input type="password" aria-invalid="true" />
+        <Input id="password-error" type="password" aria-invalid="true" />
         <FieldError>Password must be at least 8 characters.</FieldError>
       </FieldContent>
     </Field>
@@ -56,9 +56,9 @@ export const WithError: Story = {
 export const WithMultipleErrors: Story = {
   render: () => (
     <Field data-invalid="true">
-      <FieldLabel>Password</FieldLabel>
+      <FieldLabel htmlFor="password-errors">Password</FieldLabel>
       <FieldContent>
-        <Input type="password" aria-invalid="true" />
+        <Input id="password-errors" type="password" aria-invalid="true" />
         <FieldError
           errors={[
             { message: 'Password must be at least 8 characters.' },
