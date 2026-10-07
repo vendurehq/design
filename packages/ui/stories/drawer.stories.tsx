@@ -2,6 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
+/**
+ * The Drawer runs on Base UI. Its parts take the `render` prop, like every other
+ * atom. The scrim and the drawer render in a portal on `body`, so use the
+ * toolbar theme switch to see them in light and dark.
+ */
 const meta = {
   title: 'Atoms/Overlays/Drawer',
   component: Drawer,
@@ -13,10 +18,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button variant="outline">Open Drawer</Button>
-      </DrawerTrigger>
+    <Drawer showSwipeHandle>
+      <DrawerTrigger render={<Button variant="outline" />}>Open Drawer</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Move Goal</DrawerTitle>
@@ -30,9 +33,26 @@ export const Default: Story = {
         </div>
         <DrawerFooter>
           <Button>Submit</Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
+          <DrawerClose render={<Button variant="outline" />}>Cancel</DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  ),
+};
+
+/** `swipeDirection` sets the side: `up`, `right`, `down` (default) or `left`. */
+export const Left: Story = {
+  render: () => (
+    <Drawer swipeDirection="left">
+      <DrawerTrigger render={<Button variant="outline" />}>Open filters</DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Filters</DrawerTitle>
+          <DrawerDescription>Narrow the order list.</DrawerDescription>
+        </DrawerHeader>
+        <div className="flex-1 p-4 text-sm text-muted-foreground">Filter fields go here.</div>
+        <DrawerFooter>
+          <DrawerClose render={<Button />}>Apply</DrawerClose>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
