@@ -12,10 +12,10 @@ test('the delta color follows the outcome, not the direction', () => {
   const refundRateDown = renderToStaticMarkup(
     <StatCard label="Refund rate" value="1.2%" delta={{ value: -0.4, goodWhen: 'down' }} />,
   );
-  expect(refundRateDown).toContain('text-success');
+  expect(refundRateDown).toContain('text-success-subtle-foreground');
 
   const revenueDown = renderToStaticMarkup(
     <StatCard label="Revenue" value="€12,400" delta={{ value: -3.2 }} />,
   );
-  expect(revenueDown).toContain('text-destructive');
+  expect(revenueDown).toContain('text-destructive-subtle-foreground');
 });
