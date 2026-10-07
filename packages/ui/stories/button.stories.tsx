@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 import { ChevronRight, Loader2, Mail } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
 
@@ -48,19 +49,19 @@ export const SizeLg: Story = {
 };
 
 export const Icon: Story = {
-  args: { size: 'icon', variant: 'outline', children: <ChevronRight /> },
+  args: { size: 'icon', variant: 'outline', 'aria-label': 'Next', children: <ChevronRight /> },
 };
 
 export const IconXs: Story = {
-  args: { size: 'icon-xs', variant: 'outline', children: <ChevronRight /> },
+  args: { size: 'icon-xs', variant: 'outline', 'aria-label': 'Next', children: <ChevronRight /> },
 };
 
 export const IconSm: Story = {
-  args: { size: 'icon-sm', variant: 'outline', children: <ChevronRight /> },
+  args: { size: 'icon-sm', variant: 'outline', 'aria-label': 'Next', children: <ChevronRight /> },
 };
 
 export const IconLg: Story = {
-  args: { size: 'icon-lg', variant: 'outline', children: <ChevronRight /> },
+  args: { size: 'icon-lg', variant: 'outline', 'aria-label': 'Next', children: <ChevronRight /> },
 };
 
 export const WithIcon: Story = {
@@ -97,4 +98,43 @@ export const AsLink: Story = {
     render: <a href="https://vendure.io" />,
     children: 'Rendered as a link',
   },
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Rest and invalid (`aria-invalid`), in light and dark. Dark mode uses the full
+ * destructive border, not a 50% one that was weaker than the rest border.
+ * Pinned to the light page theme so the left panel stays light.
+ */
+export const Invalid: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex gap-3">
+          <Button variant="outline">Choose file</Button>
+          <Button variant="outline" aria-invalid>
+            Choose file
+          </Button>
+        </div>
+      )}
+    </LightAndDark>
+  ),
 };

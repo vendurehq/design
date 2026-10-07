@@ -55,3 +55,25 @@ describe('ComboboxTrigger field styling', () => {
     expect(button).not.toContain('h-9');
   });
 });
+
+describe('ComboboxInput trigger name', () => {
+  test('the icon-only trigger has a default accessible name', () => {
+    const html = renderToStaticMarkup(
+      <Combobox items={['DE']}>
+        <ComboboxInput aria-label="Country" />
+      </Combobox>,
+    );
+    const button = html.match(/<button[^>]*>/)?.[0] ?? '';
+    expect(button).toContain('aria-label="Open options"');
+    expect(html.match(/<input[^>]*>/)?.[0]).toContain('aria-label="Country"');
+  });
+
+  test('triggerLabel overrides the name', () => {
+    const html = renderToStaticMarkup(
+      <Combobox items={['DE']}>
+        <ComboboxInput triggerLabel="Show countries" />
+      </Combobox>,
+    );
+    expect(html.match(/<button[^>]*>/)?.[0]).toContain('aria-label="Show countries"');
+  });
+});
