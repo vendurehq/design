@@ -4,11 +4,34 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
+// When the table is wider than its container, the container scrolls and must
+// be reachable by keyboard (axe scrollable-region-focusable), so it becomes a
+// tab stop with a focus ring. A table that fits adds no tab stop.
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const [scrollable, setScrollable] = React.useState(false)
+
+  React.useEffect(() => {
+    const container = containerRef.current
+    if (!container || typeof ResizeObserver === "undefined") {
+      return
+    }
+    const update = () =>
+      setScrollable(container.scrollWidth > container.clientWidth)
+    const observer = new ResizeObserver(update)
+    observer.observe(container)
+    if (container.firstElementChild) {
+      observer.observe(container.firstElementChild)
+    }
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div
+      ref={containerRef}
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      tabIndex={scrollable ? 0 : undefined}
+      className="focus-visible:ring-ring relative w-full overflow-x-auto rounded-[inherit] outline-none focus-visible:ring-2"
     >
       <table
         data-slot="table"
@@ -52,12 +75,15 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
+// data-state="selected" is the DataTable (TanStack) row-selection marker, not a
+// Radix attribute, so the selector is live. Selected rows use the accent fill
+// plus a primary bar on the leading edge, so they stay distinct from hover.
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b border-border/50 transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-accent data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)] border-b border-border/50 transition-colors",
         className
       )}
       {...props}
