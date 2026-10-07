@@ -25,13 +25,21 @@ const index: StorybookIndex = JSON.parse(readFileSync(indexPath, 'utf-8'));
 const stories = Object.values(index.entries).filter((entry) => entry.type === 'story');
 const outputDir = path.resolve(dirname, '../visual-output');
 
+// `globals=theme:dark` makes the themes addon render the story in dark mode.
+const themes = [
+  { name: 'light', query: '', suffix: '' },
+  { name: 'dark', query: '&globals=theme:dark', suffix: '--dark' },
+];
+
 for (const story of stories) {
-  test(`${story.title} > ${story.name}`, async ({ page }) => {
-    await page.goto(`/iframe.html?id=${story.id}&viewMode=story`);
-    await page.waitForLoadState('networkidle');
-    await page.locator('#storybook-root').screenshot({
-      path: path.join(outputDir, `${story.id}.png`),
-      animations: 'disabled',
+  for (const theme of themes) {
+    test(`${story.title} > ${story.name} (${theme.name})`, async ({ page }) => {
+      await page.goto(`/iframe.html?id=${story.id}&viewMode=story${theme.query}`);
+      await page.waitForLoadState('networkidle');
+      await page.locator('#storybook-root').screenshot({
+        path: path.join(outputDir, `${story.id}${theme.suffix}.png`),
+        animations: 'disabled',
+      });
     });
-  });
+  }
 }
