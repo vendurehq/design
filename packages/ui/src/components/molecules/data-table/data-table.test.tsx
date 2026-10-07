@@ -2,7 +2,12 @@ import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { Column } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { type ColumnDef, DataTable, type Table, type TableOptions } from './data-table.tsx';
+import {
+  type ColumnDef,
+  DataTable,
+  type TableInstance as Table,
+  type TableOptions,
+} from './data-table.tsx';
 import {
   buildDisplayColumns,
   getHideableLeafColumns,

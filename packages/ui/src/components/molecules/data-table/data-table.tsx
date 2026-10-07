@@ -44,11 +44,6 @@ import {
   DataTableAddFilter,
   DataTableAppliedFilters,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-filters';
-import {
-  buildDisplayColumns,
-  getSelectedRowIds,
-  resolveSlot,
-} from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
 import type {
   ControlledState,
   DataTableProps,
@@ -63,6 +58,8 @@ import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/
 import { cn } from '@vendure-io/ui/lib/utils';
 import { AnimatePresence, motion } from 'motion/react';
 import * as React from 'react';
+// Relative: `data-table-helpers` is closed in the package exports.
+import { buildDisplayColumns, getSelectedRowIds, resolveSlot } from './data-table-helpers.tsx';
 
 // The composition root. Owns the single `useReactTable` instance and the
 // controlled/uncontrolled bridge, then lays out the card-framed table anatomy:
@@ -586,7 +583,9 @@ export type {
   Row,
   RowSelectionState,
   SortingState,
-  Table,
+  // Not `Table`: that name is the Table atom. This is the TanStack instance
+  // type, as `onTableReady` hands it over.
+  Table as TableInstance,
   TableOptions,
   VisibilityState,
 } from '@tanstack/react-table';

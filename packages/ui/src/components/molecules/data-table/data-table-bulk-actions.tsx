@@ -1,13 +1,11 @@
 'use client';
 
 import type { Table } from '@tanstack/react-table';
-import {
-  getSelectedOriginals,
-  getSelectedRowIds,
-} from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
 import type { DataTableBulkActionContext } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
+// Relative: `data-table-helpers` is closed in the package exports.
+import { getSelectedOriginals, getSelectedRowIds } from './data-table-helpers.tsx';
 
 // The selection bar that replaces the controls row inside the header band
 // while rows are selected (returns null with an empty selection; the core
