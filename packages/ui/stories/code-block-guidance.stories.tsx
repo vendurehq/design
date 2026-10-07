@@ -5,11 +5,12 @@ import { Kbd } from '../src/components/atoms/kbd.tsx';
 import { CodeBlock, CodeBlockAction } from '../src/components/molecules/code-block.tsx';
 import { CopyableText } from '../src/components/molecules/copyable-text.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
+import { InlineCode } from '../src/components/molecules/inline-code.tsx';
 
 /**
  * Guidance, not props. When a value earns the full CodeBlock treatment versus
- * its lighter siblings (CopyableText/IdChip for one opaque value, inline
- * `<code>`/Kbd for a token in a sentence), and the rules on its three loaded
+ * its lighter siblings (CopyableText/IdChip for one opaque value,
+ * InlineCode/Kbd for a token in a sentence), and the rules on its three loaded
  * features: the package-manager switcher, the actions slot, and the filename
  * header. For the component API and its props, see the CodeBlock stories.
  */
@@ -87,7 +88,7 @@ const WHICH: { value: string; pick: string; why: string }[] = [
   },
   {
     value: 'A token named inside a sentence: a flag, a prop, a method',
-    pick: 'inline <code> / Kbd',
+    pick: 'InlineCode / Kbd',
     why: 'It lives in prose. A framed, copyable block would break the line and over-furnish one word.',
   },
 ];
@@ -120,12 +121,12 @@ const SWITCHER: { case: string; on: boolean; note: string }[] = [
 // ── stories ──────────────────────────────────────────────────────────────────
 
 export const WhichComponent: Story = {
-  name: '1 · CodeBlock vs CopyableText vs inline code',
+  name: '1 · CodeBlock vs CopyableText vs InlineCode',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Multi-line code earns CodeBlock; one value does not"
-        intro="CodeBlock is the heaviest of the copy-affordance family: a framed, syntax-highlighted, header-bearing block. It pays for that weight when the content is code a reader studies or lifts wholesale, such as a config file, a plugin, a GraphQL query, or an install command. Drop a rung for a single opaque value (an API key, a webhook URL, an ID): that is CopyableText or its IdChip sibling. Drop another for a token named inside a sentence: that is inline <code> or, for a keystroke, Kbd. See the CopyableText guidance for the value-shaped choice between CopyableText and IdChip."
+        intro="CodeBlock is the heaviest of the copy-affordance family: a framed, syntax-highlighted, header-bearing block. It pays for that weight when the content is code a reader studies or lifts wholesale, such as a config file, a plugin, a GraphQL query, or an install command. Drop a rung for a single opaque value (an API key, a webhook URL, an ID): that is CopyableText or its IdChip sibling. Drop another for a token named inside a sentence: that is InlineCode or, for a keystroke, Kbd. See the CopyableText guidance for the value-shaped choice between CopyableText and IdChip."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -158,13 +159,12 @@ export const WhichComponent: Story = {
             <IdChip value="5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d4e3f" />
           </Example>
           <Example
-            verdict="dont"
-            caption="A prop named in prose does not need a block. Set the migrations flag with <code>runMigrations: true</code>, or press Kbd to run them."
+            verdict="do"
+            caption="A prop named in prose does not need a block. InlineCode keeps it in the sentence, and Kbd names the keystroke."
           >
             <p className="text-sm">
-              Set{' '}
-              <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">runMigrations</code>{' '}
-              to true, then press <Kbd>⌘ R</Kbd> to apply.
+              Set <InlineCode>runMigrations</InlineCode> to true, then press <Kbd>⌘ R</Kbd> to
+              apply.
             </p>
           </Example>
         </div>

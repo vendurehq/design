@@ -149,7 +149,7 @@ export const uiGuidance = [
     rules: [
       {
         title: 'Blocks are for reading, not transport',
-        body: 'Use CodeBlock for multi-line code the reader studies or copies whole. Use CopyableText for single values users move elsewhere, and inline code for references inside prose.',
+        body: 'Use CodeBlock for multi-line code the reader studies or copies whole. Use CopyableText for single values users move elsewhere, and InlineCode for references inside prose.',
       },
       {
         title: 'The switcher is for instructions, not output',
