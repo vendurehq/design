@@ -8,9 +8,7 @@
       "!**/.turbo",
       "!**/.changeset",
       "!**/bun.lock",
-      "!**/storybook-static",
-      "!**/components/atoms",
-      "!**/hooks/use-mobile.ts"
+      "!**/storybook-static"
     ]
   },
   "formatter": {
@@ -45,6 +43,26 @@
       "tailwindDirectives": true
     }
   },
+  "overrides": [
+    {
+      "includes": ["**/components/atoms/**", "**/hooks/use-mobile.ts", "packages/ui/stories/**"],
+      "formatter": { "enabled": false },
+      "assist": { "enabled": false },
+      "linter": {
+        "rules": { "recommended": false },
+        "domains": { "react": "none", "next": "none" }
+      }
+    },
+    {
+      "includes": [
+        "packages/ui/src/**",
+        "packages/ui/stories/**",
+        "!packages/ui/src/components/atoms/chart.tsx",
+        "!packages/ui/src/lib/highlight.ts"
+      ],
+      "plugins": ["./packages/design-lint/biome/no-raw-colors.grit"]
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "single",

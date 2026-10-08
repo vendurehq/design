@@ -18,12 +18,12 @@ In your app's main CSS file, add:
 ```css
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@source "../../node_modules/@vendure-io/ui/src";
+@source "../node_modules/@vendure-io/ui/src";
 ```
 
 The first `@import` loads all design tokens, Tailwind v4, the shadcn Tailwind integration required by `@vendure-io/ui`, and the theme configuration; the second self-hosts the font families the theme references (see [Fonts](#fonts) below).
 
-The `@source` directive tells Tailwind v4 to scan the `@vendure-io/ui` package for class names so it generates the correct utility classes. Without this, components will render unstyled. Adjust the relative path based on your CSS file's location relative to `node_modules`.
+The `@source` directive tells Tailwind v4 to scan the `@vendure-io/ui` package for class names so it generates the correct utility classes. Without this, components will render unstyled. The path is relative to the CSS file, not to the project root. The example above is for a CSS file one level below the project root, such as `app/globals.css` or `src/index.css`. For `src/styles/app.css`, use `../../node_modules/@vendure-io/ui/src`. In a monorepo, point it at the `node_modules` folder where `@vendure-io/ui` is installed.
 
 ## Framework Setup
 
@@ -35,16 +35,18 @@ The `@source` directive tells Tailwind v4 to scan the `@vendure-io/ui` package f
 /* app/globals.css */
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@source "../../node_modules/@vendure-io/ui/src";
+@source "../node_modules/@vendure-io/ui/src";
 ```
 
-**2. Transpilation** — Both packages ship raw `.tsx`/`.ts` source. Next.js handles this natively since v13.1+ via the `transpilePackages` config, though in most cases it works automatically. If you run into issues, add to `next.config.ts`:
+**2. Transpilation** — `@vendure-io/ui` ships raw `.tsx` source with no build step, so Next.js must transpile it. This step is required. Add the package to `transpilePackages` in `next.config.ts`:
 
 ```ts
 const nextConfig = {
-  transpilePackages: ["@vendure-io/ui", "@vendure-io/design-tokens"],
+  transpilePackages: ["@vendure-io/ui"],
 };
 ```
+
+`@vendure-io/design-tokens` ships compiled JavaScript and plain CSS, so it does not need an entry.
 
 **3. Dark mode** — Install `next-themes` (optional peer dependency of `@vendure-io/ui`):
 
@@ -79,7 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 /* src/index.css */
 @import "@vendure-io/design-tokens/css/theme";
 @import "@vendure-io/design-tokens/css/fonts";
-@source "../../node_modules/@vendure-io/ui/src";
+@source "../node_modules/@vendure-io/ui/src";
 ```
 
 **2. Tailwind plugin** — Install and register the Tailwind v4 Vite plugin:
@@ -118,6 +120,35 @@ function ThemeToggle() {
   return <button onClick={() => setDark(!dark)}>Toggle theme</button>;
 }
 ```
+
+Vite transpiles the `.tsx` source of `@vendure-io/ui` without extra configuration.
+
+## Lint for raw colors
+
+Install `@vendure-io/design-lint` to reject raw colors in your component code: Tailwind palette utilities such as `bg-blue-500`, literal colors such as `#fff` or `oklch(…)`, and generic ramp variables. Use the semantic slots from the tokens package instead.
+
+```bash
+npm install -D @vendure-io/design-lint
+```
+
+With ESLint:
+
+```js
+// eslint.config.js
+import vendureDesign from "@vendure-io/design-lint/eslint";
+
+export default [...vendureDesign.configs.recommended];
+```
+
+With Biome, add the plugin to `biome.json`:
+
+```json
+{
+  "plugins": ["./node_modules/@vendure-io/design-lint/biome/no-raw-colors.grit"]
+}
+```
+
+Exclude your theme-definition files, where raw colors belong. The [package README](../packages/design-lint/README.md) covers the warning-level variant, monorepos and the exact rules.
 
 ## Fonts
 

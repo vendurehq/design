@@ -12,11 +12,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: { children: <Bold /> },
+  args: { 'aria-label': 'Bold', children: <Bold /> },
 };
 
 export const Outline: Story = {
-  args: { variant: 'outline', children: <Italic /> },
+  args: { variant: 'outline', 'aria-label': 'Italic', children: <Italic /> },
 };
 
 export const WithText: Story = {
@@ -24,17 +24,17 @@ export const WithText: Story = {
 };
 
 export const SizeSm: Story = {
-  args: { size: 'sm', children: <Underline /> },
+  args: { size: 'sm', 'aria-label': 'Underline', children: <Underline /> },
 };
 
 export const SizeLg: Story = {
-  args: { size: 'lg', children: <Bold /> },
+  args: { size: 'lg', 'aria-label': 'Bold', children: <Bold /> },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, children: <Bold /> },
+  args: { disabled: true, 'aria-label': 'Bold', children: <Bold /> },
 };
 
 export const Pressed: Story = {
-  args: { defaultPressed: true, children: <Bold /> },
+  args: { defaultPressed: true, 'aria-label': 'Bold', children: <Bold /> },
 };

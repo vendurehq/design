@@ -44,17 +44,30 @@ The workflow will:
 - Publish to npm with provenance (`latest` for stable releases on the newest major, `v{major}` for stable releases on an older major, or the prerelease channel for prereleases)
 - Commit the version bump back to the release's target branch
 
-## Releasing Both Packages
+## Releasing Several Packages
 
-When releasing both packages (e.g. after a design-tokens change that ui depends on):
+When a change spans packages, release them in this order:
 
-1. Release `design-tokens` first
-2. Wait for its workflow to complete (version bump committed to `main`)
-3. Then release `ui`
+1. Release `design-tokens`.
+2. Wait for its workflow to complete and commit the version bump to `main`.
+3. Release `ui`.
+4. Release `design-lint`.
 
-This ensures the ui package picks up the latest design-tokens version when resolving the `workspace:*` dependency for npm.
+`@vendure-io/ui` declares `@vendure-io/design-tokens` as a `^2.0.0` peer dependency. A ui prerelease replaces that range with `^<tokens version on main>` at publish time, because `^2.0.0` does not match prereleases. If you release ui before the tokens bump-back lands, the prerelease points at the previous tokens version.
 
 The same ordering applies to prereleases. For example, publish `design-tokens/v1.3.0-beta.0`, wait for the workflow to commit the version bump to `main`, then publish `ui/v2.1.0-beta.0` so the ui tarball resolves `@vendure-io/design-tokens` to the prerelease version.
+
+### Release notes for a major version
+
+`--generate-notes` lists the merged pull requests only. For a major release such as 2.0.0, write the breaking changes and migration steps to a file and pass it with `--notes-file`:
+
+```sh
+gh release create design-tokens/v2.0.0 --title "@vendure-io/design-tokens v2.0.0" --notes-file design-tokens-2.0.0.md
+gh release create ui/v2.0.0 --title "@vendure-io/ui v2.0.0" --notes-file ui-2.0.0.md
+gh release create design-lint/v1.0.0 --title "@vendure-io/design-lint v1.0.0" --notes-file design-lint-1.0.0.md
+```
+
+Base the ui notes on [Migrating from 1.x to 2.0](./ui-components.md#migrating-from-1x-to-20).
 
 ## Maintaining an Older Major
 
@@ -84,7 +97,7 @@ The skills install from `main` rather than npm and do not have a separate releas
 
 ## Workspace Dependency Resolution
 
-`@vendure-io/ui` depends on `@vendure-io/design-tokens` via `workspace:*` in the repo. During the ui release workflow, this is resolved to a caret range (e.g. `^1.2.0`) in the published tarball. The `workspace:*` value stays in the repo — only the npm tarball gets the resolved version.
+In the repo, `@vendure-io/ui` links `@vendure-io/design-tokens` through a `workspace:*` dev dependency, and declares it as a `^2.0.0` peer dependency. The ui release workflow removes the dev dependency from the published `package.json`. For a prerelease, it also sets the peer range to `^<tokens version on main>`. The repo keeps both fields; only the npm tarball changes.
 
 ## Troubleshooting
 

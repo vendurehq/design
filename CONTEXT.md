@@ -19,7 +19,7 @@ The Vendure blue (hue 231) — an identity signature, not a general-purpose colo
 _Avoid_: accent, Vendure blue, primary (when meaning the color rather than the slot)
 
 **Tone**:
-The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`.
+The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`. Two tones have no slots of their own: `critical` renders with the `destructive-*` slots, and `progress` renders with the `neutral` slots plus an `info` dot.
 _Avoid_: intent, status color, semantic color, variant (when meaning color)
 
 **Subtle**:
@@ -27,7 +27,7 @@ The soft rendering of a tone — tinted background, readable foreground, matchin
 _Avoid_: soft, light, pastel
 
 **Surface**:
-A background level in the elevation ramp. Contrast between surfaces, not borders, is what separates content.
+A background level, ordered `background` < `surface` < `surface-raised` < `overlay`. Contrast between surfaces, not borders, is what separates content.
 _Avoid_: elevation, layer
 
 **Intensity**:
@@ -48,7 +48,7 @@ A hand-written composed component the design system ships (StatusBadge, EmptySta
 _Avoid_: custom component, shared component, widget
 
 **State dictionary**:
-The versioned, canonical mapping of entity states (pending, active, failed…) to tones. The contract that makes the same state look the same in every consumer.
+The canonical mapping of entity states (pending, active, failed…) to tones. The contract that makes the same state look the same in every consumer.
 _Avoid_: state map, badge mapping, status config
 
 **Consumer**:

@@ -197,7 +197,7 @@ export const VizPaletteSwatches: Story = {
     docs: {
       description: {
         story:
-          'The `viz` palette is also exposed as Tailwind utility classes (`bg-viz-1`…`bg-viz-5`, `text-viz-N`, `border-viz-N`, `ring-viz-N`) for categorical accents outside chart contexts — tags, calendar events, multi-tenant badges.',
+          'The `viz` palette is also exposed as Tailwind utility classes (`bg-viz-1`…`bg-viz-5`, `text-viz-N`, `border-viz-N`, `ring-viz-N`) for categorical accents outside chart contexts — tags, calendar events, multi-tenant badges. Use them for marks (dots, rings, borders), not for text: as text they fall below 4.5:1.',
       },
     },
   },
@@ -205,41 +205,46 @@ export const VizPaletteSwatches: Story = {
     <div className="flex max-w-xl flex-col gap-6">
       <div className="grid grid-cols-5 gap-3">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-16 w-16 rounded-md bg-viz-1" aria-label="viz-1 swatch" />
+          <div role="img" className="h-16 w-16 rounded-md bg-viz-1" aria-label="viz-1 swatch" />
           <code className="text-muted-foreground text-xs">viz-1</code>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="h-16 w-16 rounded-md bg-viz-2" aria-label="viz-2 swatch" />
+          <div role="img" className="h-16 w-16 rounded-md bg-viz-2" aria-label="viz-2 swatch" />
           <code className="text-muted-foreground text-xs">viz-2</code>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="h-16 w-16 rounded-md bg-viz-3" aria-label="viz-3 swatch" />
+          <div role="img" className="h-16 w-16 rounded-md bg-viz-3" aria-label="viz-3 swatch" />
           <code className="text-muted-foreground text-xs">viz-3</code>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="h-16 w-16 rounded-md bg-viz-4" aria-label="viz-4 swatch" />
+          <div role="img" className="h-16 w-16 rounded-md bg-viz-4" aria-label="viz-4 swatch" />
           <code className="text-muted-foreground text-xs">viz-4</code>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <div className="h-16 w-16 rounded-md bg-viz-5" aria-label="viz-5 swatch" />
+          <div role="img" className="h-16 w-16 rounded-md bg-viz-5" aria-label="viz-5 swatch" />
           <code className="text-muted-foreground text-xs">viz-5</code>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <span className="bg-viz-1/15 text-viz-1 ring-viz-1/30 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1">
+        <span className="bg-viz-1/15 ring-viz-1/30 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1">
+          <span className="bg-viz-1 h-2 w-2 rounded-full" />
           Tenant Acme
         </span>
-        <span className="bg-viz-2/15 text-viz-2 ring-viz-2/30 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1">
+        <span className="bg-viz-2/15 ring-viz-2/30 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1">
+          <span className="bg-viz-2 h-2 w-2 rounded-full" />
           Tenant Globex
         </span>
-        <span className="bg-viz-3/15 text-viz-3 ring-viz-3/30 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1">
+        <span className="bg-viz-3/15 ring-viz-3/30 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1">
+          <span className="bg-viz-3 h-2 w-2 rounded-full" />
           Tenant Initech
         </span>
-        <span className="bg-viz-4/15 text-viz-4 ring-viz-4/30 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1">
+        <span className="bg-viz-4/15 ring-viz-4/30 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1">
+          <span className="bg-viz-4 h-2 w-2 rounded-full" />
           Tenant Soylent
         </span>
-        <span className="bg-viz-5/15 text-viz-5 ring-viz-5/30 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1">
+        <span className="bg-viz-5/15 ring-viz-5/30 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1">
+          <span className="bg-viz-5 h-2 w-2 rounded-full" />
           Tenant Hooli
         </span>
       </div>

@@ -11,13 +11,19 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [scrollable, setScrollable] = React.useState(false)
 
-  React.useEffect(() => {
+  // Measure before the first paint, so an overflowing table is a tab stop
+  // from the start; the observer then tracks later size changes.
+  React.useLayoutEffect(() => {
     const container = containerRef.current
-    if (!container || typeof ResizeObserver === "undefined") {
+    if (!container) {
       return
     }
     const update = () =>
       setScrollable(container.scrollWidth > container.clientWidth)
+    update()
+    if (typeof ResizeObserver === "undefined") {
+      return
+    }
     const observer = new ResizeObserver(update)
     observer.observe(container)
     if (container.firstElementChild) {

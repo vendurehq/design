@@ -8,6 +8,7 @@
     "storybook": "storybook dev -p 6006",
     "build": "storybook build",
     "check-types": "tsc --noEmit",
+    "lint": "biome lint ../../packages/ui/stories",
     "test-storybook": "test-storybook",
     "test:visual": "playwright test"
   },

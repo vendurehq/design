@@ -19,7 +19,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => (
-    <InputOTP maxLength={6}>
+    <InputOTP maxLength={6} aria-label="One-time code">
       <InputOTPGroup>
         <InputOTPSlot index={0} />
         <InputOTPSlot index={1} />
@@ -37,7 +37,7 @@ export const Default: Story = {
 
 export const FourDigit: Story = {
   render: () => (
-    <InputOTP maxLength={4}>
+    <InputOTP maxLength={4} aria-label="One-time code">
       <InputOTPGroup>
         <InputOTPSlot index={0} />
         <InputOTPSlot index={1} />
@@ -50,7 +50,7 @@ export const FourDigit: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <InputOTP maxLength={6} disabled>
+    <InputOTP maxLength={6} disabled aria-label="One-time code">
       <InputOTPGroup>
         <InputOTPSlot index={0} />
         <InputOTPSlot index={1} />

@@ -27,7 +27,8 @@ describe('TableRow selected state', () => {
 });
 
 // The container becomes a tab stop only when it overflows (measured in the
-// browser with a ResizeObserver), so a server render has no tabindex.
+// browser after mount, then tracked with a ResizeObserver), so a server render
+// has no tabindex.
 describe('Table container', () => {
   test('has a focus ring and no tab stop until it overflows', () => {
     const html = renderToStaticMarkup(

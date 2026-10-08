@@ -20,11 +20,12 @@ const rampVariablePattern = new RegExp(
 );
 // The 3/4-digit branch requires at least one a-f letter so that pure-decimal
 // runs (e.g. GitHub issue refs like `(#2608)`) are not treated as #RGB(A) colors.
-// The 6/8-digit branches stay permissive because those lengths are almost
-// always literal colors even when fully decimal (e.g. `#112233`).
+// The 6/8-digit branches also match pure-decimal runs (e.g. `#112233`), except
+// after a letter and a space, where the run is a reference like `Order #100234`.
+// `_` counts as a boundary because Tailwind arbitrary values use it for spaces.
 const hexPattern =
-  /(?:^|[\s:,([])#(?:(?=[0-9a-f]*[a-f])[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})(?![0-9a-f])/i;
-const colorFunctionPattern = new RegExp(`\\b${colorFunctionNames}\\(`, 'i');
+  /(?:^|[\s:,([_])#(?:(?=[0-9a-f]*[a-f])[0-9a-f]{3,4}|(?:(?=[0-9a-f]*[a-f])|(?<![a-z] #))(?:[0-9a-f]{6}|[0-9a-f]{8}))(?![0-9a-f])/i;
+const colorFunctionPattern = new RegExp(`(?<![a-z0-9])${colorFunctionNames}\\(`, 'i');
 
 /** @typedef {import('estree').Node | { type: 'JSXAttribute'; name: { type: 'JSXIdentifier'; name: string } | { type: 'JSXNamespacedName' } }} ParentNode */
 
@@ -45,9 +46,11 @@ function findForbiddenColor(value) {
   return null;
 }
 
-// Only className and style JSX attributes carry styling values; every other
-// attribute (href, title, aria-*, data-*, …) holds prose or identifiers and
-// is exempt, mirroring the Biome plugin's allowlist.
+// Only className, style and the SVG paint attributes (fill, stroke, stopColor)
+// carry styling values; every other attribute (href, title, aria-*, data-*, …)
+// holds prose or identifiers and is exempt, mirroring the Biome plugin's allowlist.
+const styleJsxAttributes = new Set(['className', 'style', 'fill', 'stroke', 'stopColor']);
+
 /** @param {import('estree').Node & { parent?: ParentNode }} node */
 function isNonStyleJsxAttribute(node) {
   const parent = node.parent;
@@ -55,7 +58,7 @@ function isNonStyleJsxAttribute(node) {
     return false;
   }
   const name = parent.name;
-  return name.type !== 'JSXIdentifier' || (name.name !== 'className' && name.name !== 'style');
+  return name.type !== 'JSXIdentifier' || !styleJsxAttributes.has(name.name);
 }
 
 const noRawColors = {
