@@ -33,9 +33,6 @@ function NavigationMenuList({
   return (
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"
-      // Base UI sets aria-orientation, which is not allowed on a list
-      // (axe aria-allowed-attr). Arrow-key navigation does not depend on it.
-      aria-orientation={undefined}
       className={cn(
         "group flex flex-1 list-none items-center justify-center gap-0",
         className
