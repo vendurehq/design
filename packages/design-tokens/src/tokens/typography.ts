@@ -7,6 +7,13 @@ export const fontFamily = {
   mono: '"Geist Mono Variable", "Geist Mono", ui-monospace, monospace',
 } as const;
 
+// Per-family font-feature-settings. Geist Mono's `liga` joins a space and the
+// following `--` into one glyph, which hides the space in CLI flags. Tailwind
+// applies the mono value to `font-mono` and to `code`, `pre`, `kbd`, `samp`.
+export const fontFeatureSettings = {
+  mono: '"liga" 0, "calt" 0',
+} as const;
+
 export const fontSize = {
   xs: '0.75rem',
   sm: '0.875rem',

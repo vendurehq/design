@@ -9,6 +9,9 @@ import { darkTheme, lightTheme } from './tokens/semantic.ts';
 // real regression, not a flaky test.
 
 const MIN_CONTRAST = 4.5;
+// WCAG 1.4.11 non-text contrast: focus indicators, control boundaries and
+// solid fills that carry meaning must reach 3:1 against adjacent colors.
+const MIN_NON_TEXT_CONTRAST = 3;
 
 interface RGBA {
   /** Linear-light sRGB channel, 0-1 (may exceed the range for out-of-gamut colors). */
@@ -120,20 +123,27 @@ function contrastRatio(a: RGBA, b: RGBA): number {
 
 /**
  * Contrast between a foreground token and a background token. The background
- * is always composited over `surface` first — a no-op for the opaque light-mode
- * tokens, but required for dark mode's alpha-based subtle backgrounds, which
- * are only ever rendered on top of a surface tier.
+ * is composited over a base surface tier first (`surface` by default) — a
+ * no-op for opaque tokens, but required for dark mode's alpha-based subtle
+ * backgrounds, which are only ever rendered on top of a surface tier. The
+ * foreground is then composited over that result, so translucent foregrounds
+ * such as `control-border` are measured as rendered.
  */
-function contrastOf(theme: Record<string, string>, fgKey: string, bgKey: string): number {
+function contrastOf(
+  theme: Record<string, string>,
+  fgKey: string,
+  bgKey: string,
+  baseKey = 'surface',
+): number {
   const fgValue = theme[fgKey];
   const bgValue = theme[bgKey];
-  const surfaceValue = theme.surface;
+  const baseValue = theme[baseKey];
   if (!fgValue) throw new Error(`Missing token: ${fgKey}`);
   if (!bgValue) throw new Error(`Missing token: ${bgKey}`);
-  if (!surfaceValue) throw new Error('Missing token: surface');
+  if (!baseValue) throw new Error(`Missing token: ${baseKey}`);
 
-  const fg = resolveColor(fgValue, theme);
-  const bg = compositeOver(resolveColor(bgValue, theme), resolveColor(surfaceValue, theme));
+  const bg = compositeOver(resolveColor(bgValue, theme), resolveColor(baseValue, theme));
+  const fg = compositeOver(resolveColor(fgValue, theme), bg);
   return contrastRatio(fg, bg);
 }
 
@@ -145,6 +155,17 @@ const themes = {
 const tones = ['destructive', 'success', 'warning', 'info'] as const;
 // neutral has subtle slots but no solid `neutral`/`neutral-foreground` pair.
 const subtleTones = [...tones, 'neutral'] as const;
+const surfaces = ['background', 'surface', 'surface-raised', 'overlay'] as const;
+// `border` and `input` are exempt: they are decorative dividers and the text
+// input outline, not the only cue that identifies a control.
+const nonTextSlots = ['primary', 'ring', 'sidebar-ring', 'destructive', 'control-border'] as const;
+const textPairs = [
+  ['card-foreground', 'card'],
+  ['popover-foreground', 'popover'],
+  ['sidebar-foreground', 'sidebar'],
+  ['sidebar-primary-foreground', 'sidebar-primary'],
+  ['sidebar-accent-foreground', 'sidebar-accent'],
+] as const;
 
 for (const [themeName, theme] of Object.entries(themes)) {
   describe(`${themeName} theme contrast`, () => {
@@ -190,6 +211,50 @@ for (const [themeName, theme] of Object.entries(themes)) {
           contrastOf(theme, `${tone}-subtle-foreground`, `${tone}-subtle`),
         ).toBeGreaterThanOrEqual(MIN_CONTRAST);
       });
+    }
+
+    for (const [fg, bg] of textPairs) {
+      test(`${fg} on ${bg} >= 4.5`, () => {
+        expect(contrastOf(theme, fg, bg)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      });
+    }
+
+    for (const surface of surfaces) {
+      test(`muted-foreground on ${surface} >= 4.5`, () => {
+        expect(contrastOf(theme, 'muted-foreground', surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      });
+
+      test(`foreground on code-inline over ${surface} >= 4.5`, () => {
+        expect(contrastOf(theme, 'foreground', 'code-inline', surface)).toBeGreaterThanOrEqual(
+          MIN_CONTRAST,
+        );
+      });
+
+      // Tone text: the subtle foregrounds are the text-safe tone colors, used
+      // directly on a surface (field errors, destructive menu items, deltas).
+      for (const tone of subtleTones) {
+        test(`${tone}-subtle-foreground on ${surface} >= 4.5`, () => {
+          expect(contrastOf(theme, `${tone}-subtle-foreground`, surface)).toBeGreaterThanOrEqual(
+            MIN_CONTRAST,
+          );
+        });
+      }
+
+      for (const slot of nonTextSlots) {
+        test(`${slot} on ${surface} >= 3 (non-text)`, () => {
+          expect(contrastOf(theme, slot, surface)).toBeGreaterThanOrEqual(MIN_NON_TEXT_CONTRAST);
+        });
+      }
+    }
+
+    for (const base of ['surface-raised', 'overlay'] as const) {
+      for (const tone of subtleTones) {
+        test(`${tone}-subtle-foreground on ${tone}-subtle over ${base} >= 4.5`, () => {
+          expect(
+            contrastOf(theme, `${tone}-subtle-foreground`, `${tone}-subtle`, base),
+          ).toBeGreaterThanOrEqual(MIN_CONTRAST);
+        });
+      }
     }
   });
 }

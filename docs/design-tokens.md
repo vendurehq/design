@@ -1,6 +1,6 @@
 # Design Tokens
 
-`@vendure-io/design-tokens` is the single source of truth for the Vendure design system's visual language: colors, typography, spacing, shadows, and motion.
+`@vendure-io/design-tokens` is the single source of truth for the Vendure design system's visual language: colors, typography, radii, shadows, and motion. It has no spacing tokens; use Tailwind's default spacing scale.
 
 ## Exports
 
@@ -58,29 +58,51 @@ import { brand, fontFamily, radii, shadows, duration } from "@vendure-io/design-
 
 All colors use the OKLCH color space for perceptual uniformity.
 
-**Semantic colors** (light/dark mode aware via CSS variables):
+**Ramps** (raw material, the same in both modes): `brand-*`, `neutral-*`, `success-*`, `warning-*`, `destructive-*`, `info-*` (50 to 950), and `viz-1` to `viz-5`. Theme mapping uses ramps. Components use slots.
+
+**Semantic colors** (slots, light/dark mode aware via CSS variables):
 
 - `background`, `foreground` — Page background and text
-- `surface`, `surface-raised`, `overlay` — The elevation ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
+- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
-- `card`, `card-foreground` — Card surfaces (alias of `surface`)
+- `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
+- `card`, `card-foreground` — Card surfaces (alias of `surface-raised`)
 - `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
-- `primary`, `primary-foreground` — Primary actions
+- `primary`, `primary-foreground` — Primary actions. Neutral, not Vendure blue
+- `brand`, `brand-foreground` — Vendure blue, for deliberate identity moments only (`bg-brand text-brand-foreground`). Components opt in; nothing uses it by default
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
-- `accent`, `accent-foreground` — Accent highlights
+- `accent`, `accent-foreground` — Hover and selected highlights
 - `destructive`, `destructive-foreground` — Destructive/error states
 - `success`, `success-foreground` — Success states
 - `warning`, `warning-foreground` — Warning states
 - `info`, `info-foreground` — Informational states
 - `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` — The subtle tier for each tone (`success`, `warning`, `destructive`, `info`, `neutral`): tinted background, readable foreground, and matching border for soft status treatments (e.g. `bg-success-subtle text-success-subtle-foreground border-success-border`)
-- `border`, `input`, `ring` — Borders, inputs, focus rings
-- `chart-1` through `chart-5` — Data visualization
+- `border`, `input`, `ring` — Decorative borders, the text input outline, focus rings
+- `control-border` — The boundary of controls that have no other visible edge: unchecked checkbox, radio, switch track, slider and progress tracks (`border-control-border`, `bg-control-border`). Text inputs keep `input`
+- `code-highlight`, `code-diff-add`, `code-diff-remove` and their `-accent` slots — Code annotations (line/word highlight, diff add/remove)
+- `code-inline`, `code-inline-border` — Inline code chip: `bg-code-inline border-code-inline-border text-foreground`
+- `chart-1` through `chart-5` — Data visualization (map to `viz-1` to `viz-5`)
 - `sidebar-*` — Sidebar-specific variants
+
+**Intensity.** `muted`, `secondary` and `accent` are translucent foreground mixes, ordered by strength: `muted` < `secondary` < `accent`. Use a lower intensity to de-emphasize. Use a higher intensity for hover and selected states.
+
+**Tones.** The tone vocabulary is `neutral`, `info`, `success`, `warning`, `critical` and `progress`. Two tones have no slots of their own:
+
+- `critical` renders with the `destructive-*` slots.
+- `progress` renders with the `neutral-*` slots plus an `info` dot.
+
+**Tone text.** Use `{tone}-subtle-foreground` for tone-colored text on a surface, for example a field error or a destructive menu item (`text-destructive-subtle-foreground`). These slots pass 4.5:1 on `background`, `surface`, `surface-raised` and `overlay` in both modes. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.36:1 on `overlay`, dark `success` is 3.06:1 on a card, and light `warning` is 3.25:1 on white.
+
+**Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
+
+- 4.5:1 for every foreground on its fill, `muted-foreground` and tone text on every surface tier, and the subtle tier over `surface`, `surface-raised` and `overlay`.
+- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive` and `control-border` on every surface tier. `border` and `input` are exempt.
 
 ### Typography
 
 - **Font families**: `--font-sans` (Inter), `--font-heading` (Public Sans), `--font-body` (Inter), `--font-mono` (Geist Mono)
+- **Mono features**: `--font-mono--font-feature-settings` turns off the `liga` and `calt` ligatures. Tailwind applies it to `font-mono` and to `code`, `pre`, `kbd` and `samp`, so a space before `--` stays visible
 - **Type scale**: `--text-xs` through `--text-5xl` — Tailwind `text-*` utilities
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
@@ -115,6 +137,8 @@ The design tokens use CSS custom properties with two scopes:
 - `.dark` — Dark mode overrides
 
 When the `dark` class is present on an ancestor element (typically `<html>`), all token values automatically switch to their dark variants. No additional configuration needed — just toggle the class.
+
+`:root` sets `color-scheme: light` and `.dark` sets `color-scheme: dark`, so native scrollbars, date inputs, autofill and `<select>` popups follow the theme.
 
 The theme uses `@custom-variant dark (&:is(.dark *))` so Tailwind's `dark:` modifier works with class-based dark mode.
 

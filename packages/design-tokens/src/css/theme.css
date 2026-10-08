@@ -85,6 +85,7 @@
   --color-surface-raised: var(--surface-raised);
   --color-overlay: var(--overlay);
   --color-inset: var(--inset);
+  --color-scrim: var(--scrim);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -128,8 +129,11 @@
   --color-code-diff-add-accent: var(--code-diff-add-accent);
   --color-code-diff-remove: var(--code-diff-remove);
   --color-code-diff-remove-accent: var(--code-diff-remove-accent);
+  --color-code-inline: var(--code-inline);
+  --color-code-inline-border: var(--code-inline-border);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-control-border: var(--control-border);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -165,6 +169,7 @@
   --font-heading: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --font-mono--font-feature-settings: "liga" 0, "calt" 0;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
