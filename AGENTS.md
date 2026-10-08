@@ -19,7 +19,7 @@ Monorepo for `@vendure-io/design-tokens`, `@vendure-io/ui`, and `@vendure-io/des
 ## Gotchas
 
 - `@vendure-io/ui` ships raw `.tsx` source with no build step. Every merged change is consumer-facing on the next publish, and consumers must transpile the package — breaking changes need coordinated version bumps in the consuming repos.
-- The two packages version independently; `workspace:*` deps resolve to real versions on publish.
+- The packages version independently. `bun pm pack` resolves `workspace:` ranges to real versions from `bun.lock`; the workflows then publish the tarball with `npm publish` through trusted publishing (no npm token).
 
 ## Releasing Packages
 

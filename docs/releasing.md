@@ -41,7 +41,8 @@ The workflow will:
 - Extract the version from the tag
 - Update the target package's `package.json`
 - Build all packages
-- Publish to npm with provenance (`latest` for stable releases on the newest major, `v{major}` for stable releases on an older major, or the prerelease channel for prereleases)
+- Pack the package with `bun pm pack`
+- Publish the tarball to npm with provenance through trusted publishing (`latest` for stable releases on the newest major, `v{major}` for stable releases on an older major, or the prerelease channel for prereleases)
 - Commit the version bump back to the release's target branch
 
 ## Releasing Several Packages
@@ -53,7 +54,7 @@ When a change spans packages, release them in this order:
 3. Release `ui`.
 4. Release `design-lint`.
 
-`@vendure-io/ui` declares `@vendure-io/design-tokens` as a `^2.0.0` peer dependency. A ui prerelease replaces that range with `^<tokens version on main>` at publish time, because `^2.0.0` does not match prereleases. If you release ui before the tokens bump-back lands, the prerelease points at the previous tokens version.
+`@vendure-io/ui` declares `@vendure-io/design-tokens` as a `workspace:^` peer dependency. At publish time, the range becomes `^<tokens version on the release branch>`. If you release ui before the tokens bump-back lands, the ui release points at the previous tokens version.
 
 The same ordering applies to prereleases. For example, publish `design-tokens/v1.3.0-beta.0`, wait for the workflow to commit the version bump to `main`, then publish `ui/v2.1.0-beta.0` so the ui tarball resolves `@vendure-io/design-tokens` to the prerelease version.
 
@@ -97,7 +98,11 @@ The skills install from `main` rather than npm and do not have a separate releas
 
 ## Workspace Dependency Resolution
 
-In the repo, `@vendure-io/ui` links `@vendure-io/design-tokens` through a `workspace:*` dev dependency, and declares it as a `^2.0.0` peer dependency. The ui release workflow removes the dev dependency from the published `package.json`. For a prerelease, it also sets the peer range to `^<tokens version on main>`. The repo keeps both fields; only the npm tarball changes.
+In the repo, `@vendure-io/ui` declares `@vendure-io/design-tokens` once, as a `workspace:^` peer dependency. Bun links the local package for development. `bun pm pack` replaces `workspace:^` with `^<tokens version>` in the tarball, for example `^2.0.0` or `^2.1.0-rc.0`. A prerelease lower bound is necessary, because a stable range such as `^2.0.0` does not match prereleases.
+
+`bun pm pack` reads the tokens version from `bun.lock`, not from `packages/design-tokens/package.json`. The design-tokens bump-back changes only `package.json`, so the ui release workflow runs `bun install` before it packs. This updates the workspace versions in `bun.lock`.
+
+The workflows publish with `npm publish <tarball>`, not `bun publish`. Bun does not support trusted publishing (OIDC) or provenance.
 
 ## Troubleshooting
 
@@ -108,7 +113,7 @@ Check the tag format. Tags must match `design-tokens/v*`, `ui/v*`, or `design-li
 The workflow derives the npm dist-tag from the first prerelease identifier. A tag like `ui/v2.1.0-beta.0` publishes with `--tag beta`; stable tags publish with `--tag latest`.
 
 ### npm publish failed
-Verify the `NPM_TOKEN` secret is set and not expired in the repo settings.
+The workflows use npm trusted publishing (OIDC). There is no npm token secret. Each package on npmjs.com has a trusted publisher for the repository `vendurehq/design` and its workflow file (`release-ui.yml`, `release-design-tokens.yml`, or `release-design-lint.yml`). Do not rename these files. If you rename one, update the trusted publisher on npmjs.com first. The job needs `permissions: id-token: write` and npm CLI 11.5.1 or newer. Node 24 includes a sufficient npm version.
 
 ### Version bump push failed
 Each release re-fetches its target branch and commits the bump onto the latest tip before pushing. If two release workflows target the same branch at the same time, one may still fail to push (non-fast-forward) — re-run the failed release, or manually update the package.json version on that branch. The npm publish happens before the bump-back, so a failed push does not affect what was published.
