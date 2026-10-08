@@ -21,6 +21,8 @@ export interface GuidanceEntry {
 export interface IllustrationGuidance {
   component: string;
   use: string;
+  /** The closest wrong choice, and the illustration to use for it instead. */
+  notFor: string;
 }
 
 export interface ScreenRecipe {

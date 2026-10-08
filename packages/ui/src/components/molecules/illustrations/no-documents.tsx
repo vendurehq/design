@@ -3,9 +3,10 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
  * A single document with a folded corner and a seal, with dashed "ghost"
- * pages stacked behind it that never got filled in. For licenses, invoices,
- * or certificates that haven't been issued yet. Not for a generic empty list
- * (use `EmptyCollectionIllustration`) or a 404 (use `NotFoundIllustration`).
+ * pages stacked behind it that never got filled in. For licenses,
+ * certificates, or changelog entries that haven't been issued yet. Not for
+ * invoices (use `NoInvoicesIllustration`), a generic empty list (use
+ * `EmptyCollectionIllustration`) or a 404 (use `NotFoundIllustration`).
  */
 function NoDocumentsIllustration({ className, size = 160 }: IllustrationProps) {
   return (

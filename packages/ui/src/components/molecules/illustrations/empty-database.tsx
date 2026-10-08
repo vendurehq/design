@@ -3,9 +3,9 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
  * A database cylinder with a solid rim but dashed walls and dividing bands —
- * a shell with nothing provisioned inside. For no database provisioned yet,
- * or no backups exist. Not for a generic empty list (use
- * `EmptyCollectionIllustration`).
+ * a shell with nothing provisioned inside, and a "+" badge for the first one
+ * to create. For no database provisioned yet, or no backups exist. Not for a
+ * generic empty list (use `EmptyCollectionIllustration`).
  */
 function EmptyDatabaseIllustration({ className, size = 160 }: IllustrationProps) {
   return (
@@ -35,8 +35,11 @@ function EmptyDatabaseIllustration({ className, size = 160 }: IllustrationProps)
       <path d="M56,66 A24,8 0 0,0 104,66" className="stroke-border" strokeDasharray="3 4" />
       <path d="M56,82 A24,8 0 0,0 104,82" className="stroke-border" strokeDasharray="3 4" />
 
-      {/* status dot — the one brand accent */}
-      <circle cx="100" cy="28" r="4" className="fill-brand" />
+      {/* provision badge — the one brand accent */}
+      <polygon
+        points="110,18 114,18 114,22 118,22 118,26 114,26 114,30 110,30 110,26 106,26 106,22 110,22"
+        className="fill-brand"
+      />
     </svg>
   );
 }

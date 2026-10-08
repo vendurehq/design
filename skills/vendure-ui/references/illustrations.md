@@ -3,23 +3,36 @@
 
 Use one scenario-matched illustration for a whole empty or error region. Never repeat illustrations in table rows, list items, or cards inside an otherwise populated view; use an icon-chip fallback or no media there.
 
-- **NoResultsIllustration:** A search or filter matched nothing.
-- **EmptyCollectionIllustration:** Nothing exists yet; the default first-run empty collection.
-- **NoOrdersIllustration:** An order or checkout list has no entries yet.
-- **ErrorIllustration:** A generic system failure.
-- **NotFoundIllustration:** A missing resource or 404; pair with navigation rather than retry.
-- **OfflineIllustration:** A network or connectivity failure.
-- **FirstRunIllustration:** A genuine onboarding moment for a feature that has never been configured.
-- **EmptyMediaIllustration:** An empty media or asset library.
-- **UploadDropzoneIllustration:** An empty drag-and-drop upload target.
-- **NoMembersIllustration:** An empty team or member list.
-- **NoKeysIllustration:** No API keys or access tokens exist yet.
-- **NoDocumentsIllustration:** No licenses, invoices, certificates, or similar documents exist.
-- **NoPluginsIllustration:** No plugins or extensions are installed.
-- **NoActivityIllustration:** An audit log, history, or timeline is empty.
-- **NoNotificationsIllustration:** An empty notifications panel; the user is caught up.
-- **AccessDeniedIllustration:** A permission failure or 403; pair with navigation rather than retry.
-- **PendingApprovalIllustration:** An invitation or account awaits approval or provisioning.
-- **NoDeploymentsIllustration:** An environment has never been deployed.
-- **EmptyDatabaseIllustration:** No database, backup, or database-like resource exists.
-- **NoLogsIllustration:** An empty log stream has captured nothing.
+Pass the illustration as `illustration` to `EmptyState` or `ErrorState`. Each row names the state it is for and the nearest state it is not for.
+
+| State | Illustration | Not for |
+| --- | --- | --- |
+| A search or filter matched nothing. | `NoResultsIllustration` | A list that is empty before any filter (use the scenario illustration). |
+| Nothing exists yet; the default first-run empty collection. | `EmptyCollectionIllustration` | A list with a scenario illustration below; use that one first. |
+| An order or checkout list has no entries yet. | `NoOrdersIllustration` | Orders filtered to zero (NoResults). |
+| An empty catalog: no products, variants, or collection contents yet. | `NoProductsIllustration` | Promotions (NoPromotions); products filtered to zero (NoResults). |
+| No promotions, discounts, or coupon codes set up yet. | `NoPromotionsIllustration` | An empty catalog (NoProducts). |
+| A customer list or customer group with nobody in it yet. | `NoCustomersIllustration` | A team or member list (NoMembers). |
+| A list of projects is empty, for example a customer with no projects or only archived ones. | `NoProjectsIllustration` | The first-run "create your first project" moment (FirstRun). |
+| A genuine onboarding moment for a feature that has never been configured. | `FirstRunIllustration` | An ordinary list that is still empty (EmptyCollection or the scenario illustration). |
+| An empty media or asset library. | `EmptyMediaIllustration` | A drop target (UploadDropzone). |
+| An empty drag-and-drop upload target. | `UploadDropzoneIllustration` | A media library that is empty (EmptyMedia). |
+| An empty team, member, or administrator list. | `NoMembersIllustration` | Customers (NoCustomers). |
+| No API keys or access tokens exist yet. | `NoKeysIllustration` | A permission failure (AccessDenied). |
+| No licenses, certificates, or similar issued documents exist. | `NoDocumentsIllustration` | Invoices (NoInvoices). |
+| A billing page with no invoices or receipts yet. | `NoInvoicesIllustration` | An invoice whose payment failed (PaymentFailed). |
+| A project or account has no plan or subscription yet. | `NoSubscriptionIllustration` | A trial that ended (Expired); a failed payment (PaymentFailed). |
+| No plugins, extensions, or packages are installed. | `NoPluginsIllustration` | A project with no plan that grants packages (NoSubscription). |
+| An audit log, history, or timeline is empty. | `NoActivityIllustration` | Output from a running process (NoLogs). |
+| An empty log stream has captured nothing. | `NoLogsIllustration` | An audit or activity history (NoActivity). |
+| An empty notifications or alerts panel; the user is caught up. | `NoNotificationsIllustration` | A finished task (Success). |
+| An environment has never been deployed or bound to a runtime. | `NoDeploymentsIllustration` | A failed deploy (Error). |
+| No database, backup, or database-like resource exists. | `EmptyDatabaseIllustration` | A generic empty list (EmptyCollection). |
+| A task finished or a queue has nothing left to do. | `SuccessIllustration` | An empty notifications panel (NoNotifications). |
+| An invitation or account awaits approval or provisioning. | `PendingApprovalIllustration` | A request that already expired (Expired). |
+| A trial, evaluation, link, or sign-in request ran out of time. | `ExpiredIllustration` | A request still waiting on someone (PendingApproval). |
+| A payment did not go through: failed charge, past due, or canceled checkout. | `PaymentFailedIllustration` | No plan at all (NoSubscription); a generic failure (Error). |
+| A generic system failure; the ErrorState default. | `ErrorIllustration` | Network loss (Offline), 404 (NotFound), or 403 (AccessDenied). |
+| A missing resource or 404; pair with navigation rather than retry. | `NotFoundIllustration` | A search with no matches (NoResults). |
+| A permission failure or 403; pair with navigation rather than retry. | `AccessDeniedIllustration` | Access that is still awaiting approval (PendingApproval). |
+| A network or connectivity failure. | `OfflineIllustration` | A server-side failure (Error). |

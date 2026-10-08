@@ -4,7 +4,9 @@ import { cn } from '@vendure-io/ui/lib/utils';
 /**
  * A rocket lifting off on a dashed motion trail, with a lit porthole and two
  * drifting sparkles. For genuine first-run/onboarding moments — a feature
- * with nothing set up yet, not a filtered or failed view.
+ * with nothing set up yet, not a filtered or failed view. Not for an
+ * ordinary list that is still empty (use `EmptyCollectionIllustration`) or a
+ * finished task (use `SuccessIllustration`).
  */
 function FirstRunIllustration({ className, size = 160 }: IllustrationProps) {
   return (

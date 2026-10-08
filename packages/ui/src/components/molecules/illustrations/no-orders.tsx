@@ -2,9 +2,11 @@ import type { IllustrationProps } from '@vendure-io/ui/components/molecules/illu
 import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
- * An empty cart standing still, with faded motion dashes behind it where
- * incoming orders would trail in. For order/checkout lists with nothing in
- * them yet.
+ * An empty shopping cart parked on the ground, with a dashed parcel outline
+ * above the basket where the first order would go. For order/checkout lists
+ * with nothing in them yet. Not for a search or filter that matched no orders
+ * (use `NoResultsIllustration`) or a generic empty list (use
+ * `EmptyCollectionIllustration`).
  */
 function NoOrdersIllustration({ className, size = 160 }: IllustrationProps) {
   return (
@@ -20,27 +22,33 @@ function NoOrdersIllustration({ className, size = 160 }: IllustrationProps) {
       focusable="false"
       className={cn('shrink-0', className)}
     >
-      <ellipse cx="78" cy="104" rx="30" ry="5" className="fill-muted" />
+      <ellipse cx="84" cy="104" rx="32" ry="5" className="fill-muted" />
 
-      {/* stillness dashes, nothing rolling in */}
-      <line x1="10" y1="56" x2="22" y2="56" className="stroke-border" strokeDasharray="2 4" />
-      <line x1="6" y1="66" x2="20" y2="66" className="stroke-border" strokeDasharray="2 4" />
-      <line x1="10" y1="76" x2="22" y2="76" className="stroke-border" strokeDasharray="2 4" />
+      {/* parcel outline, where the first order would go */}
+      <rect
+        x="76"
+        y="20"
+        width="30"
+        height="20"
+        rx="3"
+        className="stroke-border"
+        strokeDasharray="3 4"
+      />
 
       {/* handle */}
-      <path d="M42,50 L32,26 L44,26" className="stroke-muted-foreground" />
+      <path d="M52,48 L44,26 L36,26" className="stroke-muted-foreground" />
 
-      {/* basket */}
-      <path d="M40,50 L120,50 L108,86 L54,86 Z" className="fill-surface stroke-muted-foreground" />
-      <line x1="52" y1="62" x2="106" y2="62" className="stroke-border" strokeDasharray="3 3" />
-      <line x1="55" y1="74" x2="103" y2="74" className="stroke-border" strokeDasharray="3 3" />
+      {/* basket, empty */}
+      <path d="M52,48 L128,48 L118,82 L62,82 Z" className="fill-surface stroke-muted-foreground" />
+      <line x1="59" y1="60" x2="121" y2="60" className="stroke-border" strokeDasharray="3 3" />
+      <line x1="62" y1="71" x2="118" y2="71" className="stroke-border" strokeDasharray="3 3" />
 
       {/* wheels */}
-      <circle cx="60" cy="94" r="6" className="fill-surface stroke-muted-foreground" />
-      <circle cx="100" cy="94" r="6" className="fill-surface stroke-muted-foreground" />
+      <circle cx="70" cy="91" r="6" className="fill-surface stroke-muted-foreground" />
+      <circle cx="110" cy="91" r="6" className="fill-surface stroke-muted-foreground" />
 
-      {/* waiting indicator — the one brand accent */}
-      <circle cx="112" cy="42" r="5" className="fill-brand" />
+      {/* handle grip — the one brand accent */}
+      <rect x="26" y="23" width="12" height="6" rx="3" className="fill-brand" />
     </svg>
   );
 }

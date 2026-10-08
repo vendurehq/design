@@ -2,8 +2,10 @@ import type { IllustrationProps } from '@vendure-io/ui/components/molecules/illu
 import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
- * A cloud cut by a diagonal slash, with fading signal arcs above it. For
- * network/connectivity failures — pass as `illustration` to `ErrorState`.
+ * A cloud cut by a diagonal slash, under a signal glyph whose arcs fade out.
+ * For network/connectivity failures — pass as `illustration` to `ErrorState`
+ * with a "Try again" action. Not for a server-side failure while the network
+ * is fine (use `ErrorIllustration`).
  */
 function OfflineIllustration({ className, size = 160 }: IllustrationProps) {
   return (
@@ -21,21 +23,21 @@ function OfflineIllustration({ className, size = 160 }: IllustrationProps) {
     >
       <ellipse cx="80" cy="104" rx="28" ry="5" className="fill-muted" />
 
-      {/* fading signal, cut off */}
-      <path d="M70,20 a14,14 0 0,1 20,0" className="stroke-border" strokeDasharray="2 4" />
-      <path d="M65,12 a24,24 0 0,1 30,0" className="stroke-border" strokeDasharray="2 5" />
+      {/* fading signal arcs, cut off */}
+      <path d="M72,26 a12,12 0 0,1 16,0" className="stroke-border" strokeDasharray="2 4" />
+      <path d="M65,19 a22,22 0 0,1 30,0" className="stroke-border" strokeDasharray="2 5" />
+
+      {/* signal source — the one brand accent */}
+      <circle cx="80" cy="33" r="3" className="fill-brand" />
 
       {/* cloud */}
       <path
-        d="M46,66 C40,66 36,61 36,55 C36,49 41,44 47,44 C48,36 55,30 64,30 C72,30 79,35 81,42 C82,42 83,41 85,41 C93,41 100,48 100,56 C100,64 93,71 85,71 L52,71 C48,71 46,69 46,66 Z"
+        d="M58,82 C52,82 48,77 48,71 C48,65 53,60 59,60 C60,52 67,46 76,46 C84,46 91,51 93,58 C94,58 95,57 97,57 C105,57 112,64 112,72 C112,80 105,87 97,87 L64,87 C60,87 58,85 58,82 Z"
         className="fill-surface stroke-muted-foreground"
       />
 
       {/* slash */}
-      <line x1="32" y1="32" x2="104" y2="74" className="stroke-muted-foreground" />
-
-      {/* reconnect dot — the one brand accent */}
-      <circle cx="104" cy="74" r="4" className="fill-brand" />
+      <line x1="46" y1="48" x2="114" y2="92" className="stroke-muted-foreground" />
     </svg>
   );
 }

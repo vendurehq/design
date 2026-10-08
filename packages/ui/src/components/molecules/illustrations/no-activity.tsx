@@ -2,8 +2,8 @@ import type { IllustrationProps } from '@vendure-io/ui/components/molecules/illu
 import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
- * A vertical timeline rail with dashed, hollow nodes and faint dashed row
- * lines beside them — the rail exists but no entries have landed on it yet.
+ * A vertical timeline rail with hollow nodes and dashed ghost rows beside
+ * them — the rail exists but no entries have landed on it yet.
  * For audit logs / history / timeline views with nothing recorded — pass as
  * `illustration` to `EmptyState`. For a generic empty list with no timeline
  * shape, use `EmptyCollectionIllustration` instead.
@@ -25,23 +25,44 @@ function NoActivityIllustration({ className, size = 160 }: IllustrationProps) {
       <ellipse cx="80" cy="104" rx="28" ry="5" className="fill-muted" />
 
       {/* the timeline rail itself — present, just nothing on it */}
-      <line x1="50" y1="26" x2="50" y2="88" className="stroke-muted-foreground" />
+      <line x1="50" y1="24" x2="50" y2="90" className="stroke-muted-foreground" />
 
       {/* nodes, hollow — no entries recorded at any of them */}
-      <circle cx="50" cy="32" r="5" className="stroke-muted-foreground" strokeDasharray="3 4" />
-      <circle cx="50" cy="58" r="5" className="stroke-muted-foreground" strokeDasharray="3 4" />
-      <circle cx="50" cy="84" r="5" className="stroke-muted-foreground" strokeDasharray="3 4" />
+      <circle cx="50" cy="30" r="6" className="fill-surface stroke-muted-foreground" />
+      <circle cx="50" cy="57" r="6" className="fill-surface stroke-muted-foreground" />
+      <circle cx="50" cy="84" r="6" className="fill-surface stroke-muted-foreground" />
 
       {/* newest node — the one brand accent */}
-      <circle cx="50" cy="32" r="2" className="fill-brand" />
+      <circle cx="50" cy="30" r="2.5" className="fill-brand" />
 
-      {/* faint row placeholders beside each node, waiting for content */}
-      <line x1="64" y1="29" x2="106" y2="29" className="stroke-border" strokeDasharray="2 5" />
-      <line x1="64" y1="36" x2="90" y2="36" className="stroke-border" strokeDasharray="2 5" />
-      <line x1="64" y1="55" x2="114" y2="55" className="stroke-border" strokeDasharray="2 5" />
-      <line x1="64" y1="62" x2="96" y2="62" className="stroke-border" strokeDasharray="2 5" />
-      <line x1="64" y1="81" x2="102" y2="81" className="stroke-border" strokeDasharray="2 5" />
-      <line x1="64" y1="88" x2="84" y2="88" className="stroke-border" strokeDasharray="2 5" />
+      {/* ghost rows beside each node, waiting for content */}
+      <rect
+        x="64"
+        y="25"
+        width="50"
+        height="10"
+        rx="5"
+        className="stroke-border"
+        strokeDasharray="3 4"
+      />
+      <rect
+        x="64"
+        y="52"
+        width="38"
+        height="10"
+        rx="5"
+        className="stroke-border"
+        strokeDasharray="3 4"
+      />
+      <rect
+        x="64"
+        y="79"
+        width="44"
+        height="10"
+        rx="5"
+        className="stroke-border"
+        strokeDasharray="3 4"
+      />
     </svg>
   );
 }

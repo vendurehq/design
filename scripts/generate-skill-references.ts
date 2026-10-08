@@ -91,7 +91,13 @@ function renderIllustrations() {
     '',
     'Use one scenario-matched illustration for a whole empty or error region. Never repeat illustrations in table rows, list items, or cards inside an otherwise populated view; use an icon-chip fallback or no media there.',
     '',
-    ...illustrationGuidance.map((item) => `- **${item.component}:** ${item.use}`),
+    'Pass the illustration as `illustration` to `EmptyState` or `ErrorState`. Each row names the state it is for and the nearest state it is not for.',
+    '',
+    '| State | Illustration | Not for |',
+    '| --- | --- | --- |',
+    ...illustrationGuidance.map(
+      (item) => `| ${item.use} | \`${item.component}\` | ${item.notFor} |`,
+    ),
     '',
   ].join('\n');
 }
