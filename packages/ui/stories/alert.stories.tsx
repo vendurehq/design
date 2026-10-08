@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 import { TerminalIcon } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/atoms/alert.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -48,5 +49,41 @@ export const WithIcon: Story = {
         You can run commands in the terminal to manage your project.
       </AlertDescription>
     </Alert>
+  ),
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Destructive text uses destructive-subtle-foreground, which reaches 4.5:1 on
+ * every surface in both modes. Pinned to the light page theme.
+ */
+export const DestructiveLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <Alert variant="destructive">
+          <AlertTitle>Payment failed</AlertTitle>
+          <AlertDescription>The card was declined. Ask the customer for another card.</AlertDescription>
+        </Alert>
+      )}
+    </LightAndDark>
   ),
 };

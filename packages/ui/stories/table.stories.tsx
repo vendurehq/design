@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 import {
   Table,
   TableHeader,
@@ -58,5 +59,56 @@ export const Default: Story = {
         </TableRow>
       </TableFooter>
     </Table>
+  ),
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * A selected row (`data-state="selected"`, the DataTable row-selection marker)
+ * next to plain rows, in light and dark. Hover a row to compare hover with
+ * selected. Pinned to the light page theme.
+ */
+export const SelectedRow: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Invoice</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {invoices.slice(0, 3).map((invoice, index) => (
+              <TableRow key={invoice.id} data-state={index === 1 ? 'selected' : undefined}>
+                <TableCell className="font-medium">{invoice.id}</TableCell>
+                <TableCell>{invoice.status}</TableCell>
+                <TableCell className="text-right">{invoice.amount}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </LightAndDark>
   ),
 };

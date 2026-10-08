@@ -2,6 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
+/**
+ * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
+ * so use the toolbar theme switch to see it in light and dark.
+ */
 const meta = {
   title: 'Atoms/Overlays/Sheet',
   component: Sheet,

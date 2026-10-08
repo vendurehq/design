@@ -33,6 +33,9 @@ function NavigationMenuList({
   return (
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"
+      // Base UI sets aria-orientation, which is not allowed on a list
+      // (axe aria-allowed-attr). Arrow-key navigation does not depend on it.
+      aria-orientation={undefined}
       className={cn(
         "group flex flex-1 list-none items-center justify-center gap-0",
         className
@@ -56,7 +59,7 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  "bg-background hover:bg-muted focus:bg-muted data-open:hover:bg-muted data-open:focus:bg-muted data-open:bg-muted/50 focus-visible:ring-ring/50 data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted rounded-md px-4 py-2 text-sm font-medium transition-all focus-visible:ring-3 focus-visible:outline-1 disabled:opacity-50 group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center disabled:pointer-events-none outline-none"
+  "bg-transparent hover:bg-muted focus:bg-muted data-open:hover:bg-muted data-open:focus:bg-muted data-open:bg-muted/50 focus-visible:ring-ring data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted rounded-md px-4 py-2 text-sm font-medium transition-all focus-visible:ring-2 disabled:opacity-50 group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center disabled:pointer-events-none outline-none"
 )
 
 function NavigationMenuTrigger({
@@ -121,6 +124,9 @@ function NavigationMenuPositioner({
   )
 }
 
+// Base UI writes a valueless data-active (with aria-current="page") on the
+// active link, so the variant is data-active:, not data-[active=true]:. The
+// active link gets the tabs line-variant underline.
 function NavigationMenuLink({
   className,
   ...props
@@ -129,7 +135,7 @@ function NavigationMenuLink({
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "data-[active=true]:focus:bg-muted data-[active=true]:hover:bg-muted data-[active=true]:bg-muted/50 focus-visible:ring-ring/50 hover:bg-muted focus:bg-muted flex items-center gap-1.5 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-3 focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
+        "data-active:text-foreground data-active:font-medium focus-visible:ring-ring hover:bg-muted focus:bg-muted relative flex items-center gap-1.5 rounded-sm p-2 text-sm transition-all outline-none focus-visible:ring-2 [&_svg:not([class*='size-'])]:size-4 after:bg-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:opacity-0 after:transition-opacity data-active:after:opacity-100",
         className
       )}
       {...props}

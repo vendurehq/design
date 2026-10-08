@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
+import { Command as CommandPrimitive, useCommandState } from "cmdk"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import {
@@ -134,19 +134,30 @@ function CommandGroup({
   )
 }
 
+// cmdk's Separator forces role="separator", which a listbox does not allow as
+// a child (axe aria-required-children). This div keeps cmdk's behaviour of
+// hiding while a search is active, unless alwaysRender is set.
 function CommandSeparator({
   className,
+  alwaysRender = false,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
+}: React.ComponentProps<"div"> & { alwaysRender?: boolean }) {
+  const searching = useCommandState((state) => state.search !== "")
+  if (searching && !alwaysRender) {
+    return null
+  }
   return (
-    <CommandPrimitive.Separator
+    <div
       data-slot="command-separator"
+      role="none"
       className={cn("bg-border -mx-1 h-px w-auto", className)}
       {...props}
     />
   )
 }
 
+// cmdk writes data-selected="true" or "false" on every item, so the highlight
+// matches the value; a bare data-selected: variant would match every item.
 function CommandItem({
   className,
   children,
@@ -156,7 +167,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-selected:bg-muted data-selected:text-foreground data-selected:**:[svg]:text-foreground group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -175,7 +186,7 @@ function CommandShortcut({
     <span
       data-slot="command-shortcut"
       className={cn(
-        "text-muted-foreground group-data-selected/command-item:text-foreground ml-auto text-xs tracking-widest",
+        "text-muted-foreground group-data-[selected=true]/command-item:text-foreground ml-auto text-xs tracking-widest",
         className
       )}
       {...props}

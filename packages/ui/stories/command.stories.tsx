@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 import {
   Command,
   CommandEmpty,
@@ -60,5 +61,59 @@ export const Default: Story = {
         </CommandGroup>
       </CommandList>
     </Command>
+  ),
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Only the highlighted item (the first one until you move with the arrow keys)
+ * gets the accent fill. Pinned to the light page theme.
+ */
+export const States: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <Command className="rounded-lg border" label={`Commands, ${theme}`}>
+          <CommandList>
+            <CommandGroup heading="Orders">
+              <CommandItem>
+                <Calendar />
+                Open orders
+                <CommandShortcut>Ctrl+O</CommandShortcut>
+              </CommandItem>
+              <CommandItem>
+                <User />
+                Customers
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Settings">
+              <CommandItem>
+                <Settings />
+                Settings
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      )}
+    </LightAndDark>
   ),
 };
