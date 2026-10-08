@@ -11,6 +11,8 @@ export const lightTheme = {
   'surface-raised': 'oklch(1 0 0)',
   overlay: 'oklch(1 0 0)',
   inset: 'color-mix(in oklab, black 5%, transparent)',
+  // Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer).
+  scrim: 'color-mix(in oklab, black 10%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': neutral[950],
   popover: 'var(--overlay)',
@@ -59,9 +61,17 @@ export const lightTheme = {
   'code-diff-add-accent': success[500],
   'code-diff-remove': `color-mix(in oklab, ${destructive[500]} 10%, transparent)`,
   'code-diff-remove-accent': destructive[500],
+  // Inline code chip: the secondary intensity fill with the standard border.
+  'code-inline': 'var(--secondary)',
+  'code-inline-border': 'var(--border)',
   border: 'oklch(0.86 0.004 231)',
   input: 'oklch(0.86 0.004 231)',
-  ring: neutral[400],
+  // Boundary of controls that have no other visible edge: unchecked
+  // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
+  // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
+  'control-border': 'oklch(0.62 0.005 231)',
+  // neutral-500 holds 3:1 on every surface tier; neutral-400 did not.
+  ring: neutral[500],
   'chart-1': viz[1],
   'chart-2': viz[2],
   'chart-3': viz[3],
@@ -74,7 +84,7 @@ export const lightTheme = {
   'sidebar-accent': 'oklch(0.935 0.004 231)',
   'sidebar-accent-foreground': neutral[900],
   'sidebar-border': 'oklch(0.86 0.004 231)',
-  'sidebar-ring': neutral[400],
+  'sidebar-ring': neutral[500],
 } as const;
 
 export const darkTheme = {
@@ -87,6 +97,9 @@ export const darkTheme = {
   'surface-raised': 'oklch(0.18 0.007 231)',
   overlay: 'oklch(0.2 0.007 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
+  // A 10% black scrim does not show on the near-black canvas; 40% dims the
+  // page enough for the overlay tier to read above it.
+  scrim: 'color-mix(in oklab, black 40%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.92 0.004 231)',
   popover: 'var(--overlay)',
@@ -136,11 +149,16 @@ export const darkTheme = {
   'code-diff-add-accent': success[500],
   'code-diff-remove': `color-mix(in oklab, ${destructive[500]} 10%, transparent)`,
   'code-diff-remove-accent': destructive[500],
+  // Inline code chip: the secondary intensity fill with the standard border.
+  'code-inline': 'var(--secondary)',
+  'code-inline-border': 'var(--border)',
   // Foreground mixes like the intensity slots — neutral-800 tuned for the
   // canvas disappears on raised/overlay tiers. 17% renders ~neutral-800
   // on the canvas and degrades correctly above it.
   border: 'color-mix(in oklab, var(--foreground) 17%, transparent)',
   input: 'color-mix(in oklab, var(--foreground) 17%, transparent)',
+  // Foreground mix like `border`, strong enough for 3:1 on every tier.
+  'control-border': 'color-mix(in oklab, var(--foreground) 40%, transparent)',
   ring: neutral[500],
   'chart-1': viz[1],
   'chart-2': viz[2],
