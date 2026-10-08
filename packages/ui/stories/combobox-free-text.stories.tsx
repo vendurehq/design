@@ -25,7 +25,7 @@ const people = [
 ];
 
 // Simulates a debounced server search: matches the query against name/email
-// after a short delay, toggling `loading` the way a real async source would.
+// after a short delay, toggling `isLoading` the way a real async source would.
 function useMockUserSearch(query: string) {
   const [items, setItems] = React.useState<ComboboxFreeTextItem[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -112,7 +112,7 @@ export const Default: Story = {
           value={value}
           onValueChange={setValue}
           items={items}
-          loading={loading}
+          isLoading={loading}
           placeholder="owner@example.com"
         />
         <p className="text-muted-foreground mt-2 text-xs">
@@ -133,7 +133,7 @@ export const Invalid: Story = {
           value={value}
           onValueChange={setValue}
           items={items}
-          loading={loading}
+          isLoading={loading}
           placeholder="owner@example.com"
           invalid
         />
@@ -250,7 +250,7 @@ export const LiveUserSearch: Story = {
           value={value}
           onValueChange={setValue}
           items={items}
-          loading={loading}
+          isLoading={loading}
           placeholder="Search users or type an email…"
         />
         <p className="text-muted-foreground mt-2 text-xs">

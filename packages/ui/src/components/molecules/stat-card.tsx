@@ -4,25 +4,26 @@ import { cva } from 'class-variance-authority';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
-// Delta tone follows consequence, not direction: `goodWhen` says which way is
-// good for this metric (revenue up vs. refund-rate down), and the token is
-// derived from that — never a hardcoded green/red. Per ADR 0003: good →
-// success, bad → destructive, flat → muted.
+// Delta color follows the outcome, not the direction: `goodWhen` says which
+// way is good for this metric (revenue up vs. refund-rate down), and the token
+// is derived from that, never a hardcoded green/red: good → success,
+// bad → destructive, flat → muted. The subtle foregrounds are the text-safe
+// tone steps: the solid tones fall below 4.5:1 in dark mode.
 const statCardDeltaVariants = cva('inline-flex items-center gap-0.5 text-xs font-medium', {
   variants: {
-    tone: {
-      good: 'text-success',
-      bad: 'text-destructive',
+    outcome: {
+      good: 'text-success-subtle-foreground',
+      bad: 'text-destructive-subtle-foreground',
       flat: 'text-muted-foreground',
     },
   },
   defaultVariants: {
-    tone: 'flat',
+    outcome: 'flat',
   },
 });
 
 interface StatCardDelta {
-  /** Raw percentage change, e.g. `-3.2`. Sign drives the arrow and tone. */
+  /** Raw percentage change, e.g. `-3.2`. Sign drives the arrow and color. */
   value: number;
   /** Suffix after the number. Default `'%'`. */
   label?: string;
@@ -47,10 +48,10 @@ interface StatCardProps extends ComponentProps<typeof Card> {
 
 function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDelta) {
   const direction = value > 0 ? 'up' : value < 0 ? 'down' : 'flat';
-  const tone = direction === 'flat' ? 'flat' : direction === goodWhen ? 'good' : 'bad';
+  const outcome = direction === 'flat' ? 'flat' : direction === goodWhen ? 'good' : 'bad';
 
   return (
-    <span data-slot="stat-card-delta" className={statCardDeltaVariants({ tone })}>
+    <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome })}>
       {direction === 'up' ? (
         <ArrowUp aria-hidden="true" className="size-3" />
       ) : direction === 'down' ? (
@@ -131,4 +132,4 @@ function StatCard({
   );
 }
 
-export { StatCard, statCardDeltaVariants, type StatCardProps, type StatCardDelta };
+export { StatCard, type StatCardProps, type StatCardDelta };

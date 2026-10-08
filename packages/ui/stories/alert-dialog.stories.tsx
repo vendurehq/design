@@ -3,6 +3,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '../src/components/atoms/button.tsx';
 import { TriangleAlert } from 'lucide-react';
 
+/**
+ * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
+ * so use the toolbar theme switch to see it in light and dark.
+ */
 const meta = {
   title: 'Atoms/Overlays/AlertDialog',
   component: AlertDialog,

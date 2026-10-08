@@ -25,7 +25,7 @@ import {
   type DataTableFilterColumn,
   type RowSelectionState,
   type SortingState,
-  type Table,
+  type TableInstance,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
@@ -526,7 +526,7 @@ export const FooterRows: Story = {
 export const OnTableReady: Story = {
   render: () => {
     const [sorting, setSorting] = useState<SortingState>([{ id: 'total', desc: true }]);
-    const [table, setTable] = useState<Table<Order> | null>(null);
+    const [table, setTable] = useState<TableInstance<Order> | null>(null);
     return (
       <div className="flex flex-col gap-3">
         <div className="flex justify-end">

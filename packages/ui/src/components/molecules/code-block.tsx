@@ -3,23 +3,12 @@
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
-import {
-  FileTypeIcon,
-  matchFileTypeIcon,
-} from '@vendure-io/ui/components/molecules/code-block/file-type-icons';
-import {
-  isPackageManagerCommand,
-  PACKAGE_MANAGERS,
-  type PackageManager,
-  transformCommand,
-} from '@vendure-io/ui/components/molecules/code-block/transform-command';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
 import {
   highlightCode,
   normalizeLanguage,
   type SupportedLanguage,
-  supportsNotationComments,
 } from '@vendure-io/ui/lib/highlight';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
@@ -33,6 +22,16 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
+// Relative imports: `code-block/*` is closed in the package exports, so a
+// `@vendure-io/ui/...` self-reference to these modules fails in consumers.
+import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
+import { processCode } from './code-block/process-code.ts';
+import {
+  isPackageManagerCommand,
+  PACKAGE_MANAGERS,
+  type PackageManager,
+  transformCommand,
+} from './code-block/transform-command.tsx';
 
 type CodeBlockProps = Omit<ComponentProps<'div'>, 'children'> & {
   /**
@@ -136,63 +135,6 @@ function usePackageManager(): [PackageManager, (pm: PackageManager) => void] {
   };
 
   return [packageManager, updatePackageManager];
-}
-
-/**
- * Process code to extract filename directive and strip Shiki notations for unsupported languages.
- * Supports: // filename: path/to/file.ts (must be first line)
- *
- * Note: Line highlighting uses Shiki's native notation:
- * - // [!code highlight] for JS/TS (at end of line)
- * - # [!code highlight] for bash/shell (at end of line)
- * - // [!code ++] and // [!code --] for diff
- * - // [!code focus] for focus mode
- *
- * For languages where the notation would not survive highlighting (see
- * `supportsNotationComments`), these notations are stripped.
- */
-function processCode(
-  code: string,
-  language?: string,
-): {
-  cleanCode: string;
-  extractedFilename?: string;
-} {
-  const lines = code.split('\n');
-  const cleanLines: string[] = [];
-  let extractedFilename: string | undefined;
-
-  const shouldStripNotations = !supportsNotationComments(language);
-
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i] ?? '';
-    const trimmedLine = line.trim();
-
-    // Check for filename directive (must be first non-empty line)
-    if (i === 0 || (cleanLines.length === 0 && !extractedFilename)) {
-      const filenameMatch = trimmedLine.match(/^\/\/\s*filename:\s*(.+)$/);
-      if (filenameMatch) {
-        extractedFilename = filenameMatch[1]?.trim();
-        continue; // Don't include this directive line
-      }
-    }
-
-    if (shouldStripNotations) {
-      line = line.replace(/\s*\/\/\s*\[!code\s+[^\]]+\]\s*$/, '');
-      line = line.replace(/\s*#\s*\[!code\s+[^\]]+\]\s*$/, '');
-      // Skip lines that are only the notation (e.g., standalone "// [!code highlight]")
-      if (trimmedLine.match(/^(\/\/|#)\s*\[!code\s+[^\]]+\]\s*$/)) {
-        continue;
-      }
-    }
-
-    cleanLines.push(line);
-  }
-
-  return {
-    cleanCode: cleanLines.join('\n'),
-    extractedFilename,
-  };
 }
 
 /**
@@ -455,9 +397,11 @@ const codeBlockContentClassName = cn(
   'bg-transparent text-sm',
   '[&_pre]:py-4',
   '[&_.shiki]:!bg-transparent',
-  '[&_code]:w-full',
+  // The code sizes to its longest line, so the ScrollArea viewport scrolls it.
+  // A scrolling <code> inside the viewport could not take keyboard focus.
+  '[&_code]:w-max',
+  '[&_code]:min-w-full',
   '[&_code]:grid',
-  '[&_code]:overflow-x-auto',
   '[&_code]:bg-transparent',
   '[&_.line]:px-4',
   '[&_.line]:w-full',
@@ -486,7 +430,7 @@ function SyntaxHighlightedContent({ code, language }: SyntaxHighlightedContentPr
     // Show fallback while loading
     return (
       <pre className="shiki py-4">
-        <code className="grid w-full overflow-x-auto bg-transparent">
+        <code className="grid w-max min-w-full bg-transparent">
           {code.split('\n').map((line, i) => (
             <span key={i} className="line relative w-full px-4">
               {line}
@@ -568,7 +512,7 @@ export function CodeBlock({
       data-slot="code-block"
       {...props}
       className={cn(
-        'bg-card not-prose border-border relative mb-4 w-full contain-inline-size overflow-hidden rounded-md border text-sm lg:text-base',
+        'bg-card not-prose border-border relative w-full contain-inline-size overflow-hidden rounded-md border text-sm lg:text-base',
         className,
       )}
     >
@@ -630,5 +574,5 @@ export function CodeBlock({
   );
 }
 
-export { CodeBlockAction, transformCommand, processCode, matchFileTypeIcon };
+export { CodeBlockAction };
 export type { CodeBlockProps, CodeBlockActionProps, PackageManager };

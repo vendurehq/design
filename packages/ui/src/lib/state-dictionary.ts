@@ -77,20 +77,33 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
 
 /**
  * The universal map — the only state strings this package ships. Every entry
- * has one unambiguous tone regardless of domain.
+ * has one tone regardless of domain. The rules behind the tones:
  *
- * `pending` and `running` are deliberately absent: they have no single tone
- * (principles 1 & 3 — a pending approval is `warning`, a queued job is
- * `neutral`; a running job is `progress`, a running service is `success`), so
- * every domain must decide them explicitly in its own map.
+ * - A state an actor ended on purpose is `neutral`, not `critical`:
+ *   `cancelled`, `expired` and `revoked` are outcomes, not failures.
+ *   `critical` is for failures and refusals (`failed`, `error`, `rejected`).
+ * - A dormant state is `neutral` (`disabled`, `inactive`); its live
+ *   counterpart is `success` (`enabled`, `active`).
+ * - `pending` is `progress`: it waits on a step that the system or another
+ *   party completes, and it will change without the viewer acting. A domain
+ *   where pending means "waiting for this user" declares its own `warning`
+ *   entry in its own map.
+ *
+ * `running` is deliberately absent: it has no single tone (a running job is
+ * `progress`, a running service is `success`), so every domain must decide it
+ * explicitly in its own map.
  */
 export const commonStates = defineStateEntries({
   enabled: { tone: 'success', defaultLabel: 'Enabled' },
   disabled: { tone: 'neutral', defaultLabel: 'Disabled' },
+  active: { tone: 'success', defaultLabel: 'Active' },
+  inactive: { tone: 'neutral', defaultLabel: 'Inactive' },
+  pending: { tone: 'progress', defaultLabel: 'Pending' },
   completed: { tone: 'success', defaultLabel: 'Completed' },
   failed: { tone: 'critical', defaultLabel: 'Failed' },
   cancelled: { tone: 'neutral', defaultLabel: 'Cancelled' },
   expired: { tone: 'neutral', defaultLabel: 'Expired' },
+  revoked: { tone: 'neutral', defaultLabel: 'Revoked' },
   draft: { tone: 'neutral', defaultLabel: 'Draft' },
   suspended: { tone: 'warning', defaultLabel: 'Suspended' },
   approved: { tone: 'success', defaultLabel: 'Approved' },

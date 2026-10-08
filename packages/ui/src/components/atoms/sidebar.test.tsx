@@ -58,3 +58,33 @@ describe('SidebarMenuButton icons', () => {
     expect(tokens).not.toContain('[&_svg]:size-4.5');
   });
 });
+
+describe('SidebarMenuButton active state', () => {
+  test('the active item gets a sidebar-primary bar, not only the hover fill', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+    expect(html).toContain('data-active=""');
+    expect(classTokens(html, 'sidebar-menu-button')).toEqual(
+      expect.arrayContaining(['before:bg-sidebar-primary', 'data-active:before:opacity-100']),
+    );
+  });
+
+  test('the outline variant border reads the oklch token directly', () => {
+    const tokens = classTokens(
+      renderToStaticMarkup(
+        <SidebarProvider>
+          <SidebarMenuButton variant="outline">Orders</SidebarMenuButton>
+        </SidebarProvider>,
+      ),
+      'sidebar-menu-button',
+    );
+    // A colour function around the oklch variable made the value invalid.
+    expect(tokens.filter((token) => token.includes('shadow-['))).toEqual([
+      'shadow-[0_0_0_1px_var(--sidebar-border)]',
+      'hover:shadow-[0_0_0_1px_var(--sidebar-accent)]',
+    ]);
+  });
+});

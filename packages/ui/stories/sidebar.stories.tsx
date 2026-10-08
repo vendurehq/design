@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 import {
   HomeIcon,
   InboxIcon,
@@ -82,5 +83,58 @@ export const Default: Story = {
         </div>
       </SidebarInset>
     </SidebarProvider>
+  ),
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The active item gets a sidebar-primary bar on its leading edge, so it differs
+ * from hover (both use the sidebar-accent fill). The outline variant draws its
+ * border again. Hover an item to compare. Pinned to the light page theme.
+ */
+export const ActiveItem: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <SidebarProvider className="min-h-0">
+          <div className="bg-sidebar text-sidebar-foreground w-56 rounded-lg border p-2">
+            <SidebarMenu>
+              {menuItems.slice(0, 3).map((item, index) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton isActive={index === 0}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton variant="outline">
+                  <SettingsIcon />
+                  <span>Outline variant</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        </SidebarProvider>
+      )}
+    </LightAndDark>
   ),
 };

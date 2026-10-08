@@ -6,10 +6,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Separator } from "@vendure-io/ui/components/atoms/separator"
 
+// No role="list": Item renders any element through its render prop (often a
+// link), so it cannot take role="listitem", and a list without listitem
+// children fails axe aria-required-children. Pass role="list" and wrap items
+// in role="listitem" elements when the group is a real list.
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      role="list"
       data-slot="item-group"
       className={cn(
         "group/item-group flex w-full flex-col gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2",

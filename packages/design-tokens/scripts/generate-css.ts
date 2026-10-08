@@ -2,7 +2,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brand, neutral, success, warning, destructive, info, viz } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
-import { fontFamily, fontSize, fontWeight, letterSpacing, textStyles } from '../src/tokens/typography.ts';
+import { fontFamily, fontFeatureSettings, fontSize, fontWeight, letterSpacing, textStyles } from '../src/tokens/typography.ts';
 import { easing, duration, animation, keyframes } from '../src/tokens/motion.ts';
 import { radii } from '../src/tokens/radii.ts';
 import { shadows } from '../src/tokens/shadows.ts';
@@ -17,9 +17,15 @@ const cssDir = resolve(__dirname, '../src/css');
 // variables.css
 // ---------------------------------------------------------------------------
 
-function buildBlock(selector: string, tokens: Record<string, string>): string {
+// `color-scheme` makes native UI (scrollbars, date inputs, autofill, select
+// popups) follow the active theme.
+function buildBlock(
+  selector: string,
+  colorScheme: 'light' | 'dark',
+  tokens: Record<string, string>,
+): string {
   const lines = Object.entries(tokens).map(([key, value]) => `  --${key}: ${value};`);
-  return `${selector} {\n${lines.join('\n')}\n}`;
+  return `${selector} {\n  color-scheme: ${colorScheme};\n${lines.join('\n')}\n}`;
 }
 
 // Flatten color ranges into { 'brand-50': 'oklch(...)', 'brand-100': '...' , ... }
@@ -48,9 +54,9 @@ const semanticRadiusVars = { radius: radii.md };
 const variablesCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '',
-  buildBlock(':root', { ...baseColorVars, ...radiusVars, ...semanticRadiusVars, ...lightTheme }),
+  buildBlock(':root', 'light', { ...baseColorVars, ...radiusVars, ...semanticRadiusVars, ...lightTheme }),
   '',
-  buildBlock('.dark', darkTheme),
+  buildBlock('.dark', 'dark', darkTheme),
   '',
 ].join('\n');
 
@@ -114,6 +120,12 @@ const fontLines = Object.entries(fontFamily).map(
   ([key, value]) => `  --font-${key}: ${value};`,
 );
 
+// Font feature lines — Tailwind reads `--font-<family>--font-feature-settings`
+// for the `font-<family>` utility and the mono preflight defaults
+const fontFeatureLines = Object.entries(fontFeatureSettings).map(
+  ([key, value]) => `  --font-${key}--font-feature-settings: ${value};`,
+);
+
 // Type scale lines — Tailwind text-* utilities
 const textLines = Object.entries(fontSize).map(
   ([key, value]) => `  --text-${key}: ${value};`,
@@ -154,6 +166,7 @@ const themeBlock = [
   ...radiusLines,
   ...shadowLines,
   ...fontLines,
+  ...fontFeatureLines,
   ...textLines,
   ...fontWeightLines,
   ...trackingLines,

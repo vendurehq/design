@@ -311,7 +311,7 @@ export const ZonesAndOwnership: Story = {
                   <InputGroupInput placeholder="Search products" />
                 </InputGroup>
               </ListHeaderControls>
-              <ListHeaderChips aria-label="No filters applied" />
+              <ListHeaderChips />
             </ListHeader>
           </Example>
         </div>

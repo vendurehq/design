@@ -6,7 +6,9 @@ import type { VariantProps } from 'class-variance-authority';
 import { XIcon } from 'lucide-react';
 import type * as React from 'react';
 
-interface ChipProps extends React.ComponentProps<'span'>, VariantProps<typeof badgeVariants> {
+interface ChipProps extends React.ComponentProps<'span'> {
+  /** Badge variants a tag can take. `link` and `ghost` are not tag treatments. */
+  variant?: Exclude<VariantProps<typeof badgeVariants>['variant'], 'link' | 'ghost'>;
   /** Leading icon slot. */
   icon?: React.ReactNode;
   /**
@@ -55,6 +57,9 @@ function Chip({
       data-slot="chip"
       variant={variant}
       data-disabled={disabled ? '' : undefined}
+      // Marks the dimmed label as an inactive component, which WCAG 1.4.3
+      // exempts from the contrast minimum.
+      aria-disabled={disabled || undefined}
       className={cn(
         'max-w-full gap-1',
         onRemove && 'pr-1',
@@ -72,7 +77,7 @@ function Chip({
           disabled={disabled}
           aria-label={removeLabel}
           onClick={onRemove}
-          className="-mr-0.5 ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-black/10 hover:text-current disabled:pointer-events-none dark:hover:bg-white/10"
+          className="-mr-0.5 ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none"
         >
           <XIcon className="size-3" />
         </button>

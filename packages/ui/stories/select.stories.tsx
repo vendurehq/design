@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
   Select,
@@ -25,7 +25,7 @@ export const Default: Story = {
   render: function SelectDefault() {
     return (
       <Select>
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger aria-label="Fruit" className="w-[180px]">
           <SelectValue placeholder="Select a fruit" />
         </SelectTrigger>
         <SelectContent>
@@ -62,7 +62,7 @@ export const DynamicItems: Story = {
           </Button>
         </div>
         <Select value="">
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger aria-label="Fruit" className="w-[180px]">
             <SelectValue placeholder="Select an item" />
           </SelectTrigger>
           {/* Items sit directly under SelectContent: the remount key only
@@ -85,7 +85,7 @@ export const WithGroups: Story = {
   render: function SelectWithGroups() {
     return (
       <Select>
-        <SelectTrigger className="w-[220px]">
+        <SelectTrigger aria-label="Timezone" className="w-[220px]">
           <SelectValue placeholder="Select a timezone" />
         </SelectTrigger>
         <SelectContent>
@@ -107,4 +107,49 @@ export const WithGroups: Story = {
       </Select>
     );
   },
+};
+
+type Theme = 'light' | 'dark';
+
+/** Renders the children once in light and once in dark, side by side. */
+function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      {(['light', 'dark'] as const).map((theme) => (
+        <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
+          <div className="bg-background text-foreground flex flex-col gap-4 rounded-lg border p-6">
+            <p className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
+            {children(theme)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Rest and invalid (`aria-invalid`), in light and dark. Dark mode uses the full
+ * destructive border, not a 50% one that was weaker than the rest border.
+ * Pinned to the light page theme so the left panel stays light.
+ */
+export const Invalid: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <>
+          <Select>
+            <SelectTrigger aria-label={`Fruit, ${theme}`} className="w-[180px]">
+              <SelectValue placeholder="Select a fruit" />
+            </SelectTrigger>
+          </Select>
+          <Select>
+            <SelectTrigger aria-label={`Fruit, invalid, ${theme}`} aria-invalid className="w-[180px]">
+              <SelectValue placeholder="Select a fruit" />
+            </SelectTrigger>
+          </Select>
+        </>
+      )}
+    </LightAndDark>
+  ),
 };

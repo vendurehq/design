@@ -16,7 +16,7 @@ export const Default: Story = {
 };
 
 export const WithValue: Story = {
-  args: { defaultValue: 'super-secret' },
+  args: { defaultValue: 'super-secret', 'aria-label': 'Password' },
 };
 
 export const Disabled: Story = {
