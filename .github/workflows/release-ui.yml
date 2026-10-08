@@ -40,13 +40,11 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#ui/v}"
           NPM_TAG="latest"
-          IS_PRERELEASE="false"
           VERSION_WITHOUT_BUILD="${VERSION%%+*}"
 
           if [[ "$VERSION_WITHOUT_BUILD" == *-* ]]; then
             PRERELEASE="${VERSION_WITHOUT_BUILD#*-}"
             NPM_TAG="${PRERELEASE%%.*}"
-            IS_PRERELEASE="true"
 
             if [[ ! "$NPM_TAG" =~ ^[a-z][a-z0-9-]*$ ]]; then
               echo "Prerelease versions must start with a named npm dist-tag, e.g. alpha, beta, rc, or next." >&2
@@ -65,7 +63,6 @@ jobs:
           {
             echo "VERSION=$VERSION"
             echo "NPM_TAG=$NPM_TAG"
-            echo "IS_PRERELEASE=$IS_PRERELEASE"
           } >> "$GITHUB_OUTPUT"
 
       - name: Determine release branch
@@ -115,31 +112,21 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Resolve workspace dependency
-        env:
-          IS_PRERELEASE: ${{ steps.version.outputs.IS_PRERELEASE }}
+      # bun pm pack resolves the workspace:^ peer range from bun.lock, and the
+      # design-tokens version bump-back does not update bun.lock.
+      - name: Sync workspace versions into bun.lock
+        run: bun install
+
+      - name: Pack
+        id: pack
         run: |
-          # design-tokens is a peer dependency. The `workspace:*` dev dependency
-          # only links the local package, and npm does not know the protocol.
-          FILTER='del(.devDependencies["@vendure-io/design-tokens"])'
-          # A stable range such as ^2.0.0 does not match prereleases, so a
-          # prerelease takes the tokens version on main as its lower bound.
-          if [[ "$IS_PRERELEASE" == "true" ]]; then
-            FILTER="$FILTER | .peerDependencies[\"@vendure-io/design-tokens\"] = (\"^\" + \$v)"
-          fi
-          TOKENS_VERSION=$(jq -r '.version' packages/design-tokens/package.json)
-          jq --arg v "$TOKENS_VERSION" "$FILTER" \
-            packages/ui/package.json > tmp.json && mv tmp.json packages/ui/package.json
-
-      - name: Package smoke test
-        run: bun pm pack --dry-run
+          TARBALL="$(bun pm pack --destination "$RUNNER_TEMP" --quiet)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
         working-directory: packages/ui
 
+      # Trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write).
       - name: Publish
-        run: npm publish --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"
-        working-directory: packages/ui
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"
 
       - name: Commit version bump
         if: steps.relbranch.outputs.branch != ''
