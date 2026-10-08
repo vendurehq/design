@@ -224,6 +224,60 @@ const deploymentStates = defineStateEntries<DeploymentState>({
 Do not attach ramp colors to states. Unknown wire values deliberately fall back
 to neutral and warn once in development.
 
+### Illustrations
+
+Each illustration is its own file under `illustrations/*`. Pass one as
+`illustration` to `EmptyState` or `ErrorState`. Without it, `EmptyState` shows
+`EmptyCollectionIllustration` and `ErrorState` shows `ErrorIllustration`.
+
+```tsx
+import { EmptyState } from "@vendure-io/ui/components/molecules/state-views/empty-state";
+import { NoInvoicesIllustration } from "@vendure-io/ui/components/molecules/illustrations/no-invoices";
+
+<EmptyState
+  illustration={<NoInvoicesIllustration />}
+  title="No invoices yet"
+  description="Invoices appear here after the first billing period."
+/>;
+```
+
+Every illustration takes `className` and `size` (width in px, default 160; the
+height keeps the 4:3 ratio). Use one illustration for the whole empty or error
+region. In a table row, list item or card inside a populated view, set
+`illustration={null}` and pass an `icon`.
+
+| Illustration | Use it for | Not for |
+| --- | --- | --- |
+| `NoResultsIllustration` | A search or filter matched nothing | A list that is empty before any filter |
+| `EmptyCollectionIllustration` | Nothing exists yet, when no scenario illustration fits | A list that has a scenario illustration below |
+| `NoOrdersIllustration` | No orders yet | Orders filtered to zero (`NoResults`) |
+| `NoProductsIllustration` | An empty catalog: products, variants, collection contents | Promotions (`NoPromotions`) |
+| `NoPromotionsIllustration` | No promotions, discounts or coupon codes | An empty catalog (`NoProducts`) |
+| `NoCustomersIllustration` | No customers in a list or customer group | Team members (`NoMembers`) |
+| `NoProjectsIllustration` | An empty project list, for example all archived | The first "create your first project" moment (`FirstRun`) |
+| `FirstRunIllustration` | A feature that has never been set up | An ordinary empty list |
+| `EmptyMediaIllustration` | An empty media or asset library | A drop target (`UploadDropzone`) |
+| `UploadDropzoneIllustration` | An empty drag-and-drop upload target | An empty media library (`EmptyMedia`) |
+| `NoMembersIllustration` | No team members or administrators | Customers (`NoCustomers`) |
+| `NoKeysIllustration` | No API keys or access tokens | A permission failure (`AccessDenied`) |
+| `NoDocumentsIllustration` | No licenses or certificates issued | Invoices (`NoInvoices`) |
+| `NoInvoicesIllustration` | No invoices or receipts | A failed payment (`PaymentFailed`) |
+| `NoSubscriptionIllustration` | No plan or subscription | A trial that ended (`Expired`) |
+| `NoPluginsIllustration` | No plugins, extensions or packages installed | No plan that grants packages (`NoSubscription`) |
+| `NoActivityIllustration` | An empty audit log, history or timeline | Output from a running process (`NoLogs`) |
+| `NoLogsIllustration` | An empty log stream | An activity history (`NoActivity`) |
+| `NoNotificationsIllustration` | No new notifications or alerts | A finished task (`Success`) |
+| `NoDeploymentsIllustration` | An environment never deployed or bound to a runtime | A failed deploy (`Error`) |
+| `EmptyDatabaseIllustration` | No database or backups | A generic empty list (`EmptyCollection`) |
+| `SuccessIllustration` | A finished task, or a queue with nothing left to do | No new notifications (`NoNotifications`) |
+| `PendingApprovalIllustration` | An invitation or account awaiting approval | A request that expired (`Expired`) |
+| `ExpiredIllustration` | A trial, evaluation, link or sign-in request that ran out of time | A request still waiting (`PendingApproval`) |
+| `PaymentFailedIllustration` | A failed charge, past-due invoice or canceled checkout | No plan at all (`NoSubscription`) |
+| `ErrorIllustration` | A generic failure (the `ErrorState` default) | Network loss, 404 or 403 |
+| `NotFoundIllustration` | A 404 or missing resource, with a "Go back" action | A search with no matches (`NoResults`) |
+| `AccessDeniedIllustration` | A 403 or permission failure, with a "Go back" action | Access awaiting approval (`PendingApproval`) |
+| `OfflineIllustration` | A network or connectivity failure | A server-side failure (`Error`) |
+
 ### Dialog
 
 Use `Dialog` for a reversible task or supporting content that temporarily needs
