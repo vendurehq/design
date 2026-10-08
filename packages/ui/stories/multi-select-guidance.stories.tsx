@@ -191,8 +191,18 @@ export const ChoosingTheControl: Story = {
             <div className="flex flex-col gap-2">
               {exportColumns.map((col, i) => (
                 <div key={col} className="flex items-center gap-2">
-                  <Checkbox id={`col-${col}`} defaultChecked={i === 0} />
-                  <Label htmlFor={`col-${col}`} className="text-sm font-normal">
+                  {/* The Checkbox atom puts `id` on its hidden input, so
+                      `htmlFor` alone does not name the checkbox. */}
+                  <Checkbox
+                    id={`col-${col}`}
+                    aria-labelledby={`col-${col}-label`}
+                    defaultChecked={i === 0}
+                  />
+                  <Label
+                    id={`col-${col}-label`}
+                    htmlFor={`col-${col}`}
+                    className="text-sm font-normal"
+                  >
                     {col}
                   </Label>
                 </div>
@@ -205,7 +215,9 @@ export const ChoosingTheControl: Story = {
 
           <div className="rounded-lg border p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide">MultiSelect</p>
+            <Label htmlFor="guidance-channels-1">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-1"
               items={channels}
               defaultValue={['Default', 'B2C Europe']}
               placeholder="Assign channels"
@@ -217,8 +229,11 @@ export const ChoosingTheControl: Story = {
 
           <div className="rounded-lg border p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide">Select</p>
+            <Label htmlFor="guidance-tax-category" className="mb-2">
+              Tax category
+            </Label>
             <Select defaultValue="Standard">
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="guidance-tax-category" className="w-full">
                 <SelectValue placeholder="Tax category" />
               </SelectTrigger>
               <SelectContent>
@@ -252,7 +267,9 @@ export const ReadingTheSelection: Story = {
             verdict="do"
             caption="renderValue collapses a long selection to a count, so the trigger stays legible however much is chosen."
           >
+            <Label htmlFor="guidance-channels-2">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-2"
               className="w-[220px]"
               items={channels}
               defaultValue={['Default', 'B2C Europe', 'Wholesale', 'Retail']}
@@ -266,7 +283,9 @@ export const ReadingTheSelection: Story = {
             verdict="dont"
             caption="Leaning on the comma-joined default for a long selection: the line truncates to “Default, B2C Eur…” and the user cannot tell what is actually selected."
           >
+            <Label htmlFor="guidance-channels-3">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-3"
               className="w-[220px]"
               items={channels}
               defaultValue={channels}
@@ -285,7 +304,9 @@ export const ReadingTheSelection: Story = {
             verdict="do"
             caption="A pinned width. The summary truncates inside it; neighbouring fields never shift."
           >
+            <Label htmlFor="guidance-channels-4">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-4"
               className="w-[200px]"
               items={channels}
               defaultValue={['Default', 'B2C Europe', 'B2C North America']}
@@ -296,7 +317,9 @@ export const ReadingTheSelection: Story = {
             verdict="dont"
             caption="No pinned width: the trigger defaults to full-width, so it stretches or shrinks with its container and shifts whatever sits beside it."
           >
+            <Label htmlFor="guidance-channels-5">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-5"
               items={channels}
               defaultValue={['Wholesale']}
               placeholder="Assign channels"
@@ -323,7 +346,9 @@ export const ClosedSetVsOpen: Story = {
             verdict="do"
             caption="A closed, known set: the sales channels a product can belong to. Bounded and scrollable, no typing needed to find one."
           >
+            <Label htmlFor="guidance-channels-6">Sales channels</Label>
             <MultiSelect
+              id="guidance-channels-6"
               className="w-[240px]"
               items={channels}
               defaultValue={['Default']}
@@ -334,7 +359,9 @@ export const ClosedSetVsOpen: Story = {
             verdict="dont"
             caption="Product tags a merchant invents are an open vocabulary: there is no fixed items list to pass. Reach for ComboboxFreeText; for a long fetched list that needs a search box, a searchable Combobox."
           >
+            <Label htmlFor="guidance-tags">Tags</Label>
             <MultiSelect
+              id="guidance-tags"
               className="w-[240px]"
               items={['Sale', 'New', 'Clearance']}
               placeholder="Add tags…"

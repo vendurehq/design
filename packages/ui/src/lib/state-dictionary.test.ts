@@ -82,9 +82,16 @@ describe('defineStateEntries', () => {
 });
 
 describe('commonStates', () => {
-  test('omits `pending` and `running` deliberately (no single tone)', () => {
-    expect('pending' in commonStates.entries).toBe(false);
+  test('omits `running` deliberately (no single tone)', () => {
     expect('running' in commonStates.entries).toBe(false);
+  });
+
+  test('rules the lifecycle states consumers used to declare locally', () => {
+    expect(commonStates.toneFor('active')).toBe('success');
+    expect(commonStates.toneFor('inactive')).toBe('neutral');
+    expect(commonStates.toneFor('pending')).toBe('progress');
+    expect(commonStates.toneFor('revoked')).toBe('neutral');
+    expect(commonStates.labelFor('revoked')).toBe('Revoked');
   });
 
   test('ships the universal states with their canonical tones', () => {

@@ -11,8 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@vendure-io/ui/components/atoms/dropdown-menu';
-import { getHideableLeafColumns } from '@vendure-io/ui/components/molecules/data-table/data-table-helpers';
 import { SlidersHorizontalIcon } from 'lucide-react';
+// Relative: `data-table-helpers` is closed in the package exports.
+import { getHideableLeafColumns } from './data-table-helpers.tsx';
 
 // The column-visibility gear. Lists only hideable columns (`getCanHide()`), so
 // the always-on `select`/`actions` display columns never appear here. Labels

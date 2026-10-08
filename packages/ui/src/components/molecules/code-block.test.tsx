@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-
-import { matchFileTypeIcon, processCode, transformCommand } from './code-block.tsx';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
+import { processCode } from './code-block/process-code.ts';
+import { transformCommand } from './code-block/transform-command.tsx';
+import * as codeBlock from './code-block.tsx';
 
 describe('transformCommand', () => {
   describe('npx → dlx / bunx', () => {
@@ -283,5 +286,20 @@ describe('matchFileTypeIcon', () => {
     expect(matchFileTypeIcon('main.rs')).toBeUndefined();
     expect(matchFileTypeIcon('.env')).toBeUndefined();
     expect(matchFileTypeIcon('LICENSE')).toBeUndefined();
+  });
+});
+
+describe('CodeBlock', () => {
+  test('the module exports only the component API', () => {
+    expect(Object.keys(codeBlock).sort()).toEqual(['CodeBlock', 'CodeBlockAction']);
+  });
+
+  test('the root sets no outer margin', () => {
+    const html = renderToStaticMarkup(
+      <codeBlock.CodeBlock language="bash">npm install</codeBlock.CodeBlock>,
+    );
+    const root = html.match(/<div[^>]*data-slot="code-block"[^>]*>/)?.[0] ?? '';
+    expect(root).not.toBe('');
+    expect(root).not.toMatch(/\bm[trblxy]?-\d/);
   });
 });
