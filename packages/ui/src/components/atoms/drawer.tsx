@@ -1,14 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { DrawerPreview as DrawerPrimitive } from "@base-ui/react/drawer"
+import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // Follows the shadcn base-vega Base UI drawer (upstream replaced vaul, which
-// depends on Radix). Divergences: Base UI 1.2 exports the drawer as
-// DrawerPreview, the scrim and surface use the scrim and overlay slots, the
-// title uses our type style, and reduced motion turns the transitions off.
+// depends on Radix). Divergences: the scrim and surface use the scrim and
+// overlay slots, the title uses our type style, and reduced motion turns the
+// transitions off.
 
 type DrawerContextProps = {
   hasSnapPoints: boolean
