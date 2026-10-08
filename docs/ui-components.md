@@ -114,6 +114,8 @@ function MyComponent({ className }: { className?: string }) {
 import { DialogPrimitive } from "@vendure-io/ui/lib/base-ui";
 ```
 
+`@vendure-io/ui` 2.0 requires `@base-ui/react` `^1.8.0`. If your app also depends on `@base-ui/react` directly, set it to `^1.8.0` too. Then the package manager installs one copy, and the primitive types match the types that the atoms use.
+
 ## Hooks
 
 ### `useCopy()`
@@ -374,6 +376,7 @@ These packages are optional — install them only if you use the features that n
 8. The data-table module exports the TanStack table type as `TableInstance`, not `Table`.
 9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. CodeBlock has no outer margin: add your own.
 10. Drawer is built on Base UI, and `vaul` is gone. Replace `asChild` with the `render` prop, and `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`). See the Drawer note under [Atoms](#atoms).
+11. `@vendure-io/ui` requires `@base-ui/react` `^1.8.0` (1.x required `^1.2.0`).
 
 ### Migration steps
 
@@ -384,7 +387,8 @@ These packages are optional — install them only if you use the features that n
 5. Find `variant="secondary"` on Badge and remove it. Check every Badge without a variant: it is now neutral.
 6. Find code that uses `primary`, `ring` or `accent` to mean Vendure blue. Change it to `brand` where you want the identity color.
 7. On Drawer, change `asChild` to `render` and `direction` to `swipeDirection`.
-8. Run `@vendure-io/design-lint` 1.0 (ESLint or Biome) to find raw colors. See [Getting Started](./getting-started.md#lint-for-raw-colors).
-9. Update the agent skills: `npx skills update --global vendure-ui vendure-tokens`.
+8. If your app depends on `@base-ui/react` directly, set it to `^1.8.0`. If you pinned it to `1.2.0` with an override or resolution, remove that pin.
+9. Run `@vendure-io/design-lint` 1.0 (ESLint or Biome) to find raw colors. See [Getting Started](./getting-started.md#lint-for-raw-colors).
+10. Update the agent skills: `npx skills update --global vendure-ui vendure-tokens`.
 
 The token value changes (neutral `primary`, the new surface ramp, `--radius`, fonts no longer loaded by `css/theme`) are in [Design Tokens](./design-tokens.md).
