@@ -6,7 +6,9 @@ Every merged change to `@vendure-io/ui` is consumer-facing on the next publish, 
 
 Every story is visited with [`@storybook/test-runner`](https://github.com/storybookjs/test-runner) and scanned with [`axe-playwright`](https://github.com/abhinaba-ghosh/axe-playwright) two times: once in light mode and once with the `dark` class on `<html>`. Each reported violation names its theme, for example `[dark] [serious] color-contrast`. The check reports on `serious` or `critical` axe violations; `minor`/`moderate` findings are logged but never counted. Configuration lives in `apps/storybook/.storybook/test-runner.ts`.
 
-**Currently advisory.** The existing story suite carries pre-existing `serious`/`critical` violations — mostly isolated stories that render a bare control without a surrounding labelled form (unlabeled inputs/checkboxes/switches, icon-only buttons without an accessible name). Until that debt is triaged and cleared, the CI step runs with `continue-on-error: true`: violations show up in the job log and as a step annotation, but they don't fail the build. Remove `continue-on-error` from the "Storybook a11y smoke test" step in `.github/workflows/ci.yml` to make the gate enforcing once the suite is clean — fix the underlying markup (or, for genuine false positives only, opt the story out as below) rather than lowering the bar.
+**Blocking.** A `serious` or `critical` violation in either theme fails the CI job. Fix the markup. Opt a story out (see below) only for a documented false positive.
+
+A story that renders a bare control must still give it an accessible name. Use `aria-label` on icon-only buttons and toggles, and a label connected to every input. Checkbox, RadioGroup and Switch need `aria-label` or `aria-labelledby`, because Base UI puts the `id` on a hidden input.
 
 ### Run locally
 
