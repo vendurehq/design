@@ -3,7 +3,8 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 /**
  * A bell at rest, its clapper still, with faint dashed arcs trailing off
- * where a ring would sound — nothing new has come in. For an empty
+ * where a ring would sound and a check badge on its shoulder — nothing new
+ * has come in. For an empty
  * notifications/alerts panel where the user is caught up — pass as
  * `illustration` to `EmptyState`. Not for a generic empty list with no bell
  * shape (use `EmptyCollectionIllustration` instead).
@@ -25,8 +26,8 @@ function NoNotificationsIllustration({ className, size = 160 }: IllustrationProp
       <ellipse cx="80" cy="104" rx="28" ry="5" className="fill-muted" />
 
       {/* faint arcs where a ring would sound — dashed, trailing off */}
-      <path d="M48,44 Q40,52 48,60" className="stroke-border" strokeDasharray="2 5" />
-      <path d="M112,44 Q120,52 112,60" className="stroke-border" strokeDasharray="2 5" />
+      <path d="M46,46 Q38,54 46,62" className="stroke-border" strokeDasharray="2 5" />
+      <path d="M114,50 Q122,58 114,66" className="stroke-border" strokeDasharray="2 5" />
 
       {/* hanging loop */}
       <circle cx="80" cy="29" r="3" className="fill-surface stroke-muted-foreground" />
@@ -40,11 +41,9 @@ function NoNotificationsIllustration({ className, size = 160 }: IllustrationProp
       {/* clapper, still and centered — nothing ringing it */}
       <circle cx="80" cy="72" r="2.5" className="fill-muted-foreground" />
 
-      {/* check mark — the one brand accent, caught up */}
-      <path
-        d="M95,78 L92.6,75.6 L91.9,76.4 L95,79.5 L101.6,72.9 L100.8,72.1 Z"
-        className="fill-brand"
-      />
+      {/* caught-up badge — the one brand accent, with a neutral check */}
+      <circle cx="98" cy="38" r="8" className="fill-brand" />
+      <path d="M94.5,38 L97,40.5 L101.5,35.5" className="stroke-surface" />
     </svg>
   );
 }
