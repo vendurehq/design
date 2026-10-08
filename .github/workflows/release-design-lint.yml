@@ -108,15 +108,16 @@ jobs:
           jq --arg v "${{ steps.version.outputs.VERSION }}" '.version = $v' \
             packages/design-lint/package.json > tmp.json && mv tmp.json packages/design-lint/package.json
 
-      - name: Package smoke test
-        run: bun pm pack --dry-run
+      - name: Pack
+        id: pack
+        run: |
+          TARBALL="$(bun pm pack --destination "$RUNNER_TEMP" --quiet)"
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
         working-directory: packages/design-lint
 
+      # Trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write).
       - name: Publish
-        run: npm publish --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"
-        working-directory: packages/design-lint
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --provenance --access public --tag "${{ steps.version.outputs.NPM_TAG }}"
 
       - name: Commit version bump
         if: steps.relbranch.outputs.branch != ''
