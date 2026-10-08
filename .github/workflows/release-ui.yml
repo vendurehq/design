@@ -87,7 +87,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -120,8 +119,18 @@ jobs:
       - name: Pack
         id: pack
         run: |
-          TARBALL="$(bun pm pack --destination "$RUNNER_TEMP" --quiet)"
-          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+          # bun pm pack --quiet can print extra lines, so read the path from the directory.
+          PACK_DIR="$RUNNER_TEMP/pack"
+          rm -rf "$PACK_DIR"
+          mkdir -p "$PACK_DIR"
+          bun pm pack --destination "$PACK_DIR" --quiet
+          shopt -s nullglob
+          TARBALLS=("$PACK_DIR"/*.tgz)
+          if [[ "${#TARBALLS[@]}" -ne 1 ]]; then
+            echo "Expected exactly one tarball in $PACK_DIR, found ${#TARBALLS[@]}." >&2
+            exit 1
+          fi
+          echo "tarball=${TARBALLS[0]}" >> "$GITHUB_OUTPUT"
         working-directory: packages/ui
 
       # Trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write).
