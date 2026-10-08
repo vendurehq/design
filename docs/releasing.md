@@ -53,7 +53,7 @@ When a change spans packages, release them in this order:
 3. Release `ui`.
 4. Release `design-lint`.
 
-The ui release resolves its `@vendure-io/design-tokens` dependency from the version on `main` at publish time. If you release ui before the tokens bump-back lands, the ui tarball points at the previous tokens version.
+`@vendure-io/ui` declares `@vendure-io/design-tokens` as a `^2.0.0` peer dependency. A ui prerelease replaces that range with `^<tokens version on main>` at publish time, because `^2.0.0` does not match prereleases. If you release ui before the tokens bump-back lands, the prerelease points at the previous tokens version.
 
 The same ordering applies to prereleases. For example, publish `design-tokens/v1.3.0-beta.0`, wait for the workflow to commit the version bump to `main`, then publish `ui/v2.1.0-beta.0` so the ui tarball resolves `@vendure-io/design-tokens` to the prerelease version.
 
@@ -97,7 +97,7 @@ The skills install from `main` rather than npm and do not have a separate releas
 
 ## Workspace Dependency Resolution
 
-`@vendure-io/ui` depends on `@vendure-io/design-tokens` via `workspace:*` in the repo. During the ui release workflow, this is resolved to a caret range (e.g. `^1.2.0`) in the published tarball. The `workspace:*` value stays in the repo — only the npm tarball gets the resolved version.
+In the repo, `@vendure-io/ui` links `@vendure-io/design-tokens` through a `workspace:*` dev dependency, and declares it as a `^2.0.0` peer dependency. The ui release workflow removes the dev dependency from the published `package.json`. For a prerelease, it also sets the peer range to `^<tokens version on main>`. The repo keeps both fields; only the npm tarball changes.
 
 ## Troubleshooting
 

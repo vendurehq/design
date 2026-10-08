@@ -31,7 +31,7 @@ Never run `add --overwrite` on an existing component — it discards our design 
 
 Comment non-obvious decisions in component files like you would anywhere else — no special markers needed; the whole file is ours.
 
-The root `biome.json` turns off the formatter, the import organizer and the built-in lint rules for `src/components/atoms/` and `src/hooks/use-mobile.ts`: keeping upstream's formatting in vendored files keeps `shadcn diff` output clean when cherry-picking. Don't reformat those files or turn those tools back on for them. Only the design-lint `no-raw-colors` plugin runs there, as it does on all of `src/` and `stories/`. `atoms/chart.tsx` is exempt from the plugin because its selectors target recharts' default colors.
+The root `biome.json` turns off the formatter, the import organizer and the built-in lint rules for `src/components/atoms/` and `src/hooks/use-mobile.ts`: keeping upstream's formatting in vendored files keeps `shadcn diff` output clean when cherry-picking. Don't reformat those files or turn those tools back on for them. Only the design-lint `no-raw-colors` plugin runs there, as it does on all of `src/` and `stories/`. `atoms/chart.tsx` and `lib/highlight.ts` are exempt from the plugin: the chart selectors target recharts' default colors, and Shiki's `colorReplacements` take hex values.
 
 ## Structure
 
@@ -61,8 +61,8 @@ direct dependency on `@base-ui/react`. Keep that file pure named re-exports
 ## Stack
 
 - React 19+, Tailwind v4, lucide-react icons
-- Base UI (@base-ui/react), CVA, tailwind-merge, motion, vaul, sonner, recharts
-- Tokens from `@vendure-io/design-tokens` (workspace dep)
+- Base UI (@base-ui/react), CVA, tailwind-merge, motion, sonner, recharts
+- Tokens from `@vendure-io/design-tokens`: a `^2.0.0` peer dependency, linked in the repo by a `workspace:*` dev dependency
 
 ## Rules
 
@@ -71,7 +71,7 @@ direct dependency on `@base-ui/react`. Keep that file pure named re-exports
 - **Graduation/layer rule**: a component graduates from a consumer into the DS when a second consumer needs it. The layer question is mechanical — exists in the shadcn registry upstream? → scaffold via CLI into `atoms/` (the donor informs the cherry-picking); otherwise → `molecules/`, based on the chosen donor. No composition-depth debate.
 - **Formatters (JSX-or-lib rule)**: renders JSX → `molecules/` (a `<Money>` component is a molecule); pure function → `lib/` (a `formatCurrency()` helper is lib). Same test for anything ambiguous: "does it return JSX?"
 - No barrel files. Wildcard exports only.
-- Peer deps: react, react-dom. next/next-themes are optional peers.
+- Peer deps: `@vendure-io/design-tokens` (`^2.0.0`), react, react-dom. next and next-themes are optional peers.
 
 ## Guidance pages (molecules)
 

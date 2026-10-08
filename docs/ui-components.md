@@ -60,6 +60,8 @@ behavior you need instead of rebuilding it from atoms.
 ### Overlays & Menus
 `command`, `context-menu`, `dialog`, `drawer`, `dropdown-menu`, `hover-card`, `menubar`, `popover`, `sheet`, `tooltip`
 
+> **Drawer.** The Drawer is built on the Base UI drawer, like every other overlay. Compose its parts with the `render` prop (`<DrawerTrigger render={<Button />}>`); there is no `asChild`. Set the side with `swipeDirection` (`down` by default, or `up`, `left`, `right`), and show the drag handle with `showSwipeHandle`. Add `body { position: relative; }` to your global styles so the overlay covers the viewport on iOS Safari. Coming from 1.x or an earlier 2.0.0 beta: replace `asChild` with `render`, replace `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`), and add `showSwipeHandle` where you want the handle.
+
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`
 
@@ -314,9 +316,10 @@ These packages are optional — install them only if you use the features that n
 4. The look is flat. Primitives have no `shadow-xs` or `shadow-2xs`. Select and dropdown popups size to their content, not to the trigger width.
 5. The `react-hook-form` peer dependency is removed.
 6. `@vendure-io/design-tokens` is a peer dependency. Install it next to `@vendure-io/ui`.
-7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported.
-8. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. CodeBlock has no outer margin: add your own.
-9. Drawer is built on Base UI. Replace `asChild` on `DrawerTrigger` and `DrawerClose` with the `render` prop, as on every other atom.
+7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported. StatCard no longer exports `statCardDeltaVariants`.
+8. The data-table module exports the TanStack table type as `TableInstance`, not `Table`.
+9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. CodeBlock has no outer margin: add your own.
+10. Drawer is built on Base UI, and `vaul` is gone. Replace `asChild` with the `render` prop, and `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`). See the Drawer note under [Atoms](#atoms).
 
 ### Migration steps
 
@@ -326,7 +329,7 @@ These packages are optional — install them only if you use the features that n
 4. Transpile `@vendure-io/ui`. In Next.js, add it to `transpilePackages`.
 5. Find `variant="secondary"` on Badge and remove it. Check every Badge without a variant: it is now neutral.
 6. Find code that uses `primary`, `ring` or `accent` to mean Vendure blue. Change it to `brand` where you want the identity color.
-7. Change `DrawerTrigger asChild` and `DrawerClose asChild` to `render`.
+7. On Drawer, change `asChild` to `render` and `direction` to `swipeDirection`.
 8. Run `@vendure-io/design-lint` 1.0 (ESLint or Biome) to find raw colors. See [Getting Started](./getting-started.md#lint-for-raw-colors).
 9. Update the agent skills: `npx skills update --global vendure-ui vendure-tokens`.
 

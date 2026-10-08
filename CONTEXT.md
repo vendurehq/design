@@ -48,7 +48,7 @@ A hand-written composed component the design system ships (StatusBadge, EmptySta
 _Avoid_: custom component, shared component, widget
 
 **State dictionary**:
-The versioned, canonical mapping of entity states (pending, active, failed…) to tones. The contract that makes the same state look the same in every consumer.
+The canonical mapping of entity states (pending, active, failed…) to tones. The contract that makes the same state look the same in every consumer.
 _Avoid_: state map, badge mapping, status config
 
 **Consumer**:
