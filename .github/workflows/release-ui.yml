@@ -112,9 +112,16 @@ jobs:
         run: bun run build
 
       # bun pm pack resolves the workspace:^ peer range from bun.lock, and the
-      # design-tokens version bump-back does not update bun.lock.
-      - name: Sync workspace versions into bun.lock
-        run: bun install
+      # design-tokens version bump-back does not update bun.lock. bun 1.3.9 does
+      # not rewrite workspace versions on `bun install`, so set the line directly.
+      - name: Sync design-tokens version into bun.lock
+        run: |
+          TOKENS_VERSION="$(jq -r .version packages/design-tokens/package.json)"
+          awk -v v="$TOKENS_VERSION" '
+            /^    "packages\/design-tokens": \{/ { t = 1 }
+            t && /^      "version": / { sub(/"version": "[^"]*"/, "\"version\": \"" v "\""); t = 0 }
+            { print }
+          ' bun.lock > bun.lock.new && mv bun.lock.new bun.lock
 
       - name: Pack
         id: pack
@@ -132,6 +139,20 @@ jobs:
           fi
           echo "tarball=${TARBALLS[0]}" >> "$GITHUB_OUTPUT"
         working-directory: packages/ui
+
+      - name: Check packed peer range
+        run: |
+          TOKENS_VERSION="$(jq -r .version packages/design-tokens/package.json)"
+          PACKED="$(tar -xOzf "${{ steps.pack.outputs.tarball }}" package/package.json)"
+          PEER="$(jq -r '.peerDependencies["@vendure-io/design-tokens"] // ""' <<<"$PACKED")"
+          if [[ "$PEER" != "^$TOKENS_VERSION" ]]; then
+            echo "Packed @vendure-io/design-tokens peer range is '$PEER', expected '^$TOKENS_VERSION'." >&2
+            exit 1
+          fi
+          if jq -e '[.dependencies, .peerDependencies, .optionalDependencies | select(. != null) | .[]] | any(startswith("workspace:"))' <<<"$PACKED" >/dev/null; then
+            echo "Packed package.json still has a workspace: range." >&2
+            exit 1
+          fi
 
       # Trusted publishing: npm authenticates with the GitHub OIDC token (id-token: write).
       - name: Publish
