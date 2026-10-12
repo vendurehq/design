@@ -100,7 +100,9 @@ The skills install from `main` rather than npm and do not have a separate releas
 
 In the repo, `@vendure-io/ui` declares `@vendure-io/design-tokens` once, as a `workspace:^` peer dependency. Bun links the local package for development. `bun pm pack` replaces `workspace:^` with `^<tokens version>` in the tarball, for example `^2.0.0` or `^2.1.0-rc.0`. A prerelease lower bound is necessary, because a stable range such as `^2.0.0` does not match prereleases.
 
-`bun pm pack` reads the tokens version from `bun.lock`, not from `packages/design-tokens/package.json`. The design-tokens bump-back changes only `package.json`, so the ui release workflow runs `bun install` before it packs. This updates the workspace versions in `bun.lock`.
+`bun pm pack` reads the tokens version from `bun.lock`, not from `packages/design-tokens/package.json`. The design-tokens bump-back changes only `package.json`, so the ui release workflow sets the design-tokens version in `bun.lock` from `packages/design-tokens/package.json` before it packs. It does not rely on `bun install` for this, because bun 1.3.9 leaves workspace versions in `bun.lock` unchanged.
+
+After it packs, the workflow checks the packed `package.json` and fails before `npm publish` if the `@vendure-io/design-tokens` peer range is not `^<tokens version>` or if any dependency range starts with `workspace:`.
 
 The workflows publish with `npm publish <tarball>`, not `bun publish`. Bun does not support trusted publishing (OIDC) or provenance.
 
