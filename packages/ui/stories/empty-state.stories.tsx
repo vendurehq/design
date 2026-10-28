@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { InboxIcon, PackageIcon } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import {
   Table,
   TableBody,
@@ -123,5 +124,32 @@ export const InTableBody: Story = {
         </TableBody>
       </Table>
     </div>
+  ),
+};
+
+/**
+ * `size="compact"` for a small panel or side column: no illustration, tighter
+ * spacing, title, description and at most one action. `bordered={false}` sits
+ * flush inside the card.
+ */
+export const CompactInPanel: Story = {
+  render: () => (
+    <Card className="w-72">
+      <CardHeader>
+        <CardTitle>Custom domains</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <EmptyState
+          size="compact"
+          bordered={false}
+          title="No custom domains"
+          description="Point a domain at this environment to serve the storefront."
+        >
+          <Button variant="outline" size="sm">
+            Add domain
+          </Button>
+        </EmptyState>
+      </CardContent>
+    </Card>
   ),
 };
