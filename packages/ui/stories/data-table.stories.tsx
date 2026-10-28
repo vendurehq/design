@@ -366,7 +366,7 @@ export const RowActionsWithContextMenu: Story = {
 // Row selection + bulk actions — a controlled `RowSelectionState`, a leading
 // checkbox column, and replace-on-select: while rows are selected the bulk bar
 // takes the controls row's place in the header band (select a row to watch the
-// search input and columns gear swap out); clearing the selection restores them.
+// search input and Columns trigger swap out); clearing the selection restores them.
 export const RowSelection: Story = {
   render: () => {
     const [selection, setSelection] = useState<RowSelectionState>({});
@@ -403,7 +403,7 @@ export const RowSelection: Story = {
   },
 };
 
-// Column visibility — a controlled `VisibilityState` and the "Columns" gear.
+// Column visibility — a controlled `VisibilityState` and the "Columns" column picker.
 // Toggling an item hides its column live; the checkbox column is never listed.
 export const ColumnVisibility: Story = {
   render: () => {
@@ -417,11 +417,46 @@ export const ColumnVisibility: Story = {
           <PageHeader>
             <PageHeaderContent>
               <PageHeaderTitle>Orders</PageHeaderTitle>
-              <PageHeaderDescription>Toggle columns from the gear.</PageHeaderDescription>
+              <PageHeaderDescription>Show or hide columns from Columns.</PageHeaderDescription>
             </PageHeaderContent>
           </PageHeader>
         }
         columnVisibility={{ value: visibility, onChange: setVisibility }}
+      />
+    );
+  },
+};
+
+// Toolbar with everything — search, the add-filter menu and the column picker.
+// The column picker stays at the end of the row; the search takes the slack.
+export const ToolbarWithSearchFiltersAndColumns: Story = {
+  render: () => {
+    const [filters, setFilters] = useState<ColumnFiltersState>([]);
+    return (
+      <DataTable<Order>
+        rows={orders}
+        columns={columns}
+        getRowId={(order) => order.id}
+        header={
+          <PageHeader>
+            <PageHeaderContent>
+              <PageHeaderTitle>Orders</PageHeaderTitle>
+              <PageHeaderDescription>Search, filter and choose columns.</PageHeaderDescription>
+            </PageHeaderContent>
+          </PageHeader>
+        }
+        toolbar={
+          <InputGroup className="flex-1">
+            <InputGroupAddon align="inline-start">
+              <InputGroupText>
+                <SearchIcon />
+              </InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput placeholder="Search orders" />
+          </InputGroup>
+        }
+        filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+        columnVisibility={{ defaultValue: {} }}
       />
     );
   },
