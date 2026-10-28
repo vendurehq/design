@@ -3,6 +3,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { type FormatRelativeOptions, formatRelative } from '@vendure-io/ui/lib/format-relative';
+import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 
 function toDate(value: string | number | Date | null | undefined): Date | null {
@@ -107,7 +108,16 @@ function RelativeTime({
       <Tooltip>
         <TooltipTrigger
           // biome-ignore lint/a11y/noNoninteractiveTabindex: opt-in tooltip; keyboard users must be able to open it (WCAG 1.4.13).
-          render={<time tabIndex={0} {...timeProps} />}
+          render={
+            <time
+              tabIndex={0}
+              {...timeProps}
+              className={cn(
+                'focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-3',
+                props.className,
+              )}
+            />
+          }
         >
           {relative}
         </TooltipTrigger>
