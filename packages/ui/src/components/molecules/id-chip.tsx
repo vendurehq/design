@@ -1,5 +1,6 @@
 'use client';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { CopyButton } from '@vendure-io/ui/components/molecules/copyable-text';
 import { cn } from '@vendure-io/ui/lib/utils';
 
@@ -31,7 +32,7 @@ function truncateId(value: string, mode: TruncateMode): string {
 }
 
 interface IdChipProps {
-  /** The full value — always copied in full and revealed on hover via `title`. */
+  /** The full value: always copied in full, and shown in a tooltip when the chip shortens it. */
   value: string;
   /** Override the rendered text (e.g. a longer prefix). Bypasses `truncate`. */
   display?: string;
@@ -47,7 +48,8 @@ interface IdChipProps {
 /**
  * A bordered, monospace chip for IDs/tokens with a built-in copy affordance.
  * The rendered text is truncated for density while the full value is copied and
- * available on hover (`title`).
+ * shown in a DS Tooltip on hover, or when the copy button has focus. The chip
+ * adds no tab stop of its own; the copy button is its only interactive part.
  */
 function IdChip({
   value,
@@ -58,9 +60,8 @@ function IdChip({
   onCopied,
 }: IdChipProps) {
   const text = display ?? truncateId(value, truncate);
-
-  return (
-    <span data-slot="id-chip" title={value} className={chipChromeClass(copyable, className)}>
+  const chip = (
+    <span data-slot="id-chip" className={chipChromeClass(copyable, className)}>
       <span className="truncate">{text}</span>
       {/* 16px visual button to match the chip's density, but the ::after inset
           extends the hit target to 24px for the WCAG 2.2 AA minimum. */}
@@ -72,6 +73,18 @@ function IdChip({
         />
       ) : null}
     </span>
+  );
+
+  // Nothing is hidden when the chip shows the whole value.
+  if (text === value) return chip;
+
+  // The chip itself is the trigger, so hover anywhere on it opens the tooltip;
+  // focus on the copy button bubbles to it for keyboard users.
+  return (
+    <Tooltip>
+      <TooltipTrigger render={chip} />
+      <TooltipContent className="font-mono">{value}</TooltipContent>
+    </Tooltip>
   );
 }
 
