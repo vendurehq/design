@@ -180,7 +180,11 @@ function DataTableAppliedFilters<TData>({
       {overflow.length > 0 && (
         <Popover>
           <PopoverTrigger
-            render={<Button variant="outline">{collapsedLabel(overflow.length)}</Button>}
+            render={
+              <Button variant="outline" size="sm">
+                {collapsedLabel(overflow.length)}
+              </Button>
+            }
           />
           <PopoverContent align="start" className={cn('w-auto max-w-72 flex-row flex-wrap gap-2')}>
             {overflow.map(chipFor)}
