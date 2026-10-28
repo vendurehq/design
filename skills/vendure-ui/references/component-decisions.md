@@ -9,6 +9,7 @@ Render secret-like values as protected, copyable previews rather than exposed te
 
 - **Secrets are never plain identifiers:** Use AnonymizedToken for credentials and secret-like values; use IdChip only for non-secret identifiers.
 - **Reveal only through deliberate interaction:** Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.
+- **Secrets loaded on request reveal on click:** Secrets the server returns only on request use `loadValue`; reveal is a click, never hover. The consumer owns the fetch, the component owns hidden, loading, revealed, and error, and hiding clears the value.
 - **Do not render the full value elsewhere:** A protected token loses its purpose if the same secret is also present as visible text, a title, or an accessible label.
 
 Related decisions: `copyable-text`, `id-chip`.

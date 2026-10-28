@@ -16,6 +16,10 @@ export const uiGuidance = [
         body: 'Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.',
       },
       {
+        title: 'Secrets loaded on request reveal on click',
+        body: 'Secrets the server returns only on request use `loadValue`; reveal is a click, never hover. The consumer owns the fetch, the component owns hidden, loading, revealed, and error, and hiding clears the value.',
+      },
+      {
         title: 'Do not render the full value elsewhere',
         body: 'A protected token loses its purpose if the same secret is also present as visible text, a title, or an accessible label.',
       },
