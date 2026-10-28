@@ -417,7 +417,7 @@ export const ColumnVisibility: Story = {
           <PageHeader>
             <PageHeaderContent>
               <PageHeaderTitle>Orders</PageHeaderTitle>
-              <PageHeaderDescription>Show or hide columns from Columns.</PageHeaderDescription>
+              <PageHeaderDescription>Choose which columns to show.</PageHeaderDescription>
             </PageHeaderContent>
           </PageHeader>
         }
@@ -454,6 +454,31 @@ export const ToolbarWithSearchFiltersAndColumns: Story = {
             </InputGroupAddon>
             <InputGroupInput placeholder="Search orders" />
           </InputGroup>
+        }
+        filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+        columnVisibility={{ defaultValue: {} }}
+      />
+    );
+  },
+};
+
+// Add filter and Columns with no search input: Add filter stays at the start
+// of the row, the column picker at the end.
+export const ToolbarWithFiltersAndColumns: Story = {
+  render: () => {
+    const [filters, setFilters] = useState<ColumnFiltersState>([]);
+    return (
+      <DataTable<Order>
+        rows={orders}
+        columns={columns}
+        getRowId={(order) => order.id}
+        header={
+          <PageHeader>
+            <PageHeaderContent>
+              <PageHeaderTitle>Orders</PageHeaderTitle>
+              <PageHeaderDescription>Filter and choose columns.</PageHeaderDescription>
+            </PageHeaderContent>
+          </PageHeader>
         }
         filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
         columnVisibility={{ defaultValue: {} }}
