@@ -336,7 +336,7 @@ function OnDemandToken({
         <span
           data-slot="anonymized-token-error"
           role="alert"
-          className="text-destructive-subtle-foreground font-sans"
+          className="text-destructive-subtle-foreground pr-1 font-sans"
         >
           {loadErrorMessage}
         </span>
