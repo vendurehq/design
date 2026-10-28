@@ -21,9 +21,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Field>
-      <FieldLabel>Email</FieldLabel>
+      <FieldLabel htmlFor="email">Email</FieldLabel>
       <FieldContent>
-        <Input placeholder="you@example.com" />
+        <Input id="email" placeholder="you@example.com" />
         <FieldDescription>We will never share your email.</FieldDescription>
       </FieldContent>
     </Field>
@@ -33,9 +33,9 @@ export const Default: Story = {
 export const Horizontal: Story = {
   render: () => (
     <Field orientation="horizontal">
-      <FieldLabel>Username</FieldLabel>
+      <FieldLabel htmlFor="username">Username</FieldLabel>
       <FieldContent>
-        <Input placeholder="johndoe" />
+        <Input id="username" placeholder="johndoe" />
         <FieldDescription>Your public display name.</FieldDescription>
       </FieldContent>
     </Field>
@@ -74,9 +74,9 @@ export const WithMultipleErrors: Story = {
 export const Responsive: Story = {
   render: () => (
     <Field orientation="responsive">
-      <FieldLabel>Display Name</FieldLabel>
+      <FieldLabel htmlFor="display-name">Display Name</FieldLabel>
       <FieldContent>
-        <Input placeholder="Enter your name" />
+        <Input id="display-name" placeholder="Enter your name" />
         <FieldDescription>This is how others will see you.</FieldDescription>
       </FieldContent>
     </Field>
