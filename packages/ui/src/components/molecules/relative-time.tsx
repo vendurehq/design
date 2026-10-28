@@ -107,9 +107,9 @@ function RelativeTime({
     <>
       <Tooltip>
         <TooltipTrigger
-          // biome-ignore lint/a11y/noNoninteractiveTabindex: opt-in tooltip; keyboard users must be able to open it (WCAG 1.4.13).
           render={
             <time
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: opt-in tooltip; keyboard users must be able to open it (WCAG 1.4.13).
               tabIndex={0}
               {...timeProps}
               className={cn(
