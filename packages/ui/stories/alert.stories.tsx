@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
-import { TerminalIcon } from 'lucide-react';
+import { AlertCircleIcon, InfoIcon, TerminalIcon, TriangleAlertIcon } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/atoms/alert.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
@@ -36,6 +36,30 @@ export const Destructive: Story = {
           Retry
         </Button>
       </AlertAction>
+    </Alert>
+  ),
+};
+
+export const Warning: Story = {
+  render: () => (
+    <Alert variant="warning">
+      <TriangleAlertIcon />
+      <AlertTitle>Sending limit almost reached</AlertTitle>
+      <AlertDescription>
+        92 of 100 emails sent today. Upgrade the plan to keep sending.
+      </AlertDescription>
+    </Alert>
+  ),
+};
+
+export const Info: Story = {
+  render: () => (
+    <Alert variant="info">
+      <InfoIcon />
+      <AlertTitle>Scheduled maintenance</AlertTitle>
+      <AlertDescription>
+        The region is updated on Sunday between 02:00 and 03:00 UTC.
+      </AlertDescription>
     </Alert>
   ),
 };
@@ -83,6 +107,43 @@ export const DestructiveLightAndDark: Story = {
           <AlertTitle>Payment failed</AlertTitle>
           <AlertDescription>The card was declined. Ask the customer for another card.</AlertDescription>
         </Alert>
+      )}
+    </LightAndDark>
+  ),
+};
+
+/**
+ * All four variants side by side. Warning and info follow the destructive
+ * treatment: card surface, tone-colored text and icon via the tone's
+ * subtle-foreground, which reaches 4.5:1 on every surface in both modes.
+ */
+export const VariantsLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <>
+          <Alert>
+            <TerminalIcon />
+            <AlertTitle>Default</AlertTitle>
+            <AlertDescription>The CLI can deploy this project too.</AlertDescription>
+          </Alert>
+          <Alert variant="info">
+            <InfoIcon />
+            <AlertTitle>Info</AlertTitle>
+            <AlertDescription>The region is updated on Sunday at 02:00 UTC.</AlertDescription>
+          </Alert>
+          <Alert variant="warning">
+            <TriangleAlertIcon />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
+          </Alert>
+          <Alert variant="destructive">
+            <AlertCircleIcon />
+            <AlertTitle>Destructive</AlertTitle>
+            <AlertDescription>The deployment failed. Open the build log.</AlertDescription>
+          </Alert>
+        </>
       )}
     </LightAndDark>
   ),
