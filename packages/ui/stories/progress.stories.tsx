@@ -87,7 +87,8 @@ export const States: Story = {
 /**
  * Tone follows consequence: a usage meter turns warning near a limit the user
  * must act on and critical at or over it. A task progress bar stays default.
- * Toned bars pair the tone's subtle track with its subtle-foreground fill.
+ * Toned bars sit on the tone's subtle track with a fill that reaches 3:1 on
+ * the track and the page in both modes.
  */
 export const Tones: Story = {
   globals: { theme: 'light' },

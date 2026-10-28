@@ -4,9 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Alert, AlertDescription, AlertTitle } from './alert.tsx';
 import { Progress, type ProgressTone } from './progress.tsx';
 
-// Tone text and fills use the tone's subtle-foreground slot, which
+// Tone text uses the tone's subtle-foreground slot, which
 // @vendure-io/design-tokens checks at 4.5:1 on every surface and on the tone's
-// subtle slot, in both modes. The solid tone slots are not text- or fill-safe.
+// subtle slot, in both modes. Progress fills use ramp step 600 in light mode and
+// subtle-foreground in dark mode; both reach 3:1 on the track and the page.
+// The solid tone slots are not text- or fill-safe.
 
 /** Class tokens of the element carrying the given data-slot, entity-decoded. */
 function slotTokens(html: string, slot: string): string[] {
@@ -58,12 +60,13 @@ describe('Progress tone', () => {
   };
 
   for (const [tone, slot] of Object.entries(slots) as [ProgressTone, string][]) {
-    test(`${tone} pairs the ${slot} subtle track with the ${slot} subtle-foreground fill`, () => {
+    test(`${tone} pairs the ${slot} subtle track with a 600 fill, subtle-foreground in dark`, () => {
       const html = renderToStaticMarkup(<Progress tone={tone} value={90} aria-label="Usage" />);
       expect(html).toContain(`data-tone="${tone}"`);
       expect(slotTokens(html, 'progress-track')).toContain(`bg-${slot}-subtle`);
       const indicator = slotTokens(html, 'progress-indicator');
-      expect(indicator).toContain(`bg-${slot}-subtle-foreground`);
+      expect(indicator).toContain(`bg-${slot}-600`);
+      expect(indicator).toContain(`dark:bg-${slot}-subtle-foreground`);
       expect(indicator).not.toContain('bg-primary');
     });
   }
