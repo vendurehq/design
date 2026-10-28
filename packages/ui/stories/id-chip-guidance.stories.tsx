@@ -213,7 +213,7 @@ export const Truncation: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Truncate for density; the full value is always copied"
-        intro="Truncation only shortens the rendered text: the full value is copied in full and revealed on hover via the chip's title. Pick the mode by which part of the ID distinguishes it: keep both ends for a UUID, keep the tail for a prefixed key, keep everything for a short one."
+        intro="Truncation only shortens the rendered text: the full value is copied in full and shown in a tooltip on hover, or when the copy button has focus. Pick the mode by which part of the ID distinguishes it: keep both ends for a UUID, keep the tail for a prefixed key, keep everything for a short one."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[600px] text-left text-sm">

@@ -136,6 +136,7 @@ Render recency relatively and records absolutely, with formatting owned by Forma
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
 - **Pin locale and timezone under SSR:** Prevent hydration disagreement by making server and client formatting context explicit.
+- **The other form is a tooltip, not a title:** RelativeTime always carries the absolute time as its accessible description. Add tooltip where the exact time matters on hover and focus; it adds a tab stop, so it is opt-in. Never use a native title.
 
 Related decisions: `date-picker`, `money`.
 ## DescriptionList
@@ -174,7 +175,7 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Identifiers must earn screen space:** Use IdChip on detail, support, and diagnostic surfaces where a user needs the exact identifier.
 - **Dense rows already identify the entity:** Do not repeat an opaque ID in every table row unless the identifier is itself a primary lookup key.
 - **Secrets are not IDs:** Use AnonymizedToken for secret-like values and CopyableText for readable transported values.
-- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy.
+- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader

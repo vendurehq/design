@@ -315,6 +315,10 @@ export const uiGuidance = [
         title: 'Pin locale and timezone under SSR',
         body: 'Prevent hydration disagreement by making server and client formatting context explicit.',
       },
+      {
+        title: 'The other form is a tooltip, not a title',
+        body: 'RelativeTime always carries the absolute time as its accessible description. Add tooltip where the exact time matters on hover and focus; it adds a tab stop, so it is opt-in. Never use a native title.',
+      },
     ],
     related: ['date-picker', 'money'],
   },
@@ -419,7 +423,7 @@ export const uiGuidance = [
       },
       {
         title: 'Truncate visually, copy completely',
-        body: 'Choose truncation by identifier shape while keeping the full value available to copy.',
+        body: 'Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.',
       },
     ],
     related: ['anonymized-token', 'copyable-text'],
