@@ -34,6 +34,17 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
   retryLabel?: React.ReactNode;
   /** Extra actions (e.g. a not-found "Go back" link) rendered beside retry. */
   children?: React.ReactNode;
+  /**
+   * Draw the box. Defaults to `true`. Set `false` when the error state fills a
+   * region that already has a frame, such as a table body or a card.
+   */
+  bordered?: boolean;
+  /**
+   * `compact` drops the illustration and icon and tightens the spacing, for a
+   * small panel or side column where the full state is too tall. Keep it to a
+   * title, a description and at most one action. Defaults to `default`.
+   */
+  size?: 'default' | 'compact';
 }
 
 /**
@@ -50,19 +61,31 @@ function ErrorState({
   onRetry,
   retryLabel = 'Try again',
   children,
+  bordered = true,
+  size = 'default',
   className,
   ...props
 }: ErrorStateProps) {
+  const compact = size === 'compact';
   // Precedence: an explicit `illustration` (including `null`, to opt out)
   // always wins; otherwise an explicit `icon` (including `null`) keeps
   // rendering exactly as before. Only when neither is touched does the
   // default illustration replace the default triangle icon.
-  const resolvedIllustration =
-    illustration !== undefined ? illustration : icon === undefined ? <ErrorIllustration /> : null;
-  const resolvedIcon = icon === undefined ? <TriangleAlertIcon /> : icon;
+  const resolvedIllustration = compact ? null : illustration !== undefined ? (
+    illustration
+  ) : icon === undefined ? (
+    <ErrorIllustration />
+  ) : null;
+  const resolvedIcon = compact ? null : icon === undefined ? <TriangleAlertIcon /> : icon;
 
   return (
-    <Empty role="alert" data-slot="error-state" className={cn('border', className)} {...props}>
+    <Empty
+      role="alert"
+      data-slot="error-state"
+      data-size={size}
+      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-2 p-4', className)}
+      {...props}
+    >
       <EmptyHeader>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
@@ -71,11 +94,11 @@ function ErrorState({
             {resolvedIcon}
           </EmptyMedia>
         ) : null}
-        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
         {description ? <EmptyDescription>{description}</EmptyDescription> : null}
       </EmptyHeader>
       {onRetry || children ? (
-        <EmptyContent>
+        <EmptyContent className={cn(compact && 'gap-2')}>
           {onRetry ? (
             <Button variant="outline" size="sm" onClick={onRetry}>
               {retryLabel}
