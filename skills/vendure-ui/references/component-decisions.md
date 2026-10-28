@@ -96,6 +96,7 @@ Confirm only consequential actions, and make the consequence and verb explicit.
 - **Name the action twice:** The title states the consequence and the confirmation button repeats the concrete verb.
 - **Destructive styling follows destructive outcome:** A confirmation can be consequential without causing loss. Use destructive only when the action removes or destroys.
 - **Keep pending state inside the dialog:** Disable repeated submission, preserve context, and close only after the confirmed action succeeds.
+- **Hold confirm until the consequence is known:** When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.
 
 Related decisions: `button`.
 ## CopyableText

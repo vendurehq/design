@@ -213,6 +213,10 @@ export const uiGuidance = [
         title: 'Keep pending state inside the dialog',
         body: 'Disable repeated submission, preserve context, and close only after the confirmed action succeeds.',
       },
+      {
+        title: 'Hold confirm until the consequence is known',
+        body: 'When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.',
+      },
     ],
     related: ['button'],
   },
