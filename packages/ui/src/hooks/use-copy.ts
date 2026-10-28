@@ -1,5 +1,6 @@
 'use client';
 
+import { type ClipboardSource, writeToClipboard } from '@vendure-io/ui/lib/clipboard';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseCopyOptions {
@@ -10,8 +11,11 @@ interface UseCopyOptions {
 interface UseCopyReturn {
   /** True for `timeout` ms after the last successful copy. */
   copied: boolean;
-  /** Writes `text` to the clipboard. Resolves `true` on success, `false` on failure — never throws. */
-  copy: (text: string) => Promise<boolean>;
+  /**
+   * Writes `text` to the clipboard, calling it first when it is a loader.
+   * Resolves `true` on success, `false` on failure — never throws.
+   */
+  copy: (text: ClipboardSource) => Promise<boolean>;
 }
 
 /**
@@ -32,9 +36,9 @@ export function useCopy({ timeout = 2000 }: UseCopyOptions = {}): UseCopyReturn 
   );
 
   const copy = useCallback(
-    async (text: string): Promise<boolean> => {
+    async (text: ClipboardSource): Promise<boolean> => {
       try {
-        await navigator.clipboard.writeText(text);
+        await writeToClipboard(text);
         setCopied(true);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => setCopied(false), timeout);
