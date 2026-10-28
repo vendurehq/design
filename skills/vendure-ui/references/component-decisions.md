@@ -175,6 +175,7 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Dense rows already identify the entity:** Do not repeat an opaque ID in every table row unless the identifier is itself a primary lookup key.
 - **Secrets are not IDs:** Use AnonymizedToken for secret-like values and CopyableText for readable transported values.
 - **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy.
+- **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader

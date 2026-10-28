@@ -421,6 +421,10 @@ export const uiGuidance = [
         title: 'Truncate visually, copy completely',
         body: 'Choose truncation by identifier shape while keeping the full value available to copy.',
       },
+      {
+        title: 'Name what the button copies',
+        body: 'Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.',
+      },
     ],
     related: ['anonymized-token', 'copyable-text'],
   },
