@@ -121,3 +121,31 @@ export const ErrorLightAndDark: Story = {
     </LightAndDark>
   ),
 };
+
+/**
+ * Field wires its control: the input gets aria-describedby with the ids of the
+ * FieldDescription and FieldError it renders, and aria-invalid while the Field
+ * is data-invalid. No ids are passed by hand.
+ */
+export const ValidAndInvalid: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <>
+          <Field>
+            <FieldLabel htmlFor={`sku-valid-${theme}`}>SKU</FieldLabel>
+            <Input id={`sku-valid-${theme}`} defaultValue="TSHIRT-RED-M" />
+            <FieldDescription>Unique per variant.</FieldDescription>
+          </Field>
+          <Field data-invalid="true">
+            <FieldLabel htmlFor={`sku-invalid-${theme}`}>SKU</FieldLabel>
+            <Input id={`sku-invalid-${theme}`} defaultValue="" />
+            <FieldDescription>Unique per variant.</FieldDescription>
+            <FieldError>Enter a SKU.</FieldError>
+          </Field>
+        </>
+      )}
+    </LightAndDark>
+  ),
+};

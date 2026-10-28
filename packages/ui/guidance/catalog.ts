@@ -377,7 +377,7 @@ export const uiGuidance = [
       },
       {
         title: 'Invalid state belongs to field and control',
-        body: 'Mark the Field data-invalid and the control aria-invalid so visual and accessible state agree.',
+        body: 'Mark the Field data-invalid. Field then sets aria-invalid on its control and links FieldDescription and FieldError through aria-describedby, so visual and accessible state agree. Do not pass these ids by hand.',
       },
       {
         title: 'Group by task, not database shape',
