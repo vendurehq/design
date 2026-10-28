@@ -3,6 +3,7 @@
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 
 function Switch({
   className,
@@ -19,7 +20,7 @@ function Switch({
         "data-checked:bg-primary data-unchecked:bg-control-border focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-3 aria-invalid:ring-3 data-disabled:cursor-not-allowed data-disabled:opacity-50 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px]",
         className
       )}
-      {...props}
+      {...useFieldControlProps(props)}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"

@@ -3,6 +3,7 @@
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { CheckIcon, MinusIcon } from "lucide-react"
 
 function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root.Props) {
@@ -14,7 +15,7 @@ function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root
         className
       )}
       indeterminate={indeterminate}
-      {...props}
+      {...useFieldControlProps(props)}
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"

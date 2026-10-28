@@ -4,13 +4,14 @@ import { Radio as RadioPrimitive } from "@base-ui/react/radio"
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 
 function RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {
   return (
     <RadioGroupPrimitive
       data-slot="radio-group"
       className={cn("grid w-full gap-3", className)}
-      {...props}
+      {...useFieldControlProps(props)}
     />
   )
 }
