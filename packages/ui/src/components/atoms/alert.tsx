@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 const alertVariants = cva(
-  "grid gap-0.5 rounded-lg border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
+  "grid gap-x-2.5 gap-y-0.5 rounded-lg border px-4 py-3 text-left text-sm has-[>svg]:grid-cols-[auto_1fr] has-data-[slot=alert-action]:grid-cols-[1fr_auto] has-[>svg]:has-data-[slot=alert-action]:grid-cols-[auto_1fr_auto] *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
   {
     variants: {
       variant: {
@@ -67,11 +67,15 @@ function AlertDescription({
   )
 }
 
+// The action takes the last grid column on the first row, so an action of any
+// width sits on the first line and the text wraps before it. The negative
+// block margin lets a size="sm" button (h-8) fit a 20px text line: a one-line
+// alert keeps its height and the button stays centred on the sentence.
 function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="alert-action"
-      className={cn("absolute top-2.5 right-3", className)}
+      className={cn("col-end-[-1] row-start-1 -my-1.5 flex items-center gap-2 self-center", className)}
       {...props}
     />
   )
