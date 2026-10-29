@@ -43,7 +43,7 @@ function DataTableViewOptions<TData>({
       <DropdownMenuTrigger
         data-slot="data-table-view-options"
         render={
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <SlidersHorizontalIcon />
             {triggerLabel}
           </Button>
