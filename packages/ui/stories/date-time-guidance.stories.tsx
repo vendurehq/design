@@ -127,7 +127,7 @@ const RULES: { n: number; title: string; body: string }[] = [
   {
     n: 4,
     title: 'Relative already carries the absolute',
-    body: 'RelativeTime carries the exact instant as its accessible description, and with tooltip it shows it on hover and focus, so you seldom need both on screen. Reach for a paired absolute rendering only when the surface is a record that must show its precise date even without a hover.',
+    body: 'RelativeTime shows the exact instant in a tooltip on hover and carries it as its accessible description, so you seldom need both on screen. Add focusable where keyboard users need the exact time, but never inside a link or a button. Reach for a paired absolute rendering, or DateTime alone, when the surface is a record that must show its precise date without a hover.',
   },
   {
     n: 5,

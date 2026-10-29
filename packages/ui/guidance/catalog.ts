@@ -317,7 +317,7 @@ export const uiGuidance = [
       },
       {
         title: 'The other form is a tooltip, not a title',
-        body: 'RelativeTime always carries the absolute time as its accessible description. Add tooltip where the exact time matters on hover and focus; it adds a tab stop, so it is opt-in. Never use a native title.',
+        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
       },
     ],
     related: ['date-picker', 'money'],

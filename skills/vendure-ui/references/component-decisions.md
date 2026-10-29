@@ -136,7 +136,7 @@ Render recency relatively and records absolutely, with formatting owned by Forma
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
 - **Pin locale and timezone under SSR:** Prevent hydration disagreement by making server and client formatting context explicit.
-- **The other form is a tooltip, not a title:** RelativeTime always carries the absolute time as its accessible description. Add tooltip where the exact time matters on hover and focus; it adds a tab stop, so it is opt-in. Never use a native title.
+- **The other form is a tooltip, not a title:** RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.
 
 Related decisions: `date-picker`, `money`.
 ## DescriptionList
