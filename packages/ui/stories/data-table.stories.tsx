@@ -18,13 +18,13 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
-import { Skeleton } from '../src/components/atoms/skeleton.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
+  DataTableSkeletonLine,
   type RowSelectionState,
   type SortingState,
   type TableInstance,
@@ -265,10 +265,46 @@ export const Loading: Story = {
   ),
 };
 
-// Two-line cells (a title over a muted sub-line) are taller than the default
-// one-bar skeleton. `skeletonCells` gives those columns a matching loading
-// shape: each bar sits in a box of its text line's height, so the loading row
-// and the loaded row are the same height and the table does not jump.
+/** Body row heights of the DataTable inside `[data-testid=testId]`. */
+function bodyRowHeights(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('tbody [data-slot="table-row"]'),
+    (row) => row.getBoundingClientRect().height,
+  );
+}
+
+/** Compares loaded and loading rows row by row: the last row has no bottom border. */
+async function expectSameRowHeights(canvasElement: HTMLElement, rowCount: number) {
+  const loading = bodyRowHeights(canvasElement, 'loading');
+  await expect(loading).toHaveLength(rowCount);
+  await expect(loading).toEqual(bodyRowHeights(canvasElement, 'loaded'));
+}
+
+// One-line cells (text, Money) need no `skeletonCells`: the default loading
+// line is one line box tall, so loaded (top) and loading (bottom) rows are the
+// same height.
+const oneLineColumns = columns.filter((column) => column.header !== 'Status');
+
+export const LoadingMatchesOneLineRows: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order> rows={orders.slice(0, 3)} columns={oneLineColumns} getRowId={(o) => o.id} />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={oneLineColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          skeletonRowCount={3}
+        />
+      </div>
+    </div>
+  ),
+  play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
+};
+
 const twoLineColumns: ColumnDef<Order>[] = [
   {
     accessorKey: 'customer',
@@ -294,29 +330,26 @@ const twoLineColumns: ColumnDef<Order>[] = [
   },
 ];
 
+// One skeleton line per text line; `text-xs` sizes the sub-line like the loaded one.
 const twoLineSkeletons = {
   customer: (
     <div className="flex flex-col">
-      <div className="flex h-5 items-center">
-        <Skeleton className="h-3.5 w-36" />
-      </div>
-      <div className="flex h-4 items-center">
-        <Skeleton className="h-3 w-20" />
-      </div>
+      <DataTableSkeletonLine className="w-36" />
+      <DataTableSkeletonLine className="w-20 text-xs" />
     </div>
   ),
-  state: <Skeleton className="h-5 w-24 rounded-4xl" />,
 };
 
 const twoLineRowActions = (order: Order) => (
-  <Button variant="ghost" size="icon" className="size-8">
+  <Button variant="ghost" size="icon-sm">
     <MoreHorizontalIcon />
     <span className="sr-only">Open menu for {order.code}</span>
   </Button>
 );
 
-// Loading rows shaped like the loaded rows — the loaded table (top) and the
-// loading table (bottom) share columns; `skeletonCells` keeps the row height.
+// A two-line cell (a title over a muted sub-line) is taller than one line, so it
+// gets a `skeletonCells` entry; the badge and money columns keep the default.
+// Loaded (top) and loading (bottom) rows are the same height.
 export const LoadingMatchesRowShape: Story = {
   render: () => (
     <div className="flex flex-col gap-6">
@@ -343,19 +376,7 @@ export const LoadingMatchesRowShape: Story = {
       </div>
     </div>
   ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const bodyRowHeights = (testId: string) =>
-      Array.from(
-        canvas.getByTestId(testId).querySelectorAll('tbody [data-slot="table-row"]'),
-        (row) => row.getBoundingClientRect().height,
-      );
-    const loaded = bodyRowHeights('loaded');
-    const loading = bodyRowHeights('loading');
-    // Row by row: the last row has no bottom border, so it is shorter in both tables.
-    await expect(loading).toHaveLength(3);
-    await expect(loading).toEqual(loaded);
-  },
+  play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
 };
 
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.
