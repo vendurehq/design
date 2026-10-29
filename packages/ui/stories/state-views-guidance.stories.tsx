@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { InboxIcon, PackageIcon, SearchIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { EmptyCollectionIllustration } from '../src/components/molecules/illustrations/empty-collection.tsx';
 import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
@@ -407,6 +408,53 @@ export const IllustrationUsage: Story = {
                 <span className="text-muted-foreground">No line items</span>
               </div>
             </div>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+export const CompactForSmallPanels: Story = {
+  name: '5 · Compact for small panels',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Compact inside a small panel; full state for a region"
+        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush with bordered={false}."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A side card keeps its height. The state still names what failed and offers one recovery."
+          >
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>Usage this month</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ErrorState
+                  size="compact"
+                  bordered={false}
+                  title="Couldn't load usage"
+                  description="This is on us. Try again in a moment."
+                  onRetry={() => {}}
+                />
+              </CardContent>
+            </Card>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Bare muted text in a panel reads as content, not a state: no title, no recovery, and no role=alert for a failure."
+          >
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>Usage this month</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">Couldn&apos;t load usage.</p>
+              </CardContent>
+            </Card>
           </Example>
         </div>
       </Section>

@@ -2,6 +2,33 @@ import type { GuidanceEntry } from './types.ts';
 
 export const uiGuidance = [
   {
+    id: 'alert',
+    title: 'Alert',
+    summary: 'Use one Alert for a page or region notice, toned by its consequence for the viewer.',
+    sourceStory: 'alert-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Tone follows consequence',
+        body: '`warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.',
+      },
+      {
+        title: 'Tone is not volume',
+        body: 'Never use a tone to make a routine notice louder. A routine notice stays `default`.',
+      },
+      {
+        title: 'A page notice is one Alert',
+        body: 'Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'A routine notice with no consequence attached.' },
+      { choice: 'info', when: 'A fact worth noticing, with no positive or negative valence.' },
+      { choice: 'warning', when: 'The user must act, or a risk exists.' },
+      { choice: 'destructive', when: 'Something failed.' },
+    ],
+    related: ['status-badge'],
+  },
+  {
     id: 'anonymized-token',
     title: 'AnonymizedToken',
     summary: 'Render secret-like values as protected, copyable previews rather than exposed text.',
@@ -217,6 +244,10 @@ export const uiGuidance = [
         title: 'Keep pending state inside the dialog',
         body: 'Disable repeated submission, preserve context, and close only after the confirmed action succeeds.',
       },
+      {
+        title: 'Hold confirm until the consequence is known',
+        body: 'When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.',
+      },
     ],
     related: ['button'],
   },
@@ -318,6 +349,10 @@ export const uiGuidance = [
       {
         title: 'Pin locale and timezone under SSR',
         body: 'Prevent hydration disagreement by making server and client formatting context explicit.',
+      },
+      {
+        title: 'The other form is a tooltip, not a title',
+        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
       },
     ],
     related: ['date-picker', 'money'],
@@ -423,7 +458,11 @@ export const uiGuidance = [
       },
       {
         title: 'Truncate visually, copy completely',
-        body: 'Choose truncation by identifier shape while keeping the full value available to copy.',
+        body: 'Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.',
+      },
+      {
+        title: 'Name what the button copies',
+        body: 'Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.',
       },
     ],
     related: ['anonymized-token', 'copyable-text'],
@@ -526,6 +565,34 @@ export const uiGuidance = [
     related: ['button', 'list-header', 'status-badge'],
   },
   {
+    id: 'progress',
+    title: 'Progress',
+    summary:
+      'Show task completion or usage against a limit, toned only when the level has a consequence.',
+    sourceStory: 'progress-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Tone follows consequence, not fill level alone',
+        body: 'A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.',
+      },
+      {
+        title: 'Tone never carries the value alone',
+        body: 'Pair a toned bar with ProgressValue or text that states the amount and the limit.',
+      },
+      {
+        title: 'One bar per measure',
+        body: 'Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
+      { choice: 'success', when: 'A meter whose filled level is the healthy outcome.' },
+      { choice: 'warning', when: 'Near a limit the user must act on.' },
+      { choice: 'critical', when: 'At or over the limit.' },
+    ],
+    related: ['status-badge', 'stat-card'],
+  },
+  {
     id: 'secret-value',
     title: 'SecretValue',
     summary:
@@ -602,6 +669,10 @@ export const uiGuidance = [
       {
         title: 'Tables own their perimeter',
         body: 'When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.',
+      },
+      {
+        title: 'Compact for small panels',
+        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}.',
       },
       {
         title: 'Errors own the failure',

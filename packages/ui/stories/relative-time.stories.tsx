@@ -18,7 +18,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Self-refreshes every `updateInterval` ms (default 60_000) so a long-open view
-// ages on its own. Hover any value for the absolute time in the title.
+// ages on its own. Hover any value for the absolute time in the DS Tooltip; it
+// is also the accessible description.
 export const Playground: Story = {};
 
 export const PastAndFuture: Story = {
@@ -53,4 +54,22 @@ export const RenderDriven: Story = {
 // Nullish/invalid input renders the fallback (default em dash).
 export const Fallback: Story = {
   render: () => <RelativeTime value={null} />,
+};
+
+/**
+ * `focusable` makes the time a tab stop, so keyboard users can open the
+ * tooltip. Opt in where the exact time matters to keyboard users, never inside
+ * a link or a button.
+ */
+export const Focusable: Story = {
+  args: { focusable: true },
+};
+
+/**
+ * `tooltip={false}` renders a plain `<time>` for a time inside another tooltip
+ * trigger, so the outer tooltip keeps its content. The absolute time stays the
+ * accessible description.
+ */
+export const WithoutTooltip: Story = {
+  args: { tooltip: false },
 };

@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from '@vendure-io/ui/components/atoms/alert-dialog';
 import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
-import { type ReactElement, type ReactNode, useRef, useState } from 'react';
+import { type ReactElement, type ReactNode, useId, useRef, useState } from 'react';
 
 interface ConfirmDialogProps {
   title: ReactNode;
@@ -26,6 +26,14 @@ interface ConfirmDialogProps {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   variant?: 'default' | 'destructive';
+  /**
+   * Hold the confirm button disabled while the dialog cannot be confirmed yet,
+   * e.g. while the consequences it describes are still loading. Cancel stays
+   * available.
+   */
+  confirmDisabled?: boolean;
+  /** Why confirm is disabled, shown beside the buttons while `confirmDisabled` is set. */
+  confirmDisabledReason?: ReactNode;
   /** Uncontrolled mode — the element that opens the dialog. */
   children?: ReactElement;
   /** Controlled mode — supply with `onOpenChange`. */
@@ -40,6 +48,8 @@ function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
+  confirmDisabled = false,
+  confirmDisabledReason,
   children,
   open,
   onOpenChange,
@@ -51,6 +61,8 @@ function ConfirmDialog({
   // re-render disables the button, so the in-flight flag lives in a ref too.
   const pendingRef = useRef(false);
   const actualOpen = isControlled ? open : internalOpen;
+  const reasonId = useId();
+  const showReason = confirmDisabled && !pending && Boolean(confirmDisabledReason);
 
   const setOpen = (next: boolean) => {
     if (!isControlled) setInternalOpen(next);
@@ -58,7 +70,7 @@ function ConfirmDialog({
   };
 
   const handleConfirm = async () => {
-    if (pendingRef.current) return;
+    if (pendingRef.current || confirmDisabled) return;
     pendingRef.current = true;
     try {
       setPending(true);
@@ -87,13 +99,23 @@ function ConfirmDialog({
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
+          {showReason ? (
+            <p
+              id={reasonId}
+              data-slot="confirm-dialog-disabled-reason"
+              className="text-muted-foreground self-center text-sm group-data-[size=sm]/alert-dialog-content:col-span-2 sm:mr-auto"
+            >
+              {confirmDisabledReason}
+            </p>
+          ) : null}
           <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
           {/* AlertDialogAction is a plain Button (not a Close), so closing stays
               under our control — the promise decides when the dialog leaves. */}
           <AlertDialogAction
             variant={variant}
-            disabled={pending}
+            disabled={pending || confirmDisabled}
             aria-busy={pending || undefined}
+            aria-describedby={showReason ? reasonId : undefined}
             onClick={handleConfirm}
           >
             {pending ? <Spinner /> : null}
