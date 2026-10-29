@@ -54,10 +54,7 @@ type RevealAction =
   | { type: 'failed' }
   | { type: 'hide' };
 
-/**
- * State of a SecretValue. Exported for tests; not part of the component API.
- * @internal
- */
+/** State of a SecretValue: hidden, loading, revealed or error. */
 function revealReducer(state: RevealState, action: RevealAction): RevealState {
   switch (action.type) {
     case 'load':
@@ -182,5 +179,5 @@ function SecretValue({
   );
 }
 
-export { revealReducer, SecretValue };
+export { SecretValue };
 export type { SecretValueProps };
