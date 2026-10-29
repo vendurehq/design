@@ -19,6 +19,10 @@ export const uiGuidance = [
         title: 'A page notice is one Alert',
         body: 'Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
       },
+      {
+        title: 'Actions go in AlertAction',
+        body: 'Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'A routine notice with no consequence attached.' },
