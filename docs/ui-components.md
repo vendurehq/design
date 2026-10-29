@@ -351,6 +351,33 @@ import {
 </Card>
 ```
 
+### DataTable loading rows
+
+While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one text-line bar by default. When a column's cells are taller than one line, pass `skeletonCells`, keyed by column id, so the loading rows keep the loaded row height:
+
+```tsx
+import { Skeleton } from "@vendure-io/ui/components/atoms/skeleton";
+import { DataTable } from "@vendure-io/ui/components/molecules/data-table/data-table";
+
+<DataTable
+  rows={data?.items ?? []}
+  columns={columns}
+  isLoading={isPending}
+  skeletonCells={{
+    // A title over a muted sub-line: one box per text line.
+    customer: (
+      <div className="flex flex-col">
+        <div className="flex h-5 items-center"><Skeleton className="h-3.5 w-36" /></div>
+        <div className="flex h-4 items-center"><Skeleton className="h-3 w-20" /></div>
+      </div>
+    ),
+    state: <Skeleton className="h-5 w-24 rounded-4xl" />,
+  }}
+/>
+```
+
+Columns without an entry keep the default bar. The generated select cell stays empty and the actions cell gets an icon-button-sized block. An entry for `actions` overrides it.
+
 ## Optional Peer Dependencies
 
 These packages are optional — install them only if you use the features that need them:

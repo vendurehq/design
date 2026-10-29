@@ -134,6 +134,7 @@ Use the batteries-included collection engine while keeping URL, fetching, and pe
 - **Capabilities are opt-in:** Enable a capability by supplying its configuration; do not render disabled placeholder controls.
 - **The consumer owns state outside the table:** The consumer owns URL state, fetching, authorization, and persistence. DataTable owns one TanStack table instance and UI composition.
 - **Use composition seams before wrappers:** Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.
+- **Shape loading rows like loaded rows:** When a cell is taller than one text line (a title over a sub-line, an avatar, a chip), pass skeletonCells keyed by column id so the loading rows keep the loaded row height and the table does not jump.
 - **Do not use DataTable for static layout:** Use Table or DescriptionList when there is no interactive collection behavior to coordinate.
 
 Related decisions: `list-header`, `table-pagination`.

@@ -300,6 +300,10 @@ export const uiGuidance = [
         body: 'Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.',
       },
       {
+        title: 'Shape loading rows like loaded rows',
+        body: 'When a cell is taller than one text line (a title over a sub-line, an avatar, a chip), pass skeletonCells keyed by column id so the loading rows keep the loaded row height and the table does not jump.',
+      },
+      {
         title: 'Do not use DataTable for static layout',
         body: 'Use Table or DescriptionList when there is no interactive collection behavior to coordinate.',
       },
