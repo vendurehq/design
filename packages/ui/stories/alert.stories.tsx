@@ -14,6 +14,51 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Pixel tolerance for sub-pixel rounding in the layout assertions. */
+const EPSILON = 1;
+
+function slot(alert: HTMLElement, name: string) {
+  const element = alert.querySelector<HTMLElement>(`[data-slot=${name}]`);
+  expect(element).not.toBeNull();
+  return element!;
+}
+
+/** The first button of the action, which is what the eye lines up. */
+function actionButton(alert: HTMLElement) {
+  const [button] = within(slot(alert, 'alert-action')).getAllByRole('button');
+  expect(button).toBeDefined();
+  return button!;
+}
+
+/** Asserts the action sits beside the text column and never covers it. */
+function expectActionBesideText(alert: HTMLElement) {
+  const actionBox = slot(alert, 'alert-action').getBoundingClientRect();
+  const texts = alert.querySelectorAll<HTMLElement>('[data-slot=alert-title], [data-slot=alert-description]');
+  expect(texts.length).toBeGreaterThan(0);
+  for (const text of texts) {
+    expect(text.getBoundingClientRect().right).toBeLessThanOrEqual(actionBox.left + EPSILON);
+  }
+}
+
+/** Asserts every button of the action stays inside the alert padding. */
+function expectActionInsideAlert(alert: HTMLElement) {
+  const alertBox = alert.getBoundingClientRect();
+  const style = getComputedStyle(alert);
+  const right = alertBox.right - Number.parseFloat(style.paddingRight) - Number.parseFloat(style.borderRightWidth);
+  for (const button of within(slot(alert, 'alert-action')).getAllByRole('button')) {
+    expect(button.getBoundingClientRect().right).toBeLessThanOrEqual(right + EPSILON);
+  }
+}
+
+/** Asserts the action button is centred on the first line of the given text. */
+function expectActionOnFirstLine(alert: HTMLElement, text: HTMLElement) {
+  const textBox = text.getBoundingClientRect();
+  const lineHeight = Number.parseFloat(getComputedStyle(text).lineHeight);
+  const buttonBox = actionButton(alert).getBoundingClientRect();
+  const buttonCentre = buttonBox.top + buttonBox.height / 2;
+  expect(Math.abs(buttonCentre - (textBox.top + lineHeight / 2))).toBeLessThanOrEqual(EPSILON);
+}
+
 export const Default: Story = {
   render: () => (
     <Alert>
@@ -38,7 +83,12 @@ export const Destructive: Story = {
         </Button>
       </AlertAction>
     </Alert>
-  ),
+  ),  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+  },
 };
 
 export const Warning: Story = {
@@ -77,24 +127,6 @@ export const WithIcon: Story = {
   ),
 };
 
-/** Pixel tolerance for sub-pixel rounding in the layout assertions. */
-const EPSILON = 1;
-
-/** Asserts the action sits beside the text column and never covers it. */
-function expectActionBesideText(alert: HTMLElement) {
-  const action = alert.querySelector<HTMLElement>('[data-slot=alert-action]');
-  const texts = alert.querySelectorAll<HTMLElement>(
-    '[data-slot=alert-title], [data-slot=alert-description]',
-  );
-  expect(action).not.toBeNull();
-  expect(texts.length).toBeGreaterThan(0);
-  const actionBox = action!.getBoundingClientRect();
-  for (const text of texts) {
-    expect(text.getBoundingClientRect().right).toBeLessThanOrEqual(actionBox.left + EPSILON);
-  }
-  return actionBox;
-}
-
 /**
  * The action takes its own grid column. A wide action stays on the sentence
  * line and the alert keeps the height of a one-line notice.
@@ -114,20 +146,20 @@ export const OneLineWithWideAction: Story = {
   ),
   play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert');
-    const actionBox = expectActionBesideText(alert);
-    const description = alert.querySelector<HTMLElement>('[data-slot=alert-description]')!;
-    const textBox = description.getBoundingClientRect();
+    const description = slot(alert, 'alert-description');
     const lineHeight = Number.parseFloat(getComputedStyle(description).lineHeight);
-    // The sentence fits on one line.
-    expect(textBox.height).toBeLessThanOrEqual(lineHeight + EPSILON);
-    // The action is centred on that line.
-    const textCentre = textBox.top + textBox.height / 2;
-    const actionCentre = actionBox.top + actionBox.height / 2;
-    expect(Math.abs(actionCentre - textCentre)).toBeLessThanOrEqual(EPSILON);
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    // The sentence fits on one line and the action is centred on it.
+    expect(description.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight + EPSILON);
+    expectActionOnFirstLine(alert, description);
   },
 };
 
-/** A long sentence wraps before the action, never under it. */
+/**
+ * A long sentence wraps before the action, never under it. The action lines
+ * up with the first line, not the middle of the paragraph.
+ */
 export const LongSentenceWithAction: Story = {
   render: () => (
     <Alert variant="warning" className="max-w-xl">
@@ -144,7 +176,10 @@ export const LongSentenceWithAction: Story = {
     </Alert>
   ),
   play: async ({ canvasElement }) => {
-    expectActionBesideText(within(canvasElement).getByRole('alert'));
+    const alert = within(canvasElement).getByRole('alert');
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    expectActionOnFirstLine(alert, slot(alert, 'alert-description'));
   },
 };
 
@@ -165,10 +200,67 @@ export const TitleDescriptionAction: Story = {
   ),
   play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert');
-    const actionBox = expectActionBesideText(alert);
-    const title = alert.querySelector<HTMLElement>('[data-slot=alert-title]')!.getBoundingClientRect();
-    const titleCentre = title.top + title.height / 2;
-    expect(Math.abs(actionBox.top + actionBox.height / 2 - titleCentre)).toBeLessThanOrEqual(EPSILON);
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+  },
+};
+
+/** AlertAction lays out several buttons in a row. */
+export const TwoActions: Story = {
+  render: () => (
+    <Alert variant="warning">
+      <TriangleAlertIcon />
+      <AlertDescription>The custom domain is not verified. Add the DNS record, then check again.</AlertDescription>
+      <AlertAction>
+        <Button variant="ghost" size="sm">
+          View DNS record
+        </Button>
+        <Button variant="outline" size="sm">
+          Check again
+        </Button>
+      </AlertAction>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    expectActionOnFirstLine(alert, slot(alert, 'alert-description'));
+  },
+};
+
+/**
+ * Below 28rem the action moves to its own row under the text, so the sentence
+ * keeps the full width. Buttons that do not fit wrap, and an unbreakable token
+ * wraps instead of widening the alert.
+ */
+export const Narrow: Story = {
+  render: () => (
+    <Alert variant="info" className="max-w-xs">
+      <InfoIcon />
+      <AlertDescription>
+        Backup bk_01JDQ8ZK4W7Y3N2M5P6R8T9V0X is ready for the project vendure-demo-storefront.
+      </AlertDescription>
+      <AlertAction>
+        <Button variant="ghost" size="sm">
+          View backups
+        </Button>
+        <Button variant="outline" size="sm">
+          Restore backup
+        </Button>
+      </AlertAction>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    const description = slot(alert, 'alert-description');
+    const textBox = description.getBoundingClientRect();
+    const actionBox = slot(alert, 'alert-action').getBoundingClientRect();
+    expect(actionBox.top).toBeGreaterThanOrEqual(textBox.bottom - EPSILON);
+    expect(Math.abs(actionBox.left - textBox.left)).toBeLessThanOrEqual(EPSILON);
+    expect(description.scrollWidth).toBeLessThanOrEqual(description.clientWidth);
+    expectActionInsideAlert(alert);
   },
 };
 
@@ -200,7 +292,11 @@ export const ActionVariants: Story = {
   play: async ({ canvasElement }) => {
     const alerts = within(canvasElement).getAllByRole('alert');
     expect(alerts).toHaveLength(4);
-    for (const alert of alerts) expectActionBesideText(alert);
+    for (const alert of alerts) {
+      expectActionBesideText(alert);
+      expectActionInsideAlert(alert);
+      expectActionOnFirstLine(alert, slot(alert, 'alert-description'));
+    }
   },
 };
 
