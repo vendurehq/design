@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { AnonymizedToken, revealReducer } from './anonymized-token.tsx';
+import { AnonymizedToken } from './anonymized-token.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -54,78 +54,5 @@ describe('AnonymizedToken', () => {
     const markup = html(<AnonymizedToken value={null} fallback="No token" />);
 
     expect(markup).toContain('No token');
-  });
-});
-
-describe('AnonymizedToken with loadValue', () => {
-  const loadValue = async () => 'postgres://user:secret@db.internal/shop';
-
-  test('renders a fixed mask at rest, not a prefix or suffix', () => {
-    const markup = html(<AnonymizedToken loadValue={loadValue} />);
-
-    expect(markup).toContain('••••••••');
-    expect(markup).toContain('data-state="hidden"');
-    expect(markup).not.toContain('postgres');
-    expect(markup).not.toContain('blur-[1px]');
-  });
-
-  test('names the hidden value and offers a reveal button and copy', () => {
-    const markup = html(<AnonymizedToken loadValue={loadValue} />);
-
-    expect(markup).toContain('<span class="sr-only">Hidden value</span>');
-    expect(markup).toContain('aria-label="Show value"');
-    expect(markup).toContain('aria-label="Copy token"');
-  });
-
-  test('labels are configurable for host i18n', () => {
-    const markup = html(
-      <AnonymizedToken loadValue={loadValue} hiddenLabel="Verborgen" showLabel="Anzeigen" />,
-    );
-
-    expect(markup).toContain('Verborgen');
-    expect(markup).toContain('aria-label="Anzeigen"');
-  });
-
-  test('copy can be turned off; reveal stays', () => {
-    const markup = html(<AnonymizedToken loadValue={loadValue} copyable={false} />);
-
-    expect(markup).not.toContain('data-slot="copy-button"');
-    expect(markup).toContain('data-slot="anonymized-token-reveal"');
-  });
-});
-
-describe('revealReducer', () => {
-  test('click: hidden → loading → revealed', () => {
-    const loading = revealReducer({ status: 'hidden' }, { type: 'load' });
-    expect(loading).toEqual({ status: 'loading' });
-    expect(revealReducer(loading, { type: 'loaded', value: 'secret' })).toEqual({
-      status: 'revealed',
-      value: 'secret',
-    });
-  });
-
-  test('error, then retry by clicking again', () => {
-    const failed = revealReducer({ status: 'loading' }, { type: 'failed' });
-    expect(failed).toEqual({ status: 'error' });
-    const retry = revealReducer(failed, { type: 'load' });
-    expect(retry).toEqual({ status: 'loading' });
-    expect(revealReducer(retry, { type: 'loaded', value: 'secret' })).toEqual({
-      status: 'revealed',
-      value: 'secret',
-    });
-  });
-
-  test('hide clears the loaded value', () => {
-    const hidden = revealReducer({ status: 'revealed', value: 'secret' }, { type: 'hide' });
-    expect(hidden).toEqual({ status: 'hidden' });
-    expect(JSON.stringify(hidden)).not.toContain('secret');
-  });
-
-  test('a load that settles after hide is dropped', () => {
-    const hidden = revealReducer({ status: 'loading' }, { type: 'hide' });
-    expect(revealReducer(hidden, { type: 'loaded', value: 'secret' })).toEqual({
-      status: 'hidden',
-    });
-    expect(revealReducer(hidden, { type: 'failed' })).toEqual({ status: 'hidden' });
   });
 });

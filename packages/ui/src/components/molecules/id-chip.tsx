@@ -6,10 +6,11 @@ import { cn } from '@vendure-io/ui/lib/utils';
 type TruncateMode = 'middle' | 'start' | 'none';
 
 /**
- * Shared chrome for the identifier-chip family (`IdChip`, `AnonymizedToken`): a
- * bordered, `bg-muted`, monospace `text-xs` pill sized to its content. Kept in
- * one place so the two chips can't drift apart — only their *contents* differ
- * (a plain value vs a blurred, reveal-on-hover secret).
+ * Shared chrome for the identifier-chip family (`IdChip`, `AnonymizedToken`,
+ * `SecretValue`): a bordered, `bg-muted`, monospace `text-xs` pill sized to its
+ * content. Kept in one place so the chips can't drift apart — only their
+ * *contents* differ (a plain value, a blurred reveal-on-hover secret, or a
+ * masked secret loaded on click).
  */
 function chipChromeClass(copyable: boolean, className?: string): string {
   return cn(

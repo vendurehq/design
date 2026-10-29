@@ -8,8 +8,7 @@ import { IdChip } from '../src/components/molecules/id-chip.tsx';
  * Guidance, not props. When a secret-like value belongs on screen, use
  * AnonymizedToken instead of IdChip: the user can copy the whole token, sees a
  * blurred, truncated preview at rest, and gets a sharp preview on hover/focus.
- * Secrets the server returns only on request use `loadValue`: a fixed mask,
- * revealed by a click. For the component API, see the AnonymizedToken stories.
+ * For the component API, see the AnonymizedToken stories.
  */
 const meta = {
   title: 'Molecules/AnonymizedToken/Guidance',
@@ -166,38 +165,6 @@ export const DisplayRules: Story = {
             <CopyableText value={SECRET_TOKEN}>
               <span className="font-mono text-sm">{SECRET_TOKEN}</span>
             </CopyableText>
-          </Example>
-        </div>
-      </Section>
-    </div>
-  ),
-};
-
-const loadDatabaseUrl = () =>
-  new Promise<string>((resolve) =>
-    setTimeout(() => resolve('postgres://shop:p4ssw0rd@db.internal:5432/shop'), 400),
-  );
-
-export const OnDemandSecrets: Story = {
-  name: '3 · Secrets loaded on request',
-  render: () => (
-    <div className="text-foreground max-w-4xl p-1">
-      <Section
-        title="Load on request; reveal is a click, never hover"
-        intro="Some secrets reach the browser only when the user asks for them, such as environment variable values. Pass loadValue instead of value. The token shows a fixed mask with no fake prefix or suffix. The eye button loads and shows the value. Copy loads it without showing it. Hide clears it. A hover would send a request on every pass, and a secret read may be audited, so this mode never reveals on hover or focus."
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Example
-            verdict="do"
-            caption="The consumer owns the fetch; the component owns hidden, loading, revealed, and error. The value is never kept after hide."
-          >
-            <AnonymizedToken loadValue={loadDatabaseUrl} copyLabel="Copy value" />
-          </Example>
-          <Example
-            verdict="dont"
-            caption="Fetching every secret up front to fill value sends values the user never asked to see, and the preview leaks their prefix and tail."
-          >
-            <AnonymizedToken value="postgres://shop:p4ssw0rd@db.internal:5432/shop" />
           </Example>
         </div>
       </Section>
