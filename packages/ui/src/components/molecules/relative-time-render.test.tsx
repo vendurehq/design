@@ -11,32 +11,54 @@ function tag(html: string, slot: string): string {
 }
 
 describe('RelativeTime', () => {
-  test('describes the time with the absolute value, not a native title', () => {
-    const html = renderToStaticMarkup(<RelativeTime value={WHEN} locale="en-US" />);
-    const time = tag(html, 'relative-time');
-    expect(time).not.toContain('title=');
-    const id = time.match(/aria-describedby="([^"]+)"/)?.[1];
-    expect(id).toBeTruthy();
-    const description = html.match(new RegExp(`<span id="${id}" hidden="">([^<]*)</span>`));
-    expect(description?.[1]).toContain('2026');
+  const render = (node: React.ReactElement) => renderToStaticMarkup(node);
+
+  test('renders one root <time> with the absolute time as a hidden child description', () => {
+    for (const html of [
+      render(<RelativeTime value={WHEN} locale="en-US" />),
+      render(<RelativeTime value={WHEN} locale="en-US" tooltip={false} />),
+      render(<RelativeTime value={WHEN} locale="en-US" focusable />),
+    ]) {
+      expect(html.startsWith('<time')).toBe(true);
+      expect(html.endsWith('</time>')).toBe(true);
+      const id = tag(html, 'relative-time').match(/aria-describedby="([^"]+)"/)?.[1];
+      expect(id).toBeTruthy();
+      const description = html.match(new RegExp(`<span id="${id}" hidden="">([^<]*)</span>`));
+      expect(description?.[1]).toContain('2026');
+    }
   });
 
-  test('adds no tab stop by default', () => {
-    expect(tag(renderToStaticMarkup(<RelativeTime value={WHEN} />), 'relative-time')).not.toContain(
-      'tabindex',
-    );
+  test('never sets a native title', () => {
+    for (const html of [
+      render(<RelativeTime value={WHEN} />),
+      render(<RelativeTime value={WHEN} tooltip={false} />),
+      render(<RelativeTime value={WHEN} focusable />),
+    ]) {
+      expect(html).not.toContain('title=');
+    }
   });
 
-  test('tooltip makes the time a focusable trigger and keeps the description', () => {
-    const time = tag(renderToStaticMarkup(<RelativeTime value={WHEN} tooltip />), 'relative-time');
+  test('is a tooltip trigger by default, with no tab stop', () => {
+    const time = tag(render(<RelativeTime value={WHEN} />), 'relative-time');
+    expect(time).toContain('data-base-ui-tooltip-trigger');
+    expect(time).not.toContain('tabindex');
+  });
+
+  test('tooltip={false} renders a plain <time>', () => {
+    const time = tag(render(<RelativeTime value={WHEN} tooltip={false} />), 'relative-time');
+    expect(time).not.toContain('data-base-ui-tooltip-trigger');
+    expect(time).not.toContain('tabindex');
+  });
+
+  test('focusable adds the tab stop and the focus ring', () => {
+    const time = tag(render(<RelativeTime value={WHEN} focusable />), 'relative-time');
     expect(time).toContain('tabindex="0"');
-    expect(time).toContain('aria-describedby=');
-    expect(time).not.toContain('title=');
+    expect(time).toContain('focus-visible:ring-3');
   });
 
   test('keeps a consumer aria-describedby alongside its own', () => {
     const time = tag(
-      renderToStaticMarkup(<RelativeTime value={WHEN} aria-describedby="note" />),
+      render(<RelativeTime value={WHEN} aria-describedby="note" />),
       'relative-time',
     );
     expect(time).toMatch(/aria-describedby="note [^"]+"/);

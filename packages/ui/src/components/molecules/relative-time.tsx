@@ -26,11 +26,18 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   /** Rendered for nullish/invalid input. Default `'—'`. */
   fallback?: ReactNode;
   /**
-   * Show the absolute time in a DS Tooltip on hover and focus. This makes the
-   * time a tab stop, so opt in only where the exact time matters. The absolute
-   * time is always the element's accessible description. Default `false`.
+   * Show the absolute time in a DS Tooltip on hover. Default `true`. Pass
+   * `false` where the time sits inside another tooltip trigger, so the outer
+   * tooltip keeps its content. The absolute time stays the accessible
+   * description either way.
    */
   tooltip?: boolean;
+  /**
+   * Make the time a tab stop so keyboard users can open the tooltip. Default
+   * `false`. Opt in where the exact time matters to keyboard users, and never
+   * inside interactive content such as a link or a button. Needs `tooltip`.
+   */
+  focusable?: boolean;
 }
 
 /**
@@ -40,9 +47,9 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
  * consumers should still pin `locale`/`timeZone` via `FormatProvider` (or
  * props) so the absolute description matches too.
  *
- * The absolute time is never a native `title`: it is the accessible
- * description (a hidden element linked by `aria-describedby`), and with
- * `tooltip` it also shows in the DS Tooltip.
+ * The absolute time is never a native `title`. It is the accessible
+ * description (a hidden child linked by `aria-describedby`), and it shows in
+ * the DS Tooltip on hover unless `tooltip={false}`.
  */
 function RelativeTime({
   value,
@@ -51,7 +58,8 @@ function RelativeTime({
   unitStyle,
   updateInterval = 60_000,
   fallback = '—',
-  tooltip = false,
+  tooltip = true,
+  focusable = false,
   ...props
 }: RelativeTimeProps) {
   const descriptionId = useId();
@@ -79,6 +87,17 @@ function RelativeTime({
   const absolute = date.toLocaleString(resolvedLocale, { timeZone: settings.timeZone });
   const relative = formatRelative(date, { locale: resolvedLocale, numeric, unitStyle });
   const describedBy = [props['aria-describedby'], descriptionId].filter(Boolean).join(' ');
+  // The description is a `hidden` child, so the component renders one element.
+  // `hidden` keeps the text out of view and out of the reading flow;
+  // aria-describedby still resolves it.
+  const content = (
+    <>
+      {relative}
+      <span id={descriptionId} hidden suppressHydrationWarning>
+        {absolute}
+      </span>
+    </>
+  );
   const timeProps = {
     'data-slot': 'relative-time',
     dateTime: date.toISOString(),
@@ -86,45 +105,29 @@ function RelativeTime({
     ...props,
     'aria-describedby': describedBy,
   };
-  // `hidden` keeps the text out of the reading flow; aria-describedby still
-  // resolves it.
-  const description = (
-    <span id={descriptionId} hidden suppressHydrationWarning>
-      {absolute}
-    </span>
-  );
 
-  if (!tooltip) {
-    return (
-      <>
-        <time {...timeProps}>{relative}</time>
-        {description}
-      </>
-    );
-  }
+  if (!tooltip) return <time {...timeProps}>{content}</time>;
 
   return (
-    <>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <time
-              // biome-ignore lint/a11y/noNoninteractiveTabindex: opt-in tooltip; keyboard users must be able to open it (WCAG 1.4.13).
-              tabIndex={0}
-              {...timeProps}
-              className={cn(
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <time
+            // Opt-in tab stop so keyboard users can open the tooltip (WCAG 2.1.1).
+            tabIndex={focusable ? 0 : undefined}
+            {...timeProps}
+            className={cn(
+              focusable &&
                 'focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-3',
-                props.className,
-              )}
-            />
-          }
-        >
-          {relative}
-        </TooltipTrigger>
-        <TooltipContent>{absolute}</TooltipContent>
-      </Tooltip>
-      {description}
-    </>
+              props.className,
+            )}
+          />
+        }
+      >
+        {content}
+      </TooltipTrigger>
+      <TooltipContent>{absolute}</TooltipContent>
+    </Tooltip>
   );
 }
 
