@@ -49,3 +49,16 @@ export const CustomDisplay: Story = {
 export const NotCopyable: Story = {
   args: { copyable: false },
 };
+
+/**
+ * Name what the button copies with `copyLabel`, and handle a failed clipboard
+ * write with `onCopyError` (or a `CopyFeedbackProvider`).
+ */
+export const CustomCopyLabel: Story = {
+  args: {
+    value: '9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9f0e',
+    display: '9f2c4e1',
+    copyLabel: 'Copy commit SHA',
+    copiedLabel: 'Commit SHA copied',
+  },
+};

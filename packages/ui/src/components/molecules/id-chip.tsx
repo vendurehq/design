@@ -42,6 +42,14 @@ interface IdChipProps {
   className?: string;
   /** Called after a successful copy. Wire your toast here — the DS never toasts. Falls back to `CopyFeedbackProvider`. */
   onCopied?: () => void;
+  /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
+  onCopyError?: (error: Error) => void;
+  /** Accessible label of the copy button before copying, e.g. "Copy commit SHA". @default "Copy" */
+  copyLabel?: string;
+  /** Accessible label of the copy button while the copied state is active. @default "Copied" */
+  copiedLabel?: string;
+  /** How long the check-mark feedback stays visible, in ms. @default 2000 */
+  timeout?: number;
 }
 
 /**
@@ -56,6 +64,10 @@ function IdChip({
   copyable = true,
   className,
   onCopied,
+  onCopyError,
+  copyLabel,
+  copiedLabel,
+  timeout,
 }: IdChipProps) {
   const text = display ?? truncateId(value, truncate);
 
@@ -67,7 +79,11 @@ function IdChip({
       {copyable ? (
         <CopyButton
           value={value}
+          timeout={timeout}
           onCopied={onCopied}
+          onCopyError={onCopyError}
+          copyLabel={copyLabel}
+          copiedLabel={copiedLabel}
           className="relative size-4 after:absolute after:-inset-1"
         />
       ) : null}
