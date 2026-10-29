@@ -31,6 +31,12 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
    * owns its perimeter.
    */
   bordered?: boolean;
+  /**
+   * `compact` drops the illustration and icon and tightens the spacing, for a
+   * small panel or side column where the full state is too tall. Keep it to a
+   * title, a description and at most one action. Defaults to `default`.
+   */
+  size?: 'default' | 'compact';
 }
 
 /**
@@ -49,36 +55,38 @@ function EmptyState({
   description,
   children,
   bordered = true,
+  size = 'default',
   className,
   ...props
 }: EmptyStateProps) {
+  const compact = size === 'compact';
   // Precedence: an explicit `illustration` (including `null`, to opt out)
   // always wins; otherwise an explicit `icon` keeps rendering exactly as
   // before. Only when neither is touched does the default illustration fill
   // the media slot, so existing icon-only consumers see no change.
-  const resolvedIllustration =
-    illustration !== undefined ? (
-      illustration
-    ) : icon === undefined ? (
-      <EmptyCollectionIllustration />
-    ) : null;
+  const resolvedIllustration = compact ? null : illustration !== undefined ? (
+    illustration
+  ) : icon === undefined ? (
+    <EmptyCollectionIllustration />
+  ) : null;
 
   return (
     <Empty
       data-slot="empty-state"
-      className={cn(bordered ? 'border' : 'rounded-none', className)}
+      data-size={size}
+      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-2 p-4', className)}
       {...props}
     >
       <EmptyHeader>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
-        ) : icon ? (
+        ) : icon && !compact ? (
           <EmptyMedia variant="icon">{icon}</EmptyMedia>
         ) : null}
-        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
         {description ? <EmptyDescription>{description}</EmptyDescription> : null}
       </EmptyHeader>
-      {children ? <EmptyContent>{children}</EmptyContent> : null}
+      {children ? <EmptyContent className={cn(compact && 'gap-2')}>{children}</EmptyContent> : null}
     </Empty>
   );
 }

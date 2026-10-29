@@ -625,6 +625,10 @@ export const uiGuidance = [
         body: 'When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.',
       },
       {
+        title: 'Compact for small panels',
+        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}.',
+      },
+      {
         title: 'Errors own the failure',
         body: 'Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.',
       },
