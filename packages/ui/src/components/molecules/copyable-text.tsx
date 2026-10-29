@@ -3,13 +3,17 @@
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
+import type { ClipboardSource } from '@vendure-io/ui/lib/clipboard';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import type * as React from 'react';
 
 interface CopyButtonProps extends Omit<React.ComponentProps<typeof Button>, 'value' | 'children'> {
-  /** The text written to the clipboard. */
-  value: string;
+  /**
+   * The text written to the clipboard, or a callback that loads it when the
+   * button is clicked (for values the server returns only on request).
+   */
+  value: ClipboardSource;
   /** How long the check-mark feedback stays visible, in ms. @default 2000 */
   timeout?: number;
   /**

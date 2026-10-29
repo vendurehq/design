@@ -7,7 +7,8 @@
       // node_modules lookup from stories/ can't find it. Alias the renderer's
       // types explicitly; its own imports (storybook/internal/*) resolve from
       // that location.
-      "@storybook/react": ["../../apps/storybook/node_modules/@storybook/react/dist/index.d.ts"]
+      "@storybook/react": ["../../apps/storybook/node_modules/@storybook/react/dist/index.d.ts"],
+      "storybook/test": ["../../apps/storybook/node_modules/storybook/dist/test/index.d.ts"]
     }
   },
   "include": ["stories", "guidance"]
