@@ -2,6 +2,33 @@ import type { GuidanceEntry } from './types.ts';
 
 export const uiGuidance = [
   {
+    id: 'alert',
+    title: 'Alert',
+    summary: 'Use one Alert for a page or region notice, toned by its consequence for the viewer.',
+    sourceStory: 'alert-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Tone follows consequence',
+        body: '`warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.',
+      },
+      {
+        title: 'Tone is not volume',
+        body: 'Never use a tone to make a routine notice louder. A routine notice stays `default`.',
+      },
+      {
+        title: 'A page notice is one Alert',
+        body: 'Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'A routine notice with no consequence attached.' },
+      { choice: 'info', when: 'A fact worth noticing, with no positive or negative valence.' },
+      { choice: 'warning', when: 'The user must act, or a risk exists.' },
+      { choice: 'destructive', when: 'Something failed.' },
+    ],
+    related: ['status-badge'],
+  },
+  {
     id: 'anonymized-token',
     title: 'AnonymizedToken',
     summary: 'Render secret-like values as protected, copyable previews rather than exposed text.',
@@ -520,6 +547,34 @@ export const uiGuidance = [
       },
     ],
     related: ['button', 'list-header', 'status-badge'],
+  },
+  {
+    id: 'progress',
+    title: 'Progress',
+    summary:
+      'Show task completion or usage against a limit, toned only when the level has a consequence.',
+    sourceStory: 'progress-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Tone follows consequence, not fill level alone',
+        body: 'A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.',
+      },
+      {
+        title: 'Tone never carries the value alone',
+        body: 'Pair a toned bar with ProgressValue or text that states the amount and the limit.',
+      },
+      {
+        title: 'One bar per measure',
+        body: 'Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
+      { choice: 'success', when: 'A meter whose filled level is the healthy outcome.' },
+      { choice: 'warning', when: 'Near a limit the user must act on.' },
+      { choice: 'critical', when: 'At or over the limit.' },
+    ],
+    related: ['status-badge', 'stat-card'],
   },
   {
     id: 'stat-card',

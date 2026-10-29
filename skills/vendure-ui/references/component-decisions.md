@@ -3,6 +3,22 @@
 
 Use these rules to select and compose components. Inspect the installed package source and types for exact APIs.
 
+## Alert
+
+Use one Alert for a page or region notice, toned by its consequence for the viewer.
+
+- **Tone follows consequence:** `warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.
+- **Tone is not volume:** Never use a tone to make a routine notice louder. A routine notice stays `default`.
+- **A page notice is one Alert:** Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.
+
+**Choose:**
+
+- `default`: A routine notice with no consequence attached.
+- `info`: A fact worth noticing, with no positive or negative valence.
+- `warning`: The user must act, or a risk exists.
+- `destructive`: Something failed.
+
+Related decisions: `status-badge`.
 ## AnonymizedToken
 
 Render secret-like values as protected, copyable previews rather than exposed text.
@@ -216,6 +232,22 @@ State what the view is and place its action hierarchy in one predictable header.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
 
 Related decisions: `button`, `list-header`, `status-badge`.
+## Progress
+
+Show task completion or usage against a limit, toned only when the level has a consequence.
+
+- **Tone follows consequence, not fill level alone:** A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.
+- **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
+- **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
+
+**Choose:**
+
+- `default`: Task progress, or a meter with no limit the user must act on.
+- `success`: A meter whose filled level is the healthy outcome.
+- `warning`: Near a limit the user must act on.
+- `critical`: At or over the limit.
+
+Related decisions: `status-badge`, `stat-card`.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.
