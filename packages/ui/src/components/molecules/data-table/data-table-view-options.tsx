@@ -15,7 +15,7 @@ import { SlidersHorizontalIcon } from 'lucide-react';
 // Relative: `data-table-helpers` is closed in the package exports.
 import { getHideableLeafColumns } from './data-table-helpers.tsx';
 
-// The column-visibility gear. Lists only hideable columns (`getCanHide()`), so
+// The column picker ("Columns" trigger). Lists only hideable columns (`getCanHide()`), so
 // the always-on `select`/`actions` display columns never appear here. Labels
 // come from a string `ColumnDef.header`, falling back to the column id — `meta`
 // is deliberately never read (it belongs to the consumer, make-or-break #7).
@@ -40,8 +40,11 @@ function DataTableViewOptions<TData>({
 
   return (
     <DropdownMenu>
+      {/* `ml-auto` pins the trigger to the end of the controls row, so it reads
+          as a table setting even when no search input fills the row. */}
       <DropdownMenuTrigger
         data-slot="data-table-view-options"
+        className="ml-auto"
         render={
           <Button variant="outline">
             <SlidersHorizontalIcon />

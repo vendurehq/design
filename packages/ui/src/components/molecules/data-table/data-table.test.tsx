@@ -73,7 +73,7 @@ describe('DataTable capability absence', () => {
     expect(markup).not.toContain('Select all rows');
   });
 
-  test('no columnVisibility prop → no columns gear', () => {
+  test('no columnVisibility prop → no Columns trigger', () => {
     const markup = html(<DataTable rows={rows} columns={columns} />);
     expect(markup).not.toContain('data-slot="data-table-view-options"');
   });
@@ -256,7 +256,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
 });
 
 describe('DataTable column visibility (controlled source of truth)', () => {
-  test('visibility gear renders when wired', () => {
+  test('Columns trigger renders when wired', () => {
     const markup = html(
       <DataTable
         rows={rows}
@@ -265,6 +265,21 @@ describe('DataTable column visibility (controlled source of truth)', () => {
       />,
     );
     expect(markup).toContain('data-slot="data-table-view-options"');
+  });
+
+  test('Columns trigger sits at the end of the controls row', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        toolbar={<input placeholder="Search" />}
+        columnVisibility={{ value: {}, onChange: () => {} }}
+      />,
+    );
+    const trigger = markup.slice(
+      markup.lastIndexOf('<button', markup.indexOf('data-slot="data-table-view-options"')),
+    );
+    expect(trigger).toContain('ml-auto');
   });
 
   test('a column set false hides its header and cells', () => {

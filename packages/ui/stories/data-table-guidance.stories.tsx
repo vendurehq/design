@@ -181,7 +181,7 @@ const CAPABILITIES: CapabilityRow[] = [
     capability: 'columnVisibility',
     enableWhen:
       'The table is wide enough that hiding columns is a real need, and you persist the choice.',
-    skipWhen: 'A handful of columns that always fit; the gear is clutter.',
+    skipWhen: 'A handful of columns that always fit; the Columns trigger is clutter.',
   },
   {
     capability: 'pagination',
