@@ -35,7 +35,7 @@ export const Anatomy: Story = {
           <Field data-invalid="true">
             <FieldLabel htmlFor="email">Email address</FieldLabel>
             <FieldContent>
-              <Input id="email" name="email" type="email" aria-invalid="true" />
+              <Input id="email" name="email" type="email" />
               <FieldDescription>Used for order notifications.</FieldDescription>
               <FieldError>Enter a valid email address.</FieldError>
             </FieldContent>

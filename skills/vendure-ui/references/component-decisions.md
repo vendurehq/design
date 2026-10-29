@@ -178,7 +178,7 @@ Compose accessible fields, validation, grouping, and actions independently of th
 
 - **Every control has one visible label:** Compose FieldLabel and the control with a programmatic association. Placeholder text never replaces a label.
 - **Description teaches; error corrects:** Use FieldDescription for stable help and FieldError for actionable validation. Do not swap help text for errors in a way that shifts the layout.
-- **Invalid state belongs to field and control:** Mark the Field data-invalid and the control aria-invalid so visual and accessible state agree.
+- **Invalid state belongs to field and control:** Mark the Field data-invalid. Field then sets aria-invalid on its control and links FieldDescription and FieldError through aria-describedby, so visual and accessible state agree. Do not pass these ids by hand.
 - **Group by task, not database shape:** Create short semantic sections, order fields by the user's workflow, and use responsive orientation only when labels remain scannable.
 - **Actions close the form hierarchy:** Place one primary submit action last, a neutral cancel beside it, and destructive actions outside the normal save path.
 - **Pending submission preserves context:** Disable duplicate submission, communicate progress on the submit action, retain entered values, and surface server errors near the responsible region.
