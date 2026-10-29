@@ -153,6 +153,7 @@ Render recency relatively and records absolutely, with formatting owned by Forma
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
 - **Pin locale and timezone under SSR:** Prevent hydration disagreement by making server and client formatting context explicit.
+- **The other form is a tooltip, not a title:** RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.
 
 Related decisions: `date-picker`, `money`.
 ## DescriptionList
@@ -191,7 +192,7 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Identifiers must earn screen space:** Use IdChip on detail, support, and diagnostic surfaces where a user needs the exact identifier.
 - **Dense rows already identify the entity:** Do not repeat an opaque ID in every table row unless the identifier is itself a primary lookup key.
 - **Secrets are not IDs:** Use AnonymizedToken for secret-like values and CopyableText for readable transported values.
-- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy.
+- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 - **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 
 Related decisions: `anonymized-token`, `copyable-text`.
