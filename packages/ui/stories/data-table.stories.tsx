@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontalIcon, SearchIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
+import { expect, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { ContextMenuItem, ContextMenuSeparator } from '../src/components/atoms/context-menu.tsx';
@@ -17,6 +18,7 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
+import { Skeleton } from '../src/components/atoms/skeleton.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
@@ -261,6 +263,99 @@ export const Loading: Story = {
       skeletonRowCount={6}
     />
   ),
+};
+
+// Two-line cells (a title over a muted sub-line) are taller than the default
+// one-bar skeleton. `skeletonCells` gives those columns a matching loading
+// shape: each bar sits in a box of its text line's height, so the loading row
+// and the loaded row are the same height and the table does not jump.
+const twoLineColumns: ColumnDef<Order>[] = [
+  {
+    accessorKey: 'customer',
+    header: 'Customer',
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.customer}</span>
+        <span className="text-muted-foreground text-xs">{row.original.code}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'state',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge tone={STATE_TONE[row.original.state]}>{row.original.state}</StatusBadge>
+    ),
+  },
+  {
+    accessorKey: 'total',
+    header: 'Total',
+    cell: ({ row }) => <Money value={row.original.total} currency="USD" locale="en-US" />,
+  },
+];
+
+const twoLineSkeletons = {
+  customer: (
+    <div className="flex flex-col">
+      <div className="flex h-5 items-center">
+        <Skeleton className="h-3.5 w-36" />
+      </div>
+      <div className="flex h-4 items-center">
+        <Skeleton className="h-3 w-20" />
+      </div>
+    </div>
+  ),
+  state: <Skeleton className="h-5 w-24 rounded-4xl" />,
+};
+
+const twoLineRowActions = (order: Order) => (
+  <Button variant="ghost" size="icon" className="size-8">
+    <MoreHorizontalIcon />
+    <span className="sr-only">Open menu for {order.code}</span>
+  </Button>
+);
+
+// Loading rows shaped like the loaded rows — the loaded table (top) and the
+// loading table (bottom) share columns; `skeletonCells` keeps the row height.
+export const LoadingMatchesRowShape: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order>
+          rows={orders.slice(0, 3)}
+          columns={twoLineColumns}
+          getRowId={(order) => order.id}
+          rowSelection={{}}
+          rowActions={twoLineRowActions}
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={twoLineColumns}
+          getRowId={(order) => order.id}
+          rowSelection={{}}
+          rowActions={twoLineRowActions}
+          isLoading
+          skeletonRowCount={3}
+          skeletonCells={twoLineSkeletons}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const bodyRowHeights = (testId: string) =>
+      Array.from(
+        canvas.getByTestId(testId).querySelectorAll('tbody [data-slot="table-row"]'),
+        (row) => row.getBoundingClientRect().height,
+      );
+    const loaded = bodyRowHeights('loaded');
+    const loading = bodyRowHeights('loading');
+    // Row by row: the last row has no bottom border, so it is shorter in both tables.
+    await expect(loading).toHaveLength(3);
+    await expect(loading).toEqual(loaded);
+  },
 };
 
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.
