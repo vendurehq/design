@@ -169,6 +169,16 @@ export interface DataTableProps<TData> {
 
   isLoading?: boolean; // skeleton rows only while `rows` is empty; never blanks populated rows
   skeletonRowCount?: number; // default 10
+  /**
+   * Per-column loading cells, keyed by column id. Each skeleton row renders the
+   * node for a column in place of the default single text-line bar, so a
+   * two-line cell (title + muted sub-line), a chip or an avatar column can keep
+   * the loaded row height and the table does not jump when data arrives.
+   * Columns without an entry keep the default bar; the generated select cell
+   * stays empty and the actions cell gets an icon-button-sized block. An entry
+   * for `actions` or the select column id overrides those defaults.
+   */
+  skeletonCells?: Partial<Record<string, React.ReactNode>>;
 
   // capability configs — omit → capability + its UI vanish
   pagination?: DataTablePagination;

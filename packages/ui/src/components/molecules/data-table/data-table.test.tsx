@@ -116,6 +116,79 @@ describe('DataTable loading state', () => {
     expect(markup).not.toContain('No results');
   });
 
+  test('skeletonCells replaces the default bar for the keyed column only', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={2}
+        skeletonCells={{
+          name: (
+            <div data-testid="two-line">
+              <span data-slot="skeleton" />
+              <span data-slot="skeleton" />
+            </div>
+          ),
+        }}
+      />,
+    );
+    expect(count(markup, /data-testid="two-line"/g)).toBe(2);
+    // Per row: 2 bars from the custom `name` cell + 1 default bar for `code`.
+    expect(count(markup, /data-slot="skeleton"/g)).toBe(6);
+    expect(count(markup, /h-4 w-full/g)).toBe(2);
+  });
+
+  test('skeleton select cell stays empty and actions cell is icon-button sized', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={1}
+        rowSelection={{}}
+        rowActions={() => <button type="button">Open row actions</button>}
+      />,
+    );
+    // select (empty) + name + code + actions → 3 skeletons, 4 cells.
+    expect(count(markup, /data-slot="skeleton"/g)).toBe(3);
+    expect(count(markup, /data-slot="table-cell"/g)).toBe(4);
+    expect(markup).toContain('size-8');
+    // Skeleton cells carry the real layout classes: zero-width select, indented leading column.
+    expect(markup).toContain('relative w-0 p-0 pl-0!');
+    expect(markup).toContain('pl-8');
+  });
+
+  test('skeletonCells can override the generated actions cell', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={1}
+        rowActions={() => null}
+        skeletonCells={{ actions: <span data-testid="two-buttons" /> }}
+      />,
+    );
+    expect(markup).toContain('data-testid="two-buttons"');
+    expect(markup).not.toContain('size-8');
+  });
+
+  test('skeletonCells respects hidden columns', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={1}
+        columnVisibility={{ value: { name: false }, onChange: () => {} }}
+        skeletonCells={{ name: <span data-testid="hidden-name" /> }}
+      />,
+    );
+    expect(markup).not.toContain('data-testid="hidden-name"');
+    expect(count(markup, /data-slot="skeleton"/g)).toBe(1);
+  });
+
   test('populated + isLoading keeps the real rows (no skeleton swap)', () => {
     const markup = html(<DataTable rows={rows} columns={columns} isLoading />);
     expect(markup).not.toContain('data-slot="skeleton"');

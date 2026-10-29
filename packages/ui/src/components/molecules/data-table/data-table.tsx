@@ -126,6 +126,7 @@ function DataTable<TData>({
   getRowId,
   isLoading,
   skeletonRowCount = 10,
+  skeletonCells,
   pagination,
   sorting,
   filters,
@@ -346,6 +347,16 @@ function DataTable<TData>({
     return undefined;
   };
 
+  // Loading cells follow the real column layout (same ids, same cell classes),
+  // so a consumer's `skeletonCells` entry can match its loaded cell's height.
+  const skeletonCell = (id: string): React.ReactNode => {
+    if (skeletonCells?.[id] !== undefined) return skeletonCells[id];
+    // The checkbox is hidden at rest, so the zero-width select cell has nothing to stand in for.
+    if (id === selectColumnId && rowSelection != null) return null;
+    if (id === 'actions' && rowActions != null) return <Skeleton className="size-8" />;
+    return <Skeleton className="h-4 w-full" />;
+  };
+
   const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
   const showViewOptions = columnVisibility != null && columnVisibility.showViewOptions !== false;
   const hasFilterMenu = Boolean(
@@ -461,9 +472,9 @@ function DataTable<TData>({
             {isLoading && rows.length === 0 ? (
               Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
-                  {Array.from({ length: Math.max(columnCount, 1) }).map((__, cellIndex) => (
-                    <TableCell key={`skeleton-cell-${cellIndex}`}>
-                      <Skeleton className="h-4 w-full" />
+                  {table.getVisibleLeafColumns().map((column) => (
+                    <TableCell key={column.id} className={columnClass(column.id)}>
+                      {skeletonCell(column.id)}
                     </TableCell>
                   ))}
                 </TableRow>
