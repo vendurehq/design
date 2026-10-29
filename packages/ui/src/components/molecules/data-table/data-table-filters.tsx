@@ -73,7 +73,7 @@ function DataTableAddFilter<TData>({
       <PopoverTrigger
         data-slot="data-table-add-filter"
         render={
-          <Button variant="outline" size="sm">
+          <Button variant="outline">
             <ListFilterIcon />
             {label}
           </Button>

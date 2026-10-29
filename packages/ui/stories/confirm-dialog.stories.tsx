@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import { ConfirmDialog } from '../src/components/molecules/confirm-dialog.tsx';
 
@@ -78,6 +78,45 @@ export const Controlled: Story = {
           confirmLabel="Discard"
           variant="destructive"
           onConfirm={() => console.log('discarded')}
+        />
+      </>
+    );
+  },
+};
+
+/**
+ * `confirmDisabled` holds the confirm button while the dialog cannot be
+ * confirmed yet, here while the warnings it must show are loading. The
+ * optional `confirmDisabledReason` sits beside the buttons. Cancel stays live.
+ */
+export const ConfirmDisabledWhileLoading: Story = {
+  render: function Render() {
+    const [open, setOpen] = useState(false);
+    const [warnings, setWarnings] = useState<string[] | null>(null);
+
+    useEffect(() => {
+      if (!open) return;
+      setWarnings(null);
+      const id = setTimeout(() => setWarnings(['2 running jobs will restart.']), 2000);
+      return () => clearTimeout(id);
+    }, [open]);
+
+    return (
+      <>
+        <Button onClick={() => setOpen(true)}>Change runtime</Button>
+        <ConfirmDialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Change the Node.js runtime?"
+          description={
+            warnings === null
+              ? 'Checking what this change affects…'
+              : `The environment redeploys. ${warnings.join(' ')}`
+          }
+          confirmLabel="Change runtime"
+          confirmDisabled={warnings === null}
+          confirmDisabledReason="Loading warnings…"
+          onConfirm={() => new Promise((resolve) => setTimeout(resolve, 1000))}
         />
       </>
     );
