@@ -83,3 +83,37 @@ export const States: Story = {
     </LightAndDark>
   ),
 };
+
+/**
+ * Tone follows consequence: a usage meter turns warning near a limit the user
+ * must act on and critical at or over it. A task progress bar stays default.
+ * Toned bars sit on the tone's subtle track with a fill that reaches 3:1 on
+ * the track and the page in both modes.
+ */
+export const Tones: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex flex-col gap-4">
+          <Progress value={40}>
+            <ProgressLabel>Default · deploying</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+          <Progress tone="success" value={90}>
+            <ProgressLabel>Success · 18 of 20 replicas healthy</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+          <Progress tone="warning" value={92}>
+            <ProgressLabel>Warning · 92 of 100 emails sent</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+          <Progress tone="critical" value={100}>
+            <ProgressLabel>Critical · storage full</ProgressLabel>
+            <ProgressValue />
+          </Progress>
+        </div>
+      )}
+    </LightAndDark>
+  ),
+};

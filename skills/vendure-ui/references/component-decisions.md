@@ -3,6 +3,22 @@
 
 Use these rules to select and compose components. Inspect the installed package source and types for exact APIs.
 
+## Alert
+
+Use one Alert for a page or region notice, toned by its consequence for the viewer.
+
+- **Tone follows consequence:** `warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.
+- **Tone is not volume:** Never use a tone to make a routine notice louder. A routine notice stays `default`.
+- **A page notice is one Alert:** Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.
+
+**Choose:**
+
+- `default`: A routine notice with no consequence attached.
+- `info`: A fact worth noticing, with no positive or negative valence.
+- `warning`: The user must act, or a risk exists.
+- `destructive`: Something failed.
+
+Related decisions: `status-badge`.
 ## AnonymizedToken
 
 Render secret-like values as protected, copyable previews rather than exposed text.
@@ -96,6 +112,7 @@ Confirm only consequential actions, and make the consequence and verb explicit.
 - **Name the action twice:** The title states the consequence and the confirmation button repeats the concrete verb.
 - **Destructive styling follows destructive outcome:** A confirmation can be consequential without causing loss. Use destructive only when the action removes or destroys.
 - **Keep pending state inside the dialog:** Disable repeated submission, preserve context, and close only after the confirmed action succeeds.
+- **Hold confirm until the consequence is known:** When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.
 
 Related decisions: `button`.
 ## CopyableText
@@ -136,6 +153,7 @@ Render recency relatively and records absolutely, with formatting owned by Forma
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
 - **Pin locale and timezone under SSR:** Prevent hydration disagreement by making server and client formatting context explicit.
+- **The other form is a tooltip, not a title:** RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.
 
 Related decisions: `date-picker`, `money`.
 ## DescriptionList
@@ -174,7 +192,8 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Identifiers must earn screen space:** Use IdChip on detail, support, and diagnostic surfaces where a user needs the exact identifier.
 - **Dense rows already identify the entity:** Do not repeat an opaque ID in every table row unless the identifier is itself a primary lookup key.
 - **Secrets are not IDs:** Use AnonymizedToken for secret-like values and CopyableText for readable transported values.
-- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy.
+- **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
+- **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader
@@ -216,6 +235,22 @@ State what the view is and place its action hierarchy in one predictable header.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
 
 Related decisions: `button`, `list-header`, `status-badge`.
+## Progress
+
+Show task completion or usage against a limit, toned only when the level has a consequence.
+
+- **Tone follows consequence, not fill level alone:** A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.
+- **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
+- **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
+
+**Choose:**
+
+- `default`: Task progress, or a meter with no limit the user must act on.
+- `success`: A meter whose filled level is the healthy outcome.
+- `warning`: Near a limit the user must act on.
+- `critical`: At or over the limit.
+
+Related decisions: `status-badge`, `stat-card`.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.
@@ -234,6 +269,7 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
 - **Tables own their perimeter:** When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.
+- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}.
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.

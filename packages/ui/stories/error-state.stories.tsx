@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ShieldAlertIcon } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../src/components/atoms/table.tsx';
 import { NotFoundIllustration } from '../src/components/molecules/illustrations/not-found.tsx';
 import { OfflineIllustration } from '../src/components/molecules/illustrations/offline.tsx';
 import { ErrorState } from '../src/components/molecules/state-views/error-state.tsx';
@@ -87,4 +96,55 @@ export const WithoutIllustration: Story = {
     illustration: null,
     onRetry: () => {},
   },
+};
+
+/**
+ * `size="compact"` for a small panel or side column: no illustration, tighter
+ * spacing, title, description and at most one action. `bordered={false}` sits
+ * flush inside the card.
+ */
+export const CompactInPanel: Story = {
+  render: () => (
+    <Card className="w-72">
+      <CardHeader>
+        <CardTitle>Usage this month</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ErrorState
+          size="compact"
+          bordered={false}
+          title="Couldn't load usage"
+          description="This is on us. Try again in a moment."
+          onRetry={() => {}}
+        />
+      </CardContent>
+    </Card>
+  ),
+};
+
+/** `bordered={false}` when the error replaces a table body: the table owns its perimeter. */
+export const InTableBody: Story = {
+  render: () => (
+    <div className="overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Deployment</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={2} className="p-0">
+              <ErrorState
+                bordered={false}
+                description="We couldn't load deployments. Try again in a moment."
+                onRetry={() => {}}
+              />
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  ),
 };
