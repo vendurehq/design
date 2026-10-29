@@ -116,47 +116,62 @@ describe('DataTable loading state', () => {
     expect(markup).not.toContain('No results');
   });
 
-  test('skeletonCells replaces the default bar for the keyed column only', () => {
+  test('default loading cell is one line box tall', () => {
+    const markup = html(<DataTable rows={[]} columns={columns} isLoading skeletonRowCount={1} />);
+    expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(2);
+    expect(count(markup, /h-\[1lh\]/g)).toBe(2);
+  });
+
+  test('skeletonCells replaces the default line for the keyed column only', () => {
     const markup = html(
       <DataTable
         rows={[]}
         columns={columns}
         isLoading
         skeletonRowCount={2}
-        skeletonCells={{
-          name: (
-            <div data-testid="two-line">
-              <span data-slot="skeleton" />
-              <span data-slot="skeleton" />
-            </div>
-          ),
-        }}
+        skeletonCells={{ name: <div data-testid="two-line" /> }}
       />,
     );
     expect(count(markup, /data-testid="two-line"/g)).toBe(2);
-    // Per row: 2 bars from the custom `name` cell + 1 default bar for `code`.
-    expect(count(markup, /data-slot="skeleton"/g)).toBe(6);
-    expect(count(markup, /h-4 w-full/g)).toBe(2);
+    // `code` keeps the default line in both rows.
+    expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(2);
   });
 
-  test('skeleton select cell stays empty and actions cell is icon-button sized', () => {
+  test('null renders an empty cell; undefined keeps the default line', () => {
     const markup = html(
       <DataTable
         rows={[]}
         columns={columns}
         isLoading
         skeletonRowCount={1}
-        rowSelection={{}}
-        rowActions={() => <button type="button">Open row actions</button>}
+        skeletonCells={{ name: null, code: undefined }}
       />,
     );
-    // select (empty) + name + code + actions → 3 skeletons, 4 cells.
-    expect(count(markup, /data-slot="skeleton"/g)).toBe(3);
-    expect(count(markup, /data-slot="table-cell"/g)).toBe(4);
-    expect(markup).toContain('size-8');
-    // Skeleton cells carry the real layout classes: zero-width select, indented leading column.
-    expect(markup).toContain('relative w-0 p-0 pl-0!');
-    expect(markup).toContain('pl-8');
+    expect(count(markup, /data-slot="table-cell"/g)).toBe(2);
+    expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(1);
+  });
+
+  test('skeleton cells carry the loaded cell layout: empty select, indented leading, sized actions', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={2}
+        rowSelection={{}}
+        rowActions={() => <button type="button">Open row actions</button>}
+        skeletonCells={{ select: <span data-testid="select-override" /> }}
+      />,
+    );
+    const body = markup.slice(markup.indexOf('data-slot="table-body"'));
+    // Per row: select (always empty, override ignored) + name + code + actions.
+    expect(count(body, /data-slot="table-cell"/g)).toBe(8);
+    expect(body).not.toContain('select-override');
+    expect(count(body, /data-slot="data-table-skeleton-line"/g)).toBe(4);
+    expect(count(body, /class="[^"]*size-8/g)).toBe(2);
+    expect(count(body, /relative w-0 p-0 pl-0!/g)).toBe(2);
+    expect(count(body, /class="[^"]*pl-8/g)).toBe(2);
+    expect(count(body, /class="[^"]*py-0/g)).toBe(2);
   });
 
   test('skeletonCells can override the generated actions cell', () => {
@@ -187,6 +202,30 @@ describe('DataTable loading state', () => {
     );
     expect(markup).not.toContain('data-testid="hidden-name"');
     expect(count(markup, /data-slot="skeleton"/g)).toBe(1);
+  });
+
+  test('skeletonCells keys that match no column warn in development', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    const nested: ColumnDef<{ customer: { name: string } }>[] = [
+      { accessorKey: 'customer.name', header: 'Customer' },
+    ];
+    html(
+      <DataTable
+        rows={[]}
+        columns={nested}
+        isLoading
+        skeletonCells={{ 'customer.name': null, customer_name: null }}
+      />,
+    );
+    expect(warn).toHaveBeenCalledTimes(1);
+    const message = String(warn.mock.calls[0]?.[0]);
+    expect(message).toContain('customer.name');
+    expect(message).not.toContain('match no column: customer.name, customer_name');
+  });
+
+  test('no columns still renders one cell per skeleton row', () => {
+    const markup = html(<DataTable rows={[]} columns={[]} isLoading skeletonRowCount={2} />);
+    expect(count(markup, /data-slot="table-cell"/g)).toBe(2);
   });
 
   test('populated + isLoading keeps the real rows (no skeleton swap)', () => {
