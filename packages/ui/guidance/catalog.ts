@@ -301,7 +301,7 @@ export const uiGuidance = [
       },
       {
         title: 'Shape loading rows like loaded rows',
-        body: 'When a cell is taller than one text line (a title over a sub-line, an avatar, a chip), pass skeletonCells keyed by column id so the loading rows keep the loaded row height and the table does not jump.',
+        body: 'The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.',
       },
       {
         title: 'Do not use DataTable for static layout',

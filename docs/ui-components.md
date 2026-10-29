@@ -353,30 +353,33 @@ import {
 
 ### DataTable loading rows
 
-While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one text-line bar by default. When a column's cells are taller than one line, pass `skeletonCells`, keyed by column id, so the loading rows keep the loaded row height:
+While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
-import { Skeleton } from "@vendure-io/ui/components/atoms/skeleton";
-import { DataTable } from "@vendure-io/ui/components/molecules/data-table/data-table";
+import {
+  DataTable,
+  DataTableSkeletonLine,
+} from "@vendure-io/ui/components/molecules/data-table/data-table";
 
 <DataTable
   rows={data?.items ?? []}
   columns={columns}
   isLoading={isPending}
   skeletonCells={{
-    // A title over a muted sub-line: one box per text line.
+    // A title over a muted text-xs sub-line.
     customer: (
       <div className="flex flex-col">
-        <div className="flex h-5 items-center"><Skeleton className="h-3.5 w-36" /></div>
-        <div className="flex h-4 items-center"><Skeleton className="h-3 w-20" /></div>
+        <DataTableSkeletonLine className="w-36" />
+        <DataTableSkeletonLine className="w-20 text-xs" />
       </div>
     ),
-    state: <Skeleton className="h-5 w-24 rounded-4xl" />,
   }}
 />
 ```
 
-Columns without an entry keep the default bar. The generated select cell stays empty and the actions cell gets an icon-button-sized block. An entry for `actions` overrides it.
+- Keys are column ids: the column's `id`, else its `accessorKey` with `.` replaced by `_` (`customer.name` becomes `customer_name`). Keys that match no column log a warning in development.
+- A missing or `undefined` entry renders the default line. `null` renders an empty cell.
+- The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
 ## Optional Peer Dependencies
 
