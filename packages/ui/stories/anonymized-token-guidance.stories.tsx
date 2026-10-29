@@ -3,12 +3,14 @@ import type { ReactNode } from 'react';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
 import { CopyableText } from '../src/components/molecules/copyable-text.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
+import { SecretValue } from '../src/components/molecules/secret-value.tsx';
 
 /**
  * Guidance, not props. When a secret-like value belongs on screen, use
  * AnonymizedToken instead of IdChip: the user can copy the whole token, sees a
  * blurred, truncated preview at rest, and gets a sharp preview on hover/focus.
- * For the component API, see the AnonymizedToken stories.
+ * When the server returns the value only on request, use SecretValue (see the
+ * SecretValue guidance). For the component API, see the AnonymizedToken stories.
  */
 const meta = {
   title: 'Molecules/AnonymizedToken/Guidance',
@@ -63,11 +65,21 @@ function Example({
 const SECRET_TOKEN = 'vc_pat_7JjK9mN2pQ4rS6tU8vW0xY1zA3bC5dE7';
 const ORDER_ID = '5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d4e3f';
 
+const loadDatabaseUrl = () =>
+  new Promise<string>((resolve) =>
+    setTimeout(() => resolve('postgres://shop:p4ssw0rd@db.internal:5432/shop'), 400),
+  );
+
 const TOOLS: { tool: string; sample: ReactNode; use: string }[] = [
   {
     tool: 'AnonymizedToken',
     sample: <AnonymizedToken value={SECRET_TOKEN} />,
     use: 'Secret-like values the user must copy but should not casually reveal: personal access tokens, registry tokens, webhook secrets.',
+  },
+  {
+    tool: 'SecretValue',
+    sample: <SecretValue loadValue={loadDatabaseUrl} />,
+    use: 'Secrets the server returns only on request, such as environment variable values. A fixed mask, loaded and revealed by a click.',
   },
   {
     tool: 'IdChip',

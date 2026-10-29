@@ -9,10 +9,10 @@ Render secret-like values as protected, copyable previews rather than exposed te
 
 - **Secrets are never plain identifiers:** Use AnonymizedToken for credentials and secret-like values; use IdChip only for non-secret identifiers.
 - **Reveal only through deliberate interaction:** Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.
-- **Secrets loaded on request reveal on click:** Secrets the server returns only on request use `loadValue`; reveal is a click, never hover. The consumer owns the fetch, the component owns hidden, loading, revealed, and error, and hiding clears the value.
 - **Do not render the full value elsewhere:** A protected token loses its purpose if the same secret is also present as visible text, a title, or an accessible label.
+- **Value on the client, not loaded on request:** Use AnonymizedToken when the full value is already on the client. When the server returns the value only on request, use SecretValue.
 
-Related decisions: `copyable-text`, `id-chip`.
+Related decisions: `copyable-text`, `id-chip`, `secret-value`.
 ## AppShell
 
 Use the shared application anatomy without moving app-owned routing or context into the shell.
@@ -217,6 +217,17 @@ State what the view is and place its action hierarchy in one predictable header.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
 
 Related decisions: `button`, `list-header`, `status-badge`.
+## SecretValue
+
+Show a secret that the server returns only on request as a fixed mask, loaded and revealed by a click.
+
+- **Loaded on request, not on the client:** Use SecretValue when the server returns the value only on request, such as an environment variable value. When the full value is already on the client, use AnonymizedToken.
+- **Reveal is a click, never hover:** Each load is a server read that may be audited. Load and reveal only on a click of the reveal button, never on hover or focus.
+- **The consumer owns the fetch:** Pass loadValue. SecretValue owns the hidden, loading, revealed and error states. Do not fetch every secret up front to fill a value.
+- **Hide clears the value:** Hiding drops the loaded value from state. Copy while hidden loads the value and copies it without revealing it.
+- **The value never goes in a title or label:** The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.
+
+Related decisions: `anonymized-token`, `copyable-text`.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.

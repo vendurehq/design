@@ -16,15 +16,15 @@ export const uiGuidance = [
         body: 'Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.',
       },
       {
-        title: 'Secrets loaded on request reveal on click',
-        body: 'Secrets the server returns only on request use `loadValue`; reveal is a click, never hover. The consumer owns the fetch, the component owns hidden, loading, revealed, and error, and hiding clears the value.',
-      },
-      {
         title: 'Do not render the full value elsewhere',
         body: 'A protected token loses its purpose if the same secret is also present as visible text, a title, or an accessible label.',
       },
+      {
+        title: 'Value on the client, not loaded on request',
+        body: 'Use AnonymizedToken when the full value is already on the client. When the server returns the value only on request, use SecretValue.',
+      },
     ],
-    related: ['copyable-text', 'id-chip'],
+    related: ['copyable-text', 'id-chip', 'secret-value'],
   },
   {
     id: 'app-shell',
@@ -524,6 +524,36 @@ export const uiGuidance = [
       },
     ],
     related: ['button', 'list-header', 'status-badge'],
+  },
+  {
+    id: 'secret-value',
+    title: 'SecretValue',
+    summary:
+      'Show a secret that the server returns only on request as a fixed mask, loaded and revealed by a click.',
+    sourceStory: 'secret-value-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Loaded on request, not on the client',
+        body: 'Use SecretValue when the server returns the value only on request, such as an environment variable value. When the full value is already on the client, use AnonymizedToken.',
+      },
+      {
+        title: 'Reveal is a click, never hover',
+        body: 'Each load is a server read that may be audited. Load and reveal only on a click of the reveal button, never on hover or focus.',
+      },
+      {
+        title: 'The consumer owns the fetch',
+        body: 'Pass loadValue. SecretValue owns the hidden, loading, revealed and error states. Do not fetch every secret up front to fill a value.',
+      },
+      {
+        title: 'Hide clears the value',
+        body: 'Hiding drops the loaded value from state. Copy while hidden loads the value and copies it without revealing it.',
+      },
+      {
+        title: 'The value never goes in a title or label',
+        body: 'The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.',
+      },
+    ],
+    related: ['anonymized-token', 'copyable-text'],
   },
   {
     id: 'stat-card',
