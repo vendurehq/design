@@ -61,6 +61,29 @@ import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
 import { buildDisplayColumns, getSelectedRowIds, resolveSlot } from './data-table-helpers.tsx';
 
+// Id of the generated row-actions column. Public: it is the `skeletonCells` key
+// for the actions cell.
+const ACTIONS_COLUMN_ID = 'actions';
+
+/**
+ * One text line of loading placeholder: a box exactly one line box tall (`1lh`
+ * of the inherited font) with a bar centred in it, so a skeleton line is as tall
+ * as the text line it stands in for. Size the line with a text utility
+ * (`text-xs` for a muted sub-line) and its width with `w-*`. DataTable uses it as
+ * the default loading cell; stack several for multi-line `skeletonCells`.
+ */
+function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="data-table-skeleton-line"
+      className={cn('flex h-[1lh] w-full items-center', className)}
+      {...props}
+    >
+      <Skeleton className="h-[0.8lh] w-full" />
+    </div>
+  );
+}
+
 // The composition root. Owns the single `useReactTable` instance and the
 // controlled/uncontrolled bridge, then lays out the card-framed table anatomy:
 // a CardHeader band (header → controls → chips → bulk overlay), a CardTable
@@ -126,6 +149,7 @@ function DataTable<TData>({
   getRowId,
   isLoading,
   skeletonRowCount = 10,
+  skeletonCells,
   pagination,
   sorting,
   filters,
@@ -235,7 +259,7 @@ function DataTable<TData>({
     // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
     const actionsColumn: ColumnDef<TData, any> | undefined = rowActions
       ? {
-          id: 'actions',
+          id: ACTIONS_COLUMN_ID,
           enableSorting: false,
           enableHiding: false,
           header: () => <span className="sr-only">{l.rowActions}</span>,
@@ -332,19 +356,64 @@ function DataTable<TData>({
     rowSelection != null
       ? table.getVisibleLeafColumns().find((column) => column.id !== selectColumnId)?.id
       : undefined;
+  // Which generated display column an id belongs to, if any. Consumer columns
+  // can't collide: buildDisplayColumns only injects these when configured.
+  const generatedColumn = (id: string): 'select' | 'actions' | undefined => {
+    if (rowSelection != null && id === selectColumnId) return 'select';
+    if (rowActions != null && id === ACTIONS_COLUMN_ID) return 'actions';
+    return undefined;
+  };
   const columnClass = (id: string): string | undefined => {
+    const generated = generatedColumn(id);
     // `pl-0!`: the select cell is the first child, so CardTable's edge-cell
     // padding would otherwise widen the zero-width cell and push the whole
     // gutter arrangement out; important because CardTable's descendant rule
     // out-specifies a plain utility on the cell.
-    if (id === selectColumnId) return 'relative w-0 p-0 pl-0!';
+    if (generated === 'select') return 'relative w-0 p-0 pl-0!';
     if (id === leadingColumnId) return 'pl-8';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
     // row; `align-middle` on the cell keeps it centred.
-    if (id === 'actions') return 'py-0';
+    if (generated === 'actions') return 'py-0';
     return undefined;
   };
+
+  // Loading cells follow the real column layout (same ids, same cell classes),
+  // so a consumer's `skeletonCells` entry can match its loaded cell's height.
+  const skeletonCell = (id: string): React.ReactNode => {
+    const generated = generatedColumn(id);
+    // The checkbox is hidden at rest and the cell is zero-width, so there is
+    // nothing to stand in for — and no room for an override.
+    if (generated === 'select') return null;
+    // `null` is a deliberate empty cell; only a missing/undefined entry falls back.
+    const custom = skeletonCells?.[id];
+    if (custom !== undefined) return custom;
+    if (generated === 'actions') return <Skeleton className="size-8" />;
+    return <DataTableSkeletonLine />;
+  };
+
+  const warnedUnknownSkeletonCells = React.useRef(false);
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    skeletonCells != null &&
+    !warnedUnknownSkeletonCells.current
+  ) {
+    const knownIds = new Set(
+      table
+        .getAllLeafColumns()
+        .map((column) => column.id)
+        .filter((id) => generatedColumn(id) !== 'select'),
+    );
+    const unknownKeys = Object.keys(skeletonCells).filter((key) => !knownIds.has(key));
+    if (unknownKeys.length > 0) {
+      warnedUnknownSkeletonCells.current = true;
+      console.warn(
+        `[DataTable] skeletonCells keys match no column: ${unknownKeys.join(', ')}. ` +
+          "Keys are column ids: `id`, else `accessorKey` with '.' replaced by '_' " +
+          "(`customer.name` → `customer_name`). The select column can't be overridden.",
+      );
+    }
+  }
 
   const toolbarNode = toolbar != null ? resolveSlot(toolbar, table) : undefined;
   const showViewOptions = columnVisibility != null && columnVisibility.showViewOptions !== false;
@@ -461,11 +530,17 @@ function DataTable<TData>({
             {isLoading && rows.length === 0 ? (
               Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
-                  {Array.from({ length: Math.max(columnCount, 1) }).map((__, cellIndex) => (
-                    <TableCell key={`skeleton-cell-${cellIndex}`}>
-                      <Skeleton className="h-4 w-full" />
+                  {columnCount === 0 ? (
+                    <TableCell>
+                      <DataTableSkeletonLine />
                     </TableCell>
-                  ))}
+                  ) : (
+                    table.getVisibleLeafColumns().map((column) => (
+                      <TableCell key={column.id} className={columnClass(column.id)}>
+                        {skeletonCell(column.id)}
+                      </TableCell>
+                    ))
+                  )}
                 </TableRow>
               ))
             ) : bodyRows.length === 0 ? (
@@ -569,7 +644,7 @@ function DataTable<TData>({
   );
 }
 
-export { DataTable };
+export { DataTable, DataTableSkeletonLine };
 
 // Re-export the consumer-facing TanStack types so columns can be authored from
 // the same import as `DataTable` — no direct `@tanstack/react-table` dependency

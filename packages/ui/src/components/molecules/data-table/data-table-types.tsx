@@ -169,6 +169,23 @@ export interface DataTableProps<TData> {
 
   isLoading?: boolean; // skeleton rows only while `rows` is empty; never blanks populated rows
   skeletonRowCount?: number; // default 10
+  /**
+   * Per-column loading cells, keyed by column id, for cells that are not one
+   * text line tall (a title over a muted sub-line, an avatar, a button), so the
+   * loading rows keep the loaded row height and the table does not jump when
+   * data arrives. Stack `DataTableSkeletonLine`s for multi-line cells.
+   *
+   * Keys are TanStack column ids: the column's `id`, else its `accessorKey`
+   * with `.` replaced by `_` (`customer.name` → `customer_name`). Unknown keys
+   * warn in development.
+   *
+   * A missing or `undefined` entry renders the default: one
+   * `DataTableSkeletonLine`, as tall as one text line, so one-line columns
+   * (text, Money) need no entry. `null` renders an empty cell. The
+   * generated actions cell (key `actions`) defaults to an icon-button-sized
+   * block and can be overridden; the generated select cell is always empty.
+   */
+  skeletonCells?: Record<string, React.ReactNode>;
 
   // capability configs — omit → capability + its UI vanish
   pagination?: DataTablePagination;

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontalIcon, SearchIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
+import { expect, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { ContextMenuItem, ContextMenuSeparator } from '../src/components/atoms/context-menu.tsx';
@@ -23,6 +24,7 @@ import {
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
+  DataTableSkeletonLine,
   type RowSelectionState,
   type SortingState,
   type TableInstance,
@@ -261,6 +263,120 @@ export const Loading: Story = {
       skeletonRowCount={6}
     />
   ),
+};
+
+/** Body row heights of the DataTable inside `[data-testid=testId]`. */
+function bodyRowHeights(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('tbody [data-slot="table-row"]'),
+    (row) => row.getBoundingClientRect().height,
+  );
+}
+
+/** Compares loaded and loading rows row by row: the last row has no bottom border. */
+async function expectSameRowHeights(canvasElement: HTMLElement, rowCount: number) {
+  const loading = bodyRowHeights(canvasElement, 'loading');
+  await expect(loading).toHaveLength(rowCount);
+  await expect(loading).toEqual(bodyRowHeights(canvasElement, 'loaded'));
+}
+
+// One-line cells (text, Money) need no `skeletonCells`: the default loading
+// line is one line box tall, so loaded (top) and loading (bottom) rows are the
+// same height.
+const oneLineColumns = columns.filter((column) => column.header !== 'Status');
+
+export const LoadingMatchesOneLineRows: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order> rows={orders.slice(0, 3)} columns={oneLineColumns} getRowId={(o) => o.id} />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={oneLineColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          skeletonRowCount={3}
+        />
+      </div>
+    </div>
+  ),
+  play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
+};
+
+const twoLineColumns: ColumnDef<Order>[] = [
+  {
+    accessorKey: 'customer',
+    header: 'Customer',
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.customer}</span>
+        <span className="text-muted-foreground text-xs">{row.original.code}</span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'state',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge tone={STATE_TONE[row.original.state]}>{row.original.state}</StatusBadge>
+    ),
+  },
+  {
+    accessorKey: 'total',
+    header: 'Total',
+    cell: ({ row }) => <Money value={row.original.total} currency="USD" locale="en-US" />,
+  },
+];
+
+// One skeleton line per text line; `text-xs` sizes the sub-line like the loaded one.
+const twoLineSkeletons = {
+  customer: (
+    <div className="flex flex-col">
+      <DataTableSkeletonLine className="w-36" />
+      <DataTableSkeletonLine className="w-20 text-xs" />
+    </div>
+  ),
+};
+
+const twoLineRowActions = (order: Order) => (
+  <Button variant="ghost" size="icon-sm">
+    <MoreHorizontalIcon />
+    <span className="sr-only">Open menu for {order.code}</span>
+  </Button>
+);
+
+// A two-line cell (a title over a muted sub-line) is taller than one line, so it
+// gets a `skeletonCells` entry; the badge and money columns keep the default.
+// Loaded (top) and loading (bottom) rows are the same height.
+export const LoadingMatchesRowShape: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order>
+          rows={orders.slice(0, 3)}
+          columns={twoLineColumns}
+          getRowId={(order) => order.id}
+          rowSelection={{}}
+          rowActions={twoLineRowActions}
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={twoLineColumns}
+          getRowId={(order) => order.id}
+          rowSelection={{}}
+          rowActions={twoLineRowActions}
+          isLoading
+          skeletonRowCount={3}
+          skeletonCells={twoLineSkeletons}
+        />
+      </div>
+    </div>
+  ),
+  play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
 };
 
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.

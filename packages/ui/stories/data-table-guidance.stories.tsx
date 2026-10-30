@@ -21,6 +21,7 @@ import {
 import {
   type ColumnDef,
   DataTable,
+  DataTableSkeletonLine,
   type SortingState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import {
@@ -38,8 +39,9 @@ import {
  * capabilities to switch on (each is off until its config is passed), on who owns
  * the state behind every capability (the consumer owns URL, fetching, and
  * persistence; the core never fetches), on the frame (the card is the table's
- * frame; frame="plain" only inside an existing card), and on where the line
- * falls between this core and richer consumer table shells. For the
+ * frame; frame="plain" only inside an existing card), on where the line
+ * falls between this core and richer consumer table shells, and on shaping
+ * loading rows like loaded rows. For the
  * prop-by-prop API, see the DataTable stories.
  */
 const meta = {
@@ -113,6 +115,21 @@ const PRODUCTS: Product[] = [
 const productColumns: ColumnDef<Product>[] = [
   { accessorKey: 'name', header: 'Product' },
   { accessorKey: 'sku', header: 'SKU' },
+  { accessorKey: 'stock', header: 'Availability' },
+];
+
+// A product cell with the SKU as a muted sub-line: two text lines tall.
+const twoLineProductColumns: ColumnDef<Product>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Product',
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.name}</span>
+        <span className="text-muted-foreground text-xs">{row.original.sku}</span>
+      </div>
+    ),
+  },
   { accessorKey: 'stock', header: 'Availability' },
 ];
 
@@ -623,6 +640,65 @@ export const FrameChoice: Story = {
                 />
               </CardContent>
             </Card>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 6 · loading rows match loaded rows ────────────────────────────────────────
+
+export const LoadingRowShape: Story = {
+  name: '6 · Loading rows match loaded rows',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Shape loading rows like the rows they stand in for"
+        intro="While rows load, each cell shows one skeleton line, exactly one text line tall, so one-line columns (text, Money) need nothing. A cell taller than one line (a title over a muted sub-line, an avatar) needs a skeletonCells entry for its column, or every loading row is shorter than its loaded row and the table jumps when data arrives. Stack one DataTableSkeletonLine per text line."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="The two-line Product column gets two skeleton lines, the second sized with text-xs like its sub-line. Availability keeps the default. Loading rows are as tall as loaded rows."
+          >
+            <DataTable
+              rows={PRODUCTS.slice(0, 2)}
+              columns={twoLineProductColumns}
+              getRowId={(p) => p.id}
+            />
+            <DataTable
+              rows={[]}
+              columns={twoLineProductColumns}
+              getRowId={(p) => p.id}
+              isLoading
+              skeletonRowCount={2}
+              skeletonCells={{
+                name: (
+                  <div className="flex flex-col">
+                    <DataTableSkeletonLine className="w-36" />
+                    <DataTableSkeletonLine className="w-20 text-xs" />
+                  </div>
+                ),
+              }}
+            />
+          </Example>
+          <Example
+            verdict="dont"
+            caption="The same two-line column on the default single line. Each loading row is one sub-line shorter than the loaded row, so the table jumps when data arrives."
+          >
+            <DataTable
+              rows={PRODUCTS.slice(0, 2)}
+              columns={twoLineProductColumns}
+              getRowId={(p) => p.id}
+            />
+            <DataTable
+              rows={[]}
+              columns={twoLineProductColumns}
+              getRowId={(p) => p.id}
+              isLoading
+              skeletonRowCount={2}
+            />
           </Example>
         </div>
       </Section>
