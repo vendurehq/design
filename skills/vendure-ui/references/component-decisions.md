@@ -10,6 +10,7 @@ Use one Alert for a page or region notice, toned by its consequence for the view
 - **Tone follows consequence:** `warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.
 - **Tone is not volume:** Never use a tone to make a routine notice louder. A routine notice stays `default`.
 - **A page notice is one Alert:** Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.
+- **Actions go in AlertAction:** Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.
 
 **Choose:**
 
