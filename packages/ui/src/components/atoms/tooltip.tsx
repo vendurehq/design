@@ -28,7 +28,7 @@ function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
 function TooltipContent({
   className,
   side = "top",
-  sideOffset = 4,
+  sideOffset = 8,
   align = "center",
   alignOffset = 0,
   children,
@@ -47,17 +47,16 @@ function TooltipContent({
         sideOffset={sideOffset}
         className="isolate z-50"
       >
-        {/* Base UI never emits Radix-style data-state attributes — data-[state=delayed-open]:* selectors would be dead here; data-open:* covers the open animation */}
+        {/* No arrow: the popup scales in from the trigger side (--transform-origin). data-instant marks a tooltip that opens while another one is showing, so it skips the transition. */}
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2 bg-foreground text-background z-50 w-fit max-w-xs origin-(--transform-origin) rounded-md px-3 py-1.5 text-xs motion-reduce:animate-none data-open:duration-(--transition-duration-normal) data-open:ease-(--ease-out) data-closed:duration-(--transition-duration-fast) data-closed:ease-(--ease-in)",
+            "bg-foreground text-background z-50 w-fit max-w-xs origin-(--transform-origin) rounded-lg px-2.5 py-1.5 text-xs font-medium transition-[opacity,scale] duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-instant:transition-none",
             className
           )}
           {...props}
         >
           {children}
-          <TooltipPrimitive.Arrow className="bg-foreground fill-foreground z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" />
         </TooltipPrimitive.Popup>
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
