@@ -97,6 +97,22 @@ Present multi-line code for reading, with the switcher reserved for runnable ins
 - **One notation intent per block:** Choose one Shiki notation intent per block: highlight, diff, focus, or word. Stacked intents bury the point of the annotation.
 
 Related decisions: `copyable-text`.
+## CollapsibleSection
+
+Keep one secondary list of rows behind a header that still says how many rows it holds.
+
+- **Collapse what can wait:** Use CollapsibleSection for a secondary list on its own card. Rows that are the reason the user came to the page stay open on a plain card.
+- **Do not collapse a single row:** A closed section with one row costs a click to save one line. Show the row on a plain card.
+- **Open by default when a row needs the user:** Start closed when the rows are routine. When a row has failed or waits on the user, pass `defaultOpen` so the problem is in view.
+- **Attention means action, not volume:** `tone="attention"` puts the count pill in the warning tone, on the pill only. Use it when rows need the user, never because the count is high.
+
+**Choose:**
+
+- `CollapsibleSection`: One secondary list of rows on a card, with a count.
+- `Accordion`: A set of peer panels of prose or form content.
+- `Collapsible`: A bare disclosure that is not a card of rows.
+
+Related decisions: `list-row`.
 ## ComboboxFreeText
 
 Use free-text selection only when a brand-new value is a legitimate domain answer.
@@ -208,6 +224,18 @@ Use list-page chrome without duplicating PageHeader or the DataTable engine.
 - **Controls and applied filters have separate zones:** Keep search, filter, sort, and view controls together; render the Chip row only when filters are active.
 
 Related decisions: `data-table`, `page-header`, `table-pagination`.
+## ListRow
+
+Render a short list of entities where each row opens one detail page from any point of the row.
+
+- **Rows to open, columns to compare:** Use ListRow for a short list the user scans and opens one row of. Use DataTable when the user sorts, filters, pages, selects in bulk, or compares values across rows.
+- **One link per row, over the whole row:** Put exactly one ListRowLink in a row. It stretches over the row, so the row has one tab stop and one name. Never make one cell the only link.
+- **A row without a page gets no link:** When the row opens nothing, use ListRowTitle and leave out ListRowChevron. No hover fill, no pointer.
+- **The link holds the title only:** The link text is the accessible name of the row. Put who, how many, and how long in ListRowMeta, and state in a StatusBadge in ListRowTrailing.
+- **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.
+- **Hidden actions are never the only way:** ListRowActions appears on hover or focus. Every action in it is also available on the detail page.
+
+Related decisions: `collapsible-section`, `data-table`, `id-chip`, `status-badge`.
 ## Money
 
 Render minor-unit amounts with explicit currency and shared locale context.
