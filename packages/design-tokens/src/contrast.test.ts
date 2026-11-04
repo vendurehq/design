@@ -243,9 +243,10 @@ for (const [themeName, theme] of Object.entries(themes)) {
         });
       }
 
-      // Muted text also sits on the resting intensity fills: kbd, avatar
-      // fallback, chips.
-      for (const fill of ['muted', 'secondary'] as const) {
+      // Muted text also sits on the resting intensity fills (kbd, avatar
+      // fallback, chips) and on the `accent` hover fill (menu items, list
+      // rows, command items).
+      for (const fill of ['muted', 'secondary', 'accent'] as const) {
         test(`muted-foreground on ${fill} over ${surface} >= 4.5`, () => {
           expect(contrastOf(theme, 'muted-foreground', fill, surface)).toBeGreaterThanOrEqual(
             MIN_CONTRAST,
