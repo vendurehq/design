@@ -197,6 +197,7 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Secrets are not IDs:** Use AnonymizedToken for secret-like values and CopyableText for readable transported values.
 - **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 - **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
+- **The whole chip copies:** A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader
@@ -298,6 +299,7 @@ Map domain states to the six shared tones by consequence for the viewer.
 - **Pending splits by resolver:** Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.
 - **Positive terminal or healthy operating is success:** Use success for completed, approved, enabled, healthy, and operating states rather than brand or neutral.
 - **Unknown wire values fall back safely:** Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color.
+- **Pick the appearance by the room it has:** Use the default chip for a status that stands alone (size="lg" beside a page title). Use appearance="text" for a fixed status column in a list. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.
 
 **Choose:**
 
