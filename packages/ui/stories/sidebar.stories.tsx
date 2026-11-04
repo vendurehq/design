@@ -1,10 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
 import {
+  FolderTreeIcon,
   HomeIcon,
   InboxIcon,
+  PackageIcon,
   SearchIcon,
   SettingsIcon,
+  ShoppingCartIcon,
+  TagIcon,
   UsersIcon,
 } from 'lucide-react';
 import {
@@ -220,4 +224,72 @@ export const IconRail: Story = {
       </SidebarInset>
     </SidebarProvider>
   ),
+};
+
+const navGroups = [
+  { label: 'Catalog', items: [{ title: 'Products', icon: PackageIcon }, { title: 'Collections', icon: FolderTreeIcon }, { title: 'Facets', icon: TagIcon }] },
+  { label: 'Sales', items: [{ title: 'Orders', icon: ShoppingCartIcon }, { title: 'Customers', icon: UsersIcon }] },
+  { label: 'Settings', items: [{ title: 'Channels', icon: SettingsIcon }] },
+];
+
+/**
+ * A navigation in labelled groups, like the Dashboard's, on the icon rail.
+ * Press the trigger (or Ctrl/Cmd+B) to toggle. Collapsing folds each group
+ * label's height on the drawer curve while it fades, so the rail has no empty
+ * row where a label was and the icons glide up with the width change. Under
+ * reduced motion the label only fades. Inactive icons are dimmed; the active
+ * icon is the brand indicator.
+ */
+export const IconRailWithGroups: Story = {
+  name: 'Icon rail with group labels',
+  parameters: { layout: 'fullscreen' },
+  render: function Render() {
+    const [current, setCurrent] = useState('Orders');
+    return (
+      <SidebarProvider>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
+              <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
+                V
+              </div>
+              <span className="truncate text-sm font-semibold">Vendure</span>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            {navGroups.map((group) => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {group.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={item.title === current}
+                          onClick={() => setCurrent(item.title)}
+                          tooltip={item.title}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <header className="flex h-13 items-center gap-2 border-b px-3">
+            <SidebarTrigger />
+            <span className="text-sm font-medium">Orders</span>
+          </header>
+          <div className="flex-1 p-5">
+            <p className="text-muted-foreground text-sm">Main content area</p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  },
 };
