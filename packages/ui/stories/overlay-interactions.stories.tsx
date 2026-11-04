@@ -1,0 +1,223 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { LogOutIcon, SettingsIcon } from 'lucide-react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../src/components/atoms/alert-dialog.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../src/components/atoms/dropdown-menu.tsx';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '../src/components/atoms/popover.tsx';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../src/components/atoms/select.tsx';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../src/components/atoms/tooltip.tsx';
+
+// Mounted tests for the v3 overlay look. Each story opens its overlay and reads
+// computed styles in a real browser (CI step "Storybook a11y smoke test"), so a
+// change to the radius, the shadow, the item size or the motion fails here.
+// Overlays render in a portal on `body`, so queries run against `document.body`.
+
+const meta = {
+  title: 'Atoms/Overlays/Interactions',
+} satisfies Meta;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const body = () => within(document.body);
+
+/** The element that carries the given data-slot, once it is in the document. */
+async function findSlot(slot: string): Promise<HTMLElement> {
+  let element: HTMLElement | null = null;
+  await waitFor(() => {
+    element = document.querySelector<HTMLElement>(`[data-slot="${slot}"]`);
+    expect(element).not.toBeNull();
+  });
+  return element as unknown as HTMLElement;
+}
+
+/**
+ * The shared overlay surface: the overlay shadow, no ring, and the entrance
+ * transition. Base UI holds transitions off while it positions a menu or a
+ * select, so the transition checks wait for the popup to settle.
+ */
+async function expectOverlaySurface(element: HTMLElement, radius: string) {
+  const style = getComputedStyle(element);
+  await expect(style.borderTopLeftRadius).toBe(radius);
+  await expect(style.boxShadow).not.toBe('none');
+  await waitFor(() => {
+    expect(style.transitionProperty).toContain('opacity');
+    expect(style.transitionProperty).toContain('scale');
+    // The strong ease-out token.
+    expect(style.transitionTimingFunction).toContain('cubic-bezier(0.19, 1, 0.22, 1)');
+  });
+}
+
+export const TooltipLook: Story = {
+  render: () => (
+    <TooltipProvider>
+      <Tooltip defaultOpen>
+        <TooltipTrigger render={<Button variant="outline" />}>Copy</TooltipTrigger>
+        <TooltipContent>Copy the order code</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ),
+  play: async () => {
+    const tooltip = await findSlot('tooltip-content');
+    const style = getComputedStyle(tooltip);
+    await expect(style.borderTopLeftRadius).toBe('6px');
+    await expect(style.fontSize).toBe('12px');
+    await expect(style.fontWeight).toBe('500');
+    // No arrow element inside the popup.
+    await expect(tooltip.children.length).toBe(0);
+  },
+};
+
+export const PopoverLook: Story = {
+  render: () => (
+    <Popover>
+      <PopoverTrigger render={<Button variant="outline" />}>Dimensions</PopoverTrigger>
+      <PopoverContent>
+        <PopoverHeader>
+          <PopoverTitle>Dimensions</PopoverTitle>
+          <PopoverDescription>Set the size of the label.</PopoverDescription>
+        </PopoverHeader>
+      </PopoverContent>
+    </Popover>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Dimensions' }));
+    await expectOverlaySurface(await findSlot('popover-content'), '8px');
+  },
+};
+
+export const DropdownMenuLook: Story = {
+  render: () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>Actions</DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>
+          <SettingsIcon />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuCheckboxItem checked>Show archived</DropdownMenuCheckboxItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive">
+          <LogOutIcon />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Actions' }));
+    const menu = await findSlot('dropdown-menu-content');
+    await expectOverlaySurface(menu, '8px');
+    await expect(getComputedStyle(menu).paddingTop).toBe('5px');
+
+    const item = body().getByRole('menuitem', { name: 'Settings' });
+    const itemStyle = getComputedStyle(item);
+    // offsetHeight ignores the entrance scale.
+    await expect(item.offsetHeight).toBe(34);
+    await expect(itemStyle.borderTopLeftRadius).toBe('6px');
+    await expect(itemStyle.fontSize).toBe('13px');
+    const icon = item.querySelector('svg') as SVGElement;
+    await expect(getComputedStyle(icon).strokeWidth).toBe('1.75px');
+    await expect(getComputedStyle(icon).width).toBe('16px');
+
+    // The destructive item reads in the destructive-text slot.
+    const destructive = body().getByRole('menuitem', { name: 'Log out' });
+    const probe = document.createElement('span');
+    probe.className = 'text-destructive-text';
+    destructive.append(probe);
+    await expect(getComputedStyle(destructive).color).toBe(getComputedStyle(probe).color);
+    probe.remove();
+  },
+};
+
+export const SelectLook: Story = {
+  render: () => (
+    <Select
+      defaultValue="eur"
+      items={[
+        { value: 'eur', label: 'Euro' },
+        { value: 'usd', label: 'US dollar' },
+      ]}
+    >
+      <SelectTrigger aria-label="Currency">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent alignItemWithTrigger={false}>
+        <SelectItem value="eur">Euro</SelectItem>
+        <SelectItem value="usd">US dollar</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
+    await expectOverlaySurface(await findSlot('select-content'), '8px');
+    const option = await body().findByRole('option', { name: 'US dollar' });
+    await expect(option.offsetHeight).toBe(34);
+  },
+};
+
+export const AlertDialogLook: Story = {
+  render: () => (
+    <AlertDialog>
+      <AlertDialogTrigger render={<Button variant="outline" />}>Discard</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Discard draft?</AlertDialogTitle>
+          <AlertDialogDescription>Your unsaved changes will be lost.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive">Discard</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Discard' }));
+    const dialog = await body().findByRole('alertdialog');
+    await expectOverlaySurface(dialog, '12px');
+    const style = getComputedStyle(dialog);
+    await expect(style.paddingTop).toBe('20px');
+    await expect(style.maxWidth).toBe('440px');
+    await expect(getComputedStyle(within(dialog).getByRole('heading')).fontSize).toBe('16px');
+    // The scrim fades with the dialog.
+    const scrim = await findSlot('alert-dialog-overlay');
+    await expect(getComputedStyle(scrim).transitionProperty).toContain('opacity');
+  },
+};

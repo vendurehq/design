@@ -58,6 +58,22 @@ export const Default: Story = {
       <Button
         variant="outline"
         onClick={() =>
+          toast.info('Price list updated', {
+            description: 'New prices apply to orders placed from now on.',
+          })
+        }
+      >
+        Info
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() => toast.loading('Exporting orders…')}
+      >
+        Loading
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() =>
           toast('Event has been created', {
             description: 'Sunday, December 03, 2023 at 9:00 AM',
             action: { label: 'Undo', onClick: () => {} },
@@ -66,6 +82,16 @@ export const Default: Story = {
       >
         With Action
       </Button>
+    </div>
+  ),
+};
+
+/** The toaster sits bottom right by default; `position` moves it. */
+export const TopCenter: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <Toaster position="top-center" />
+      <Button onClick={() => toast.success('Order shipped')}>Show Toast</Button>
     </div>
   ),
 };

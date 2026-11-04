@@ -10,36 +10,40 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      position="top-center"
+      position="bottom-right"
       className="toaster group"
+      // Each icon carries its tone: the toast surface stays neutral.
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="text-success-text size-4 stroke-[1.75]" />
         ),
         info: (
-          <InfoIcon className="size-4" />
+          <InfoIcon className="text-info-text size-4 stroke-[1.75]" />
         ),
         warning: (
-          <TriangleAlertIcon className="size-4" />
+          <TriangleAlertIcon className="text-warning-text size-4 stroke-[1.75]" />
         ),
         error: (
-          <OctagonXIcon className="size-4" />
+          <OctagonXIcon className="text-destructive-text size-4 stroke-[1.75]" />
         ),
         loading: (
-          <Loader2Icon className="size-4 animate-spin" />
+          <Loader2Icon className="text-muted-foreground size-4 animate-spin stroke-[1.75]" />
         ),
       }}
       style={
         {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          // shadow-overlay draws the 1px contact edge, so the border stays invisible.
+          "--normal-border": "transparent",
+          "--border-radius": "var(--radius-2xl)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          // Sonner's own stylesheet is unlayered, so the overlay shadow and
+          // the type need ! to win over it.
+          toast: "cn-toast shadow-overlay! font-sans!",
           // Override Sonner's hardcoded #3f3f3f description colour
           // with our semantic muted-foreground token for consistent contrast.
           // See: https://github.com/vendurehq/design/issues/5

@@ -12,11 +12,30 @@ import {
   AlertDialogTrigger,
 } from '@vendure-io/ui/components/atoms/alert-dialog';
 import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
-import { type ReactElement, type ReactNode, useId, useRef, useState } from 'react';
+import { cn } from '@vendure-io/ui/lib/utils';
+import {
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 interface ConfirmDialogProps {
   title: ReactNode;
+  /**
+   * An icon shown inline before the title, e.g. `<Trash2Icon />`. It is
+   * neutral, and takes the destructive tone when `variant="destructive"`.
+   */
+  icon?: ReactNode;
   description?: ReactNode;
+  /**
+   * Content between the description and the buttons. Use it for a field the
+   * user must fill before confirming ("type the name to confirm"), and pair it
+   * with `confirmDisabled` until the value matches.
+   */
+  body?: ReactNode;
   /**
    * May return a promise: the dialog then keeps itself open, disables both
    * buttons, shows a pending spinner on the action, and closes only on resolve.
@@ -34,6 +53,12 @@ interface ConfirmDialogProps {
   confirmDisabled?: boolean;
   /** Why confirm is disabled, shown beside the buttons while `confirmDisabled` is set. */
   confirmDisabledReason?: ReactNode;
+  /**
+   * The element that takes focus when the dialog opens. By default focus goes
+   * to the first focusable element: a field in `body` if there is one,
+   * otherwise Cancel, so Enter never confirms a destructive action by accident.
+   */
+  initialFocus?: ComponentProps<typeof AlertDialogContent>['initialFocus'];
   /** Uncontrolled mode — the element that opens the dialog. */
   children?: ReactElement;
   /** Controlled mode — supply with `onOpenChange`. */
@@ -43,13 +68,16 @@ interface ConfirmDialogProps {
 
 function ConfirmDialog({
   title,
+  icon,
   description,
+  body,
   onConfirm,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'default',
   confirmDisabled = false,
   confirmDisabledReason,
+  initialFocus,
   children,
   open,
   onOpenChange,
@@ -93,11 +121,28 @@ function ConfirmDialog({
       }}
     >
       {children ? <AlertDialogTrigger render={children} /> : null}
-      <AlertDialogContent data-slot="confirm-dialog">
+      <AlertDialogContent data-slot="confirm-dialog" initialFocus={initialFocus}>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          {icon ? (
+            <AlertDialogTitle className="flex items-center gap-2.5">
+              <span
+                data-slot="confirm-dialog-icon"
+                aria-hidden="true"
+                className={cn(
+                  "flex shrink-0 [&_svg:not([class*='size-'])]:size-4.5 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
+                  variant === 'destructive' ? 'text-destructive-text' : 'text-muted-foreground',
+                )}
+              >
+                {icon}
+              </span>
+              <span>{title}</span>
+            </AlertDialogTitle>
+          ) : (
+            <AlertDialogTitle>{title}</AlertDialogTitle>
+          )}
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
+        {body ? <div data-slot="confirm-dialog-body">{body}</div> : null}
         <AlertDialogFooter>
           {showReason ? (
             <p
@@ -111,15 +156,20 @@ function ConfirmDialog({
           <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
           {/* AlertDialogAction is a plain Button (not a Close), so closing stays
               under our control — the promise decides when the dialog leaves. */}
+          {/* While pending, the spinner takes the label's place. The label stays
+              in the layout (and the accessible name), so the button keeps its width. */}
           <AlertDialogAction
             variant={variant}
             disabled={pending || confirmDisabled}
             aria-busy={pending || undefined}
             aria-describedby={showReason ? reasonId : undefined}
             onClick={handleConfirm}
+            className="relative"
           >
-            {pending ? <Spinner /> : null}
-            {confirmLabel}
+            <span data-slot="confirm-dialog-label" className={cn(pending && 'opacity-0')}>
+              {confirmLabel}
+            </span>
+            {pending ? <Spinner className="absolute inset-0 m-auto" /> : null}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
