@@ -27,4 +27,22 @@ describe('IdChip', () => {
       'data-slot="copy-button"',
     );
   });
+
+  test('a copyable chip copies as a whole: the copy button stretches over it', () => {
+    const markup = html(<IdChip value="a1b2c3d4e5f6a7b8c9d0" />);
+
+    expect(markup).toContain('data-chip-copy=""');
+    expect(markup).toContain('after:inset-0');
+  });
+
+  test('a copyable chip keeps the full value as text and the button as its only control', () => {
+    const markup = html(<IdChip value="abc123" />);
+
+    expect(markup).toContain('>abc123<');
+    expect(markup.match(/<button/g)?.length).toBe(1);
+  });
+
+  test('a non-copyable chip has no whole-chip copy target', () => {
+    expect(html(<IdChip value="abc123" copyable={false} />)).not.toContain('data-chip-copy=""');
+  });
 });

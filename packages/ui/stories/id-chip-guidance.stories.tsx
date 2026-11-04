@@ -70,7 +70,7 @@ const TOOLS: { tool: string; sample: ReactNode; use: string }[] = [
   {
     tool: 'IdChip',
     sample: <IdChip value={ORDER_UUID} />,
-    use: 'An opaque machine identifier the human reads by shape, not meaning (a UUID, a database ID, a gateway reference). Monospace and bordered so it reads as data, truncated for density, copied in full.',
+    use: 'An opaque machine identifier the human reads by shape, not meaning (a UUID, a database ID, a gateway reference). Monospace on a muted fill so it reads as data, truncated for density, copied in full. The whole chip is the copy target.',
   },
   {
     tool: 'CopyableText',
@@ -148,7 +148,7 @@ export const ChoosingTheTool: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="SB-2043 is already short and readable: the monospace chrome and copy button are noise around a value people just read. Plain text, or CopyableText if it must be copyable."
+            caption="SB-2043 is already short and readable: the monospace chrome and copy action are noise around a value people just read. Plain text, or CopyableText if it must be copyable."
           >
             <IdChip value="SB-2043" truncate="none" />
           </Example>
@@ -213,7 +213,7 @@ export const Truncation: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Truncate for density; the full value is always copied"
-        intro="Truncation only shortens the rendered text: the full value is copied in full and shown in a tooltip on hover, or when the copy button has focus. Pick the mode by which part of the ID distinguishes it: keep both ends for a UUID, keep the tail for a prefixed key, keep everything for a short one."
+        intro="Truncation only shortens the rendered text: the full value is copied in full and shown in the tooltip on hover, or when the copy button has focus. Pick the mode by which part of the ID distinguishes it: keep both ends for a UUID, keep the tail for a prefixed key, keep everything for a short one."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[600px] text-left text-sm">
@@ -257,6 +257,38 @@ export const Truncation: Story = {
           >
             <IdChip value={ULID} truncate="middle" />
             <IdChip value="01J9ZQKX7Y8N3F4G5H6J7QRST" truncate="middle" />
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 4 · copying ──────────────────────────────────────────────────────────────
+
+export const Copying: Story = {
+  name: '4 · The whole chip copies',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="One click anywhere on the chip"
+        intro="A copyable IdChip is one target: a click anywhere on it copies the full value. The tooltip says Copy, then Copied, and the icon turns into a check-mark. The copy button inside stays the only tab stop, so keyboard users copy with Enter or Space and get the same tooltip. AnonymizedToken copies the same way; SecretValue keeps separate reveal and copy buttons."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="Name what the chip copies when several chips share a surface: the tooltip and the button label both say Copy commit SHA."
+          >
+            <IdChip value="9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9e0f" copyLabel="Copy commit SHA" />
+            <IdChip value={ORDER_UUID} copyLabel="Copy order ID" />
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Put an IdChip inside a link or a clickable row cell that does something else. The chip is already a copy target; one click cannot both copy and navigate."
+          >
+            <span className="text-brand-indicator text-sm underline underline-offset-4">
+              Open deployment <IdChip value={ORDER_UUID} copyable={false} />
+            </span>
           </Example>
         </div>
       </Section>
