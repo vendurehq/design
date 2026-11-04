@@ -157,3 +157,27 @@ export const WithSubmenu: Story = {
     </DropdownMenu>
   ),
 };
+
+export const WithRadioItems: Story = {
+  render: function RadioStory() {
+    const [sort, setSort] = React.useState('newest');
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="outline" />}>
+          Sort orders
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={sort} onValueChange={setSort}>
+              <DropdownMenuRadioItem value="newest">Newest first</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="oldest">Oldest first</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="total">Order total</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  },
+};

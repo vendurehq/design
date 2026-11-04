@@ -70,7 +70,7 @@ function MenubarTrigger({
 function MenubarContent({
   className,
   align = "start",
-  alignOffset = -4,
+  alignOffset = -5,
   sideOffset = 8,
   ...props
 }: React.ComponentProps<typeof DropdownMenuContent>) {
@@ -80,7 +80,7 @@ function MenubarContent({
       align={align}
       alignOffset={alignOffset}
       sideOffset={sideOffset}
-      className={cn("bg-popover text-popover-foreground data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2 min-w-36 rounded-md p-1 shadow-md ring-1 motion-reduce:animate-none data-open:duration-(--transition-duration-normal) data-open:ease-(--ease-out) data-closed:duration-(--transition-duration-fast) data-closed:ease-(--ease-in)", className )}
+      className={cn("min-w-36", className)}
       {...props}
     />
   )
@@ -98,7 +98,7 @@ function MenubarItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive-subtle-foreground data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive-subtle-foreground data-[variant=destructive]:*:[svg]:text-destructive-subtle-foreground! not-data-[variant=destructive]:focus:**:text-accent-foreground group/menubar-item gap-2 rounded-sm px-2 py-1.5 text-sm data-disabled:opacity-50 data-inset:pl-8 [&_svg:not([class*='size-'])]:size-4",
+        "group/menubar-item",
         className
       )}
       {...props}
@@ -120,14 +120,14 @@ function MenubarCheckboxItem({
       data-slot="menubar-checkbox-item"
       data-inset={inset}
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pr-2 pl-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
         className
       )}
       checked={checked}
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center [&_svg:not([class*='size-'])]:size-4">
-        <MenuPrimitive.CheckboxItemIndicator>
+        <MenuPrimitive.CheckboxItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-(--transition-duration-moderate) ease-(--ease-out) motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
           <CheckIcon
           />
         </MenuPrimitive.CheckboxItemIndicator>
@@ -156,13 +156,13 @@ function MenubarRadioItem({
       data-slot="menubar-radio-item"
       data-inset={inset}
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-md py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pr-2 pl-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
         className
       )}
       {...props}
     >
       <span className="pointer-events-none absolute left-2 flex size-4 items-center justify-center [&_svg:not([class*='size-'])]:size-4">
-        <MenuPrimitive.RadioItemIndicator>
+        <MenuPrimitive.RadioItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-(--transition-duration-moderate) ease-(--ease-out) motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
           <CheckIcon
           />
         </MenuPrimitive.RadioItemIndicator>
@@ -199,7 +199,7 @@ function MenubarSeparator({
   return (
     <DropdownMenuSeparator
       data-slot="menubar-separator"
-      className={cn("bg-border -mx-1 my-1 h-px", className)}
+      className={className}
       {...props}
     />
   )
@@ -238,10 +238,7 @@ function MenubarSubTrigger({
     <DropdownMenuSubTrigger
       data-slot="menubar-sub-trigger"
       data-inset={inset}
-      className={cn(
-        "focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground gap-2 rounded-sm px-2 py-1.5 text-sm data-inset:pl-8 [&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
+      className={className}
       {...props}
     />
   )
@@ -255,7 +252,7 @@ function MenubarSubContent({
     <DropdownMenuSubContent
       data-slot="menubar-sub-content"
       className={cn(
-        "bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 min-w-32 rounded-md p-1 shadow-lg ring-1 motion-reduce:animate-none data-open:duration-(--transition-duration-normal) data-open:ease-(--ease-out) data-closed:duration-(--transition-duration-fast) data-closed:ease-(--ease-in)",
+        "min-w-32",
         className
       )}
       {...props}
