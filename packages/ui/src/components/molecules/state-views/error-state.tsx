@@ -15,7 +15,8 @@ import { TriangleAlertIcon } from 'lucide-react';
 export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
   /**
    * Leading icon, tinted `text-destructive`. Defaults to an alert triangle.
-   * Ignored once `illustration` renders (see below).
+   * In a `compact` state only an explicit icon renders, bare and tinted
+   * `text-destructive-text`. Ignored once `illustration` renders (see below).
    */
   icon?: React.ReactNode;
   /**
@@ -40,9 +41,10 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
    */
   bordered?: boolean;
   /**
-   * `compact` drops the illustration and icon and tightens the spacing, for a
-   * small panel or side column where the full state is too tall. Keep it to a
-   * title, a description and at most one action. Defaults to `default`.
+   * `compact` drops the illustration and tightens the spacing, for a small
+   * panel or side column where the full state is too tall. An explicit `icon`
+   * renders bare (no chip) above a 14px title. Keep it to a title, a
+   * description and at most one action. Defaults to `default`.
    */
   size?: 'default' | 'compact';
 }
@@ -76,26 +78,33 @@ function ErrorState({
   ) : icon === undefined ? (
     <ErrorIllustration />
   ) : null;
-  const resolvedIcon = compact ? null : icon === undefined ? <TriangleAlertIcon /> : icon;
+  // A compact state draws only an explicit icon: the default triangle stays
+  // off, so a compact error in a small panel keeps to its text and retry.
+  const resolvedIcon = compact ? icon : icon === undefined ? <TriangleAlertIcon /> : icon;
 
   return (
     <Empty
       role="alert"
       data-slot="error-state"
       data-size={size}
-      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-2 p-4', className)}
+      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-3 p-6 py-10', className)}
       {...props}
     >
-      <EmptyHeader>
+      <EmptyHeader className={cn(compact && 'gap-1')}>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
         ) : resolvedIcon ? (
-          <EmptyMedia variant="icon" className="text-destructive">
+          <EmptyMedia
+            variant={compact ? 'bare' : 'icon'}
+            className={compact ? 'text-destructive-text opacity-100' : 'text-destructive'}
+          >
             {resolvedIcon}
           </EmptyMedia>
         ) : null}
         <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
-        {description ? <EmptyDescription>{description}</EmptyDescription> : null}
+        {description ? (
+          <EmptyDescription className={cn(compact && 'text-sm')}>{description}</EmptyDescription>
+        ) : null}
       </EmptyHeader>
       {onRetry || children ? (
         <EmptyContent className={cn(compact && 'gap-2')}>

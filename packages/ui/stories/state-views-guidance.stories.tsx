@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { InboxIcon, PackageIcon, SearchIcon } from 'lucide-react';
+import { InboxIcon, PackageIcon, SearchIcon, WebhookIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
@@ -421,7 +421,7 @@ export const CompactForSmallPanels: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Compact inside a small panel; full state for a region"
-        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush with bordered={false}."
+        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush with bordered={false}. An icon is optional and renders bare."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -440,6 +440,29 @@ export const CompactForSmallPanels: Story = {
                   description="This is on us. Try again in a moment."
                   onRetry={() => {}}
                 />
+              </CardContent>
+            </Card>
+          </Example>
+          <Example
+            verdict="do"
+            caption="An empty list panel names what belongs there and offers one action. The optional icon renders bare, with no chip."
+          >
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>Webhooks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EmptyState
+                  size="compact"
+                  bordered={false}
+                  icon={<WebhookIcon />}
+                  title="No webhooks"
+                  description="Send order events to your own endpoint."
+                >
+                  <Button variant="outline" size="sm">
+                    Add webhook
+                  </Button>
+                </EmptyState>
               </CardContent>
             </Card>
           </Example>

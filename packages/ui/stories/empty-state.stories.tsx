@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { InboxIcon, PackageIcon } from 'lucide-react';
+import { GlobeIcon, InboxIcon, PackageIcon } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
-import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
+import {
+  Card,
+  CardContent,
+  CardCount,
+  CardHeader,
+  CardRows,
+  CardTitle,
+} from '../src/components/atoms/card.tsx';
 import {
   Table,
   TableBody,
@@ -150,6 +157,37 @@ export const CompactInPanel: Story = {
           </Button>
         </EmptyState>
       </CardContent>
+    </Card>
+  ),
+};
+
+/**
+ * A compact state with an `icon` draws it bare: 28px at 40% opacity, with no
+ * chip. Here it fills a card whose body is a list of rows, under the same top
+ * border a row would draw.
+ */
+export const CompactWithIcon: Story = {
+  render: () => (
+    <Card className="w-96">
+      <CardHeader>
+        <CardTitle>
+          Custom domains <CardCount>0</CardCount>
+        </CardTitle>
+      </CardHeader>
+      <CardRows>
+        <EmptyState
+          size="compact"
+          bordered={false}
+          className="border-t border-solid"
+          icon={<GlobeIcon />}
+          title="No custom domains"
+          description="Point a domain at this environment to serve the storefront."
+        >
+          <Button variant="outline" size="sm">
+            Add domain
+          </Button>
+        </EmptyState>
+      </CardRows>
     </Card>
   ),
 };
