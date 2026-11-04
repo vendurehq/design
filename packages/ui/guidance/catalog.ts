@@ -591,6 +591,10 @@ export const uiGuidance = [
         title: 'One bar per measure',
         body: 'Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.',
       },
+      {
+        title: 'Indeterminate when the length is unknown',
+        body: 'Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
@@ -680,7 +684,7 @@ export const uiGuidance = [
       },
       {
         title: 'Compact for small panels',
-        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}.',
+        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}. An icon is optional and renders bare, without the chip.',
       },
       {
         title: 'Errors own the failure',

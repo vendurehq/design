@@ -245,6 +245,7 @@ Show task completion or usage against a limit, toned only when the level has a c
 - **Tone follows consequence, not fill level alone:** A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
 - **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
+- **Indeterminate when the length is unknown:** Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.
 
 **Choose:**
 
@@ -283,7 +284,7 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
 - **Tables own their perimeter:** When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.
-- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}.
+- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}. An icon is optional and renders bare, without the chip.
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.
