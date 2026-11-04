@@ -140,9 +140,9 @@ export const Invalid: Story = {
 };
 
 /**
- * The destructive variant keeps its tinted fill; its text uses
- * destructive-subtle-foreground, which reaches 4.5:1 in both modes. Pinned to
- * the light page theme.
+ * The destructive variant is a solid fill: destructive-foreground on
+ * destructive, which reaches 4.5:1 in both modes. Hover mixes a shade darker.
+ * Pinned to the light page theme.
  */
 export const DestructiveLightAndDark: Story = {
   globals: { theme: 'light' },
@@ -154,6 +154,37 @@ export const DestructiveLightAndDark: Story = {
           <Button variant="destructive" size="sm">
             Remove
           </Button>
+        </div>
+      )}
+    </LightAndDark>
+  ),
+};
+
+const VARIANTS = ['default', 'outline', 'secondary', 'ghost', 'destructive', 'brand', 'link'] as const;
+
+/**
+ * Every variant at the default (34px) and sm (28px) sizes, with the matching
+ * icon-only squares, in light and dark. Press any button to see the 0.97
+ * scale; it is off under reduced motion. Pinned to the light page theme.
+ */
+export const AllVariantsLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex flex-col gap-3">
+          {(['default', 'sm'] as const).map((size) => (
+            <div key={size} className="flex flex-wrap items-center gap-2">
+              {VARIANTS.map((variant) => (
+                <Button key={variant} variant={variant} size={size}>
+                  {variant}
+                </Button>
+              ))}
+              <Button variant="outline" size={size === 'sm' ? 'icon-sm' : 'icon'} aria-label="Next">
+                <ChevronRight />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
     </LightAndDark>
