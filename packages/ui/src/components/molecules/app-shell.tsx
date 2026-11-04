@@ -35,7 +35,7 @@ function AppShellSidebar({ className, ...props }: React.ComponentProps<'aside'>)
     <aside
       data-slot="app-shell-sidebar"
       className={cn(
-        'bg-sidebar text-sidebar-foreground flex w-64 shrink-0 flex-col gap-1 p-3',
+        'bg-sidebar text-sidebar-foreground flex w-58 shrink-0 flex-col gap-1 px-2.5 py-3',
         className,
       )}
       {...props}
@@ -60,12 +60,19 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+// The header is 52px and sticks to the top of whichever element scrolls. With
+// scrollOwner="container" the page content passes under it, so it is a
+// translucent tint of the surface it sits on, with a backdrop blur. The tint
+// follows that surface: --background by default, --surface inside the
+// AppShellContent pane or the inset Sidebar's pane. The hairline below it is
+// always on: showing it only on scroll would need a scroll listener on a
+// region the header does not own.
 function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="app-shell-header"
       className={cn(
-        'flex h-12 shrink-0 items-center gap-2 border-b border-border/60 px-4',
+        'bg-background/85 in-data-[slot=app-shell-content]:bg-surface/85 md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface/85 sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 border-b border-border pr-5 pl-3 backdrop-blur-md',
         className,
       )}
       {...props}

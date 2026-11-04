@@ -57,3 +57,22 @@ test('SidebarInset can be structural when AppShellMain owns the landmark', () =>
   expect(html).toContain('data-slot="sidebar-inset"');
   expect(html).toContain('data-slot="app-shell-main"');
 });
+
+test('AppShellHeader is a 52px sticky bar with a translucent, blurred tint', () => {
+  const html = renderToStaticMarkup(<AppShellHeader>Header</AppShellHeader>);
+  const tag = html.match(/<header[^>]*>/)?.[0] ?? '';
+  const tokens = (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  expect(tokens).toEqual(
+    expect.arrayContaining([
+      'h-13',
+      'sticky',
+      'top-0',
+      'bg-background/85',
+      'in-data-[slot=app-shell-content]:bg-surface/85',
+      'backdrop-blur-md',
+      'border-b',
+    ]),
+  );
+  expect(tokens).not.toContain('h-12');
+});
