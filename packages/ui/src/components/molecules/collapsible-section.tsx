@@ -91,7 +91,7 @@ function CollapsibleSection({
       <Heading data-slot="collapsible-section-heading" className="m-0">
         <CollapsibleTrigger
           data-slot="collapsible-section-trigger"
-          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           <span data-slot="collapsible-section-title" className="text-sm font-semibold">
             {title}

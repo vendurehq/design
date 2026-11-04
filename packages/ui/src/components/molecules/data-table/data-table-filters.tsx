@@ -84,7 +84,7 @@ function DataTableAddFilter<TData>({
           <div className="flex flex-col gap-2">
             <button
               type="button"
-              className="text-muted-foreground hover:text-foreground -ml-1 flex items-center gap-1 text-xs"
+              className="text-muted-foreground hover:text-foreground -ml-1 flex items-center gap-1 rounded-md text-xs outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               onClick={() => setActiveId(null)}
             >
               <ChevronLeftIcon className="size-3" />

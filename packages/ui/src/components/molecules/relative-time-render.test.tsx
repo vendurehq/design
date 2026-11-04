@@ -53,7 +53,9 @@ describe('RelativeTime', () => {
   test('focusable adds the tab stop and the focus ring', () => {
     const time = tag(render(<RelativeTime value={WHEN} focusable />), 'relative-time');
     expect(time).toContain('tabindex="0"');
-    expect(time).toContain('focus-visible:ring-3');
+    expect(time).toContain('focus-visible:outline-2');
+    expect(time).toContain('focus-visible:outline-offset-2');
+    expect(time).toContain('focus-visible:outline-ring');
   });
 
   test('keeps a consumer aria-describedby alongside its own', () => {
