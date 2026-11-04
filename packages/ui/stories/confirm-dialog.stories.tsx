@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { RocketIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Field, FieldDescription, FieldLabel } from '../src/components/atoms/field.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 import { ConfirmDialog } from '../src/components/molecules/confirm-dialog.tsx';
 
 const meta = {
@@ -121,4 +124,100 @@ export const ConfirmDisabledWhileLoading: Story = {
       </>
     );
   },
+};
+
+/**
+ * `icon` sits inline before the title. It stays neutral, and takes the
+ * destructive tone only on a destructive dialog.
+ */
+export const WithIcon: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <ConfirmDialog
+        icon={<RocketIcon />}
+        title="Deploy to production?"
+        description="This kicks off a build and rolls it out to customers."
+        confirmLabel="Deploy"
+        onConfirm={() => new Promise((resolve) => setTimeout(resolve, 1500))}
+      >
+        <Button>Deploy</Button>
+      </ConfirmDialog>
+      <ConfirmDialog
+        icon={<Trash2Icon />}
+        title="Delete product?"
+        description="This permanently removes the product and its variants."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => console.log('deleted')}
+      >
+        <Button variant="destructive">Delete</Button>
+      </ConfirmDialog>
+    </div>
+  ),
+};
+
+/**
+ * `body` holds a field between the description and the buttons. Here the user
+ * types the environment name, and `confirmDisabled` holds the delete until it
+ * matches. The field is the first focusable element, so it takes focus.
+ */
+export const TypeToConfirm: Story = {
+  render: function Render() {
+    const name = 'production';
+    const [value, setValue] = useState('');
+    return (
+      <ConfirmDialog
+        icon={<Trash2Icon />}
+        title="Delete environment?"
+        description="This permanently removes the environment, its deployments and its data."
+        body={
+          <Field>
+            <FieldLabel htmlFor="confirm-environment-name">Environment name</FieldLabel>
+            <Input
+              id="confirm-environment-name"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder={name}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <FieldDescription>
+              Type <strong className="text-foreground font-medium">{name}</strong> to confirm.
+            </FieldDescription>
+          </Field>
+        }
+        confirmLabel="Delete environment"
+        variant="destructive"
+        confirmDisabled={value !== name}
+        onOpenChange={(open) => {
+          if (!open) setValue('');
+        }}
+        onConfirm={() => new Promise((resolve) => setTimeout(resolve, 1000))}
+      >
+        <Button variant="destructive">Delete environment</Button>
+      </ConfirmDialog>
+    );
+  },
+};
+
+/**
+ * `initialFocus` picks the element that takes focus on open. A safe,
+ * frequent confirm can focus its own action, so Enter confirms.
+ */
+export const InitialFocusOnConfirm: Story = {
+  render: () => (
+    <ConfirmDialog
+      title="Publish changes?"
+      description="These changes will be visible to customers immediately."
+      confirmLabel="Publish"
+      initialFocus={() =>
+        document.querySelector<HTMLElement>(
+          '[data-slot=confirm-dialog] [data-slot=alert-dialog-action]',
+        ) ?? true
+      }
+      onConfirm={() => console.log('published')}
+    >
+      <Button>Publish</Button>
+    </ConfirmDialog>
+  ),
 };

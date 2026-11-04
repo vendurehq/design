@@ -1,14 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { RocketIcon, Trash2Icon } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Field, FieldDescription, FieldLabel } from '../src/components/atoms/field.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 import { ConfirmDialog } from '../src/components/molecules/confirm-dialog.tsx';
 
 /**
  * Guidance, not props. Which actions earn a confirmation at all (irreversible,
  * bulk, or outward-facing), and how to word the dialog once you show one: the
  * title names the action, the confirm button repeats the verb, and destructive
- * styling is reserved for destructive outcomes. For the API and async/pending
- * behavior, see the ConfirmDialog stories.
+ * styling is reserved for destructive outcomes. When a typed name earns its
+ * place, and what the title icon says. For the API and async/pending behavior,
+ * see the ConfirmDialog stories.
  */
 const meta = {
   title: 'Molecules/ConfirmDialog/Guidance',
@@ -340,6 +344,166 @@ export const DestructiveStyling: Story = {
               onConfirm={() => {}}
             >
               <Button variant="destructive">Publish</Button>
+            </ConfirmDialog>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 4 · type to confirm ──────────────────────────────────────────────────────
+
+const TYPE_TO_CONFIRM_RULES: { n: number; title: string; body: string }[] = [
+  {
+    n: 1,
+    title: 'Only for the largest losses',
+    body: 'Ask for a typed name when one slip destroys a whole container of data: an environment, a channel, a store. A typed name is slower than a click on purpose, so a routine delete of one product does not get one.',
+  },
+  {
+    n: 2,
+    title: 'Type the name, not a magic word',
+    body: 'Ask for the name of the thing being deleted. Typing "production" proves the user knows which environment goes; typing "DELETE" proves only that they can read.',
+  },
+  {
+    n: 3,
+    title: 'Hold the action until it matches',
+    body: 'Pass the field in body and keep confirmDisabled set until the value matches. The field takes focus when the dialog opens. Clear it when the dialog closes.',
+  },
+];
+
+function TypeToConfirmExample() {
+  const name = 'production';
+  const [value, setValue] = useState('');
+  return (
+    <ConfirmDialog
+      icon={<Trash2Icon />}
+      title="Delete environment?"
+      description="This permanently removes the environment, its deployments and its data."
+      body={
+        <Field>
+          <FieldLabel htmlFor="guidance-environment-name">Environment name</FieldLabel>
+          <Input
+            id="guidance-environment-name"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            placeholder={name}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <FieldDescription>
+            Type <strong className="text-foreground font-medium">{name}</strong> to confirm.
+          </FieldDescription>
+        </Field>
+      }
+      confirmLabel="Delete environment"
+      variant="destructive"
+      confirmDisabled={value !== name}
+      onOpenChange={(open) => {
+        if (!open) setValue('');
+      }}
+      onConfirm={() => {}}
+    >
+      <Button variant="destructive">Delete environment</Button>
+    </ConfirmDialog>
+  );
+}
+
+export const TypeToConfirm: Story = {
+  name: '4 · Type to confirm',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="A typed name for the losses that cannot be rebuilt"
+        intro="Most confirms need one click. Reserve a typed name for the few actions that wipe out a whole container of data."
+      >
+        <div className="mb-6 flex flex-col gap-3">
+          {TYPE_TO_CONFIRM_RULES.map(({ n, title, body }) => (
+            <div key={n} className="border-l-2 pl-4">
+              <h3 className="text-sm font-semibold">
+                {n} · {title}
+              </h3>
+              <p className="text-muted-foreground mt-1 text-sm">{body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="Deleting an environment takes every deployment with it: the user types its name before the delete unlocks."
+          >
+            <TypeToConfirmExample />
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A typed name on a single, small delete slows the user down for no gain. One click on a verb-labeled button is enough."
+          >
+            <ConfirmDialog
+              title="Delete tag?"
+              description="The tag is removed from 3 products."
+              body={<Input aria-label="Tag name" placeholder="summer-sale" />}
+              confirmLabel="Delete"
+              variant="destructive"
+              confirmDisabled
+              onConfirm={() => {}}
+            >
+              <Button variant="outline">Delete tag</Button>
+            </ConfirmDialog>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 5 · the title icon ───────────────────────────────────────────────────────
+
+export const TitleIcon: Story = {
+  name: '5 · The title icon',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="The icon names the action; color is for loss"
+        intro="An icon before the title helps the user recognize the action at a glance. It stays neutral on every dialog and takes the destructive tone only when variant is destructive, so the color keeps the same meaning as the red button."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A neutral rocket on the deploy, a red trash can on the delete: the color follows the outcome."
+          >
+            <ConfirmDialog
+              icon={<RocketIcon />}
+              title="Deploy to production?"
+              description="This kicks off a build and rolls it out to customers."
+              confirmLabel="Deploy"
+              onConfirm={() => {}}
+            >
+              <Button>Deploy</Button>
+            </ConfirmDialog>
+            <ConfirmDialog
+              icon={<Trash2Icon />}
+              title="Delete product?"
+              description="This permanently removes the product and its variants."
+              confirmLabel="Delete"
+              variant="destructive"
+              onConfirm={() => {}}
+            >
+              <Button variant="destructive">Delete</Button>
+            </ConfirmDialog>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Do not color the icon yourself. A green check or a red warning on a safe action competes with the button and blurs what red means."
+          >
+            <ConfirmDialog
+              icon={<RocketIcon className="text-destructive-text" />}
+              title="Deploy to production?"
+              description="This kicks off a build and rolls it out to customers."
+              confirmLabel="Deploy"
+              onConfirm={() => {}}
+            >
+              <Button variant="outline">Deploy</Button>
             </ConfirmDialog>
           </Example>
         </div>
