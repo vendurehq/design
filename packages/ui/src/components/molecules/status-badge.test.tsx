@@ -1,0 +1,81 @@
+import { describe, expect, test } from 'bun:test';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+import { StatusBadge } from './status-badge.tsx';
+
+const html = (node: React.ReactElement) => renderToStaticMarkup(node);
+
+describe('StatusBadge', () => {
+  test('the default chip has no marker', () => {
+    const markup = html(<StatusBadge tone="success">Active</StatusBadge>);
+
+    expect(markup).toContain('Active');
+    expect(markup).toContain('h-6');
+    expect(markup).not.toContain('data-slot="status-badge-marker"');
+  });
+
+  test('dot shows a tone-coloured dot', () => {
+    const markup = html(
+      <StatusBadge tone="success" dot>
+        Active
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('data-slot="status-badge-marker"');
+    expect(markup).toContain('text-success-text');
+  });
+
+  test('progress shows a spinner that stops under reduced motion', () => {
+    const markup = html(<StatusBadge tone="progress">Deploying</StatusBadge>);
+
+    expect(markup).toContain('lucide-loader');
+    expect(markup).toContain('motion-reduce:animate-none');
+  });
+
+  test('icon replaces the dot and the spinner', () => {
+    const markup = html(
+      <StatusBadge tone="progress" dot icon={<svg data-testid="custom-icon" />}>
+        Deploying
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('data-testid="custom-icon"');
+    expect(markup).not.toContain('lucide-loader');
+  });
+
+  test('size="lg" renders the 28px chip', () => {
+    expect(html(<StatusBadge size="lg">Draft</StatusBadge>)).toContain('h-7');
+  });
+
+  test('appearance="text" renders the word in the tone text colour', () => {
+    const markup = html(
+      <StatusBadge tone="critical" appearance="text">
+        Failed
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('text-destructive-text');
+    expect(markup).not.toContain('bg-muted');
+  });
+
+  test('appearance="text" puts the progress spinner after the word', () => {
+    const markup = html(
+      <StatusBadge tone="progress" appearance="text">
+        Building
+      </StatusBadge>,
+    );
+
+    expect(markup.indexOf('Building')).toBeLessThan(markup.indexOf('lucide-loader'));
+  });
+
+  test('appearance="dot" keeps the label as screen-reader text', () => {
+    const markup = html(
+      <StatusBadge tone="warning" appearance="dot">
+        Degraded
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('<span class="sr-only">Degraded</span>');
+    expect(markup).toContain('size-2');
+  });
+});

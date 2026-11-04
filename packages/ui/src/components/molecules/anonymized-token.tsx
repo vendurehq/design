@@ -3,8 +3,13 @@
 import {
   CopyButton,
   type CopyButtonProps,
+  useCopyAction,
 } from '@vendure-io/ui/components/molecules/copyable-text';
-import { chipChromeClass } from '@vendure-io/ui/components/molecules/id-chip';
+import {
+  ChipCopyTooltip,
+  chipChromeClass,
+  chipCopyButtonProps,
+} from '@vendure-io/ui/components/molecules/id-chip';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useState } from 'react';
@@ -93,6 +98,7 @@ function AnonymizedToken({
   ...props
 }: AnonymizedTokenProps) {
   const [previewRevealed, setPreviewRevealed] = useState(false);
+  const action = useCopyAction({ timeout, onCopied, onCopyError });
 
   if (!value) {
     return (
@@ -114,7 +120,7 @@ function AnonymizedToken({
   );
   const showRevealed = revealOnHover && previewRevealed;
 
-  return (
+  const chip = (
     <span
       data-slot="anonymized-token"
       role="group"
@@ -140,7 +146,7 @@ function AnonymizedToken({
       {...props}
     >
       {/* Blur is the only thing that sets a token apart from a plain `IdChip`;
-          the pill chrome is shared. No `overflow-hidden` here — it would clip
+          the chip chrome is shared. No `overflow-hidden` here — it would clip
           the blur halo — and the full value is never surfaced via `title`. */}
       <code
         data-slot="anonymized-token-value"
@@ -154,15 +160,25 @@ function AnonymizedToken({
       {copyable ? (
         <CopyButton
           value={value}
-          timeout={timeout}
-          onCopied={onCopied}
-          onCopyError={onCopyError}
+          copyAction={action}
           copyLabel={copyLabel}
           copiedLabel={copiedLabel}
-          className="relative size-4 after:absolute after:-inset-1"
+          {...chipCopyButtonProps}
         />
       ) : null}
     </span>
+  );
+
+  if (!copyable) return chip;
+
+  // The whole chip copies, like `IdChip`. The tooltip never shows the value.
+  return (
+    <ChipCopyTooltip
+      chip={chip}
+      copied={action.copied}
+      copyLabel={copyLabel}
+      copiedLabel={copiedLabel}
+    />
   );
 }
 

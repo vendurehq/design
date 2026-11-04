@@ -41,6 +41,31 @@ function Section({
   );
 }
 
+function Example({
+  verdict,
+  caption,
+  children,
+}: {
+  verdict: 'do' | 'dont';
+  caption: string;
+  children: ReactNode;
+}) {
+  const isDo = verdict === 'do';
+  return (
+    <div className="rounded-lg border p-4">
+      <p
+        className={`mb-3 text-xs font-semibold uppercase tracking-wide ${
+          isDo ? 'text-success-subtle-foreground' : 'text-destructive-subtle-foreground'
+        }`}
+      >
+        {isDo ? 'Do' : "Don't"}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
+      <p className="text-muted-foreground mt-3 text-sm">{caption}</p>
+    </div>
+  );
+}
+
 // ── data ─────────────────────────────────────────────────────────────────────
 
 const TONES: { tone: Tone; sample: string; def: string; examples: string }[] = [
@@ -78,7 +103,7 @@ const TONES: { tone: Tone; sample: string; def: string; examples: string }[] = [
     tone: 'progress',
     sample: 'Deploying',
     def: 'The system is working right now. Transient; resolves itself.',
-    examples: 'Running (a job), building, deploying, validating. Always shows a pulsing dot.',
+    examples: 'Running (a job), building, deploying, validating. Always shows a spinner.',
   },
 ];
 
@@ -119,7 +144,7 @@ const RULINGS: { conflict: string; ruling: Tone[]; note: string }[] = [
   {
     conflict: 'In progress',
     ruling: ['progress'],
-    note: 'Neutral chip plus an always-on, info-colored pulsing dot, as its own tone.',
+    note: 'Neutral outline plus an always-on, info-colored spinner, as its own tone.',
   },
   {
     conflict: 'Active / Completed',
@@ -208,7 +233,7 @@ const REFERENCE: Domain[] = [
     domain: 'Job queue',
     rows: [
       { states: 'PENDING', tone: 'neutral', note: 'Queued, system-resolved' },
-      { states: 'RUNNING', tone: 'progress', note: 'The dot is the spinner now' },
+      { states: 'RUNNING', tone: 'progress', note: 'The badge brings its own spinner' },
       { states: 'RETRYING', tone: 'warning', note: 'Something went wrong; recovering' },
       { states: 'COMPLETED', tone: 'success' },
       { states: 'FAILED', tone: 'critical' },
@@ -398,7 +423,7 @@ export const Tones: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="The six tones"
-        intro="Tone is the semantic meaning a color expresses about a state. Six tones are the entire visual vocabulary. Tone ≠ token name: critical renders with the destructive slots, and progress renders on the neutral slots with an info-colored pulsing dot (the grey body says no outcome yet; the dot says in motion)."
+        intro="Tone is the semantic meaning a color expresses about a state. Six tones are the entire visual vocabulary. Tone ≠ token name: critical renders with the destructive slots, and progress renders with a neutral outline and an info-colored spinner (the grey outline says no outcome yet; the spinner says in motion)."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           {TONES.map(({ tone, sample, def, examples }) => (
@@ -516,6 +541,121 @@ export const ReferenceTable: Story = {
               ))}
             </tbody>
           </table>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 4 · appearance ──────────────────────────────────────────────────────────
+
+const APPEARANCES: {
+  appearance: 'chip' | 'text' | 'dot';
+  sample: ReactNode;
+  use: string;
+}[] = [
+  {
+    appearance: 'chip',
+    sample: (
+      <StatusBadge tone="success" dot>
+        Live
+      </StatusBadge>
+    ),
+    use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. Add dot or icon when the chip must scan in a dense group.',
+  },
+  {
+    appearance: 'text',
+    sample: (
+      <StatusBadge tone="progress" appearance="text">
+        Building
+      </StatusBadge>
+    ),
+    use: 'A fixed status column in a list. The word in its tone colour, nothing around it. Give the column a fixed width so every word starts on the same edge.',
+  },
+  {
+    appearance: 'dot',
+    sample: (
+      <StatusBadge tone="critical" appearance="dot">
+        Failed
+      </StatusBadge>
+    ),
+    use: 'No room for a word: a breadcrumb, a menu item, a timeline marker. The label stays in the DOM as screen-reader text, so always pass it.',
+  },
+];
+
+const ROWS: { name: string; tone: Tone; state: string }[] = [
+  { name: 'checkout-api', tone: 'success', state: 'Running' },
+  { name: 'search-worker', tone: 'progress', state: 'Deploying' },
+  { name: 'legacy-import', tone: 'critical', state: 'Failed' },
+];
+
+export const Appearance: Story = {
+  name: '4 · Chip, word or dot',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="One state, three weights"
+        intro="The tone decides the colour; the appearance decides how much room the state takes. All three read the same state dictionary, so a deployment that fails is red as a chip on its page, as a word in the list, and as a dot in the breadcrumb."
+      >
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[560px] text-left text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
+                <th className="p-3 font-medium">Appearance</th>
+                <th className="p-3 font-medium">Example</th>
+                <th className="p-3 font-medium">Use for</th>
+              </tr>
+            </thead>
+            <tbody>
+              {APPEARANCES.map(({ appearance, sample, use }) => (
+                <tr key={appearance} className="border-b align-top last:border-0">
+                  <td className="p-3 font-mono text-xs">{appearance}</td>
+                  <td className="p-3">{sample}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{use}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section
+        title="Words in a list, chips on their own"
+        intro="A column of chips repeats the same box on every row, and the box draws more attention than the state. In a list, the word alone is enough; colour only reinforces it."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="appearance=&quot;text&quot; in a fixed-width column. The failure stands out; the healthy rows stay quiet."
+          >
+            <div className="flex w-full flex-col gap-2 text-sm">
+              {ROWS.map(({ name, tone, state }) => (
+                <div key={name} className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs">{name}</span>
+                  <span className="w-24">
+                    <StatusBadge tone={tone} appearance="text">
+                      {state}
+                    </StatusBadge>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A chip on every row. Each box competes with the row it labels, and the one failure no longer stands out."
+          >
+            <div className="flex w-full flex-col gap-2 text-sm">
+              {ROWS.map(({ name, tone, state }) => (
+                <div key={name} className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs">{name}</span>
+                  <StatusBadge tone={tone} dot>
+                    {state}
+                  </StatusBadge>
+                </div>
+              ))}
+            </div>
+          </Example>
         </div>
       </Section>
     </div>

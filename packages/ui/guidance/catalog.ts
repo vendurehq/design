@@ -472,6 +472,10 @@ export const uiGuidance = [
         title: 'Name what the button copies',
         body: 'Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.',
       },
+      {
+        title: 'The whole chip copies',
+        body: 'A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.',
+      },
     ],
     related: ['anonymized-token', 'copyable-text'],
   },
@@ -726,6 +730,10 @@ export const uiGuidance = [
       {
         title: 'Unknown wire values fall back safely',
         body: 'Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color.',
+      },
+      {
+        title: 'Pick the appearance by the room it has',
+        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Use appearance="text" for a fixed status column in a list. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
       },
     ],
     choices: [

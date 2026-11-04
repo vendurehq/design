@@ -1,23 +1,75 @@
 'use client';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
-import { CopyButton } from '@vendure-io/ui/components/molecules/copyable-text';
+import { CopyButton, useCopyAction } from '@vendure-io/ui/components/molecules/copyable-text';
 import { cn } from '@vendure-io/ui/lib/utils';
+import type * as React from 'react';
 
 type TruncateMode = 'middle' | 'start' | 'none';
 
 /**
  * Shared chrome for the identifier-chip family (`IdChip`, `AnonymizedToken`,
- * `SecretValue`): a bordered, `bg-muted`, monospace `text-xs` pill sized to its
- * content. Kept in one place so the chips can't drift apart — only their
- * *contents* differ (a plain value, a blurred reveal-on-hover secret, or a
- * masked secret loaded on click).
+ * `SecretValue`): a borderless `bg-muted`, monospace `text-xs` chip, 24px
+ * tall, sized to its content. Kept in one place so the chips can't drift
+ * apart: only their *contents* differ (a plain value, a blurred
+ * reveal-on-hover secret, or a masked secret loaded on click).
+ *
+ * A chip that copies as a whole (see `chipCopyButtonProps`) gets the hover
+ * fill and the press feedback here, keyed on that button, so a chip with
+ * several controls (`SecretValue`) keeps a still surface.
  */
 function chipChromeClass(copyable: boolean, className?: string): string {
   return cn(
-    'inline-flex w-fit items-center gap-1 rounded-md border bg-muted py-0.5 pl-1.5 font-mono text-xs',
-    copyable ? 'pr-0.5' : 'pr-1.5',
+    'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 pl-2 font-mono text-xs text-foreground-secondary',
+    'transition-[background-color,color,scale] duration-fast ease-out',
+    'has-data-chip-copy:cursor-pointer has-data-chip-copy:hover:bg-accent has-data-chip-copy:hover:text-foreground motion-safe:has-data-chip-copy:active:scale-[0.97]',
+    copyable ? 'pr-1' : 'pr-2',
     className,
+  );
+}
+
+/**
+ * Props for a `CopyButton` that turns its whole chip into the copy target. Its
+ * `::after` stretches over the chip (the chip is `relative`), so a click
+ * anywhere on the chip copies, while the button stays the only tab stop and
+ * keeps its accessible name. The value text stays plain, readable text.
+ */
+const chipCopyButtonProps = {
+  'data-chip-copy': '',
+  className: 'size-4 after:absolute after:inset-0 hover:bg-transparent dark:hover:bg-transparent',
+} as const;
+
+/**
+ * Tooltip text of a whole-chip copy target: "Copy" until the copy succeeds,
+ * then "Copied". `detail` (the full value of a shortened chip) sits above it.
+ */
+function ChipCopyTooltip({
+  chip,
+  copied,
+  copyLabel,
+  copiedLabel,
+  detail,
+}: {
+  chip: React.ReactElement;
+  copied: boolean;
+  copyLabel: string;
+  copiedLabel: string;
+  detail?: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      {/* The click that copies must not close the tooltip, or "Copied" is never seen. */}
+      <TooltipTrigger render={chip} closeOnClick={false} />
+      <TooltipContent>
+        {detail ? <span className="block font-mono">{detail}</span> : null}
+        <span
+          key={copied ? 'copied' : 'copy'}
+          className="block animate-in fade-in-0 duration-moderate ease-out motion-safe:slide-in-from-bottom-1"
+        >
+          {copied ? copiedLabel : copyLabel}
+        </span>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -55,10 +107,11 @@ interface IdChipProps {
 }
 
 /**
- * A bordered, monospace chip for IDs/tokens with a built-in copy affordance.
- * The rendered text is truncated for density while the full value is copied and
- * shown in a DS Tooltip on hover, or when the copy button has focus. The chip
- * adds no tab stop of its own; the copy button is its only interactive part.
+ * A monospace chip for IDs with a built-in copy action. The rendered text is
+ * truncated for density while the full value is copied. When copyable, the
+ * whole chip is the copy target: its tooltip says "Copy", then "Copied", and
+ * shows the full value above when the chip shortens it. The copy button inside
+ * is the only tab stop.
  */
 function IdChip({
   value,
@@ -68,35 +121,45 @@ function IdChip({
   className,
   onCopied,
   onCopyError,
-  copyLabel,
-  copiedLabel,
+  copyLabel = 'Copy',
+  copiedLabel = 'Copied',
   timeout,
 }: IdChipProps) {
+  const action = useCopyAction({ timeout, onCopied, onCopyError });
   const text = display ?? truncateId(value, truncate);
+  const shortened = text !== value;
   const chip = (
     <span data-slot="id-chip" className={chipChromeClass(copyable, className)}>
       <span className="truncate">{text}</span>
-      {/* 16px visual button to match the chip's density, but the ::after inset
-          extends the hit target to 24px for the WCAG 2.2 AA minimum. */}
       {copyable ? (
         <CopyButton
           value={value}
-          timeout={timeout}
-          onCopied={onCopied}
-          onCopyError={onCopyError}
+          copyAction={action}
           copyLabel={copyLabel}
           copiedLabel={copiedLabel}
-          className="relative size-4 after:absolute after:-inset-1"
+          {...chipCopyButtonProps}
         />
       ) : null}
     </span>
   );
 
-  // Nothing is hidden when the chip shows the whole value.
-  if (text === value) return chip;
+  if (copyable) {
+    // Focus on the copy button bubbles to the chip, so keyboard users get the
+    // tooltip too.
+    return (
+      <ChipCopyTooltip
+        chip={chip}
+        copied={action.copied}
+        copyLabel={copyLabel}
+        copiedLabel={copiedLabel}
+        detail={shortened ? value : undefined}
+      />
+    );
+  }
 
-  // The chip itself is the trigger, so hover anywhere on it opens the tooltip;
-  // focus on the copy button bubbles to it for keyboard users.
+  // Nothing is hidden when the chip shows the whole value.
+  if (!shortened) return chip;
+
   return (
     <Tooltip>
       <TooltipTrigger render={chip} />
@@ -105,5 +168,5 @@ function IdChip({
   );
 }
 
-export { chipChromeClass, IdChip };
+export { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps, IdChip };
 export type { IdChipProps };
