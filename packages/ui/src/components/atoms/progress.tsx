@@ -38,13 +38,13 @@ const progressIndicatorVariants = cva(
   {
   variants: {
     tone: {
-      default: "[--progress-fill:var(--color-primary)]",
+      default: "[--progress-fill:var(--primary)]",
       success:
-        "[--progress-fill:var(--color-success-600)] dark:[--progress-fill:var(--color-success-subtle-foreground)]",
+        "[--progress-fill:var(--success-600)] dark:[--progress-fill:var(--success-subtle-foreground)]",
       warning:
-        "[--progress-fill:var(--color-warning-600)] dark:[--progress-fill:var(--color-warning-subtle-foreground)]",
+        "[--progress-fill:var(--warning-600)] dark:[--progress-fill:var(--warning-subtle-foreground)]",
       critical:
-        "[--progress-fill:var(--color-destructive-600)] dark:[--progress-fill:var(--color-destructive-subtle-foreground)]",
+        "[--progress-fill:var(--destructive-600)] dark:[--progress-fill:var(--destructive-subtle-foreground)]",
     },
   },
   defaultVariants: {
