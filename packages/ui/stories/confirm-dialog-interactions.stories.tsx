@@ -76,7 +76,8 @@ export const BusyKeepsWidth: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Deploy' }));
     const dialog = await within(document.body).findByRole('alertdialog');
     const confirm = within(dialog).getByRole('button', { name: /Deploy to production/ });
-    const idleWidth = confirm.getBoundingClientRect().width;
+    // offsetWidth ignores the dialog's entrance scale.
+    const idleWidth = confirm.offsetWidth;
 
     await userEvent.click(confirm);
     await waitFor(() => expect(confirm).toHaveAttribute('aria-busy', 'true'));
@@ -84,7 +85,7 @@ export const BusyKeepsWidth: Story = {
     await expect(confirm.querySelector('[data-slot=confirm-dialog-label]')?.className).toContain(
       'opacity-0',
     );
-    await expect(confirm.getBoundingClientRect().width).toBe(idleWidth);
+    await expect(confirm.offsetWidth).toBe(idleWidth);
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
 
     pendingConfirm.resolve();

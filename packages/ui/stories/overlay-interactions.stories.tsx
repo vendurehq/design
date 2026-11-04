@@ -67,28 +67,33 @@ async function findSlot(slot: string): Promise<HTMLElement> {
   return element as unknown as HTMLElement;
 }
 
-/** The shared overlay surface: the overlay shadow, no ring, and the entrance transition. */
+/**
+ * The shared overlay surface: the overlay shadow, no ring, and the entrance
+ * transition. Base UI holds transitions off while it positions a menu or a
+ * select, so the transition checks wait for the popup to settle.
+ */
 async function expectOverlaySurface(element: HTMLElement, radius: string) {
   const style = getComputedStyle(element);
   await expect(style.borderTopLeftRadius).toBe(radius);
   await expect(style.boxShadow).not.toBe('none');
-  await expect(style.transitionProperty).toContain('opacity');
-  await expect(style.transitionProperty).toContain('scale');
-  // The strong ease-out token.
-  await expect(style.transitionTimingFunction).toContain('cubic-bezier(0.19, 1, 0.22, 1)');
+  await waitFor(() => {
+    expect(style.transitionProperty).toContain('opacity');
+    expect(style.transitionProperty).toContain('scale');
+    // The strong ease-out token.
+    expect(style.transitionTimingFunction).toContain('cubic-bezier(0.19, 1, 0.22, 1)');
+  });
 }
 
 export const TooltipLook: Story = {
   render: () => (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip defaultOpen>
         <TooltipTrigger render={<Button variant="outline" />}>Copy</TooltipTrigger>
         <TooltipContent>Copy the order code</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   ),
-  play: async ({ canvasElement }) => {
-    await userEvent.hover(within(canvasElement).getByRole('button', { name: 'Copy' }));
+  play: async () => {
     const tooltip = await findSlot('tooltip-content');
     const style = getComputedStyle(tooltip);
     await expect(style.borderTopLeftRadius).toBe('6px');
@@ -143,12 +148,13 @@ export const DropdownMenuLook: Story = {
 
     const item = body().getByRole('menuitem', { name: 'Settings' });
     const itemStyle = getComputedStyle(item);
-    await expect(item.getBoundingClientRect().height).toBe(34);
+    // offsetHeight ignores the entrance scale.
+    await expect(item.offsetHeight).toBe(34);
     await expect(itemStyle.borderTopLeftRadius).toBe('6px');
     await expect(itemStyle.fontSize).toBe('13px');
     const icon = item.querySelector('svg') as SVGElement;
     await expect(getComputedStyle(icon).strokeWidth).toBe('1.75px');
-    await expect(icon.getBoundingClientRect().width).toBe(16);
+    await expect(getComputedStyle(icon).width).toBe('16px');
 
     // The destructive item reads in the destructive-text slot.
     const destructive = body().getByRole('menuitem', { name: 'Log out' });
@@ -181,8 +187,8 @@ export const SelectLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
     await expectOverlaySurface(await findSlot('select-content'), '8px');
-    const option = body().getByRole('option', { name: 'US dollar' });
-    await expect(option.getBoundingClientRect().height).toBe(34);
+    const option = await body().findByRole('option', { name: 'US dollar' });
+    await expect(option.offsetHeight).toBe(34);
   },
 };
 
