@@ -37,6 +37,18 @@ export const tokenGuidance = [
         body: 'Use the matching subtle background, readable foreground, and border slots for status surfaces instead of full-strength fills.',
       },
       {
+        title: 'Tone text uses the text slots',
+        body: 'Set a status word, delta, or field error directly on a surface with the matching tone text slot, such as success-text or destructive-text. The solid tone slots are fills for their foreground text and are not safe as text.',
+      },
+      {
+        title: 'Text has three levels',
+        body: 'Use foreground for primary text, foreground-secondary for supporting text such as descriptions and table values, and muted-foreground for the lowest emphasis. secondary-foreground is only the text on a secondary fill.',
+      },
+      {
+        title: 'Brand marks are non-text',
+        body: 'Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It holds 3:1 for non-text contrast, not 4.5:1 for text. The focus ring is brand too.',
+      },
+      {
         title: 'Local color concepts remain semantic',
         body: 'A standalone external app may add a namespaced semantic slot for a genuinely product-specific concept, mapped through theme values. Graduate it when a second consumer needs it.',
       },
@@ -57,7 +69,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Overlay is for floating content',
-        body: 'Reserve overlay and larger shadows for popovers, menus, dialogs, and other content that floats above the page.',
+        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on buttons, inputs, or cards.',
       },
       {
         title: 'Inset reads below its host',
@@ -76,7 +88,7 @@ export const tokenGuidance = [
     rules: [
       {
         title: 'Choose a semantic type role',
-        body: 'Use the named page-title, section-title, card-title, body, caption, and code styles when the content matches that role.',
+        body: 'Use the named page-title, section-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text 12px (text-xs), and micro text such as keyboard hints 11px (text-2xs).',
       },
       {
         title: 'Raw headings are not globally restyled',
@@ -103,7 +115,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves.',
+        body: 'Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances and ease-drawer for drawers and sheets that slide in from an edge.',
       },
       {
         title: 'Match duration to distance and consequence',

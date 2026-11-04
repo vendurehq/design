@@ -81,6 +81,7 @@
   --color-viz-5: var(--viz-5);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-overlay: var(--overlay);
@@ -94,6 +95,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-brand-indicator: var(--brand-indicator);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -123,6 +125,10 @@
   --color-neutral-subtle: var(--neutral-subtle);
   --color-neutral-subtle-foreground: var(--neutral-subtle-foreground);
   --color-neutral-border: var(--neutral-border);
+  --color-success-text: var(--success-text);
+  --color-warning-text: var(--warning-text);
+  --color-destructive-text: var(--destructive-text);
+  --color-info-text: var(--info-text);
   --color-code-highlight: var(--code-highlight);
   --color-code-highlight-accent: var(--code-highlight-accent);
   --color-code-diff-add: var(--code-diff-add);
@@ -165,13 +171,18 @@
   --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1), 0 8px 10px -6px oklch(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.25);
   --shadow-none: none;
+  --shadow-overlay: var(--shadow-overlay);
   --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
-  --font-heading: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  --font-heading: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --font-sans--font-feature-settings: "cv11", "ss01", "ss03";
+  --font-heading--font-feature-settings: "cv11", "ss01", "ss03";
+  --font-body--font-feature-settings: "cv11", "ss01", "ss03";
   --font-mono--font-feature-settings: "liga" 0, "calt" 0;
+  --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
+  --text-sm: 0.8125rem;
   --text-base: 1rem;
   --text-lg: 1.125rem;
   --text-xl: 1.25rem;
@@ -179,6 +190,8 @@
   --text-3xl: 1.875rem;
   --text-4xl: 2.25rem;
   --text-5xl: 3rem;
+  --text-2xs--line-height: calc(1 / 0.6875);
+  --text-sm--line-height: calc(1.25 / 0.8125);
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -189,11 +202,13 @@
   --tracking-wide: 0.025em;
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --transition-duration-instant: 0ms;
   --transition-duration-fast: 100ms;
+  --transition-duration-moderate: 150ms;
   --transition-duration-normal: 200ms;
   --transition-duration-slow: 300ms;
   --transition-duration-slower: 500ms;
@@ -210,31 +225,32 @@
 }
 
 @utility text-style-page-title {
-  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
-  font-size: 1.5rem;
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-size: 1.375rem;
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.018em;
   line-height: 1.2;
 }
 
 @utility text-style-section-title {
-  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
-  font-size: 1.125rem;
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
   line-height: 1.3;
 }
 
 @utility text-style-card-title {
-  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
-  font-size: 1rem;
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: -0.005em;
   line-height: 1.4;
 }
 
 @utility text-style-body {
   font-family: "Inter Variable", "Inter", system-ui, sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.5;
 }
@@ -247,7 +263,7 @@
 
 @utility text-style-code {
   font-family: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.5;
 }

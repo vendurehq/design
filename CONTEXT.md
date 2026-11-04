@@ -15,7 +15,7 @@ A named semantic variable (`border`, `muted`, `primary`) that points into a ramp
 _Avoid_: semantic token, theme variable
 
 **Brand**:
-The Vendure blue (hue 231) — an identity signature, not a general-purpose color. Exposed only through the dedicated `brand` slot; components opt in explicitly. Never a default — `primary` and `ring` are neutral.
+The Vendure blue (hue 231) — an identity signature, not a general-purpose color. Exposed through the dedicated `brand` slot, the non-text `brand-indicator` slot (active navigation icons, link marks) and the focus `ring`; components opt in explicitly. Never a default fill — `primary` is neutral.
 _Avoid_: accent, Vendure blue, primary (when meaning the color rather than the slot)
 
 **Tone**:
