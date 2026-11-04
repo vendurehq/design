@@ -17,6 +17,9 @@ export const lightTheme = {
   inset: 'color-mix(in oklab, black 5%, transparent)',
   // Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer).
   scrim: 'color-mix(in oklab, black 45%, transparent)',
+  // Lighter backdrop for a transient overlay that keeps the page in view,
+  // such as the command palette.
+  'scrim-subtle': 'color-mix(in oklab, black 18%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.173 0.011 231)',
   popover: 'var(--overlay)',
@@ -35,8 +38,9 @@ export const lightTheme = {
   'secondary-foreground': neutral[900],
   muted: 'color-mix(in oklab, var(--foreground) 5%, transparent)',
   // Darker than the plain surface needs: muted text also sits on the `muted`
-  // and `secondary` fills (kbd, avatar fallback, chips) and holds 4.5:1 there.
-  'muted-foreground': 'oklch(0.51 0.013 231)',
+  // and `secondary` fills (kbd, avatar fallback, chips) and on the `accent`
+  // hover fill (menu and list rows), and holds 4.5:1 there.
+  'muted-foreground': 'oklch(0.505 0.013 231)',
   accent: 'color-mix(in oklab, var(--foreground) 8%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
@@ -122,6 +126,7 @@ export const darkTheme = {
   overlay: 'oklch(0.271 0.015 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   scrim: 'color-mix(in oklab, black 45%, transparent)',
+  'scrim-subtle': 'color-mix(in oklab, black 42%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.956 0.005 231)',
   popover: 'var(--overlay)',
@@ -134,7 +139,8 @@ export const darkTheme = {
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
   muted: 'color-mix(in oklab, var(--foreground) 4%, transparent)',
-  'muted-foreground': 'oklch(0.695 0.014 231)',
+  // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
+  'muted-foreground': 'oklch(0.715 0.014 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   // Between destructive-500 and destructive-400 on the destructive hue.

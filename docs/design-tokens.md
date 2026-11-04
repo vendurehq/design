@@ -67,6 +67,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
+- `scrim-subtle` — Lighter backdrop for a transient overlay that keeps the page in view, such as the command palette: `bg-scrim-subtle`
 - `card`, `card-foreground` — Card surfaces (alias of `surface-raised`)
 - `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
 - `primary`, `primary-foreground` — Primary actions. Neutral, not Vendure blue
@@ -99,7 +100,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
-- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` on the `muted` and `secondary` fills over every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
+- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
 - 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier. `border` and `input` are exempt.
 
 ### Typography
@@ -132,7 +133,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge) — Tailwind `ease-*` utilities
 - **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
-- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`)
+- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner)
 
 ## Dark Mode
 
