@@ -16,11 +16,13 @@ import type * as React from 'react';
 // their own click and their own tab stop. A row without ListRowLink is static:
 // no hover fill, no pointer cursor.
 
-// Every interactive descendant and every Tooltip trigger, except the row link
-// itself. Any other element that must stay hoverable above the link takes
-// `data-list-row-control`.
+// Every interactive descendant, every Tooltip trigger and the copy chips
+// (IdChip, CopyableText: their value shows on hover and stays selectable),
+// except the row link itself. Any other element that must stay hoverable above
+// the link takes `data-list-row-control`. The class names stay literal so
+// Tailwind can scan them.
 const LIFT_CONTROLS =
-  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-list-row-control]):not([data-slot=list-row-link])]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-list-row-control]):not([data-slot=list-row-link])]:z-10';
+  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:z-10';
 
 /**
  * One row of a list: 48px high, or taller with a ListRowMeta line. With a
