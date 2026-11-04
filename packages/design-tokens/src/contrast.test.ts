@@ -164,7 +164,7 @@ const nonTextSlots = [
   'sidebar-ring',
   'destructive',
   'control-border',
-  'brand-accent',
+  'brand-indicator',
 ] as const;
 // Text slots used directly on a surface tier, with no fill of their own.
 const surfaceTextSlots = [

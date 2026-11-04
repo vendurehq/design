@@ -28,7 +28,7 @@ export const lightTheme = {
   // Brand as a non-text accent: active navigation icons, the selected-item
   // marker, link underlines. Holds 3:1 (WCAG 1.4.11) on every surface tier.
   // Not for body text and not a fill for text.
-  'brand-accent': 'oklch(0.63 0.128 231)',
+  'brand-indicator': 'oklch(0.63 0.128 231)',
   // Intensity slots are foreground mixes so they hold on any ramp tier; the
   // percentages reproduce the previous absolute values on the default surface.
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
@@ -128,7 +128,7 @@ export const darkTheme = {
   'primary-foreground': neutral[900],
   brand: brand[500],
   'brand-foreground': neutral[950],
-  'brand-accent': brand[400],
+  'brand-indicator': brand[400],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
   muted: 'color-mix(in oklab, var(--foreground) 4%, transparent)',
