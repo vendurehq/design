@@ -83,3 +83,60 @@ export const Ownership: Story = {
     </div>
   ),
 };
+
+export const Header: Story = {
+  name: '2 · One sticky header row',
+  render: () => (
+    <div className="max-w-4xl space-y-10">
+      <Section title="The header">
+        <p className="text-muted-foreground max-w-2xl text-sm">
+          AppShellHeader is one 52px row: the sidebar trigger, the breadcrumb, then page-level
+          tools at the end. It sticks to the top of the scrolling element. With
+          scrollOwner=&quot;container&quot; the page passes under it, so it is a translucent tint of
+          the pane with a backdrop blur and a hairline below. Scroll the example.
+        </p>
+        <div className="h-72 overflow-hidden rounded-xl border">
+          <AppShell className="h-full">
+            {/* The pane scrolls here, so it takes focus for keyboard scrolling. */}
+            <AppShellContent
+              className="overflow-auto"
+              tabIndex={0}
+              role="region"
+              aria-label="Scrolling example"
+            >
+              <AppShellHeader>
+                <MenuIcon className="size-4" />
+                <span className="text-sm font-medium">Products</span>
+              </AppShellHeader>
+              <AppShellMain scrollOwner="container" className="space-y-3 p-6">
+                {Array.from({ length: 12 }, (_, index) => (
+                  <div key={index} className="bg-card rounded-lg border p-4 text-sm">
+                    Product {index + 1}
+                  </div>
+                ))}
+              </AppShellMain>
+            </AppShellContent>
+          </AppShell>
+        </div>
+      </Section>
+      <Section title="Keep the header one row">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border p-4 text-sm">
+            <p className="text-success-subtle-foreground font-semibold">Do</p>
+            <p className="text-muted-foreground mt-2">
+              Put the page title and primary action in the page body. Keep the header for
+              navigation context and global tools such as search.
+            </p>
+          </div>
+          <div className="rounded-lg border p-4 text-sm">
+            <p className="text-destructive-subtle-foreground font-semibold">Don&apos;t</p>
+            <p className="text-muted-foreground mt-2">
+              Give the header its own background, border or height. The tint, blur and hairline
+              follow the surface it sits on.
+            </p>
+          </div>
+        </div>
+      </Section>
+    </div>
+  ),
+};

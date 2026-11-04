@@ -27,9 +27,9 @@ import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH = "14.5rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH_ICON = "3.75rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextProps = {
@@ -218,7 +218,7 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
+          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-(--transition-duration-slow) ease-drawer motion-reduce:transition-none",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -230,7 +230,7 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-(--transition-duration-slow) ease-drawer motion-reduce:transition-none data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
@@ -289,7 +289,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
+        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-all ease-drawer group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
@@ -415,7 +415,7 @@ function SidebarGroupLabel({
     props: mergeProps<"div">(
       {
         className: cn(
-          "text-sidebar-foreground/70 ring-sidebar-ring h-8 rounded-md px-2 text-xs font-medium transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 flex shrink-0 items-center outline-hidden [&>svg]:shrink-0",
+          "text-sidebar-foreground/70 ring-sidebar-ring h-8 rounded-md px-3 text-xs font-medium whitespace-nowrap transition-opacity duration-(--transition-duration-moderate) group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:duration-(--transition-duration-fast) focus-visible:ring-2 [&>svg]:size-4 flex shrink-0 items-center outline-hidden [&>svg]:shrink-0",
           className
         ),
       },
@@ -467,13 +467,100 @@ function SidebarGroupContent({
   )
 }
 
-function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
+function SidebarMenu({
+  className,
+  slidingIndicator = false,
+  children,
+  ...props
+}: React.ComponentProps<"ul"> & {
+  /**
+   * Draws the active item's highlight as one pill that slides from item to
+   * item when the active item changes. Off by default: each item then marks
+   * itself with a fill and a leading bar.
+   */
+  slidingIndicator?: boolean
+}) {
   return (
     <ul
       data-slot="sidebar-menu"
       data-sidebar="menu"
-      className={cn("flex w-full min-w-0 flex-col gap-1", className)}
+      data-active-indicator={slidingIndicator ? "pill" : undefined}
+      className={cn("relative flex w-full min-w-0 flex-col gap-1", className)}
       {...props}
+    >
+      {slidingIndicator && <SidebarMenuIndicator />}
+      {children}
+    </ul>
+  )
+}
+
+// The sliding pill of a SidebarMenu. It follows the menu's active
+// SidebarMenuButton: a MutationObserver catches data-active moving between
+// items and a ResizeObserver catches layout changes (a sub-menu opening above
+// the active item). The pill moves with transform and height on the drawer
+// curve; it only transitions after its first placement, so it does not glide
+// in on load. Reduced motion keeps the fade and drops the slide.
+function SidebarMenuIndicator() {
+  const ref = React.useRef<HTMLLIElement>(null)
+
+  React.useLayoutEffect(() => {
+    const indicator = ref.current
+    const menu = indicator?.parentElement
+    if (!indicator || !menu) {
+      return
+    }
+
+    const place = () => {
+      const active = menu.querySelector<HTMLElement>(
+        '[data-slot="sidebar-menu-button"][data-active]'
+      )
+      if (!active) {
+        delete indicator.dataset.shown
+        return
+      }
+      // Layout offsets, not client rects: they ignore transforms such as the
+      // mobile sheet sliding in.
+      let top = 0
+      for (
+        let node: HTMLElement | null = active;
+        node && node !== menu;
+        node = node.offsetParent as HTMLElement | null
+      ) {
+        top += node.offsetTop
+      }
+      indicator.style.transform = `translateY(${top}px)`
+      indicator.style.height = `${active.offsetHeight}px`
+      indicator.dataset.shown = ""
+    }
+
+    place()
+    const frame = requestAnimationFrame(() => {
+      indicator.dataset.ready = ""
+    })
+    const mutations = new MutationObserver(place)
+    mutations.observe(menu, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["data-active"],
+    })
+    const resize = new ResizeObserver(place)
+    resize.observe(menu)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      mutations.disconnect()
+      resize.disconnect()
+    }
+  }, [])
+
+  return (
+    <li
+      ref={ref}
+      aria-hidden="true"
+      data-slot="sidebar-menu-indicator"
+      data-sidebar="menu-indicator"
+      className="bg-surface-raised border-sidebar-border pointer-events-none absolute inset-x-0 top-0 rounded-lg border opacity-0 data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-slow) data-ready:ease-drawer motion-reduce:data-ready:transition-opacity"
     />
   )
 }
@@ -490,9 +577,15 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 // Hover and active share the sidebar-accent fill, so the active item also gets
-// a sidebar-primary bar on its leading edge.
+// a sidebar-primary bar on its leading edge. Inside a SidebarMenu with
+// slidingIndicator, the menu's pill marks the active item instead, so the item
+// drops its own fill and bar. The active icon takes brand-indicator.
+//
+// The icon rail keeps every button at full width and its padding unchanged:
+// the icon stays where it is (centred in the rail) and the label fades out,
+// clipped by the narrowing rail, instead of the button shrinking to a square.
 const sidebarMenuButtonVariants = cva(
-  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2 rounded-md p-2 text-left text-sm transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! focus-visible:ring-2 data-active:font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&_svg]:size-4 [&>svg:first-child]:size-4.5 [&>svg:first-child]:[stroke-width:2.125] [&_svg]:shrink-0",
+  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:ring-2 data-active:font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-(--transition-duration-moderate) group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-(--transition-duration-fast) [&_svg]:size-4 [&>svg:first-child]:size-4.5 [&>svg:first-child]:[stroke-width:1.75] data-active:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -503,7 +596,7 @@ const sidebarMenuButtonVariants = cva(
       size: {
         default: "h-8 text-sm",
         sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
+        lg: "h-12 px-2 text-sm",
       },
     },
     defaultVariants: {
@@ -560,6 +653,9 @@ function SidebarMenuButton({
       <TooltipContent
         side="right"
         align="center"
+        // Clears the rail: the button ends one group padding (8px) short of
+        // the rail edge, and the label sits 8px beyond that edge.
+        sideOffset={16}
         hidden={state !== "collapsed" || isMobile}
         {...tooltip}
       />
