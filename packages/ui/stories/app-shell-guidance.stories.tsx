@@ -97,7 +97,13 @@ export const Header: Story = {
         </p>
         <div className="h-72 overflow-hidden rounded-xl border">
           <AppShell className="h-full">
-            <AppShellContent className="overflow-auto">
+            {/* The pane scrolls here, so it takes focus for keyboard scrolling. */}
+            <AppShellContent
+              className="overflow-auto"
+              tabIndex={0}
+              role="region"
+              aria-label="Scrolling example"
+            >
               <AppShellHeader>
                 <MenuIcon className="size-4" />
                 <span className="text-sm font-medium">Products</span>
