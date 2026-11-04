@@ -351,6 +351,25 @@ import {
 </Card>
 ```
 
+For a card whose body is a list, put a `CardCount` in the title and the rows in `CardRows`. Each `CardRow` draws its own top border and runs edge to edge, so the header needs no `border-b`. A `CardFooter` after the rows carries `border-t`.
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>
+      Deployments <CardCount>3</CardCount>
+    </CardTitle>
+    <CardAction>
+      <Button variant="outline" size="sm">View all</Button>
+    </CardAction>
+  </CardHeader>
+  <CardRows>
+    <CardRow>Add the gift card checkout step</CardRow>
+    <CardRow>Fix the tax zone fallback</CardRow>
+  </CardRows>
+</Card>
+```
+
 ### DataTable loading rows
 
 While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:

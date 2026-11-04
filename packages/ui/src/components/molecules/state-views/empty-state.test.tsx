@@ -31,16 +31,25 @@ describe('EmptyState border', () => {
 });
 
 describe('compact state views', () => {
-  test('EmptyState compact drops the illustration and icon and tightens spacing', () => {
+  test('EmptyState compact drops the illustration and tightens spacing', () => {
     const html = renderToStaticMarkup(
-      <EmptyState size="compact" icon={<svg />} title="No domains" description="Add one." />,
+      <EmptyState size="compact" title="No domains" description="Add one." />,
     );
     expect(html).not.toContain('data-slot="empty-icon"');
     expect(html).toContain('data-size="compact"');
-    expect(rootClasses(html)).toContain('p-4');
+    expect(rootClasses(html)).toContain('py-10');
     expect(rootClasses(html)).not.toContain('p-12');
     expect(html).toContain('No domains');
     expect(html).toContain('Add one.');
+  });
+
+  test('EmptyState compact draws an explicit icon bare, without the chip', () => {
+    const html = renderToStaticMarkup(
+      <EmptyState size="compact" icon={<svg />} title="No domains" />,
+    );
+    expect(html).toContain('data-variant="bare"');
+    expect(html).not.toContain('data-variant="icon"');
+    expect(html).toContain('text-style-card-title');
   });
 
   test('EmptyState default keeps the illustration', () => {
@@ -49,14 +58,22 @@ describe('compact state views', () => {
     expect(html).toContain('data-size="default"');
   });
 
-  test('ErrorState compact drops the illustration and icon and keeps role=alert and retry', () => {
+  test('ErrorState compact drops the illustration and default icon and keeps role=alert and retry', () => {
     const html = renderToStaticMarkup(
       <ErrorState size="compact" title="Couldn't load usage" onRetry={() => {}} />,
     );
     expect(html).not.toContain('data-slot="empty-icon"');
     expect(html).toContain('role="alert"');
     expect(html).toContain('Try again');
-    expect(errorClasses(html)).toContain('p-4');
+    expect(errorClasses(html)).toContain('py-10');
+  });
+
+  test('ErrorState compact draws only an explicit icon, bare in the destructive text tone', () => {
+    const html = renderToStaticMarkup(
+      <ErrorState size="compact" icon={<svg />} title="Couldn't load usage" />,
+    );
+    expect(html).toContain('data-variant="bare"');
+    expect(html).toContain('text-destructive-text');
   });
 
   test('ErrorState bordered={false} sits flush, with no box', () => {

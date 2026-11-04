@@ -18,12 +18,6 @@ function allTokens(html: string): string[] {
 }
 
 const cases = {
-  Alert: (
-    <Alert variant="destructive">
-      <AlertTitle>Payment failed</AlertTitle>
-      <AlertDescription>The card was declined.</AlertDescription>
-    </Alert>
-  ),
   Badge: <Badge variant="destructive">Cancelled</Badge>,
   Field: (
     <Field data-invalid="true">
@@ -40,4 +34,19 @@ describe('destructive tone text', () => {
       expect(tokens.filter((token) => /text-destructive(\/\d+)?!?$/.test(token))).toEqual([]);
     });
   }
+});
+
+// A destructive Alert keeps its copy in the neutral text slots on the subtle
+// fill; only the icon takes the tone, through the text-safe destructive-text.
+test('Alert colors only its icon, with destructive-text', () => {
+  const tokens = allTokens(
+    renderToStaticMarkup(
+      <Alert variant="destructive">
+        <AlertTitle>Payment failed</AlertTitle>
+        <AlertDescription>The card was declined.</AlertDescription>
+      </Alert>,
+    ),
+  );
+  expect(tokens).toContain('*:[svg]:text-destructive-text');
+  expect(tokens.filter((token) => /text-destructive(\/\d+)?!?$/.test(token))).toEqual([]);
 });

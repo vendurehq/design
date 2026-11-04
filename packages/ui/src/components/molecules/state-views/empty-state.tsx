@@ -11,7 +11,10 @@ import { cn } from '@vendure-io/ui/lib/utils';
 
 // `title` is redefined as `ReactNode`, so drop the native string `title` attr.
 export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
-  /** Leading icon element, rendered in the muted icon chip. Ignored once `illustration` renders (see below). */
+  /**
+   * Leading icon element, rendered in the muted icon chip, or bare in a
+   * `compact` state. Ignored once `illustration` renders (see below).
+   */
   icon?: React.ReactNode;
   /**
    * Illustration rendered above the title, in place of `icon`. Defaults to
@@ -32,9 +35,10 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
    */
   bordered?: boolean;
   /**
-   * `compact` drops the illustration and icon and tightens the spacing, for a
-   * small panel or side column where the full state is too tall. Keep it to a
-   * title, a description and at most one action. Defaults to `default`.
+   * `compact` drops the illustration and tightens the spacing, for a small
+   * panel or side column where the full state is too tall. An explicit `icon`
+   * renders bare (no chip) above a 14px title. Keep it to a title, a
+   * description and at most one action. Defaults to `default`.
    */
   size?: 'default' | 'compact';
 }
@@ -74,17 +78,19 @@ function EmptyState({
     <Empty
       data-slot="empty-state"
       data-size={size}
-      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-2 p-4', className)}
+      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-3 p-6 py-10', className)}
       {...props}
     >
-      <EmptyHeader>
+      <EmptyHeader className={cn(compact && 'gap-1')}>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
-        ) : icon && !compact ? (
-          <EmptyMedia variant="icon">{icon}</EmptyMedia>
+        ) : icon ? (
+          <EmptyMedia variant={compact ? 'bare' : 'icon'}>{icon}</EmptyMedia>
         ) : null}
         <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
-        {description ? <EmptyDescription>{description}</EmptyDescription> : null}
+        {description ? (
+          <EmptyDescription className={cn(compact && 'text-sm')}>{description}</EmptyDescription>
+        ) : null}
       </EmptyHeader>
       {children ? <EmptyContent className={cn(compact && 'gap-2')}>{children}</EmptyContent> : null}
     </Empty>

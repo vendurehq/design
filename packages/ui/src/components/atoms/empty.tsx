@@ -32,6 +32,9 @@ const emptyMediaVariants = cva(
       variant: {
         default: "bg-transparent",
         icon: "bg-muted text-foreground flex size-10 shrink-0 items-center justify-center rounded-lg [&_svg:not([class*='size-'])]:size-6",
+        // A bare icon with no chip, for a compact empty state: 28px, a light
+        // stroke and 40% opacity, so it marks the region without drawing focus.
+        bare: "text-foreground opacity-40 [&_svg]:stroke-[1.5] [&_svg:not([class*='size-'])]:size-7",
       },
     },
     defaultVariants: {

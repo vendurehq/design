@@ -7,13 +7,13 @@ import type { ComponentProps, ReactNode } from 'react';
 // Delta color follows the outcome, not the direction: `goodWhen` says which
 // way is good for this metric (revenue up vs. refund-rate down), and the token
 // is derived from that, never a hardcoded green/red: good → success,
-// bad → destructive, flat → muted. The subtle foregrounds are the text-safe
-// tone steps: the solid tones fall below 4.5:1 in dark mode.
+// bad → destructive, flat → muted. The `*-text` slots are the text-safe tone
+// steps on every surface: the solid tones fall below 4.5:1 in dark mode.
 const statCardDeltaVariants = cva('inline-flex items-center gap-0.5 text-xs font-medium', {
   variants: {
     outcome: {
-      good: 'text-success-subtle-foreground',
-      bad: 'text-destructive-subtle-foreground',
+      good: 'text-success-text',
+      bad: 'text-destructive-text',
       flat: 'text-muted-foreground',
     },
   },

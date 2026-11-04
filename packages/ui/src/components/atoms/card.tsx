@@ -8,6 +8,8 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // of `group-data-[size=sm]` hooks so that nested cards resolve to the NEAREST
 // card — a group selector matches any ancestor and leaks the outer card's
 // size into an inner one.
+// The v3 panel: a 12px radius, a full-strength hairline border and no shadow.
+// The 16px rhythm makes a one-line header row 52px tall (16 + title line + 16).
 function Card({
   className,
   size = "default",
@@ -18,7 +20,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground group/card [--card-gap:--spacing(6)] [--card-px:--spacing(6)] data-[size=sm]:[--card-gap:--spacing(4)] data-[size=sm]:[--card-px:--spacing(4)] flex flex-col gap-(--card-gap) overflow-hidden rounded-xl border border-border/60 py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-px:--spacing(4)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
         className
       )}
       {...props}
@@ -26,15 +28,14 @@ function Card({
   )
 }
 
-// Band dividers (consumer-applied border-b / border-t on header/footer) render
-// at row-separator strength (border/50) so the card outline (border/60) stays
-// the strongest structural line.
+// Band dividers (consumer-applied border-b / border-t on header/footer) use the
+// same hairline as the card outline and the CardRows separators.
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:border-border/50 [.border-b]:pb-(--card-gap)",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-2xl px-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-gap)",
         className
       )}
       {...props}
@@ -55,22 +56,40 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+// A count beside the title, such as the number of rows in the card. Place it
+// inside CardTitle so it sits on the title line.
+function CardCount({ className, ...props }: React.ComponentProps<"span">) {
   return (
-    <div
-      data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+    <span
+      data-slot="card-count"
+      className={cn(
+        "text-muted-foreground ms-2 text-xs font-semibold tabular-nums",
+        className
+      )}
       {...props}
     />
   )
 }
 
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-foreground-secondary text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+// The action box is one title line high and centres its content, so a small
+// button lines up with the title and overflows into the card padding instead
+// of making the header row taller.
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-action"
       className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        "col-start-2 row-span-2 row-start-1 flex h-lh flex-wrap content-center items-center gap-2 self-start justify-self-end",
         className
       )}
       {...props}
@@ -113,12 +132,48 @@ function CardTable({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+// Hosts a list of rows edge to edge, for cards whose body is a list. Each row
+// draws its own top border, so the first row's border divides it from the
+// header: do not add border-b to a CardHeader above CardRows. The negative
+// bottom margin cancels the card padding (or the gap before a footer, which
+// then must carry its band border-t). As the first child, CardRows also
+// cancels the top padding and drops the first row's border. The card clips
+// its children, and the last row takes the bottom radius so its hover fill
+// and focus ring follow the corner.
+function CardRows({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-rows"
+      className={cn(
+        "-mb-(--card-gap) first:-mt-(--card-gap) *:last:rounded-b-2xl [&:first-child>*:first-child]:border-t-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// One row of CardRows: a 48px minimum height, a top border and the card's
+// horizontal padding, so row content lines up with the header.
+function CardRow({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-row"
+      className={cn(
+        "flex min-h-12 items-center gap-3 border-t px-(--card-px) py-2",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl px-(--card-px) [.border-t]:border-border/50 [.border-t]:pt-(--card-gap)",
+        "flex items-center rounded-b-2xl px-(--card-px) [.border-t]:pt-(--card-gap)",
         className
       )}
       {...props}
@@ -131,8 +186,11 @@ export {
   CardHeader,
   CardFooter,
   CardTitle,
+  CardCount,
   CardAction,
   CardDescription,
   CardContent,
   CardTable,
+  CardRows,
+  CardRow,
 }
