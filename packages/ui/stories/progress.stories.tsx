@@ -117,3 +117,19 @@ export const Tones: Story = {
     </LightAndDark>
   ),
 };
+
+/**
+ * `value={null}` makes the bar indeterminate, for work whose length is unknown:
+ * a soft band of the fill sweeps across the track. With reduced motion the bar
+ * stays still at a partial fill.
+ */
+export const Indeterminate: Story = {
+  render: () => (
+    <div className="flex w-[400px] flex-col gap-4">
+      <Progress value={null}>
+        <ProgressLabel>Building image</ProgressLabel>
+      </Progress>
+      <Progress value={null} aria-label="Deploying" />
+    </div>
+  ),
+};

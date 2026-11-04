@@ -4,11 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Alert, AlertDescription, AlertTitle } from './alert.tsx';
 import { Progress, type ProgressTone } from './progress.tsx';
 
-// Tone text uses the tone's subtle-foreground slot, which
-// @vendure-io/design-tokens checks at 4.5:1 on every surface and on the tone's
-// subtle slot, in both modes. Progress fills use ramp step 600 in light mode and
-// subtle-foreground in dark mode; both reach 3:1 on the track and the page.
-// The solid tone slots are not text- or fill-safe.
+// A toned Alert sits on the tone's subtle fill and border with its icon in the
+// tone's text slot; title and description keep the neutral text slots.
+// Progress fills use ramp step 600 in light mode and subtle-foreground in dark
+// mode; both reach 3:1 on the track and the page. The solid tone slots are not
+// text- or fill-safe.
 
 /** Class tokens of the element carrying the given data-slot, entity-decoded. */
 function slotTokens(html: string, slot: string): string[] {
@@ -19,22 +19,23 @@ function slotTokens(html: string, slot: string): string[] {
 }
 
 describe('Alert tone variants', () => {
-  for (const tone of ['warning', 'info'] as const) {
-    test(`${tone} colors title, description and icon with ${tone}-subtle-foreground on the card surface`, () => {
+  const slots = { destructive: 'destructive', warning: 'warning', info: 'info' } as const;
+  for (const [tone, slot] of Object.entries(slots)) {
+    test(`${tone} sits on the ${slot} subtle fill and border with a ${slot}-text icon`, () => {
       const tokens = slotTokens(
         renderToStaticMarkup(
-          <Alert variant={tone}>
+          <Alert variant={tone as keyof typeof slots}>
             <AlertTitle>Title</AlertTitle>
             <AlertDescription>Description</AlertDescription>
           </Alert>,
         ),
         'alert',
       );
-      expect(tokens).toContain('bg-card');
-      expect(tokens).toContain(`text-${tone}-subtle-foreground`);
-      expect(tokens).toContain(`*:data-[slot=alert-description]:text-${tone}-subtle-foreground`);
-      expect(tokens).toContain('*:[svg]:text-current');
-      expect(tokens.filter((token) => new RegExp(`(^|:)(text|bg)-${tone}$`).test(token))).toEqual([]);
+      expect(tokens).toContain(`bg-${slot}-subtle`);
+      expect(tokens).toContain(`border-${slot}-border`);
+      expect(tokens).toContain('text-foreground');
+      expect(tokens).toContain(`*:[svg]:text-${slot}-text`);
+      expect(tokens.filter((token) => new RegExp(`(^|:)(text|bg)-${slot}$`).test(token))).toEqual([]);
     });
   }
 
@@ -43,6 +44,17 @@ describe('Alert tone variants', () => {
     expect(tokens).toContain('bg-card');
     expect(tokens).toContain('text-card-foreground');
   });
+
+  test('the description uses foreground-secondary in every variant', () => {
+    for (const variant of ['default', 'destructive', 'warning', 'info'] as const) {
+      const html = renderToStaticMarkup(
+        <Alert variant={variant}>
+          <AlertDescription>Description</AlertDescription>
+        </Alert>,
+      );
+      expect(slotTokens(html, 'alert-description')).toContain('text-foreground-secondary');
+    }
+  });
 });
 
 describe('Progress tone', () => {
@@ -50,7 +62,7 @@ describe('Progress tone', () => {
     const html = renderToStaticMarkup(<Progress value={40} aria-label="Upload" />);
     expect(html).toContain('data-tone="default"');
     expect(slotTokens(html, 'progress-track')).toContain('bg-control-border');
-    expect(slotTokens(html, 'progress-indicator')).toContain('bg-primary');
+    expect(slotTokens(html, 'progress-indicator')).toContain('[--progress-fill:var(--color-primary)]');
   });
 
   const slots: Record<Exclude<ProgressTone, 'default'>, string> = {
@@ -65,9 +77,28 @@ describe('Progress tone', () => {
       expect(html).toContain(`data-tone="${tone}"`);
       expect(slotTokens(html, 'progress-track')).toContain(`bg-${slot}-subtle`);
       const indicator = slotTokens(html, 'progress-indicator');
-      expect(indicator).toContain(`bg-${slot}-600`);
-      expect(indicator).toContain(`dark:bg-${slot}-subtle-foreground`);
-      expect(indicator).not.toContain('bg-primary');
+      expect(indicator).toContain(`[--progress-fill:var(--color-${slot}-600)]`);
+      expect(indicator).toContain(`dark:[--progress-fill:var(--color-${slot}-subtle-foreground)]`);
+      expect(indicator).not.toContain('[--progress-fill:var(--color-primary)]');
     });
   }
+});
+
+describe('Progress indeterminate', () => {
+  test('value={null} marks the indicator indeterminate and sweeps only with motion allowed', () => {
+    const html = renderToStaticMarkup(<Progress value={null} aria-label="Deploying" />);
+    const tag = html.match(/<[^>]*data-slot="progress-indicator"[^>]*>/)?.[0] ?? '';
+    expect(tag).toContain('data-indeterminate=""');
+    const indicator = slotTokens(html, 'progress-indicator');
+    expect(indicator).toContain('motion-safe:data-indeterminate:animate-shimmer');
+    expect(indicator).toContain('data-indeterminate:w-2/5');
+    expect(indicator.filter((token) => token.includes('animate-') && !token.startsWith('motion-safe:'))).toEqual([]);
+  });
+
+  test('a known value is not indeterminate', () => {
+    const html = renderToStaticMarkup(<Progress value={40} aria-label="Upload" />);
+    const tag = html.match(/<[^>]*data-slot="progress-indicator"[^>]*>/)?.[0] ?? '';
+    expect(tag).not.toContain('data-indeterminate=""');
+    expect(tag).toContain('width:40%');
+  });
 });

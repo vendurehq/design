@@ -121,3 +121,34 @@ export const ChoosingTheTone: Story = {
     </div>
   ),
 };
+
+// ── 2 · unknown length ───────────────────────────────────────────────────────
+
+export const UnknownLength: Story = {
+  name: '2 · Indeterminate when the length is unknown',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Indeterminate when the length is unknown"
+        intro="Some work has no measurable progress, such as building an image. Pass value={null}: the bar sweeps until the work ends, and stays still under reduced motion."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example verdict="do" caption="The build has no known length, so the bar is indeterminate.">
+            <Progress value={null} className="w-full">
+              <ProgressLabel>Building image</ProgressLabel>
+            </Progress>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="An invented percentage promises a finish time the system does not know."
+          >
+            <Progress value={50} className="w-full">
+              <ProgressLabel>Building image</ProgressLabel>
+              <ProgressValue />
+            </Progress>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
