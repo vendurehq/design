@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
 /**
@@ -186,6 +188,47 @@ export const BrandIsIdentity: Story = {
           >
             <Button variant="brand">Save</Button>
             <Button variant="outline">Cancel</Button>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── split button ─────────────────────────────────────────────────────────────
+
+export const SplitButton: Story = {
+  name: '4 · Split button',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="A split button is still one primary"
+        intro='ButtonGroup variant="primary" joins the primary action and a menu of its alternatives on one fill. It counts as the single primary of the view. Use it only when the menu holds other ways to do the same action; unrelated actions go in their own outline or ghost Buttons.'
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="The menu offers other ways to publish. One primary, one decision."
+          >
+            <ButtonGroup variant="primary">
+              <Button>Publish</Button>
+              <Button size="icon" aria-label="More publish options">
+                <ChevronDown />
+              </Button>
+            </ButtonGroup>
+            <Button variant="outline">Preview</Button>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A primary split button beside another primary. Two filled actions compete again."
+          >
+            <ButtonGroup variant="primary">
+              <Button>Publish</Button>
+              <Button size="icon" aria-label="More publish options">
+                <ChevronDown />
+              </Button>
+            </ButtonGroup>
+            <Button>Save draft</Button>
           </Example>
         </div>
       </Section>
