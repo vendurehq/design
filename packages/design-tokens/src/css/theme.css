@@ -87,6 +87,7 @@
   --color-overlay: var(--overlay);
   --color-inset: var(--inset);
   --color-scrim: var(--scrim);
+  --color-scrim-subtle: var(--scrim-subtle);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);

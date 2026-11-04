@@ -91,6 +91,7 @@
   --overlay: oklch(1 0 0);
   --inset: color-mix(in oklab, black 5%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
+  --scrim-subtle: color-mix(in oklab, black 18%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.173 0.011 231);
   --popover: var(--overlay);
@@ -173,6 +174,7 @@
   --overlay: oklch(0.271 0.015 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
+  --scrim-subtle: color-mix(in oklab, black 42%, transparent);
   --card: var(--surface-raised);
   --card-foreground: oklch(0.956 0.005 231);
   --popover: var(--overlay);

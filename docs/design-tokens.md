@@ -67,6 +67,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
+- `scrim-subtle` — Lighter backdrop for a transient overlay that keeps the page in view, such as the command palette: `bg-scrim-subtle`
 - `card`, `card-foreground` — Card surfaces (alias of `surface-raised`)
 - `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
 - `primary`, `primary-foreground` — Primary actions. Neutral, not Vendure blue

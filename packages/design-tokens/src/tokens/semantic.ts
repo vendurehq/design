@@ -17,6 +17,9 @@ export const lightTheme = {
   inset: 'color-mix(in oklab, black 5%, transparent)',
   // Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer).
   scrim: 'color-mix(in oklab, black 45%, transparent)',
+  // Lighter backdrop for a transient overlay that keeps the page in view,
+  // such as the command palette.
+  'scrim-subtle': 'color-mix(in oklab, black 18%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.173 0.011 231)',
   popover: 'var(--overlay)',
@@ -123,6 +126,7 @@ export const darkTheme = {
   overlay: 'oklch(0.271 0.015 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   scrim: 'color-mix(in oklab, black 45%, transparent)',
+  'scrim-subtle': 'color-mix(in oklab, black 42%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
   'card-foreground': 'oklch(0.956 0.005 231)',
   popover: 'var(--overlay)',
