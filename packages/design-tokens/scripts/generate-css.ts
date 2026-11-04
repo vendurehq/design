@@ -2,10 +2,18 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brand, neutral, success, warning, destructive, info, viz } from '../src/tokens/colors.ts';
 import { lightTheme, darkTheme } from '../src/tokens/semantic.ts';
-import { fontFamily, fontFeatureSettings, fontSize, fontWeight, letterSpacing, textStyles } from '../src/tokens/typography.ts';
+import {
+  fontFamily,
+  fontFeatureSettings,
+  fontSize,
+  fontSizeLineHeight,
+  fontWeight,
+  letterSpacing,
+  textStyles,
+} from '../src/tokens/typography.ts';
 import { easing, duration, animation, keyframes } from '../src/tokens/motion.ts';
 import { radii } from '../src/tokens/radii.ts';
-import { shadows } from '../src/tokens/shadows.ts';
+import { darkShadows, lightShadows, shadows } from '../src/tokens/shadows.ts';
 
 // Base color ranges — static across light/dark themes
 const colorRanges = { brand, neutral, success, warning, destructive, info, viz };
@@ -17,6 +25,31 @@ const cssDir = resolve(__dirname, '../src/css');
 // variables.css
 // ---------------------------------------------------------------------------
 
+// Biome's CSS line width. A declaration longer than this is wrapped the way
+// Biome formats it: the value moves to the next line and its comma-separated
+// layers fill each line, so `lint` passes on the generated file.
+const LINE_WIDTH = 100;
+
+function declaration(key: string, value: string): string {
+  const line = `  --${key}: ${value};`;
+  if (line.length <= LINE_WIDTH) return line;
+  const layers = value.split(/,\s*(?![^(]*\))/);
+  const rows: string[] = [];
+  let row = '';
+  for (const [index, layer] of layers.entries()) {
+    const part = index < layers.length - 1 ? `${layer},` : `${layer};`;
+    const candidate = row ? `${row} ${part}` : `    ${part}`;
+    if (row && candidate.length > LINE_WIDTH) {
+      rows.push(row);
+      row = `    ${part}`;
+    } else {
+      row = candidate;
+    }
+  }
+  rows.push(row);
+  return [`  --${key}:`, ...rows].join('\n');
+}
+
 // `color-scheme` makes native UI (scrollbars, date inputs, autofill, select
 // popups) follow the active theme.
 function buildBlock(
@@ -24,7 +57,7 @@ function buildBlock(
   colorScheme: 'light' | 'dark',
   tokens: Record<string, string>,
 ): string {
-  const lines = Object.entries(tokens).map(([key, value]) => `  --${key}: ${value};`);
+  const lines = Object.entries(tokens).map(([key, value]) => declaration(key, value));
   return `${selector} {\n  color-scheme: ${colorScheme};\n${lines.join('\n')}\n}`;
 }
 
@@ -51,12 +84,23 @@ const radiusVars = Object.fromEntries(
 // theme maps and gets its own emission path like the radius scale above.
 const semanticRadiusVars = { radius: radii.md };
 
+// Themed shadows — values differ per theme, so they are runtime vars in the
+// :root and .dark blocks, like the semantic colors.
+const toShadowVars = (themed: Record<string, string>) =>
+  Object.fromEntries(Object.entries(themed).map(([key, value]) => [`shadow-${key}`, value]));
+
 const variablesCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '',
-  buildBlock(':root', 'light', { ...baseColorVars, ...radiusVars, ...semanticRadiusVars, ...lightTheme }),
+  buildBlock(':root', 'light', {
+    ...baseColorVars,
+    ...radiusVars,
+    ...semanticRadiusVars,
+    ...lightTheme,
+    ...toShadowVars(lightShadows),
+  }),
   '',
-  buildBlock('.dark', 'dark', darkTheme),
+  buildBlock('.dark', 'dark', { ...darkTheme, ...toShadowVars(darkShadows) }),
   '',
 ].join('\n');
 
@@ -115,6 +159,12 @@ const shadowLines = Object.entries(shadows).map(
   ([key, value]) => `  --shadow-${key}: ${value};`,
 );
 
+// Themed shadow lines — reference the :root/.dark vars so the utility follows
+// the active theme
+const themedShadowLines = Object.keys(lightShadows).map(
+  (key) => `  --shadow-${key}: var(--shadow-${key});`,
+);
+
 // Font-family lines from typography tokens
 const fontLines = Object.entries(fontFamily).map(
   ([key, value]) => `  --font-${key}: ${value};`,
@@ -129,6 +179,12 @@ const fontFeatureLines = Object.entries(fontFeatureSettings).map(
 // Type scale lines — Tailwind text-* utilities
 const textLines = Object.entries(fontSize).map(
   ([key, value]) => `  --text-${key}: ${value};`,
+);
+
+// Line heights paired with the type scale — Tailwind applies
+// --text-<step>--line-height together with the text-<step> utility
+const textLineHeightLines = Object.entries(fontSizeLineHeight).map(
+  ([key, value]) => `  --text-${key}--line-height: ${value};`,
 );
 
 // Font-weight lines — Tailwind font-* utilities
@@ -165,9 +221,11 @@ const themeBlock = [
   ...colorLines,
   ...radiusLines,
   ...shadowLines,
+  ...themedShadowLines,
   ...fontLines,
   ...fontFeatureLines,
   ...textLines,
+  ...textLineHeightLines,
   ...fontWeightLines,
   ...trackingLines,
   ...easeLines,
@@ -237,8 +295,8 @@ await Bun.write(resolve(cssDir, 'theme.css'), themeCss);
 // ---------------------------------------------------------------------------
 // Validation — fail if semantic keys diverge between themes
 // ---------------------------------------------------------------------------
-const lightKeys = new Set(Object.keys(lightTheme));
-const darkKeys = new Set(Object.keys(darkTheme));
+const lightKeys = new Set([...Object.keys(lightTheme), ...Object.keys(toShadowVars(lightShadows))]);
+const darkKeys = new Set([...Object.keys(darkTheme), ...Object.keys(toShadowVars(darkShadows))]);
 
 const missingInDark = [...lightKeys].filter((k) => !darkKeys.has(k));
 const missingInLight = [...darkKeys].filter((k) => !lightKeys.has(k));
