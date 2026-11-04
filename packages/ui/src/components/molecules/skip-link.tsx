@@ -23,7 +23,7 @@ function SkipLink({
       data-slot="skip-link"
       href={href}
       className={cn(
-        'bg-primary text-primary-foreground fixed top-3 left-3 z-[100] -translate-y-20 rounded-md px-3 py-2 text-sm font-medium opacity-0 outline-none transition-[transform,opacity] duration-(--transition-duration-fast) ease-(--ease-out) focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none',
+        'bg-primary text-primary-foreground fixed top-3 left-3 z-[100] -translate-y-20 rounded-md px-3 py-2 text-sm font-medium opacity-0 outline-none transition-[transform,opacity] duration-(--transition-duration-fast) ease-(--ease-out) focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-opacity',
         className,
       )}
       {...props}
