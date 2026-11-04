@@ -286,7 +286,7 @@ export const Copying: Story = {
             verdict="dont"
             caption="Put an IdChip inside a link or a clickable row cell that does something else. The chip is already a copy target; one click cannot both copy and navigate."
           >
-            <span className="text-brand-indicator text-sm underline underline-offset-4">
+            <span className="text-sm underline underline-offset-4">
               Open deployment <IdChip value={ORDER_UUID} copyable={false} />
             </span>
           </Example>
