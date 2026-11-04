@@ -319,8 +319,9 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * Destructive text uses destructive-subtle-foreground, which reaches 4.5:1 on
- * every surface in both modes. Pinned to the light page theme.
+ * A destructive alert sits on the destructive subtle fill and border. The title
+ * stays foreground and the description foreground-secondary; only the icon takes
+ * the tone. Pinned to the light page theme.
  */
 export const DestructiveLightAndDark: Story = {
   globals: { theme: 'light' },
@@ -328,6 +329,7 @@ export const DestructiveLightAndDark: Story = {
     <LightAndDark>
       {() => (
         <Alert variant="destructive">
+          <AlertCircleIcon />
           <AlertTitle>Payment failed</AlertTitle>
           <AlertDescription>The card was declined. Ask the customer for another card.</AlertDescription>
         </Alert>
@@ -337,9 +339,9 @@ export const DestructiveLightAndDark: Story = {
 };
 
 /**
- * All four variants side by side. Warning and info follow the destructive
- * treatment: card surface, tone-colored text and icon via the tone's
- * subtle-foreground, which reaches 4.5:1 on every surface in both modes.
+ * All four variants side by side. The toned variants take the tone's subtle
+ * fill and border, with the icon in the tone's text slot. The default variant
+ * stays on the card surface.
  */
 export const VariantsLightAndDark: Story = {
   globals: { theme: 'light' },

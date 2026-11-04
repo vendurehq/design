@@ -8,18 +8,21 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // flex row needs a width (it is w-full by default), not w-fit.
 // The grid has no column gap: the icon carries its own margin, so the empty
 // action column of a narrow alert takes no space.
+// The v3 banner: a toned alert sits on its tone's subtle fill and border, with
+// the icon in the tone's text slot. The title stays foreground and the
+// description foreground-secondary in every variant, because a muted grey on
+// a tinted fill falls below text contrast.
 const alertVariants = cva(
-  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-lg border px-4 py-3 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-2.5 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
+  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-4 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
   {
     variants: {
       variant: {
-        default: "bg-card text-card-foreground",
+        default: "bg-card text-card-foreground *:[svg]:text-current",
         destructive:
-          "text-destructive-subtle-foreground bg-card *:data-[slot=alert-description]:text-destructive-subtle-foreground *:[svg]:text-current",
+          "bg-destructive-subtle border-destructive-border text-foreground *:[svg]:text-destructive-text",
         warning:
-          "text-warning-subtle-foreground bg-card *:data-[slot=alert-description]:text-warning-subtle-foreground *:[svg]:text-current",
-        info:
-          "text-info-subtle-foreground bg-card *:data-[slot=alert-description]:text-info-subtle-foreground *:[svg]:text-current",
+          "bg-warning-subtle border-warning-border text-foreground *:[svg]:text-warning-text",
+        info: "bg-info-subtle border-info-border text-foreground *:[svg]:text-info-text",
       },
     },
     defaultVariants: {
@@ -48,7 +51,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-title"
       className={cn(
-        "[&_a]:hover:text-foreground col-start-1 font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3",
+        "[&_a]:hover:text-foreground col-start-1 font-semibold group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3",
         className
       )}
       {...props}
@@ -64,7 +67,7 @@ function AlertDescription({
     <div
       data-slot="alert-description"
       className={cn(
-        "text-muted-foreground [&_a]:hover:text-foreground col-start-1 text-sm text-balance wrap-anywhere group-has-[>svg]/alert:col-start-2 md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
+        "text-foreground-secondary [&_a]:hover:text-foreground col-start-1 text-sm text-balance wrap-anywhere group-has-[>svg]/alert:col-start-2 md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
         className
       )}
       {...props}
