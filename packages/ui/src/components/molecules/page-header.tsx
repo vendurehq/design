@@ -46,7 +46,7 @@ function PageHeaderDescription({ className, ...props }: React.ComponentProps<'p'
   return (
     <p
       data-slot="page-header-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-sm text-foreground-secondary', className)}
       {...props}
     />
   );
