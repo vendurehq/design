@@ -226,6 +226,11 @@ const deploymentStates = defineStateEntries<DeploymentState>({
 Do not attach ramp colors to states. Unknown wire values deliberately fall back
 to neutral and warn once in development.
 
+`StatusBadge` renders as a chip by default. Use `appearance="text"` for a fixed
+status column in a list, and `appearance="dot"` only where no word fits (the
+label stays as screen-reader text). `size="lg"` is the 28px chip for a page
+header, and `icon` replaces the leading dot with an icon in the tone colour.
+
 ### Illustrations
 
 Each illustration is its own file under `illustrations/*`. Pass one as
