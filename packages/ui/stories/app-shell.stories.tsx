@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { BarChart3, Package, Settings, ShoppingCart, Users } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import {
@@ -78,9 +79,9 @@ function Nav() {
         <div
           key={label}
           data-active={active}
-          className="text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm data-[active=true]:font-medium"
+          className="text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-sm data-[active=true]:font-medium"
         >
-          <Icon className="size-4" />
+          <Icon className="size-4 in-data-[active=true]:text-brand-indicator" strokeWidth={1.75} />
           {label}
         </div>
       ))}
@@ -191,16 +192,19 @@ export const Anatomy: Story = {
 };
 
 // How a real app wires the same three tiers, using the production Sidebar atom
-// (collapsible, keyboard toggle, mobile sheet) with variant="inset". The wrapper
-// paints the canvas, SidebarInset is the --surface pane, cards are --surface-raised.
+// (collapsible to a 60px icon rail, keyboard toggle, mobile sheet) with
+// variant="inset" and the sliding active pill. The wrapper paints the canvas,
+// SidebarInset is the --surface pane, cards are --surface-raised.
 export const WithSidebarAtom: Story = {
   name: 'With the Sidebar atom (production shell)',
-  render: () => (
+  render: function Render() {
+    const [current, setCurrent] = useState('Orders');
+    return (
     <>
       <SkipLink />
       <AppShell className="h-[620px] min-h-0 overflow-hidden">
         <SidebarProvider className="min-h-0">
-          <Sidebar variant="inset">
+          <Sidebar variant="inset" collapsible="icon">
             <SidebarHeader>
               <div className="flex items-center gap-2 px-2 py-1.5">
                 <div className="bg-brand size-6 rounded-md" />
@@ -210,10 +214,14 @@ export const WithSidebarAtom: Story = {
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <SidebarMenu>
-                    {nav.map(({ icon: Icon, label, active }) => (
+                  <SidebarMenu slidingIndicator>
+                    {nav.map(({ icon: Icon, label }) => (
                       <SidebarMenuItem key={label}>
-                        <SidebarMenuButton isActive={active}>
+                        <SidebarMenuButton
+                          isActive={label === current}
+                          onClick={() => setCurrent(label)}
+                          tooltip={label}
+                        >
                           <Icon />
                           <span>{label}</span>
                         </SidebarMenuButton>
@@ -236,5 +244,29 @@ export const WithSidebarAtom: Story = {
         </SidebarProvider>
       </AppShell>
     </>
+    );
+  },
+};
+
+// The header sticks to the top of the element that scrolls. With
+// scrollOwner="container" the page scrolls under it: the header is a
+// translucent tint of the pane with a backdrop blur. Scroll the pane to see it.
+export const StickyHeader: Story = {
+  name: 'Sticky header over scrolling content',
+  render: () => (
+    <div className="p-6">
+      <AppShell className="h-[620px] min-h-0 overflow-hidden rounded-xl border border-border/60">
+        <Nav />
+        <AppShellContent className="overflow-auto">
+          <AppShellHeader>
+            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+          </AppShellHeader>
+          <AppShellMain scrollOwner="container">
+            <Dashboard />
+            <Dashboard />
+          </AppShellMain>
+        </AppShellContent>
+      </AppShell>
+    </div>
   ),
 };
