@@ -99,7 +99,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
-- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
+- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` on the `muted` and `secondary` fills over every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
 - 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier. `border` and `input` are exempt.
 
 ### Typography
