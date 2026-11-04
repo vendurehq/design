@@ -206,6 +206,37 @@ export const uiGuidance = [
     related: ['copyable-text'],
   },
   {
+    id: 'collapsible-section',
+    title: 'CollapsibleSection',
+    summary:
+      'Keep one secondary list of rows behind a header that still says how many rows it holds.',
+    sourceStory: 'collapsible-section-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Collapse what can wait',
+        body: 'Use CollapsibleSection for a secondary list on its own card. Rows that are the reason the user came to the page stay open on a plain card.',
+      },
+      {
+        title: 'Do not collapse a single row',
+        body: 'A closed section with one row costs a click to save one line. Show the row on a plain card.',
+      },
+      {
+        title: 'Open by default when a row needs the user',
+        body: 'Start closed when the rows are routine. When a row has failed or waits on the user, pass `defaultOpen` so the problem is in view.',
+      },
+      {
+        title: 'Attention means action, not volume',
+        body: '`tone="attention"` puts the count pill in the warning tone, on the pill only. Use it when rows need the user, never because the count is high.',
+      },
+    ],
+    choices: [
+      { choice: 'CollapsibleSection', when: 'One secondary list of rows on a card, with a count.' },
+      { choice: 'Accordion', when: 'A set of peer panels of prose or form content.' },
+      { choice: 'Collapsible', when: 'A bare disclosure that is not a card of rows.' },
+    ],
+    related: ['list-row'],
+  },
+  {
     id: 'combobox-free-text',
     title: 'ComboboxFreeText',
     summary: 'Use free-text selection only when a brand-new value is a legitimate domain answer.',
@@ -499,6 +530,40 @@ export const uiGuidance = [
       },
     ],
     related: ['data-table', 'page-header', 'table-pagination'],
+  },
+  {
+    id: 'list-row',
+    title: 'ListRow',
+    summary:
+      'Render a short list of entities where each row opens one detail page from any point of the row.',
+    sourceStory: 'list-row-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Rows to open, columns to compare',
+        body: 'Use ListRow for a short list the user scans and opens one row of. Use DataTable when the user sorts, filters, pages, selects in bulk, or compares values across rows.',
+      },
+      {
+        title: 'One link per row, over the whole row',
+        body: 'Put exactly one ListRowLink in a row. It stretches over the row, so the row has one tab stop and one name. Never make one cell the only link.',
+      },
+      {
+        title: 'A row without a page gets no link',
+        body: 'When the row opens nothing, use ListRowTitle and leave out ListRowChevron. No hover fill, no pointer.',
+      },
+      {
+        title: 'The link holds the title only',
+        body: 'The link text is the accessible name of the row. Put who, how many, and how long in ListRowMeta, and state in a StatusBadge in ListRowTrailing.',
+      },
+      {
+        title: 'Controls stay above the link',
+        body: 'Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.',
+      },
+      {
+        title: 'Hidden actions are never the only way',
+        body: 'ListRowActions appears on hover or focus. Every action in it is also available on the detail page.',
+      },
+    ],
+    related: ['collapsible-section', 'data-table', 'id-chip', 'status-badge'],
   },
   {
     id: 'money',
