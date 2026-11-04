@@ -23,6 +23,9 @@ export const duration = {
 // matching entry in `keyframes` below.
 export const animation = {
   shimmer: 'shimmer 1.75s linear infinite',
+  // A calm rotation for small in-progress marks (the StatusBadge spinner).
+  // Slower than Tailwind's 1s `animate-spin`.
+  spinSlow: 'spin-slow 1.6s linear infinite',
 } as const;
 
 // Keyframe steps for the animations above, generated as top-level
@@ -31,5 +34,8 @@ export const keyframes = {
   shimmer: {
     from: { backgroundPosition: '-200% 0' },
     to: { backgroundPosition: '200% 0' },
+  },
+  spinSlow: {
+    to: { transform: 'rotate(360deg)' },
   },
 } as const;

@@ -214,6 +214,7 @@
   --transition-duration-slow: 300ms;
   --transition-duration-slower: 500ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
+  --animate-spin-slow: spin-slow 1.6s linear infinite;
 }
 
 @keyframes shimmer {
@@ -222,6 +223,12 @@
   }
   to {
     background-position: 200% 0;
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
   }
 }
 

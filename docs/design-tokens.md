@@ -133,7 +133,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge) — Tailwind `ease-*` utilities
 - **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
-- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`)
+- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner)
 
 ## Dark Mode
 
