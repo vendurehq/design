@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
   HomeIcon,
   InboxIcon,
@@ -106,8 +106,9 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 
 /**
  * The active item gets a sidebar-primary bar on its leading edge, so it differs
- * from hover (both use the sidebar-accent fill). The outline variant draws its
- * border again. Hover an item to compare. Pinned to the light page theme.
+ * from hover (both use the sidebar-accent fill), and its icon takes
+ * brand-indicator. The outline variant draws its border again. Hover an item to
+ * compare. Pinned to the light page theme.
  */
 export const ActiveItem: Story = {
   globals: { theme: 'light' },
@@ -136,5 +137,87 @@ export const ActiveItem: Story = {
         </SidebarProvider>
       )}
     </LightAndDark>
+  ),
+};
+
+/** A clickable menu that keeps its own active item. */
+function SlidingMenu({ tooltips = false }: { tooltips?: boolean }) {
+  const [active, setActive] = useState(0);
+  return (
+    <SidebarMenu slidingIndicator>
+      {menuItems.map((item, index) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton
+            isActive={index === active}
+            onClick={() => setActive(index)}
+            tooltip={tooltips ? item.title : undefined}
+          >
+            <item.icon />
+            <span>{item.title}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
+/**
+ * With slidingIndicator, SidebarMenu draws one pill that slides to the active
+ * item on the drawer curve. Click an item to move it. Under reduced motion the
+ * pill moves without sliding. Pinned to the light page theme.
+ */
+export const SlidingIndicator: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <SidebarProvider className="min-h-0">
+          <div className="bg-sidebar text-sidebar-foreground w-58 rounded-lg border p-2">
+            <SlidingMenu />
+          </div>
+        </SidebarProvider>
+      )}
+    </LightAndDark>
+  ),
+};
+
+/**
+ * The full sidebar with collapsible="icon": 232px expanded, a 60px icon rail
+ * collapsed. Press the trigger (or Ctrl/Cmd+B) to toggle. The width eases on the
+ * drawer curve, labels fade in place and the icons do not move. Hover a rail
+ * icon for its label, shown to the right of the rail.
+ */
+export const IconRail: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
+            <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
+              V
+            </div>
+            <span className="truncate text-sm font-semibold">Vendure</span>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Application</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SlidingMenu tooltips />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-13 items-center gap-2 border-b px-3">
+          <SidebarTrigger />
+          <span className="text-sm font-medium">Dashboard</span>
+        </header>
+        <div className="flex-1 p-5">
+          <p className="text-muted-foreground text-sm">Main content area</p>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   ),
 };

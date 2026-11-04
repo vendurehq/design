@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import { Button } from '../src/components/atoms/button.tsx';
 import {
   Command,
+  CommandDialog,
   CommandEmpty,
+  CommandFooter,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -10,7 +13,19 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '../src/components/atoms/command.tsx';
-import { Calculator, Calendar, CreditCard, Settings, Smile, User } from 'lucide-react';
+import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
+import {
+  BarChart3,
+  Calculator,
+  Calendar,
+  CreditCard,
+  Package,
+  Settings,
+  ShoppingCart,
+  Smile,
+  User,
+  Users,
+} from 'lucide-react';
 
 const meta = {
   title: 'Atoms/Menus/Command',
@@ -113,6 +128,105 @@ export const States: Story = {
             </CommandGroup>
           </CommandList>
         </Command>
+      )}
+    </LightAndDark>
+  ),
+};
+
+const pages = [
+  { label: 'Orders', icon: ShoppingCart },
+  { label: 'Products', icon: Package },
+  { label: 'Customers', icon: Users },
+  { label: 'Analytics', icon: BarChart3 },
+];
+const account = [
+  { label: 'Profile', icon: User },
+  { label: 'Billing', icon: CreditCard },
+  { label: 'Settings', icon: Settings },
+];
+
+/** The palette body: grouped results with a sliding highlight, then the key hints. */
+function PaletteBody() {
+  return (
+    <Command>
+      <CommandInput placeholder="Search pages and settings..." />
+      <CommandList slidingHighlight>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="Pages">
+          {pages.map(({ label, icon: Icon }) => (
+            <CommandItem key={label}>
+              <Icon />
+              {label}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandGroup heading="Account">
+          {account.map(({ label, icon: Icon }) => (
+            <CommandItem key={label}>
+              <Icon />
+              {label}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+      <CommandFooter aria-hidden="true">
+        <span>
+          <KbdGroup>
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd>
+          </KbdGroup>
+          Navigate
+        </span>
+        <span>
+          <Kbd>↵</Kbd>
+          Open
+        </span>
+        <span>
+          <Kbd>Esc</Kbd>
+          Close
+        </span>
+      </CommandFooter>
+    </Command>
+  );
+}
+
+/**
+ * The command palette: CommandDialog at 600px, 12% from the top, with an
+ * unboxed input, 40px items and CommandFooter key hints. CommandList's
+ * slidingHighlight slides the highlight between items; hold an arrow key and
+ * it stays under the selection. Type to filter: the list eases to its new
+ * height. Under reduced motion the highlight moves without sliding and the
+ * height changes at once.
+ */
+export const Palette: Story = {
+  parameters: { docs: { story: { inline: false, height: '560px' } } },
+  render: function Render() {
+    const [open, setOpen] = useState(true);
+    return (
+      <>
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          Open the palette
+        </Button>
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <PaletteBody />
+        </CommandDialog>
+      </>
+    );
+  },
+};
+
+/**
+ * The sliding highlight and the footer without the dialog. Move with the
+ * arrow keys or the pointer. Pinned to the light page theme.
+ */
+export const SlidingHighlight: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="overflow-hidden rounded-xl border">
+          <PaletteBody />
+        </div>
       )}
     </LightAndDark>
   ),
