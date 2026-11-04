@@ -37,7 +37,7 @@ Raw CSS custom properties only, without Tailwind or any theme config. Use this i
 
 ### `@vendure-io/design-tokens/css/fonts`
 
-Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for Inter, Public Sans, and Geist Mono. `css/theme` only declares the `--font-*` family tokens — it doesn't load the font files, so import this alongside it (or `css/variables`) or the theme falls back to system fonts:
+Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for Inter, Public Sans, and Geist Mono. The theme uses Inter and Geist Mono; Public Sans stays loaded for apps that set it themselves. `css/theme` only declares the `--font-*` family tokens — it doesn't load the font files, so import this alongside it (or `css/variables`) or the theme falls back to system fonts:
 
 ```css
 @import "@vendure-io/design-tokens/css/theme";
@@ -62,7 +62,8 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 **Semantic colors** (slots, light/dark mode aware via CSS variables):
 
-- `background`, `foreground` — Page background and text
+- `background`, `foreground` — Page background and primary text
+- `foreground-secondary` — Secondary text on any surface tier: descriptions, table values, inactive navigation (`text-foreground-secondary`). It sits between `foreground` and `muted-foreground`. It is not the text on a `secondary` fill; that is `secondary-foreground`
 - `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
@@ -70,6 +71,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
 - `primary`, `primary-foreground` — Primary actions. Neutral, not Vendure blue
 - `brand`, `brand-foreground` — Vendure blue, for deliberate identity moments only (`bg-brand text-brand-foreground`). Components opt in; nothing uses it by default
+- `brand-indicator` — Vendure blue as a non-text mark: the active navigation icon, the selected-item marker, a link underline (`text-brand-indicator` on an icon, `bg-brand-indicator`). It holds 3:1 on every surface tier. Do not use it for body text or as a fill behind text
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
 - `accent`, `accent-foreground` — Hover and selected highlights
@@ -77,8 +79,9 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `success`, `success-foreground` — Success states
 - `warning`, `warning-foreground` — Warning states
 - `info`, `info-foreground` — Informational states
+- `{tone}-text` — Text-safe tone colour on a surface tier (`success`, `warning`, `destructive`, `info`): status words, deltas, field errors (`text-success-text`)
 - `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` — The subtle tier for each tone (`success`, `warning`, `destructive`, `info`, `neutral`): tinted background, readable foreground, and matching border for soft status treatments (e.g. `bg-success-subtle text-success-subtle-foreground border-success-border`)
-- `border`, `input`, `ring` — Decorative borders, the text input outline, focus rings
+- `border`, `input`, `ring` — The hairline divider between peers, the stronger outline of text inputs, and the brand focus ring
 - `control-border` — The boundary of controls that have no other visible edge: unchecked checkbox, radio, switch track, slider and progress tracks (`border-control-border`, `bg-control-border`). Text inputs keep `input`
 - `code-highlight`, `code-diff-add`, `code-diff-remove` and their `-accent` slots — Code annotations (line/word highlight, diff add/remove)
 - `code-inline`, `code-inline-border` — Inline code chip: `bg-code-inline border-code-inline-border text-foreground`
@@ -92,27 +95,28 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `critical` renders with the `destructive-*` slots.
 - `progress` renders with the `neutral-*` slots plus an `info` dot.
 
-**Tone text.** Use `{tone}-subtle-foreground` for tone-colored text on a surface, for example a field error or a destructive menu item (`text-destructive-subtle-foreground`). These slots pass 4.5:1 on `background`, `surface`, `surface-raised` and `overlay` in both modes. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.36:1 on `overlay`, dark `success` is 3.06:1 on a card, and light `warning` is 3.25:1 on white.
+**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). Each `{tone}-text` slot is the step of its tone ramp nearest the solid tone that passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.10:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
-- 4.5:1 for every foreground on its fill, `muted-foreground` and tone text on every surface tier, and the subtle tier over `surface`, `surface-raised` and `overlay`.
-- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive` and `control-border` on every surface tier. `border` and `input` are exempt.
+- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
+- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier. `border` and `input` are exempt.
 
 ### Typography
 
-- **Font families**: `--font-sans` (Inter), `--font-heading` (Public Sans), `--font-body` (Inter), `--font-mono` (Geist Mono)
+- **Font families**: `--font-sans` (Inter), `--font-heading` (Inter), `--font-body` (Inter), `--font-mono` (Geist Mono)
+- **Inter features**: `--font-sans--font-feature-settings`, `--font-heading--font-feature-settings` and `--font-body--font-feature-settings` turn on `cv11`, `ss01` and `ss03`. Tailwind applies the sans value to the page and each value to its `font-*` utility
 - **Mono features**: `--font-mono--font-feature-settings` turns off the `liga` and `calt` ligatures. Tailwind applies it to `font-mono` and to `code`, `pre`, `kbd` and `samp`, so a space before `--` stays visible
-- **Type scale**: `--text-xs` through `--text-5xl` — Tailwind `text-*` utilities
+- **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text; `text-2xs` (11px) is micro text such as keyboard hints
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
 - **Text styles**: named type compositions (font, size, weight, tracking, leading — no color), applied as a single utility class:
-  - `text-style-page-title`, `text-style-section-title`, `text-style-card-title` — heading font
+  - `text-style-page-title` (22px), `text-style-section-title` (16px, section and dialog titles), `text-style-card-title` (14px, card and panel titles) — heading font
   - `text-style-body` — body font
   - `text-style-caption` — small print
   - `text-style-code` — mono font
 
-The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Public Sans) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
+The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Inter) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
 
 ### Radii
 
@@ -121,12 +125,13 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 ### Shadows
 
-- `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities
+- `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
+- `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a 1px contact ring and a soft drop. Light and dark have different values. Use `shadow-overlay`
 
 ### Motion
 
-- **Easing**: `--ease-default`, `--ease-in`, `--ease-out`, `--ease-in-out`, `--ease-spring` — Tailwind `ease-*` utilities
-- **Duration**: `--transition-duration-instant`, `-fast`, `-normal`, `-slow`, `-slower` — Tailwind `duration-*` utilities (`duration-fast`, `duration-slow`, …)
+- **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge) — Tailwind `ease-*` utilities
+- **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
 - **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`)
 
 ## Dark Mode

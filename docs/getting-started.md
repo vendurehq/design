@@ -152,15 +152,15 @@ Exclude your theme-definition files, where raw colors belong. The [package READM
 
 ## Fonts
 
-The design system uses three font families:
+The design system uses two font families, Inter and Geist Mono:
 
 | Role     | Font         | Usage      |
 | -------- | ------------ | ---------- |
 | Body     | Inter        | Default text, UI elements |
-| Headings | Public Sans  | Headings, display text |
+| Headings | Inter        | Headings, display text |
 | Code     | Geist Mono   | Code blocks, monospace |
 
-`@vendure-io/design-tokens/css/theme` only declares the `--font-*` family tokens — it doesn't load the font files. Import `css/fonts` alongside it to self-host all three families (no separate install, no Google Fonts request):
+`@vendure-io/design-tokens/css/theme` only declares the `--font-*` family tokens — it doesn't load the font files. Import `css/fonts` alongside it to self-host the families (no separate install, no Google Fonts request). `css/fonts` also still loads Public Sans, the heading font before the v3 theme, for apps that set it themselves:
 
 ```css
 @import "@vendure-io/design-tokens/css/theme";
@@ -171,13 +171,12 @@ If you'd rather load the fonts yourself (custom subsetting, a different CDN), sk
 
 ```bash
 # Fontsource
-npm install @fontsource-variable/inter @fontsource-variable/public-sans @fontsource-variable/geist-mono
+npm install @fontsource-variable/inter @fontsource-variable/geist-mono
 ```
 
 ```ts
 // Import in your entry file
 import "@fontsource-variable/inter";
-import "@fontsource-variable/public-sans";
 import "@fontsource-variable/geist-mono";
 ```
 
@@ -187,9 +186,9 @@ Or via Google Fonts in your HTML `<head>`:
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Public+Sans:wght@400..700&family=Geist+Mono&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Geist+Mono&display=swap"
   rel="stylesheet"
 />
 ```
 
-The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded. For headings, use the `font-heading` utility (Public Sans); the theme deliberately doesn't restyle raw `h1`–`h6` elements, and `@vendure-io/ui` title components apply the utility themselves.
+The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded. For headings, use the `font-heading` utility (Inter); the theme deliberately doesn't restyle raw `h1`–`h6` elements, and `@vendure-io/ui` title components apply the utility themselves.
