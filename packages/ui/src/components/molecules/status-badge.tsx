@@ -69,7 +69,7 @@ const toneWord: Record<Tone, string> = {
 // One revolution per 1.6s: slower than the default spin, so a status that
 // stays in progress for minutes does not read as urgent. Under reduced motion
 // the spinner stands still; the icon shape still says "in motion".
-const spinnerClass = 'animate-[spin_1.6s_linear_infinite] motion-reduce:animate-none';
+const spinnerClass = 'animate-spin-slow motion-reduce:animate-none';
 
 interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /** Semantic tone. Defaults to `neutral`. */
