@@ -158,7 +158,24 @@ const subtleTones = [...tones, 'neutral'] as const;
 const surfaces = ['background', 'surface', 'surface-raised', 'overlay'] as const;
 // `border` and `input` are exempt: they are decorative dividers and the text
 // input outline, not the only cue that identifies a control.
-const nonTextSlots = ['primary', 'ring', 'sidebar-ring', 'destructive', 'control-border'] as const;
+const nonTextSlots = [
+  'primary',
+  'ring',
+  'sidebar-ring',
+  'destructive',
+  'control-border',
+  'brand-accent',
+] as const;
+// Text slots used directly on a surface tier, with no fill of their own.
+const surfaceTextSlots = [
+  'foreground',
+  'foreground-secondary',
+  'muted-foreground',
+  'success-text',
+  'warning-text',
+  'destructive-text',
+  'info-text',
+] as const;
 const textPairs = [
   ['card-foreground', 'card'],
   ['popover-foreground', 'popover'],
@@ -220,9 +237,11 @@ for (const [themeName, theme] of Object.entries(themes)) {
     }
 
     for (const surface of surfaces) {
-      test(`muted-foreground on ${surface} >= 4.5`, () => {
-        expect(contrastOf(theme, 'muted-foreground', surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
-      });
+      for (const slot of surfaceTextSlots) {
+        test(`${slot} on ${surface} >= 4.5`, () => {
+          expect(contrastOf(theme, slot, surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+        });
+      }
 
       test(`foreground on code-inline over ${surface} >= 4.5`, () => {
         expect(contrastOf(theme, 'foreground', 'code-inline', surface)).toBeGreaterThanOrEqual(
