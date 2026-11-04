@@ -78,7 +78,13 @@ function EmptyState({
     <Empty
       data-slot="empty-state"
       data-size={size}
-      className={cn(bordered ? 'border' : 'rounded-none', compact && 'gap-3 p-6 py-10', className)}
+      className={cn(
+        // Unbordered clears the atom's dashed style, so a border the consumer
+        // adds through `className` is solid.
+        bordered ? 'border' : 'rounded-none border-solid',
+        compact && 'gap-3 p-6 py-10',
+        className,
+      )}
       {...props}
     >
       <EmptyHeader className={cn(compact && 'gap-1')}>

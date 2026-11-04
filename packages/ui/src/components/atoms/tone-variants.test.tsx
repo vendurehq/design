@@ -62,7 +62,7 @@ describe('Progress tone', () => {
     const html = renderToStaticMarkup(<Progress value={40} aria-label="Upload" />);
     expect(html).toContain('data-tone="default"');
     expect(slotTokens(html, 'progress-track')).toContain('bg-control-border');
-    expect(slotTokens(html, 'progress-indicator')).toContain('[--progress-fill:var(--color-primary)]');
+    expect(slotTokens(html, 'progress-indicator')).toContain('[--progress-fill:var(--primary)]');
   });
 
   const slots: Record<Exclude<ProgressTone, 'default'>, string> = {
@@ -77,9 +77,9 @@ describe('Progress tone', () => {
       expect(html).toContain(`data-tone="${tone}"`);
       expect(slotTokens(html, 'progress-track')).toContain(`bg-${slot}-subtle`);
       const indicator = slotTokens(html, 'progress-indicator');
-      expect(indicator).toContain(`[--progress-fill:var(--color-${slot}-600)]`);
-      expect(indicator).toContain(`dark:[--progress-fill:var(--color-${slot}-subtle-foreground)]`);
-      expect(indicator).not.toContain('[--progress-fill:var(--color-primary)]');
+      expect(indicator).toContain(`[--progress-fill:var(--${slot}-600)]`);
+      expect(indicator).toContain(`dark:[--progress-fill:var(--${slot}-subtle-foreground)]`);
+      expect(indicator).not.toContain('[--progress-fill:var(--primary)]');
     });
   }
 });

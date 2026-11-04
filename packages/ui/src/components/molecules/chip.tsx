@@ -77,7 +77,7 @@ function Chip({
           disabled={disabled}
           aria-label={removeLabel}
           onClick={onRemove}
-          className="-mr-0.5 ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none"
+          className="-mr-0.5 ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           <XIcon className="size-3" />
         </button>

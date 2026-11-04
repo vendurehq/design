@@ -38,7 +38,7 @@ function ListRow({ className, ...props }: React.ComponentProps<'div'>) {
         'has-data-[slot=list-row-meta]:py-2.5',
         'transition-colors duration-(--transition-duration-fast) ease-(--ease-default)',
         'has-data-[slot=list-row-link]:cursor-pointer has-data-[slot=list-row-link]:hover:bg-muted',
-        'has-[[data-slot=list-row-link]:focus-visible]:ring-2 has-[[data-slot=list-row-link]:focus-visible]:ring-ring has-[[data-slot=list-row-link]:focus-visible]:ring-inset',
+        'has-[[data-slot=list-row-link]:focus-visible]:outline-solid has-[[data-slot=list-row-link]:focus-visible]:outline-2 has-[[data-slot=list-row-link]:focus-visible]:-outline-offset-2 has-[[data-slot=list-row-link]:focus-visible]:outline-ring',
         LIFT_CONTROLS,
         className,
       )}
@@ -47,13 +47,19 @@ function ListRow({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-/** Leading icon, avatar or status mark. Icons default to 16px. */
+/**
+ * Leading icon, avatar or status mark. Icons default to 16px. A plain icon is
+ * decorative: it renders quieter than the title (55%, 85% while the row is
+ * hovered or focused). An icon with its own `text-*` colour, such as a tone
+ * icon, keeps it at full strength.
+ */
 function ListRowLeading({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="list-row-leading"
       className={cn(
-        "flex shrink-0 items-center text-muted-foreground [&_svg:not([class*='size-'])]:size-4",
+        "flex shrink-0 items-center text-muted-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
+        "[&>svg:not([class*='opacity-']):not([class*='text-'])]:text-foreground [&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-55 [&>svg:not([class*='opacity-']):not([class*='text-'])]:transition-opacity [&>svg:not([class*='opacity-']):not([class*='text-'])]:duration-(--transition-duration-moderate) group-hover/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85 group-focus-within/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85",
         className,
       )}
       {...props}

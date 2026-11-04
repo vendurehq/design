@@ -20,7 +20,7 @@ import {
   FileIcon,
   TerminalIcon,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 // Relative imports: `code-block/*` is closed in the package exports, so a
 // `@vendure-io/ui/...` self-reference to these modules fails in consumers.
@@ -243,6 +243,8 @@ interface PackageManagerTabsProps {
 }
 
 function PackageManagerTabs({ activeManager, onSelect, id }: PackageManagerTabsProps) {
+  // Under reduced motion the underline jumps to the new tab instead of sliding.
+  const reduceMotion = useReducedMotion();
   return (
     // clip-path instead of overflow-hidden: overflow clips children at the
     // padding box, so the active-tab underline could never cover the bottom
@@ -269,11 +271,15 @@ function PackageManagerTabs({ activeManager, onSelect, id }: PackageManagerTabsP
                 className="bg-brand absolute inset-x-0 -bottom-px mx-auto h-0.5 w-full"
                 layoutId={`codeblock-pm-tab-${id}`}
                 initial={false}
-                transition={{
-                  type: 'spring',
-                  stiffness: 500,
-                  damping: 30,
-                }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0 }
+                    : {
+                        type: 'spring',
+                        stiffness: 500,
+                        damping: 30,
+                      }
+                }
               />
             )}
           </Button>
@@ -470,6 +476,9 @@ export function CodeBlock({
   const [activePackageManager, setActivePackageManager] = usePackageManager();
   const [isExpanded, setIsExpanded] = useState(false);
   const instanceId = useId();
+  // Under reduced motion the code area opens and closes without a height
+  // animation; the fade overlay still fades.
+  const reduceMotion = useReducedMotion();
 
   const rawCode = children ?? '';
 
@@ -536,10 +545,14 @@ export function CodeBlock({
           animate={{
             height: showCollapsed ? COLLAPSED_HEIGHT : 'auto',
           }}
-          transition={{
-            duration: 0.3,
-            ease: [0.4, 0, 0.2, 1],
-          }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : {
+                  duration: 0.3,
+                  ease: [0.4, 0, 0.2, 1],
+                }
+          }
         >
           <ScrollArea className="w-full whitespace-nowrap">
             <div

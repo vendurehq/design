@@ -24,7 +24,9 @@ describe('ComboboxTrigger field styling', () => {
       'border-input',
       'rounded-md',
       'data-[size=default]:h-9',
-      'focus-visible:ring-3',
+      'focus-visible:outline-2',
+      'focus-visible:outline-offset-2',
+      'focus-visible:outline-ring',
       'aria-invalid:border-destructive',
       'data-placeholder:text-muted-foreground',
     ]) {

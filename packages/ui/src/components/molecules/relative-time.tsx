@@ -118,7 +118,7 @@ function RelativeTime({
             {...timeProps}
             className={cn(
               focusable &&
-                'focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-3',
+                'rounded-sm outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
               props.className,
             )}
           />

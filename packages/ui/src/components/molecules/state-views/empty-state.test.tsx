@@ -24,6 +24,15 @@ describe('EmptyState border', () => {
     expect(classes).toContain('rounded-none');
   });
 
+  test('bordered={false} clears the dashed style, so a consumer border is solid', () => {
+    const classes = rootClasses(
+      renderToStaticMarkup(<EmptyState bordered={false} className="border" title="No orders" />),
+    );
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-solid');
+    expect(classes).not.toContain('border-dashed');
+  });
+
   test('bordered is not forwarded to the DOM', () => {
     const html = renderToStaticMarkup(<EmptyState bordered={false} title="No orders" />);
     expect(html).not.toContain('bordered');
@@ -81,6 +90,14 @@ describe('compact state views', () => {
     expect(classes).not.toContain('border');
     expect(classes).toContain('rounded-none');
     expect(renderToStaticMarkup(<ErrorState bordered={false} />)).not.toContain('bordered');
+  });
+
+  test('ErrorState bordered={false} clears the dashed style', () => {
+    const classes = errorClasses(
+      renderToStaticMarkup(<ErrorState bordered={false} className="border" />),
+    );
+    expect(classes).toContain('border-solid');
+    expect(classes).not.toContain('border-dashed');
   });
 
   test('ErrorState draws its box by default', () => {

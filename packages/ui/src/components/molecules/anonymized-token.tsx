@@ -152,7 +152,7 @@ function AnonymizedToken({
         data-slot="anonymized-token-value"
         aria-hidden="true"
         data-revealed={showRevealed || undefined}
-        className="blur-[1px] transition-[filter] data-[revealed]:blur-none"
+        className="blur-[1px] transition-[filter] motion-reduce:transition-none data-[revealed]:blur-none"
       >
         {preview}
       </code>

@@ -61,6 +61,8 @@ function CommandDialog({
           className
         )}
         showCloseButton={showCloseButton}
+        // The palette is transient and keeps the page in view: a lighter scrim.
+        overlayClassName="bg-scrim-subtle"
       >
         {children}
       </DialogContent>
@@ -76,7 +78,7 @@ function CommandInput({
     // Unboxed: the input runs edge to edge above a hairline, with no field
     // border, fill or ring. 54px with 16px text in the palette dialog.
     <div data-slot="command-input-wrapper" className="border-border border-b">
-      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pr-3.5 shadow-none! ring-0! in-data-[slot=dialog-content]:h-13.5! *:data-[slot=input-group-addon]:pl-3! in-data-[slot=dialog-content]:*:data-[slot=input-group-addon]:pl-4.5!">
+      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pr-3.5 shadow-none! ring-0! outline-none! in-data-[slot=dialog-content]:h-13.5! *:data-[slot=input-group-addon]:pl-3! in-data-[slot=dialog-content]:*:data-[slot=input-group-addon]:pl-4.5!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
@@ -275,7 +277,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-lg! in-data-[slot=dialog-content]:px-2.5 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-lg! in-data-[slot=dialog-content]:px-2.5 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

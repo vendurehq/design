@@ -37,7 +37,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       ref={containerRef}
       data-slot="table-container"
       tabIndex={scrollable ? 0 : undefined}
-      className="focus-visible:ring-ring relative w-full overflow-x-auto rounded-[inherit] outline-none focus-visible:ring-2"
+      className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none"
     >
       <table
         data-slot="table"

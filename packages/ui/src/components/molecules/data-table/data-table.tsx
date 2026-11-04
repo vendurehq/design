@@ -56,7 +56,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
 import { buildDisplayColumns, getSelectedRowIds, resolveSlot } from './data-table-helpers.tsx';
@@ -446,39 +446,42 @@ function DataTable<TData>({
                 the controls row's place (title and applied-filter chips stay).
                 The swap fades out then in — one --transition-duration-fast
                 (100ms) per phase; mode="wait" keeps the rows sequential so
-                they never stack. */}
+                they never stack. Under reduced motion MotionConfig drops the
+                4px rise and keeps the fade. */}
             {(showControls || (rowSelection != null && bulkActions != null)) && (
-              <AnimatePresence initial={false} mode="wait">
-                {showBulk && bulkActions ? (
-                  <motion.div key="bulk-actions" {...bandRowFade}>
-                    <DataTableBulkActions
-                      table={table}
-                      cache={selectionCache}
-                      render={bulkActions}
-                    />
-                  </motion.div>
-                ) : showControls ? (
-                  <motion.div key="controls" {...bandRowFade}>
-                    <ListHeaderControls>
-                      {toolbarNode}
-                      {hasFilterMenu && filters?.columns && (
-                        <DataTableAddFilter
-                          table={table}
-                          columns={filters.columns}
-                          label={l.addFilter}
-                        />
-                      )}
-                      {showViewOptions && (
-                        <DataTableViewOptions
-                          table={table}
-                          triggerLabel={l.columnsTrigger}
-                          heading={l.columnsHeading}
-                        />
-                      )}
-                    </ListHeaderControls>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
+              <MotionConfig reducedMotion="user">
+                <AnimatePresence initial={false} mode="wait">
+                  {showBulk && bulkActions ? (
+                    <motion.div key="bulk-actions" {...bandRowFade}>
+                      <DataTableBulkActions
+                        table={table}
+                        cache={selectionCache}
+                        render={bulkActions}
+                      />
+                    </motion.div>
+                  ) : showControls ? (
+                    <motion.div key="controls" {...bandRowFade}>
+                      <ListHeaderControls>
+                        {toolbarNode}
+                        {hasFilterMenu && filters?.columns && (
+                          <DataTableAddFilter
+                            table={table}
+                            columns={filters.columns}
+                            label={l.addFilter}
+                          />
+                        )}
+                        {showViewOptions && (
+                          <DataTableViewOptions
+                            table={table}
+                            triggerLabel={l.columnsTrigger}
+                            heading={l.columnsHeading}
+                          />
+                        )}
+                      </ListHeaderControls>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </MotionConfig>
             )}
             {showChips && (
               <ListHeaderChips>

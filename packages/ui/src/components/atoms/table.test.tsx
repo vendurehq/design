@@ -30,7 +30,7 @@ describe('TableRow selected state', () => {
 // browser after mount, then tracked with a ResizeObserver), so a server render
 // has no tabindex.
 describe('Table container', () => {
-  test('has a focus ring and no tab stop until it overflows', () => {
+  test('has an inset focus ring and no tab stop until it overflows', () => {
     const html = renderToStaticMarkup(
       <Table>
         <tbody>
@@ -40,7 +40,9 @@ describe('Table container', () => {
     );
     const container = html.match(/<div[^>]*data-slot="table-container"[^>]*>/)?.[0] ?? '';
     expect(container).not.toContain('tabindex');
-    expect(container).toContain('focus-visible:ring-2');
-    expect(container).toContain('focus-visible:ring-ring');
+    // Inset: the card around the table clips anything outside the container.
+    expect(container).toContain('focus-visible:outline-2');
+    expect(container).toContain('focus-visible:-outline-offset-2');
+    expect(container).toContain('focus-visible:outline-ring');
   });
 });

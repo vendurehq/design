@@ -27,7 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           <OctagonXIcon className="text-destructive-text size-4 stroke-[1.75]" />
         ),
         loading: (
-          <Loader2Icon className="text-muted-foreground size-4 animate-spin stroke-[1.75]" />
+          <Loader2Icon className="text-muted-foreground size-4 animate-spin stroke-[1.75] motion-reduce:animate-none" />
         ),
       }}
       style={

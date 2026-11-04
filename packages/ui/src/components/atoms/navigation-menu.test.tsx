@@ -47,7 +47,9 @@ describe('NavigationMenu', () => {
   test('links and triggers show a full-strength focus ring, not a suppressed outline', () => {
     for (const slot of ['navigation-menu-link', 'navigation-menu-trigger']) {
       const tokens = classTokens(html, slot);
-      expect(tokens).toEqual(expect.arrayContaining(['focus-visible:ring-2', 'focus-visible:ring-ring']));
+      expect(tokens).toEqual(
+        expect.arrayContaining(['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:outline-ring']),
+      );
       expect(tokens).not.toContain('focus-visible:outline-1');
     }
   });
