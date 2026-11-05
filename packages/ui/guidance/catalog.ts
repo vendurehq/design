@@ -84,6 +84,27 @@ export const uiGuidance = [
     related: ['page-header'],
   },
   {
+    id: 'arrow-link',
+    title: 'ArrowLink',
+    summary: 'Link to a page with more of what the user is looking at, at the end of the region it extends.',
+    sourceStory: 'arrow-link-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Navigation, never an action',
+        body: 'Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.',
+      },
+      {
+        title: 'One per region, at the end',
+        body: 'A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.',
+      },
+      {
+        title: 'Not inside running text',
+        body: 'A link inside a sentence or a form is `Button variant="link"` or a plain anchor; an arrow there breaks the sentence.',
+      },
+    ],
+    related: ['button'],
+  },
+  {
     id: 'badge',
     title: 'Badge',
     summary: 'Use Badge for static classification or counts, neutral by default.',
