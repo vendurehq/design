@@ -52,8 +52,8 @@ function ReturnRows() {
   ));
 }
 
-// Closed: the pill says how many rows wait behind the header. Open: the pill
-// blurs out and the rows say it.
+// The count beside the title says how many rows the section holds, open and
+// closed.
 export const Default: Story = {
   render: (args) => (
     <CollapsibleSection {...args}>
@@ -71,7 +71,7 @@ export const DefaultOpen: Story = {
   ),
 };
 
-// Attention tones the pill only, for rows that need the user. Open the section
+// Attention colours the count only, for rows that need the user. Open the section
 // by default when one of them has failed, so the failure is in view.
 export const Attention: Story = {
   args: { title: 'Failed payment captures', count: 2, tone: 'attention' },
@@ -89,6 +89,16 @@ export const Attention: Story = {
           <ListRowChevron />
         </ListRow>
       ))}
+    </CollapsibleSection>
+  ),
+};
+
+// The count also takes text, when one number does not say enough.
+export const TextCount: Story = {
+  args: { title: 'Returns awaiting inspection', count: '3 · 1 overdue', defaultOpen: true },
+  render: (args) => (
+    <CollapsibleSection {...args}>
+      <ReturnRows />
     </CollapsibleSection>
   ),
 };
@@ -124,7 +134,7 @@ export const HeadingLevel: Story = {
   ),
 };
 
-/** The header toggles the rows; the count leaves the accessibility tree while open. */
+/** The header toggles the rows; the count stays in both states. */
 export const Toggles: Story = {
   render: (args) => (
     <CollapsibleSection {...args}>
@@ -140,10 +150,10 @@ export const Toggles: Story = {
     await userEvent.click(trigger);
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await waitFor(() => expect(canvas.getByRole('button', { name: 'Return RMA-318' })).toBeVisible());
-    await expect(canvasElement.querySelector('[data-slot=collapsible-section-count]')).toHaveAttribute(
+    await expect(canvasElement.querySelector('[data-slot=collapsible-section-count]')).not.toHaveAttribute(
       'aria-hidden',
-      'true',
     );
+    await expect(trigger).toHaveAccessibleName(/3/);
 
     await userEvent.click(trigger);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');

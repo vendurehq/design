@@ -9,33 +9,23 @@ import {
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import { ChevronRight } from 'lucide-react';
-import { type ComponentProps, type ReactNode, useState } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-// The count pill says how many rows wait behind a closed section. Open, the
-// rows say it themselves, so the pill blurs out while the height opens, and
-// fades back only once the height has settled on close: pill and rows never
-// show together. Attention is the warning tone, on the pill only: the section
-// itself stays neutral (accent rationing).
-const countPillVariants = cva(
-  [
-    'inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-xs font-semibold tabular-nums',
-    'transition-[opacity,filter] duration-(--transition-duration-moderate) ease-(--ease-default) delay-(--transition-duration-slow)',
-    'group-data-panel-open/collapsible-section-trigger:opacity-0 group-data-panel-open/collapsible-section-trigger:delay-0',
-    // Reduced motion keeps the fade and drops the blur.
-    'motion-safe:group-data-panel-open/collapsible-section-trigger:blur-xs',
-  ],
-  {
-    variants: {
-      tone: {
-        neutral: 'border-neutral-border bg-neutral-subtle text-neutral-subtle-foreground',
-        attention: 'border-warning-border bg-warning-subtle text-warning-subtle-foreground',
-      },
-    },
-    defaultVariants: {
-      tone: 'neutral',
+// The count says how many rows the section holds, open and closed, like a
+// CardCount beside a card title. Attention colours its text in the warning
+// tone, for rows that need the user: the section itself stays neutral
+// (accent rationing).
+const countVariants = cva('text-xs font-semibold tabular-nums', {
+  variants: {
+    tone: {
+      neutral: 'text-muted-foreground',
+      attention: 'text-warning-text',
     },
   },
-);
+  defaultVariants: {
+    tone: 'neutral',
+  },
+});
 
 type CollapsibleSectionProps = Omit<
   ComponentProps<typeof Collapsible>,
@@ -43,9 +33,9 @@ type CollapsibleSectionProps = Omit<
 > & {
   /** The section title. Also the name of the toggle button. */
   title: ReactNode;
-  /** How many rows the section holds. Shown in a pill while the section is closed. */
-  count?: number;
-  /** `attention` puts the pill in the warning tone, for rows that need the user. Default `neutral`. */
+  /** How many rows the section holds, beside the title. A number, or text such as "2 · 1 failed". */
+  count?: ReactNode;
+  /** `attention` colours the count in the warning tone, for rows that need the user. Default `neutral`. */
   tone?: 'neutral' | 'attention';
   /** Heading level of the title in the page outline. Default `2`. */
   headingLevel?: 2 | 3 | 4 | 5 | 6;
@@ -56,34 +46,22 @@ type CollapsibleSectionProps = Omit<
 
 /**
  * A card-surface section whose header opens and closes its rows. The header
- * is one button: title, count pill, and a chevron that turns 90° when open.
+ * is one button: title, count, and a chevron that turns 90° when open.
  */
 function CollapsibleSection({
   title,
   count,
   tone = 'neutral',
   headingLevel = 2,
-  open,
-  defaultOpen = false,
-  onOpenChange,
   className,
   children,
   ...props
 }: CollapsibleSectionProps) {
-  // The pill is hidden from assistive technology while open, so the section
-  // tracks its own state even when uncontrolled.
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
-  const isOpen = open ?? uncontrolledOpen;
   const Heading = `h${headingLevel}` as const;
 
   return (
     <Collapsible
       data-slot="collapsible-section"
-      open={isOpen}
-      onOpenChange={(next, details) => {
-        setUncontrolledOpen(next);
-        onOpenChange?.(next, details);
-      }}
       render={<Card />}
       className={cn('gap-0 py-0', className)}
       {...props}
@@ -97,11 +75,7 @@ function CollapsibleSection({
             {title}
           </span>
           {count != null ? (
-            <span
-              data-slot="collapsible-section-count"
-              aria-hidden={isOpen || undefined}
-              className={countPillVariants({ tone })}
-            >
+            <span data-slot="collapsible-section-count" className={countVariants({ tone })}>
               {count}
             </span>
           ) : null}
