@@ -66,7 +66,7 @@ function CommandDialog({
         showCloseButton={showCloseButton}
         // The palette is transient and keeps the page in view: a lighter scrim
         // with a 2px blur that fades with the palette.
-        overlayClassName="bg-scrim-subtle duration-160 data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
+        overlayClassName="bg-scrim-subtle duration-160 ease-(--ease-out) data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
