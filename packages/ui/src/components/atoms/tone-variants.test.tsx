@@ -38,10 +38,18 @@ describe('Alert tone variants', () => {
         'alert',
       );
       expect(tokens).toContain(`[--alert-tone:var(--${tints[tone as keyof typeof tints]})]`);
-      expect(tokens).toContain('bg-[color-mix(in_oklab,var(--alert-tone)_7%,var(--card))]');
-      expect(tokens).toContain('border-[color-mix(in_oklab,var(--alert-tone)_22%,var(--border))]');
-      expect(tokens).toContain('dark:bg-[color-mix(in_oklab,var(--alert-tone)_10%,transparent)]');
-      expect(tokens).toContain('dark:border-[color-mix(in_oklab,var(--alert-tone)_30%,transparent)]');
+      expect(tokens).toContain('[--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))]');
+      expect(tokens).toContain(
+        '[--alert-border:color-mix(in_oklab,var(--alert-tone)_22%,var(--border))]',
+      );
+      expect(tokens).toContain(
+        'dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)]',
+      );
+      expect(tokens).toContain(
+        'dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)]',
+      );
+      expect(tokens).toContain('bg-(color:--alert-fill)');
+      expect(tokens).toContain('border-(color:--alert-border)');
       expect(tokens.filter((token) => /-(subtle|border)$/.test(token))).toEqual([]);
       expect(tokens).toContain('text-foreground');
       expect(tokens).toContain(`*:[svg]:text-${slot}-text`);

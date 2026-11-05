@@ -11,13 +11,17 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // The v3 banner: a toned alert is a faint tint of its tone. In light mode the
 // fill is 7% tone in the card and the border 22% tone in the border colour; in
 // dark mode the tone sits over transparent (10% fill, 30% border), because
-// mixed into the cool surface it reads grey. The icon takes the tone's text
-// slot. Warning tints with the brighter warning-indicator, as an amber text
-// colour mixes to brown. The title stays foreground and the description
-// foreground-secondary in every variant, because a muted grey on a tinted fill
-// falls below text contrast.
+// mixed into the cool surface it reads grey. The modes switch the
+// --alert-fill and --alert-border properties, not the utilities, so a
+// consumer's bg-* or border-* class wins in both modes. The icon takes the
+// tone's text slot. Warning tints with the brighter warning-indicator, as an
+// amber text colour mixes to brown. The title stays foreground and the
+// description foreground-secondary in every variant, because a muted grey on
+// a tinted fill falls below text contrast.
+// The `alertTones` block in packages/design-tokens/src/contrast.test.ts
+// copies this recipe: change both together.
 const tonedAlert =
-  "text-foreground bg-[color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] border-[color-mix(in_oklab,var(--alert-tone)_22%,var(--border))] dark:bg-[color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:border-[color-mix(in_oklab,var(--alert-tone)_30%,transparent)]"
+  "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_22%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
 
 const alertVariants = cva(
   "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-4 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",

@@ -23,7 +23,7 @@ The semantic meaning a color expresses about state: `neutral`, `info`, `success`
 _Avoid_: intent, status color, semantic color, variant (when meaning color)
 
 **Subtle**:
-The soft rendering of a tone — tinted background, readable foreground, matching border. A StatusBadge is not subtle: it keeps the `muted` fill with a faint tone wash, and shows the tone in its outline, a tinted label and its marker.
+The soft rendering of a tone — tinted background, readable foreground, matching border. A StatusBadge is not subtle: it keeps the `muted` fill with a faint tone wash, and shows the tone in its outline, a tinted label and its marker. An Alert is not subtle either: its fill and border are faint mixes of the tone into the surface, its icon takes the tone, and its title and description stay neutral. The subtle slots remain for consumers.
 _Avoid_: soft, light, pastel
 
 **Surface**:

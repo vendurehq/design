@@ -253,6 +253,21 @@ const chipTones: Record<
   critical: { tone: 'var(--destructive-text)' },
   progress: { tone: 'var(--info-text)' },
 };
+// The toned Alert recipe, copied from `tonedAlert` and `alertVariants` in
+// packages/ui/src/components/atoms/alert.tsx. Change both together. Light:
+// 7% of the tone into `card`. Dark: 10% of the tone over transparent, on the
+// surface tier under the alert. The title is `foreground`, the description
+// `foreground-secondary`, the icon the tone's text slot. `warning` tints from
+// `warning-indicator` and takes its icon from `warning-text`.
+const alertTones: Record<string, { tone: string; icon: string }> = {
+  destructive: { tone: 'var(--destructive-text)', icon: 'var(--destructive-text)' },
+  warning: { tone: 'var(--warning-indicator)', icon: 'var(--warning-text)' },
+  info: { tone: 'var(--info-text)', icon: 'var(--info-text)' },
+};
+const alertFill = (themeName: string, tone: string) =>
+  themeName === 'dark'
+    ? `color-mix(in oklab, ${tone} 10%, transparent)`
+    : `color-mix(in oklab, ${tone} 7%, var(--card))`;
 const textPairs = [
   ['card-foreground', 'card'],
   ['popover-foreground', 'popover'],
@@ -376,6 +391,24 @@ for (const [themeName, theme] of Object.entries(themes)) {
         });
         test(`StatusBadge ${chipTone} icon on its chip fill over ${surface} >= 3 (non-text)`, () => {
           expect(contrastOfValues(theme, marker, fill, surface)).toBeGreaterThanOrEqual(
+            MIN_NON_TEXT_CONTRAST,
+          );
+        });
+      }
+    }
+
+    for (const [alertTone, recipe] of Object.entries(alertTones)) {
+      const fill = alertFill(themeName, recipe.tone);
+      for (const surface of surfaces) {
+        for (const slot of ['foreground', 'foreground-secondary']) {
+          test(`Alert ${alertTone} ${slot} on its tint over ${surface} >= 4.5`, () => {
+            expect(contrastOfValues(theme, `var(--${slot})`, fill, surface)).toBeGreaterThanOrEqual(
+              MIN_CONTRAST,
+            );
+          });
+        }
+        test(`Alert ${alertTone} icon on its tint over ${surface} >= 3 (non-text)`, () => {
+          expect(contrastOfValues(theme, recipe.icon, fill, surface)).toBeGreaterThanOrEqual(
             MIN_NON_TEXT_CONTRAST,
           );
         });
