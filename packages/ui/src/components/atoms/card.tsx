@@ -32,13 +32,16 @@ function Card({
 }
 
 // A one-line header (only a CardTitle and an optional CardAction) is one
-// --card-head row with its content centred. As the first child it takes the
-// card's top padding into that row. Without a band border it also takes the
-// gap below, so CardRows or CardContent start right under the 48px row; with
-// border-b it drops its bottom padding, and the border sits at 48px. A header
-// with a description, controls or chips keeps the padded layout.
+// --card-head row: 48px, 44px in the sm size, measured from the card edge to
+// the next content (or to the border-b). The header keeps the card padding
+// above it and the card gap below it. Its children take a negative block
+// margin so their line fits between the two, and the header drops its row
+// gap (the action spans an empty second row). Nothing moves out of the
+// header's box, so a card with its own padding or gap keeps its layout, and a
+// title that wraps makes the header taller. A header with a description,
+// controls or chips keeps the padded layout.
 const ONE_LINE_HEADER =
-  "[&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:min-h-(--card-head) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:content-center first:[&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:-mt-(--card-gap) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:[&:not(.border-b)]:-mb-(--card-gap) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:[.border-b]:pb-0"
+  "[&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:gap-y-0 [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:*:my-[calc((var(--card-head)-2*var(--card-gap)-1lh)/2)] [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:[&.border-b]:*:my-[calc((var(--card-head)-2*var(--card-gap)-1px-1lh)/2)]"
 
 // Band dividers (consumer-applied border-b / border-t on header/footer) use the
 // same hairline as the card outline and the CardRows separators.
