@@ -70,16 +70,19 @@ export const lightTheme = {
   // errors set directly on a surface tier. Saturated literals, not ramp
   // steps, so the tones sit beside the neon brand instead of reading pastel
   // or olive: green, a burnt amber, red, and an info blue on the brand hue.
-  // Each holds 4.5:1 on every surface tier. Brighter than the
-  // `{tone}-subtle-foreground` slots, which are tuned for the subtle fills.
-  'success-text': 'oklch(0.509 0.127 154)',
-  'warning-text': 'oklch(0.555 0.146 49)',
-  'destructive-text': 'oklch(0.54 0.193 24)',
-  'info-text': 'oklch(0.529 0.112 236)',
-  // Warning as a mark beside a label: the StatusBadge outline, a status dot,
-  // a highlight. `warning-text` is dark enough for text, so mixed into an
-  // outline or fill it reads beige. Not text, and not the only cue: on a
-  // light surface it is about 2:1.
+  // Each holds 4.5:1 on every surface tier and on the `muted`, `secondary`
+  // and `accent` fills over each tier: a status word in a hovered row stays
+  // legible. Brighter than the `{tone}-subtle-foreground` slots, which are
+  // tuned for the subtle fills.
+  'success-text': 'oklch(0.494 0.127 154)',
+  'warning-text': 'oklch(0.522 0.146 49)',
+  'destructive-text': 'oklch(0.533 0.193 24)',
+  'info-text': 'oklch(0.504 0.112 236)',
+  // Warning as a mark beside a label: the StatusBadge outline and fill, a
+  // highlight. `warning-text` is dark enough for text, so mixed into an
+  // outline or fill it reads beige. Not text, and never the only cue: on a
+  // light surface it is about 2:1, below the 3:1 non-text bar. Not for a
+  // standalone status dot.
   'warning-indicator': 'oklch(0.767 0.157 72)',
   // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
   // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
@@ -183,8 +186,8 @@ export const darkTheme = {
   'warning-text': 'oklch(0.845 0.147 79)',
   'destructive-text': 'oklch(0.713 0.181 20)',
   'info-text': 'oklch(0.8 0.125 231)',
-  // Dark `warning-text` is already bright enough for a mark.
-  'warning-indicator': 'oklch(0.845 0.147 79)',
+  // Dark `warning-text` is already bright enough for a mark, and holds 3:1.
+  'warning-indicator': 'var(--warning-text)',
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,

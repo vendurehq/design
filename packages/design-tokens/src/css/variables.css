@@ -130,10 +130,10 @@
   --neutral-subtle: oklch(0.93 0.004 231);
   --neutral-subtle-foreground: oklch(0.2 0.007 231);
   --neutral-border: oklch(0.87 0.004 231);
-  --success-text: oklch(0.509 0.127 154);
-  --warning-text: oklch(0.555 0.146 49);
-  --destructive-text: oklch(0.54 0.193 24);
-  --info-text: oklch(0.529 0.112 236);
+  --success-text: oklch(0.494 0.127 154);
+  --warning-text: oklch(0.522 0.146 49);
+  --destructive-text: oklch(0.533 0.193 24);
+  --info-text: oklch(0.504 0.112 236);
   --warning-indicator: oklch(0.767 0.157 72);
   --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
   --code-highlight-accent: oklch(0.55 0.19 250);
@@ -218,7 +218,7 @@
   --warning-text: oklch(0.845 0.147 79);
   --destructive-text: oklch(0.713 0.181 20);
   --info-text: oklch(0.8 0.125 231);
-  --warning-indicator: oklch(0.845 0.147 79);
+  --warning-indicator: var(--warning-text);
   --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
   --code-highlight-accent: oklch(0.55 0.19 250);
   --code-diff-add: color-mix(in oklab, oklch(0.55 0.17 145) 10%, transparent);

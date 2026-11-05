@@ -70,7 +70,9 @@ export const destructive = {
   950: 'oklch(0.2 0.06 25)',
 } as const;
 
-// Info — hue 250, clearly distinct from brand 231
+// Info ramp — hue 250, distinct from brand 231. The `info-text` slots are not
+// ramp steps: they sit on or near the brand hue on purpose (dark `info-text`
+// is on 231), so an info status reads as Vendure blue.
 export const info = {
   50: 'oklch(0.97 0.02 250)',
   100: 'oklch(0.93 0.05 250)',
