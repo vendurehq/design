@@ -32,14 +32,71 @@ describe('StatusBadge', () => {
     }
   });
 
-  test('icon={false} leaves the chip without a marker', () => {
+  test('icon={false} and icon={null} leave the chip without a marker', () => {
+    for (const icon of [false, null]) {
+      const markup = html(
+        <StatusBadge tone="success" icon={icon}>
+          Active
+        </StatusBadge>,
+      );
+
+      expect(markup).not.toContain('data-slot="status-badge-marker"');
+    }
+  });
+
+  test('an icon that is not an element renders no empty marker', () => {
+    for (const icon of ['', 0]) {
+      const markup = html(
+        <StatusBadge tone="success" icon={icon}>
+          Active
+        </StatusBadge>,
+      );
+
+      expect(markup).not.toContain('data-slot="status-badge-marker"');
+    }
+  });
+
+  test('progress keeps its spinner with icon={false} or icon={null}', () => {
+    for (const icon of [false, null]) {
+      const markup = html(
+        <StatusBadge tone="progress" icon={icon}>
+          Deploying
+        </StatusBadge>,
+      );
+
+      expect(markup).toContain('lucide-loader');
+      expect(markup).toContain('animate-spin-slow');
+    }
+  });
+
+  test('progress keeps its spinner with dot', () => {
     const markup = html(
-      <StatusBadge tone="success" icon={false}>
+      <StatusBadge tone="progress" dot>
+        Deploying
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('lucide-loader');
+    expect(markup).not.toContain('rounded-full');
+  });
+
+  test('icon={false} with dot shows the dot', () => {
+    const markup = html(
+      <StatusBadge tone="success" dot icon={false}>
         Active
       </StatusBadge>,
     );
 
-    expect(markup).not.toContain('data-slot="status-badge-marker"');
+    expect(markup).toContain('data-slot="status-badge-marker"');
+    expect(markup).toContain('rounded-full');
+    expect(markup).not.toContain('lucide-circle-check');
+  });
+
+  test('the warning marker takes warning-text, not warning-indicator', () => {
+    const markup = html(<StatusBadge tone="warning">Degraded</StatusBadge>);
+
+    expect(markup).toContain('lucide-triangle-alert');
+    expect(markup).toMatch(/data-slot="status-badge-marker" class="[^"]*text-warning-text/);
   });
 
   test('the chip mixes its fill, outline and label from the tone', () => {
@@ -49,6 +106,20 @@ describe('StatusBadge', () => {
     expect(markup).toContain('bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))]');
     expect(markup).toContain('inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]');
     expect(markup).not.toContain('border');
+  });
+
+  test('the label eases with the fill and the outline', () => {
+    expect(html(<StatusBadge tone="success">Active</StatusBadge>)).toContain(
+      'transition-[box-shadow,background-color,color]',
+    );
+  });
+
+  test('a transparent inset outline keeps the chip box in forced colours', () => {
+    const markup = html(<StatusBadge tone="success">Active</StatusBadge>);
+
+    expect(markup).toContain('outline-1');
+    expect(markup).toContain('outline-transparent');
+    expect(markup).toContain('-outline-offset-1');
   });
 
   test('warning draws its outline in warning-indicator and its label from warning-text', () => {
@@ -95,8 +166,12 @@ describe('StatusBadge', () => {
     expect(markup).not.toContain('lucide-loader');
   });
 
-  test('size="lg" renders the 28px chip', () => {
-    expect(html(<StatusBadge size="lg">Draft</StatusBadge>)).toContain('h-7');
+  test('size="lg" renders the 28px chip with a 14px icon', () => {
+    const markup = html(<StatusBadge size="lg">Draft</StatusBadge>);
+
+    expect(markup).toContain('h-7');
+    expect(markup).toContain('[&amp;_svg]:size-3.5');
+    expect(markup).not.toContain('[&amp;_svg]:size-3.25');
   });
 
   test('appearance="text" renders the word in the tone text colour', () => {
@@ -107,7 +182,10 @@ describe('StatusBadge', () => {
     );
 
     expect(markup).toContain('text-destructive-text');
-    expect(markup).not.toContain('bg-muted');
+    // Only the word: no chip fill, no outline and no marker.
+    expect(markup).not.toContain('bg-[color-mix');
+    expect(markup).not.toContain('inset-ring');
+    expect(markup).not.toContain('data-slot="status-badge-marker"');
   });
 
   test('appearance="text" puts the progress spinner after the word', () => {
