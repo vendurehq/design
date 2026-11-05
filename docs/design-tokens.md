@@ -129,7 +129,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
 - `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a 1px contact ring and a soft drop. Light and dark have different values. Use `shadow-overlay`
-- `--shadow-control` — The themed shadow for a resting control on a surface (outline buttons, button groups): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
+- `--shadow-control` — The themed shadow for a resting control on a surface (outline buttons, button groups, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
 
 ### Motion
 

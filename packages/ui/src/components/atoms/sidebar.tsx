@@ -485,7 +485,7 @@ function SidebarMenu({
       data-slot="sidebar-menu"
       data-sidebar="menu"
       data-active-indicator={slidingIndicator ? "pill" : undefined}
-      className={cn("relative flex w-full min-w-0 flex-col gap-1", className)}
+      className={cn("relative flex w-full min-w-0 flex-col gap-px", className)}
       {...props}
     >
       {slidingIndicator && <SidebarMenuIndicator />}
@@ -560,7 +560,7 @@ function SidebarMenuIndicator() {
       aria-hidden="true"
       data-slot="sidebar-menu-indicator"
       data-sidebar="menu-indicator"
-      className="bg-surface-raised border-sidebar-border pointer-events-none absolute inset-x-0 top-0 rounded-lg border opacity-0 data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-slow) data-ready:ease-drawer motion-reduce:data-ready:transition-opacity"
+      className="bg-surface-raised border-sidebar-border shadow-control pointer-events-none absolute inset-x-0 top-0 rounded-lg border opacity-0 data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-slow) data-ready:ease-drawer motion-reduce:data-ready:transition-opacity"
     />
   )
 }
@@ -585,7 +585,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 // the icon stays where it is (centred in the rail) and the label fades out,
 // clipped by the narrowing rail, instead of the button shrinking to a square.
 const sidebarMenuButtonVariants = cva(
-  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-[width,height,padding] motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring data-active:font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-(--transition-duration-moderate) group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-(--transition-duration-fast) [&_svg]:size-4 [&>svg:first-child]:size-4.5 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-(--transition-duration-normal) hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
+  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-[width,height,padding] motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-(--transition-duration-moderate) group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-(--transition-duration-fast) [&_svg]:size-4 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-(--transition-duration-normal) hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
   {
     variants: {
       variant: {
