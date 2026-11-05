@@ -6,8 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // The v3 look: 34px default and 28px sm, the xl radius, 13px medium text.
-// Press feedback is a 0.97 scale on :active. Base UI's Button never emits
-// data-pressed, so the old data-pressed brightness rule never fired.
+// Default and sm keep 13px and 10px side padding with or without an icon, and
+// a 7px gap. Press feedback is a 0.97 scale on :active, on ease-press in
+// 150ms. Base UI's Button never emits data-pressed, so the old data-pressed
+// brightness rule never fired. Fill, border and text colour ease separately in
+// 120ms; nothing else animates, so the focus outline and a width change are
+// instant.
 // Hovers on opaque fills mix in another slot instead of lowering the alpha,
 // so a hovered segment still reads on a filled ButtonGroup. The mixes read
 // the slot variables (--primary, not --color-primary): the --color-* aliases
@@ -19,7 +23,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // surface; a disabled button drops it. Inside a ButtonGroup the group carries
 // the shadow and the edge, so an outline child keeps its border off on hover.
 const buttonVariants = cva(
-  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap transition-all duration-(--transition-duration-moderate) ease-(--ease-out) active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:transition-opacity [&>svg]:duration-(--transition-duration-moderate)",
+  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:transition-opacity [&>svg]:duration-(--transition-duration-moderate)",
   {
     variants: {
       variant: {
@@ -44,9 +48,9 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8.5 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+          "h-8.5 gap-1.75 px-3.25 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         xs: "h-6 gap-1 rounded-lg px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        sm: "h-7 gap-1 px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        sm: "h-7 gap-1.75 px-2.5 text-xs [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         lg: "h-10 gap-2 px-4 has-data-[icon=inline-end]:pr-3.5 has-data-[icon=inline-start]:pl-3.5 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         icon: "size-8.5",
         "icon-xs":
