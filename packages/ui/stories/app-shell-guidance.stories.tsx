@@ -92,8 +92,9 @@ export const Header: Story = {
         <p className="text-muted-foreground max-w-2xl text-sm">
           AppShellHeader is one 52px row: the sidebar trigger, the breadcrumb, then page-level
           tools at the end. It sticks to the top of the scrolling element. With
-          scrollOwner=&quot;container&quot; the page passes under it, so it is a translucent tint of
-          the pane with a backdrop blur and a hairline below. Scroll the example.
+          scrollOwner=&quot;container&quot; the page passes under it. The header is opaque in the
+          pane&apos;s colour with a hairline below, so a log or a long table never shows through.
+          Scroll the example.
         </p>
         <div className="h-72 overflow-hidden rounded-xl border">
           <AppShell className="h-full">

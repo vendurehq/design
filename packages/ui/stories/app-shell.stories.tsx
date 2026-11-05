@@ -249,8 +249,8 @@ export const WithSidebarAtom: Story = {
 };
 
 // The header sticks to the top of the element that scrolls. With
-// scrollOwner="container" the page scrolls under it: the header is a
-// translucent tint of the pane with a backdrop blur. Scroll the pane to see it.
+// scrollOwner="container" the page scrolls under it: the header is opaque in
+// the pane's colour, so nothing shows through. Scroll the pane to see it.
 export const StickyHeader: Story = {
   name: 'Sticky header over scrolling content',
   render: () => (

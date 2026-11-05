@@ -60,19 +60,20 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-// The header is 52px and sticks to the top of whichever element scrolls. With
-// scrollOwner="container" the page content passes under it, so it is a
-// translucent tint of the surface it sits on, with a backdrop blur. The tint
-// follows that surface: --background by default, --surface inside the
-// AppShellContent pane or the inset Sidebar's pane. The hairline below it is
-// always on: showing it only on scroll would need a scroll listener on a
-// region the header does not own.
+// The header is 52px and sticks to the top of whichever element scrolls. It
+// is opaque: content that scrolls under it (a log, a long table) never shows
+// through. Its fill follows the surface it sits on: --background by default,
+// --surface inside the AppShellContent pane or the inset Sidebar's pane. The
+// hairline below it is an inset shadow, so the full 52px stays the content
+// box and the 30px controls centre on whole pixels. It is always on: showing
+// it only on scroll would need a scroll listener on a region the header does
+// not own.
 function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="app-shell-header"
       className={cn(
-        'bg-background/85 in-data-[slot=app-shell-content]:bg-surface/85 md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface/85 sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 border-b border-border pr-5 pl-3 backdrop-blur-md',
+        'bg-background in-data-[slot=app-shell-content]:bg-surface md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)]',
         className,
       )}
       {...props}
