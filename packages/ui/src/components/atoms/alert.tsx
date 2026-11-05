@@ -8,21 +8,32 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // flex row needs a width (it is w-full by default), not w-fit.
 // The grid has no column gap: the icon carries its own margin, so the empty
 // action column of a narrow alert takes no space.
-// The v3 banner: a toned alert sits on its tone's subtle fill and border, with
-// the icon in the tone's text slot. The title stays foreground and the
-// description foreground-secondary in every variant, because a muted grey on
-// a tinted fill falls below text contrast.
+// The v3 banner: a toned alert is a faint tint of its tone. In light mode the
+// fill is 7% tone in the card and the border 22% tone in the border colour; in
+// dark mode the tone sits over transparent (10% fill, 30% border), because
+// mixed into the cool surface it reads grey. The icon takes the tone's text
+// slot. Warning tints with the brighter warning-indicator, as an amber text
+// colour mixes to brown. The title stays foreground and the description
+// foreground-secondary in every variant, because a muted grey on a tinted fill
+// falls below text contrast.
+const tonedAlert =
+  "text-foreground bg-[color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] border-[color-mix(in_oklab,var(--alert-tone)_22%,var(--border))] dark:bg-[color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:border-[color-mix(in_oklab,var(--alert-tone)_30%,transparent)]"
+
 const alertVariants = cva(
   "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-4 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
   {
     variants: {
       variant: {
         default: "bg-card text-card-foreground *:[svg]:text-current",
-        destructive:
-          "bg-destructive-subtle border-destructive-border text-foreground *:[svg]:text-destructive-text",
-        warning:
-          "bg-warning-subtle border-warning-border text-foreground *:[svg]:text-warning-text",
-        info: "bg-info-subtle border-info-border text-foreground *:[svg]:text-info-text",
+        destructive: [
+          tonedAlert,
+          "[--alert-tone:var(--destructive-text)] *:[svg]:text-destructive-text",
+        ],
+        warning: [
+          tonedAlert,
+          "[--alert-tone:var(--warning-indicator)] *:[svg]:text-warning-text",
+        ],
+        info: [tonedAlert, "[--alert-tone:var(--info-text)] *:[svg]:text-info-text"],
       },
     },
     defaultVariants: {

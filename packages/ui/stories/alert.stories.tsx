@@ -319,7 +319,7 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * A destructive alert sits on the destructive subtle fill and border. The title
+ * A destructive alert is a faint tint of the destructive tone. The title
  * stays foreground and the description foreground-secondary; only the icon takes
  * the tone. Pinned to the light page theme.
  */
@@ -339,8 +339,8 @@ export const DestructiveLightAndDark: Story = {
 };
 
 /**
- * All four variants side by side. The toned variants take the tone's subtle
- * fill and border, with the icon in the tone's text slot. The default variant
+ * All four variants side by side. The toned variants are a faint tint of the
+ * tone in fill and border, with the icon in the tone's text slot. The default variant
  * stays on the card surface.
  */
 export const VariantsLightAndDark: Story = {
