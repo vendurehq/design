@@ -76,6 +76,19 @@ describe('Button v3 look', () => {
   });
 });
 
+describe('Button menu chevron', () => {
+  test('a ChevronDown turns while its menu is open, at once with reduced motion', () => {
+    const tokens = buttonTokens(<Button>Deploy</Button>);
+    expect(tokens).toContain('aria-expanded:[&>svg.lucide-chevron-down]:rotate-180');
+    expect(tokens).toContain(
+      '[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_220ms_var(--ease-out)]',
+    );
+    expect(tokens).toContain(
+      'motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)]',
+    );
+  });
+});
+
 describe('ButtonGroup', () => {
   test('draws one outer edge; children drop their own border', () => {
     const html = renderToStaticMarkup(
