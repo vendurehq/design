@@ -19,11 +19,13 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // A decorative icon next to the label is quieter than the label: 55% at rest,
 // 85% on hover or while its menu is open. Icon-only sizes keep the icon at
 // full strength, and a Spinner (role="status") is never dimmed.
+// A ChevronDown that opens a menu turns 180° while the menu is open, in
+// 220ms on the strong ease-out; with reduced motion it turns at once.
 // Primary, outline and destructive sit on shadow-control, a 1px lift off the
 // surface; a disabled button drops it. Inside a ButtonGroup the group carries
 // the shadow and the edge, so an outline child keeps its border off on hover.
 const buttonVariants = cva(
-  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:transition-opacity [&>svg]:duration-(--transition-duration-moderate)",
+  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_220ms_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180",
   {
     variants: {
       variant: {
