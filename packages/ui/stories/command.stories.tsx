@@ -197,8 +197,9 @@ function PaletteBody() {
  * the brand indicator. CommandList's
  * slidingHighlight slides the highlight between items; hold an arrow key and
  * it stays under the selection. Type to filter: the list eases to its new
- * height. Under reduced motion the highlight moves without sliding and the
- * height changes at once.
+ * height. The palette drops 6px from 98% as it opens and closes in 110ms.
+ * Under reduced motion it only fades, the highlight moves without sliding and
+ * the height changes at once.
  */
 export const Palette: Story = {
   parameters: { docs: { story: { inline: false, height: '560px' } } },

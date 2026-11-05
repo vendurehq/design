@@ -54,15 +54,19 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       {/* The palette: 600px wide, 12% of the viewport from the top so the
-          list can grow down without moving the input. */}
+          list can grow down without moving the input. It opens often, so its
+          motion is shorter than a dialog's: it drops 6px from 98% at the top
+          centre (opacity 160ms, transform 180ms) and closes in 110ms. Reduced
+          motion fades only. */}
       <DialogContent
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[160ms,180ms,180ms] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-110 data-ending-style:ease-[ease] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-120 motion-reduce:ease-[ease]",
           className
         )}
         showCloseButton={showCloseButton}
-        // The palette is transient and keeps the page in view: a lighter scrim.
-        overlayClassName="bg-scrim-subtle"
+        // The palette is transient and keeps the page in view: a lighter scrim
+        // with a 2px blur that fades with the palette.
+        overlayClassName="bg-scrim-subtle duration-160 data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
