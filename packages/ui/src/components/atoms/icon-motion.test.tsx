@@ -138,7 +138,7 @@ describe('slot variables in arbitrary values', () => {
 
 describe('command palette', () => {
   test('uses the lighter scrim with a 2px blur', () => {
-    const scrim = source('atoms/command.tsx').match(/overlayClassName="([^"]*)"/)?.[1].split(' ') ?? [];
+    const scrim = source('atoms/command.tsx').match(/overlayClassName="([^"]*)"/)?.[1]?.split(' ') ?? [];
     expect(scrim).toEqual(
       expect.arrayContaining(['bg-scrim-subtle', 'supports-backdrop-filter:backdrop-blur-[2px]']),
     );
