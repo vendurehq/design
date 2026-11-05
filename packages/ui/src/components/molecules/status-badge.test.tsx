@@ -209,3 +209,33 @@ describe('StatusBadge', () => {
     expect(markup).toContain('size-2');
   });
 });
+
+describe('StatusBadge appearance="bare"', () => {
+  test('keeps the icon and the tinted label, without fill, outline or padding', () => {
+    const markup = html(
+      <StatusBadge tone="success" appearance="bare">
+        Live
+      </StatusBadge>,
+    );
+    const cls = markup.match(/class="([^"]*)"/)?.[1] ?? '';
+
+    expect(markup).toContain('lucide-circle-check');
+    expect(cls).toContain('[--status-tone:var(--success-text)]');
+    expect(cls).toContain('var(--foreground-secondary)');
+    expect(cls).toContain('text-xs');
+    expect(cls).toContain('gap-1.5');
+    expect(cls).not.toMatch(/(^|\s)(bg-|inset-ring|h-6|px-|rounded)/);
+  });
+
+  test('progress keeps its spinner, lg steps up the text', () => {
+    const markup = html(
+      <StatusBadge tone="progress" appearance="bare" size="lg">
+        Building
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('lucide-loader');
+    expect(markup).toContain('text-sm');
+    expect(markup).toContain('[&amp;_svg]:size-3.5');
+  });
+});

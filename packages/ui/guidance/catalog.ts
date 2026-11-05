@@ -90,7 +90,8 @@ export const uiGuidance = [
   {
     id: 'arrow-link',
     title: 'ArrowLink',
-    summary: 'Link to a page with more of what the user is looking at, at the end of the region it extends.',
+    summary:
+      'Link to a page with more of what the user is looking at, at the end of the region it extends.',
     sourceStory: 'arrow-link-guidance.stories.tsx',
     rules: [
       {
@@ -827,7 +828,7 @@ export const uiGuidance = [
       },
       {
         title: 'Pick the appearance by the room it has',
-        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
+        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
       },
       {
         title: 'The chip brings its own icon',
