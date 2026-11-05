@@ -50,8 +50,8 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * Rest and invalid (`aria-invalid`), in light and dark. Dark mode uses the full
- * destructive border, not a 50% one that was weaker than the rest border.
+ * Rest and invalid (`aria-invalid`), in light and dark. Invalid swaps the 1px
+ * inset hairline for `destructive`; focus thickens it to 2px.
  * Pinned to the light page theme so the left panel stays light.
  */
 export const Invalid: Story = {
