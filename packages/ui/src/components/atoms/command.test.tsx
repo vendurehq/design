@@ -22,6 +22,7 @@ function classTokens(html: string, slot: string): string[] {
   const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
   return (tag.match(/class="([^"]*)"/)?.[1] ?? '')
     .replace(/&amp;/g, '&')
+    .replace(/&gt;/g, '>')
     .replace(/&#x27;/g, "'")
     .split(/\s+/)
     .filter(Boolean);
@@ -48,9 +49,21 @@ describe('CommandItem highlight', () => {
   test('the highlight only applies to data-selected="true"', () => {
     const item = classTokens(render(), 'command-item');
     expect(item).toEqual(
-      expect.arrayContaining(['data-[selected=true]:bg-accent', 'data-[selected=true]:text-accent-foreground']),
+      expect.arrayContaining(['data-[selected=true]:bg-muted', 'data-[selected=true]:text-accent-foreground']),
     );
     expect(item.filter((token) => token.startsWith('data-selected:'))).toEqual([]);
+  });
+
+  test('palette items are quiet at rest and turn foreground with a brand icon on the highlight', () => {
+    const item = classTokens(render(), 'command-item');
+    expect(item).toEqual(
+      expect.arrayContaining([
+        'in-data-[slot=dialog-content]:font-medium',
+        'in-data-[slot=dialog-content]:text-foreground-secondary!',
+        'in-data-[slot=dialog-content]:data-[selected=true]:text-foreground!',
+        "in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator!",
+      ]),
+    );
   });
 
   test('the shortcut only brightens on the highlighted item', () => {

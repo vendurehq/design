@@ -192,7 +192,9 @@ function PaletteBody() {
 
 /**
  * The command palette: CommandDialog at 600px, 12% from the top, with an
- * unboxed input, 40px items and CommandFooter key hints. CommandList's
+ * unboxed input, 40px items and CommandFooter key hints. Items are quiet at
+ * rest; the highlighted item's label turns foreground and its icon turns
+ * the brand indicator. CommandList's
  * slidingHighlight slides the highlight between items; hold an arrow key and
  * it stays under the selection. Type to filter: the list eases to its new
  * height. Under reduced motion the highlight moves without sliding and the
