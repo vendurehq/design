@@ -23,7 +23,9 @@ function chipChromeClass(copyable: boolean, className?: string): string {
     'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 pl-2 font-mono text-xs text-foreground-secondary',
     'transition-[background-color,color,scale] duration-fast ease-out',
     'has-data-chip-copy:cursor-pointer has-data-chip-copy:hover:bg-accent has-data-chip-copy:hover:text-foreground motion-safe:has-data-chip-copy:active:scale-[0.97]',
-    copyable ? 'pr-1' : 'pr-2',
+    // The chip is the copy target, so the focus ring goes around the chip, not the 13px button.
+    'has-[[data-chip-copy]:focus-visible]:outline-2 has-[[data-chip-copy]:focus-visible]:outline-offset-2 has-[[data-chip-copy]:focus-visible]:outline-ring has-[[data-chip-copy]:focus-visible]:outline-solid',
+    copyable ? 'pr-1.5' : 'pr-2',
     className,
   );
 }
@@ -33,10 +35,18 @@ function chipChromeClass(copyable: boolean, className?: string): string {
  * `::after` stretches over the chip (the chip is `relative`), so a click
  * anywhere on the chip copies, while the button stays the only tab stop and
  * keeps its accessible name. The value text stays plain, readable text.
+ *
+ * The button is exactly the 13px icon, so the chip's 6px end padding is the
+ * visible inset, and its focus ring moves to the chip (see `chipChromeClass`). The copy icon takes the chip's text colour at 55%, quieter
+ * than the value beside it; the check keeps its full `success-text`.
  */
 const chipCopyButtonProps = {
   'data-chip-copy': '',
-  className: 'size-4 after:absolute after:inset-0 hover:bg-transparent dark:hover:bg-transparent',
+  className: cn(
+    "size-3.25 [&_svg:not([class*='size-'])]:size-3.25 after:absolute after:inset-0 focus-visible:outline-none",
+    'text-inherit hover:text-inherit hover:bg-transparent dark:hover:bg-transparent',
+    '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55',
+  ),
 } as const;
 
 /**
