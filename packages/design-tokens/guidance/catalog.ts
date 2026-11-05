@@ -92,7 +92,7 @@ export const tokenGuidance = [
     rules: [
       {
         title: 'Choose a semantic type role',
-        body: 'Use the named page-title, section-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text 12px (text-xs), and micro text such as keyboard hints 11px (text-2xs).',
+        body: 'Use the named page-title, section-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text and keyboard hints 12px (text-xs), and micro text 11px (text-2xs).',
       },
       {
         title: 'Raw headings are not globally restyled',
@@ -119,7 +119,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only.',
+        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only.',
       },
       {
         title: 'Match duration to distance and consequence',

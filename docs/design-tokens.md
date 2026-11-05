@@ -44,6 +44,8 @@ Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for I
 @import "@vendure-io/design-tokens/css/fonts";
 ```
 
+It also sets grayscale font smoothing on `html` and `body` (`-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`), as the v3 look renders all text. The rule is in the `base` layer, so the `subpixel-antialiased` utility still overrides it. An app that loads the fonts another way sets the rule itself.
+
 ### `@vendure-io/design-tokens` (TypeScript)
 
 Token values as TypeScript objects for programmatic access:
@@ -109,7 +111,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Font families**: `--font-sans` (Inter), `--font-heading` (Inter), `--font-body` (Inter), `--font-mono` (Geist Mono)
 - **Inter features**: `--font-sans--font-feature-settings`, `--font-heading--font-feature-settings` and `--font-body--font-feature-settings` turn on `cv11`, `ss01` and `ss03`. Tailwind applies the sans value to the page and each value to its `font-*` utility
 - **Mono features**: `--font-mono--font-feature-settings` turns off the `liga` and `calt` ligatures. Tailwind applies it to `font-mono` and to `code`, `pre`, `kbd` and `samp`, so a space before `--` stays visible
-- **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text; `text-2xs` (11px) is micro text such as keyboard hints
+- **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text and keyboard hints; `text-2xs` (11px) is micro text
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
 - **Text styles**: named type compositions (font, size, weight, tracking, leading — no color), applied as a single utility class:
@@ -134,7 +136,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 ### Motion
 
 - **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge), `--ease-press` (the press scale of a control), `--ease-soft` (the CSS `ease` curve, for small colour, opacity and blur changes and quick exits) — Tailwind `ease-*` utilities
-- **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
+- **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-quick` (120ms, colour changes on controls), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
 - **Palette durations**: `--transition-duration-palette-*` — the command palette's own timings (`palette-enter` 160ms, `palette-move` 180ms, `palette-exit` 110ms, `palette-tint` 120ms, and the result and detail steps). Only `CommandDialog` and its parts use them; use the scale above everywhere else
 - **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner)
 

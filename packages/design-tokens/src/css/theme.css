@@ -213,6 +213,7 @@
   --ease-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
   --transition-duration-instant: 0ms;
   --transition-duration-fast: 100ms;
+  --transition-duration-quick: 120ms;
   --transition-duration-moderate: 150ms;
   --transition-duration-normal: 200ms;
   --transition-duration-slow: 300ms;

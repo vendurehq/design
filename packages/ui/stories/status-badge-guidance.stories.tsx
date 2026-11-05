@@ -550,7 +550,7 @@ export const ReferenceTable: Story = {
 // ── 4 · appearance ──────────────────────────────────────────────────────────
 
 const APPEARANCES: {
-  appearance: 'chip' | 'text' | 'dot';
+  appearance: 'chip' | 'bare' | 'text' | 'dot';
   sample: ReactNode;
   use: string;
 }[] = [
@@ -560,6 +560,15 @@ const APPEARANCES: {
       <StatusBadge tone="success">Live</StatusBadge>
     ),
     use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. The tone icon comes with it, so never put an icon in children. Pass icon={<Icon />} for a more exact shape, dot for a group of chips that is not a column, or icon={false} inline where the label already names the tone.',
+  },
+  {
+    appearance: 'bare',
+    sample: (
+      <StatusBadge tone="progress" appearance="bare">
+        Building
+      </StatusBadge>
+    ),
+    use: 'A state inside a surface that is already tinted, such as an accent card for the running deployment. The chip\'s icon and tinted label without the box, so there is no box inside a box.',
   },
   {
     appearance: 'text',
@@ -588,12 +597,12 @@ const ROWS: { name: string; tone: Tone; state: string }[] = [
 ];
 
 export const Appearance: Story = {
-  name: '4 · Chip, word or dot',
+  name: '4 · Chip, bare, word or dot',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="One state, three weights"
-        intro="The tone decides the colour; the appearance decides how much room the state takes. All three read the same state dictionary, so a deployment that fails is red as a chip on its page, as a word in the list, and as a dot in the breadcrumb."
+        title="One state, four weights"
+        intro="The tone decides the colour; the appearance decides how much room the state takes. All four read the same state dictionary, so a deployment that fails is red as a chip on its page, bare in a tinted card, as a word in the list, and as a dot in the breadcrumb."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">

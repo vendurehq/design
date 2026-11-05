@@ -167,7 +167,9 @@ The design system uses two font families, Inter and Geist Mono:
 @import "@vendure-io/design-tokens/css/fonts";
 ```
 
-If you'd rather load the fonts yourself (custom subsetting, a different CDN), skip the `css/fonts` import and load them another way, e.g. via [Fontsource](https://fontsource.org/) directly:
+`css/fonts` also sets grayscale font smoothing on `html` and `body`, as the v3 theme renders all text.
+
+If you'd rather load the fonts yourself (custom subsetting, a different CDN), skip the `css/fonts` import, set `-webkit-font-smoothing: antialiased` and `-moz-osx-font-smoothing: grayscale` on `body` yourself, and load the fonts another way, e.g. via [Fontsource](https://fontsource.org/) directly:
 
 ```bash
 # Fontsource

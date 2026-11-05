@@ -21,8 +21,8 @@ export const fontFeatureSettings = {
   mono: '"liga" 0, "calt" 0',
 } as const;
 
-// `sm` is the body and UI text size (13px). `2xs` is micro text such as
-// keyboard hints.
+// `sm` is the body and UI text size (13px). `2xs` is micro text; no
+// component uses it. Keyboard hints (Kbd) use `xs`.
 export const fontSize = {
   '2xs': '0.6875rem',
   xs: '0.75rem',

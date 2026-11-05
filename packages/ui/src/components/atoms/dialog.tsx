@@ -31,7 +31,7 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-scrim transition-opacity duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) supports-backdrop-filter:backdrop-blur-xs",
+        "fixed inset-0 isolate z-50 bg-scrim transition-opacity duration-180 ease-[ease] data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-140 supports-backdrop-filter:backdrop-blur-[2px]",
         className
       )}
       {...props}
@@ -53,10 +53,11 @@ function DialogContent({
   return (
     <DialogPortal>
       <DialogOverlay className={overlayClassName} />
+      {/* Enters from 4px below at 96%: opacity 200ms, scale and translate 240ms on the strong ease-out. Leaves to 98% on `ease` (opacity 120ms, scale 140ms). The scrim fades in 180ms and out in 140ms. Reduced motion keeps the fades. */}
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm transition-[opacity,scale] duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-96 motion-safe:data-ending-style:scale-96 outline-none sm:max-w-md",
+          "bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm transition-[opacity,scale,translate] duration-[200ms,240ms,240ms] ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[120ms,140ms,140ms] data-ending-style:ease-[ease] motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-md",
           className
         )}
         {...props}
