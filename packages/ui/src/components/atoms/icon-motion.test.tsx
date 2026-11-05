@@ -6,21 +6,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Button } from './button.tsx';
 import { Skeleton } from './skeleton.tsx';
 import { Spinner } from './spinner.tsx';
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
-
-/** Class tokens of the element carrying the given data-slot, entity-decoded. */
-function slotTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0];
-  if (!tag) throw new Error(`No ${slot} rendered`);
-  const classAttr = tag.match(/class="([^"]*)"/)?.[1] ?? '';
-  return classAttr
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
-    .replace(/&#x27;/g, "'")
-    .split(/\s+/)
-    .filter(Boolean);
-}
 
 const BUTTON_ICON = "[&>svg:not([role=status]):not([class*='opacity-'])]";
 const ITEM_ICON = "[&>svg:not([class*='opacity-'])]";

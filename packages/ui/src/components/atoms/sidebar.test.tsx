@@ -13,25 +13,12 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from './sidebar.tsx';
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 // Regression pins for the collapsed-geometry and icon-sizing fixes (PRs #52/#53).
 // The assertions target class tokens on the specific rendered element rather than
 // raw markup substrings; true geometry regressions are covered by the visual
 // suite in apps/storybook.
-
-/** Class tokens of the first element carrying the given data-slot, entity-decoded. */
-function classTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-  const classAttr = tag.match(/class="([^"]*)"/)?.[1] ?? '';
-  return classAttr
-    .replace(/&gt;/g, '>')
-    .replace(/&lt;/g, '<')
-    .replace(/&quot;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&amp;/g, '&')
-    .split(/\s+/)
-    .filter(Boolean);
-}
 
 describe('Sidebar geometry', () => {
   test('does not add another inset margin when collapsed', () => {
@@ -41,7 +28,7 @@ describe('Sidebar geometry', () => {
       </SidebarProvider>,
     );
 
-    expect(classTokens(html, 'sidebar-inset')).not.toContain('peer-data-[state=collapsed]:ml-2');
+    expect(slotTokens(html, 'sidebar-inset')).not.toContain('peer-data-[state=collapsed]:ml-2');
   });
 });
 
@@ -57,7 +44,7 @@ describe('SidebarMenuButton icons', () => {
       </SidebarProvider>,
     );
 
-    const tokens = classTokens(html, 'sidebar-menu-button');
+    const tokens = slotTokens(html, 'sidebar-menu-button');
     expect(tokens).toContain('[&_svg]:size-4');
     expect(tokens).toContain('[&>svg:first-child]:[stroke-width:1.75]');
     expect(tokens).toContain('data-active:[&>svg:first-child]:text-brand-indicator');
@@ -72,7 +59,7 @@ describe('SidebarMenuButton weight', () => {
         <SidebarMenuButton>Orders</SidebarMenuButton>
       </SidebarProvider>,
     );
-    const tokens = classTokens(html, 'sidebar-menu-button');
+    const tokens = slotTokens(html, 'sidebar-menu-button');
     expect(tokens).toContain('font-medium');
     expect(tokens).not.toContain('data-active:font-medium');
   });
@@ -86,13 +73,13 @@ describe('SidebarMenuButton active state', () => {
       </SidebarProvider>,
     );
     expect(html).toContain('data-active=""');
-    expect(classTokens(html, 'sidebar-menu-button')).toEqual(
+    expect(slotTokens(html, 'sidebar-menu-button')).toEqual(
       expect.arrayContaining(['before:bg-sidebar-primary', 'data-active:before:opacity-100']),
     );
   });
 
   test('the outline variant border reads the oklch token directly', () => {
-    const tokens = classTokens(
+    const tokens = slotTokens(
       renderToStaticMarkup(
         <SidebarProvider>
           <SidebarMenuButton variant="outline">Orders</SidebarMenuButton>
@@ -122,7 +109,7 @@ describe('Sidebar rail', () => {
       </SidebarProvider>,
     );
     for (const slot of ['sidebar-gap', 'sidebar-container']) {
-      const tokens = classTokens(html, slot);
+      const tokens = slotTokens(html, slot);
       expect(tokens).toEqual(
         expect.arrayContaining([
           'ease-drawer',
@@ -144,10 +131,10 @@ describe('Sidebar rail', () => {
         </SidebarMenuButton>
       </SidebarProvider>,
     );
-    const button = classTokens(html, 'sidebar-menu-button');
+    const button = slotTokens(html, 'sidebar-menu-button');
     expect(button).toContain('group-data-[collapsible=icon]:[&>span:last-child]:opacity-0');
     expect(button).not.toContain('group-data-[collapsible=icon]:size-8!');
-    const label = classTokens(html, 'sidebar-group-label');
+    const label = slotTokens(html, 'sidebar-group-label');
     expect(label).toContain('group-data-[collapsible=icon]:opacity-0');
     expect(label).not.toContain('group-data-[collapsible=icon]:-mt-8');
   });
@@ -178,10 +165,10 @@ describe('SidebarMenu sliding indicator', () => {
     expect(html.match(/data-slot="sidebar-menu-indicator"/g)).toHaveLength(1);
     const indicator = html.match(/<li[^>]*data-slot="sidebar-menu-indicator"[^>]*>/)?.[0] ?? '';
     expect(indicator).toContain('aria-hidden="true"');
-    expect(classTokens(html, 'sidebar-menu-indicator')).toEqual(
+    expect(slotTokens(html, 'sidebar-menu-indicator')).toEqual(
       expect.arrayContaining(['shadow-control', 'motion-reduce:data-ready:transition-opacity']),
     );
-    expect(classTokens(html, 'sidebar-menu-button')).toEqual(
+    expect(slotTokens(html, 'sidebar-menu-button')).toEqual(
       expect.arrayContaining([
         'in-data-[active-indicator=pill]:before:hidden',
         'in-data-[active-indicator=pill]:data-active:bg-transparent!',
@@ -207,22 +194,22 @@ describe('Sidebar spacing and labels, the v3 look', () => {
   );
 
   test('items and the group sit 10px in, so the icon stays 20px from the edge', () => {
-    expect(classTokens(html, 'sidebar-menu-button')).toContain('px-2.5');
-    expect(classTokens(html, 'sidebar-menu-button')).not.toContain('px-3');
-    expect(classTokens(html, 'sidebar-group')).toEqual(expect.arrayContaining(['px-2.5', 'py-2']));
+    expect(slotTokens(html, 'sidebar-menu-button')).toContain('px-2.5');
+    expect(slotTokens(html, 'sidebar-menu-button')).not.toContain('px-3');
+    expect(slotTokens(html, 'sidebar-group')).toEqual(expect.arrayContaining(['px-2.5', 'py-2']));
   });
 
   test('a group label is 12px medium muted text, 20px below the group above and 4px above its items', () => {
-    const label = classTokens(html, 'sidebar-group-label');
+    const label = slotTokens(html, 'sidebar-group-label');
     expect(label).toEqual(
       expect.arrayContaining(['text-muted-foreground', 'text-xs', 'font-medium', 'h-5.5', 'leading-4.5', 'items-start', 'px-2.5']),
     );
     expect(label).not.toContain('text-sidebar-foreground/70');
-    expect(classTokens(html, 'sidebar-content')).toContain('gap-1');
+    expect(slotTokens(html, 'sidebar-content')).toContain('gap-1');
   });
 
   test('the pill slides in 280ms on the drawer curve and fades in 150ms', () => {
-    expect(classTokens(html, 'sidebar-menu-indicator')).toContain(
+    expect(slotTokens(html, 'sidebar-menu-indicator')).toContain(
       'data-ready:[transition:transform_280ms_var(--ease-drawer),height_280ms_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)]',
     );
   });
