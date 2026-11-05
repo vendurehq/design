@@ -14,6 +14,29 @@ describe('StatusBadge', () => {
     expect(markup).not.toContain('data-slot="status-badge-marker"');
   });
 
+  test('the chip mixes its fill, outline and label from the tone', () => {
+    const markup = html(<StatusBadge tone="success">Active</StatusBadge>);
+
+    expect(markup).toContain('[--status-tone:var(--success-text)]');
+    expect(markup).toContain('bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))]');
+    expect(markup).toContain('inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]');
+    expect(markup).not.toContain('border');
+  });
+
+  test('warning draws its outline in warning-indicator and its label from warning-text', () => {
+    const markup = html(<StatusBadge tone="warning">Degraded</StatusBadge>);
+
+    expect(markup).toContain('[--status-tone:var(--warning-indicator)]');
+    expect(markup).toContain('[--status-label-tone:var(--warning-text)]');
+    expect(markup).toContain('[--status-label-mix:70%]');
+  });
+
+  test('progress takes the info tone', () => {
+    expect(html(<StatusBadge tone="progress">Building</StatusBadge>)).toContain(
+      '[--status-tone:var(--info-text)]',
+    );
+  });
+
   test('dot shows a tone-coloured dot', () => {
     const markup = html(
       <StatusBadge tone="success" dot>

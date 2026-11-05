@@ -19,11 +19,11 @@ The Vendure blue (hue 231) — an identity signature, not a general-purpose colo
 _Avoid_: accent, Vendure blue, primary (when meaning the color rather than the slot)
 
 **Tone**:
-The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`. Two tones have no slots of their own: `critical` renders with the `destructive-*` slots, and `progress` renders with a neutral outline plus an `info` spinner.
+The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`. Two tones have no slots of their own: `critical` renders with the `destructive-*` slots, and `progress` renders with the `info` slots plus a spinner.
 _Avoid_: intent, status color, semantic color, variant (when meaning color)
 
 **Subtle**:
-The soft rendering of a tone — tinted background, readable foreground, matching border. A StatusBadge is not subtle: it keeps a neutral fill and shows the tone only in its outline and marker.
+The soft rendering of a tone — tinted background, readable foreground, matching border. A StatusBadge is not subtle: it keeps the `muted` fill with a faint tone wash, and shows the tone in its outline, a tinted label and its marker.
 _Avoid_: soft, light, pastel
 
 **Surface**:

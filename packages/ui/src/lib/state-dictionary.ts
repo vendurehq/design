@@ -14,7 +14,7 @@
 /**
  * The semantic meaning a color expresses about a state. Tone ≠ token name:
  * `critical` renders with the `destructive` slots and `progress` renders with
- * a neutral outline plus an info-colored spinner — see StatusBadge.
+ * the `info` slots plus a spinner — see StatusBadge.
  */
 export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'critical' | 'progress';
 
