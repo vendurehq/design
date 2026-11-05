@@ -22,11 +22,7 @@ interface RGBA {
   a: number;
 }
 
-function oklchToLinearSrgb(L: number, C: number, H: number): { r: number; g: number; b: number } {
-  const hRad = (H * Math.PI) / 180;
-  const a = C * Math.cos(hRad);
-  const b = C * Math.sin(hRad);
-
+function oklabToLinearSrgb(L: number, a: number, b: number): { r: number; g: number; b: number } {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = L - 0.0894841775 * a - 1.291485548 * b;
@@ -42,6 +38,23 @@ function oklchToLinearSrgb(L: number, C: number, H: number): { r: number; g: num
   };
 }
 
+function linearSrgbToOklab({ r, g, b }: RGBA): { L: number; a: number; b: number } {
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+
+  return {
+    L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  };
+}
+
+function oklchToLinearSrgb(L: number, C: number, H: number): { r: number; g: number; b: number } {
+  const hRad = (H * Math.PI) / 180;
+  return oklabToLinearSrgb(L, C * Math.cos(hRad), C * Math.sin(hRad));
+}
+
 function parseOklch(value: string): RGBA {
   const match = value.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/);
   if (!match) throw new Error(`Cannot parse oklch value: ${value}`);
@@ -50,11 +63,28 @@ function parseOklch(value: string): RGBA {
   return { r, g, b, a: 1 };
 }
 
+const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
+
 /**
- * Resolves a token value (oklch(), var(--x), or color-mix(in oklab, C P%, transparent))
- * to a linear-light RGBA. `color-mix(in oklab, C P%, transparent)` reduces to C at
- * alpha P%, since mixing any color with `transparent` in a rectangular color space
- * only scales alpha — the non-transparent endpoint's channels are unchanged.
+ * `color-mix(in oklab, A p%, B)` as CSS Color 5 defines it: both colours go to
+ * OKLab, their channels are premultiplied by alpha, interpolated, and divided
+ * by the mixed alpha again. Mixing with `transparent` therefore keeps A's
+ * channels and only scales its alpha; mixing two translucent colours weights
+ * each by its own alpha.
+ */
+function mixOklab(a: RGBA, b: RGBA, p: number): RGBA {
+  const alpha = a.a * p + b.a * (1 - p);
+  if (alpha === 0) return TRANSPARENT;
+  const labA = linearSrgbToOklab(a);
+  const labB = linearSrgbToOklab(b);
+  const channel = (key: 'L' | 'a' | 'b') =>
+    (labA[key] * a.a * p + labB[key] * b.a * (1 - p)) / alpha;
+  return { ...oklabToLinearSrgb(channel('L'), channel('a'), channel('b')), a: alpha };
+}
+
+/**
+ * Resolves a token value (oklch(), var(--x), black, white, transparent, or a
+ * two-colour `color-mix(in oklab, A P%, B)`) to a linear-light RGBA.
  */
 function resolveColor(value: string, theme: Record<string, string>): RGBA {
   const trimmed = value.trim();
@@ -67,13 +97,24 @@ function resolveColor(value: string, theme: Record<string, string>): RGBA {
     return resolveColor(ref, theme);
   }
 
-  const mixMatch = trimmed.match(/^color-mix\(in oklab,\s*(.+?)\s+([\d.]+)%,\s*transparent\)$/);
+  // The lazy first group stops at the first "<n>%," so the first colour is a
+  // keyword, var() or oklch(); the second colour may itself be a mix.
+  const mixMatch = trimmed.match(/^color-mix\(in oklab,\s*(.+?)\s+([\d.]+)%,\s*(.+)\)$/);
   if (mixMatch) {
-    const [, colorExpr, pctStr] = mixMatch as unknown as [string, string, string];
-    const resolved = resolveColor(colorExpr, theme);
-    return { ...resolved, a: resolved.a * (Number(pctStr) / 100) };
+    const [, firstExpr, pctStr, secondExpr] = mixMatch as unknown as [
+      string,
+      string,
+      string,
+      string,
+    ];
+    return mixOklab(
+      resolveColor(firstExpr, theme),
+      resolveColor(secondExpr, theme),
+      Number(pctStr) / 100,
+    );
   }
 
+  if (trimmed === 'transparent') return TRANSPARENT;
   if (trimmed === 'black') return { r: 0, g: 0, b: 0, a: 1 };
   if (trimmed === 'white') return { r: 1, g: 1, b: 1, a: 1 };
 
@@ -137,9 +178,19 @@ function contrastOf(
 ): number {
   const fgValue = theme[fgKey];
   const bgValue = theme[bgKey];
-  const baseValue = theme[baseKey];
   if (!fgValue) throw new Error(`Missing token: ${fgKey}`);
   if (!bgValue) throw new Error(`Missing token: ${bgKey}`);
+  return contrastOfValues(theme, fgValue, bgValue, baseKey);
+}
+
+/** `contrastOf` for colour expressions that are not a single token, such as a component's mix. */
+function contrastOfValues(
+  theme: Record<string, string>,
+  fgValue: string,
+  bgValue: string,
+  baseKey: string,
+): number {
+  const baseValue = theme[baseKey];
   if (!baseValue) throw new Error(`Missing token: ${baseKey}`);
 
   const bg = compositeOver(resolveColor(bgValue, theme), resolveColor(baseValue, theme));
@@ -158,6 +209,10 @@ const subtleTones = [...tones, 'neutral'] as const;
 const surfaces = ['background', 'surface', 'surface-raised', 'overlay'] as const;
 // `border` and `input` are exempt: they are decorative dividers and the text
 // input outline, not the only cue that identifies a control.
+// `warning-indicator` is exempt in light mode: it is about 2:1, so that a
+// mix of it reads amber instead of beige. It is never the only cue (the
+// StatusBadge label and icon carry the state), and it is not for a standalone
+// dot. Dark mode holds it to 3:1 below.
 const nonTextSlots = [
   'primary',
   'ring',
@@ -176,6 +231,37 @@ const surfaceTextSlots = [
   'destructive-text',
   'info-text',
 ] as const;
+const toneTextSlots = ['success-text', 'warning-text', 'destructive-text', 'info-text'] as const;
+// Known gap, kept on purpose: dark `destructive-text` keeps the v3 red, which
+// is 4.44:1 on `secondary` and 4.18:1 on `accent` over the `overlay` tier
+// (a hovered row in a popover). Raising it to 4.5 needs L 0.75, a visibly
+// pinker red. The floor stops it from getting worse.
+const KNOWN_GAP_FLOOR = 4;
+const knownGaps = new Set([
+  'dark destructive-text on secondary over overlay',
+  'dark destructive-text on accent over overlay',
+]);
+// The StatusBadge chip recipe, copied from the `statusBadgeVariants` and
+// `toneText` maps in packages/ui/src/components/molecules/status-badge.tsx.
+// Change both together. Fill: 5% of the tone into `muted`. Label: 30% of the
+// tone into `foreground-secondary`. Marker: the tone text slot. `warning`
+// fills from `warning-indicator` and mixes its label 70% from `warning-text`.
+const chipTones: Record<
+  string,
+  { tone: string; label?: string; labelMix?: number; marker?: string }
+> = {
+  neutral: { tone: 'var(--muted-foreground)' },
+  info: { tone: 'var(--info-text)' },
+  success: { tone: 'var(--success-text)' },
+  warning: {
+    tone: 'var(--warning-indicator)',
+    label: 'var(--warning-text)',
+    labelMix: 70,
+    marker: 'var(--warning-text)',
+  },
+  critical: { tone: 'var(--destructive-text)' },
+  progress: { tone: 'var(--info-text)' },
+};
 const textPairs = [
   ['card-foreground', 'card'],
   ['popover-foreground', 'popover'],
@@ -243,15 +329,18 @@ for (const [themeName, theme] of Object.entries(themes)) {
         });
       }
 
-      // Muted text also sits on the resting intensity fills (kbd, avatar
-      // fallback, chips) and on the `accent` hover fill (menu items, list
-      // rows, command items).
+      // Muted text and tone text also sit on the resting intensity fills
+      // (kbd, avatar fallback, chips) and on the `accent` hover fill (menu
+      // items, list rows, command items).
       for (const fill of ['muted', 'secondary', 'accent'] as const) {
-        test(`muted-foreground on ${fill} over ${surface} >= 4.5`, () => {
-          expect(contrastOf(theme, 'muted-foreground', fill, surface)).toBeGreaterThanOrEqual(
-            MIN_CONTRAST,
-          );
-        });
+        for (const slot of ['muted-foreground', ...toneTextSlots] as const) {
+          const exempt = knownGaps.has(`${themeName} ${slot} on ${fill} over ${surface}`);
+          test(`${slot} on ${fill} over ${surface} >= ${exempt ? KNOWN_GAP_FLOOR : 4.5}`, () => {
+            expect(contrastOf(theme, slot, fill, surface)).toBeGreaterThanOrEqual(
+              exempt ? KNOWN_GAP_FLOOR : MIN_CONTRAST,
+            );
+          });
+        }
       }
 
       test(`foreground on code-inline over ${surface} >= 4.5`, () => {
@@ -273,6 +362,34 @@ for (const [themeName, theme] of Object.entries(themes)) {
       for (const slot of nonTextSlots) {
         test(`${slot} on ${surface} >= 3 (non-text)`, () => {
           expect(contrastOf(theme, slot, surface)).toBeGreaterThanOrEqual(MIN_NON_TEXT_CONTRAST);
+        });
+      }
+    }
+
+    if (themeName === 'dark') {
+      for (const surface of surfaces) {
+        test(`warning-indicator on ${surface} >= 3 (non-text)`, () => {
+          expect(contrastOf(theme, 'warning-indicator', surface)).toBeGreaterThanOrEqual(
+            MIN_NON_TEXT_CONTRAST,
+          );
+        });
+      }
+    }
+
+    for (const [chipTone, recipe] of Object.entries(chipTones)) {
+      const fill = `color-mix(in oklab, ${recipe.tone} 5%, var(--muted))`;
+      const label = `color-mix(in oklab, ${recipe.label ?? recipe.tone} ${recipe.labelMix ?? 30}%, var(--foreground-secondary))`;
+      const marker = recipe.marker ?? recipe.tone;
+      for (const surface of surfaces) {
+        test(`StatusBadge ${chipTone} label on its chip fill over ${surface} >= 4.5`, () => {
+          expect(contrastOfValues(theme, label, fill, surface)).toBeGreaterThanOrEqual(
+            MIN_CONTRAST,
+          );
+        });
+        test(`StatusBadge ${chipTone} icon on its chip fill over ${surface} >= 3 (non-text)`, () => {
+          expect(contrastOfValues(theme, marker, fill, surface)).toBeGreaterThanOrEqual(
+            MIN_NON_TEXT_CONTRAST,
+          );
         });
       }
     }
