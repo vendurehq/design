@@ -3,7 +3,7 @@ import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import { MoreHorizontalIcon } from "lucide-react"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -66,7 +66,7 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
       role="link"
       aria-disabled="true"
       aria-current="page"
-      className={cn("text-foreground font-medium", className)}
+      className={cn("text-foreground-secondary font-medium", className)}
       {...props}
     />
   )
@@ -82,11 +82,14 @@ function BreadcrumbSeparator({
       data-slot="breadcrumb-separator"
       role="presentation"
       aria-hidden="true"
-      className={cn("[&>svg]:size-3.5", className)}
+      className={cn("mx-0.5 [&>svg]:size-3.5", className)}
       {...props}
     >
       {children ?? (
-        <ChevronRightIcon />
+        // A thin slanted slash, quieter than the crumbs on both sides.
+        <span className="inline-block -skew-x-12 text-base leading-none font-light text-muted-foreground/40 select-none">
+          /
+        </span>
       )}
     </li>
   )
