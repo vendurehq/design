@@ -79,7 +79,7 @@ function CollapsibleSection({
       <Heading data-slot="collapsible-section-heading" className="m-0">
         <CollapsibleTrigger
           data-slot="collapsible-section-trigger"
-          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none transition-colors duration-fast hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 ps-4.5 pe-4 text-left outline-none transition-colors duration-fast hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           {/* The title is quieter than the rows it labels. */}
           <span
