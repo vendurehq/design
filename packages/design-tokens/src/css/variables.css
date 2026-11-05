@@ -173,7 +173,7 @@
   --foreground-secondary: oklch(0.838 0.01 231);
   --surface: oklch(0.222 0.012 231);
   --surface-raised: oklch(0.238 0.013 231);
-  --overlay: oklch(0.271 0.015 231);
+  --overlay: oklch(0.238 0.013 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
   --scrim-subtle: color-mix(in oklab, black 42%, transparent);

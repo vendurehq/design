@@ -232,15 +232,6 @@ const surfaceTextSlots = [
   'info-text',
 ] as const;
 const toneTextSlots = ['success-text', 'warning-text', 'destructive-text', 'info-text'] as const;
-// Known gap, kept on purpose: dark `destructive-text` keeps the v3 red, which
-// is 4.44:1 on `secondary` and 4.18:1 on `accent` over the `overlay` tier
-// (a hovered row in a popover). Raising it to 4.5 needs L 0.75, a visibly
-// pinker red. The floor stops it from getting worse.
-const KNOWN_GAP_FLOOR = 4;
-const knownGaps = new Set([
-  'dark destructive-text on secondary over overlay',
-  'dark destructive-text on accent over overlay',
-]);
 // The StatusBadge chip recipe, copied from the `statusBadgeVariants` and
 // `toneText` maps in packages/ui/src/components/molecules/status-badge.tsx.
 // Change both together. Fill: 5% of the tone into `muted`. Label: 30% of the
@@ -334,11 +325,8 @@ for (const [themeName, theme] of Object.entries(themes)) {
       // items, list rows, command items).
       for (const fill of ['muted', 'secondary', 'accent'] as const) {
         for (const slot of ['muted-foreground', ...toneTextSlots] as const) {
-          const exempt = knownGaps.has(`${themeName} ${slot} on ${fill} over ${surface}`);
-          test(`${slot} on ${fill} over ${surface} >= ${exempt ? KNOWN_GAP_FLOOR : 4.5}`, () => {
-            expect(contrastOf(theme, slot, fill, surface)).toBeGreaterThanOrEqual(
-              exempt ? KNOWN_GAP_FLOOR : MIN_CONTRAST,
-            );
+          test(`${slot} on ${fill} over ${surface} >= 4.5`, () => {
+            expect(contrastOf(theme, slot, fill, surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
           });
         }
       }
