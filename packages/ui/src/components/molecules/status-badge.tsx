@@ -3,7 +3,15 @@ import { useRender } from '@base-ui/react/use-render';
 import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
-import { LoaderIcon } from 'lucide-react';
+import {
+  CircleCheckIcon,
+  CircleDashedIcon,
+  CircleDotIcon,
+  CircleXIcon,
+  LoaderIcon,
+  type LucideIcon,
+  TriangleAlertIcon,
+} from 'lucide-react';
 import type * as React from 'react';
 
 type StatusBadgeAppearance = 'chip' | 'text' | 'dot';
@@ -54,6 +62,17 @@ const statusBadgeVariants = cva(
   },
 );
 
+// The icon a chip shows when the caller passes none: the shape says the state
+// again, so a chip never depends on colour alone. `progress` spins its loader.
+const toneIcon: Record<Tone, LucideIcon> = {
+  neutral: CircleDashedIcon,
+  info: CircleDotIcon,
+  success: CircleCheckIcon,
+  warning: TriangleAlertIcon,
+  critical: CircleXIcon,
+  progress: LoaderIcon,
+};
+
 // The marker colour of each tone: the dot fill, and the icon or spinner stroke.
 // `neutral` has no tone slot, so it uses the muted text colour.
 const toneText: Record<Tone, string> = {
@@ -97,15 +116,18 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /** Chip height: `default` (24px) or `lg` (28px, for page headers). Only for `appearance="chip"`. @default 'default' */
   size?: StatusBadgeSize;
   /**
-   * Show a leading dot in the tone colour. Off by default (calm on detail
-   * pages); opt in for dense tables. Only for `appearance="chip"`. `progress`
-   * always shows a spinner instead, regardless of this prop.
+   * Show a leading dot in the tone colour in place of the tone icon. Opt in
+   * for dense tables. Only for `appearance="chip"`. `progress` keeps its
+   * spinner, regardless of this prop.
    */
   dot?: boolean;
   /**
-   * A leading icon in the tone colour, in place of the dot or the spinner.
-   * Pass a lucide icon element, e.g. `<CircleCheckIcon />`. Only for
-   * `appearance="chip"`.
+   * The leading icon, in the tone colour. By default each tone shows its own
+   * icon: `CircleCheck` (success), `TriangleAlert` (warning), `CircleX`
+   * (critical), `CircleDot` (info), `CircleDashed` (neutral) and a spinning
+   * `Loader` (progress). Pass a lucide icon element for a state whose shape
+   * says more, e.g. `<MoonStarIcon />` for Asleep. Pass `false` for no icon.
+   * Only for `appearance="chip"`.
    */
   icon?: React.ReactNode;
 }
@@ -186,32 +208,29 @@ function StatusBadgeMarker({
   dot: boolean;
   icon: React.ReactNode;
 }) {
-  // The marker eases to a new tone with the outline, when a status changes in place.
-  const iconSize = cn(
-    size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3',
-    'transition-colors duration-slow',
+  // 13px icons in the 12px chip, 14px in the 13px chip, at stroke 2. The
+  // marker eases to a new tone with the outline, when a status changes in place.
+  const iconClasses = cn(
+    'inline-flex shrink-0 transition-colors duration-slow [&_svg]:shrink-0 [&_svg]:stroke-2',
+    size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3.25',
+    toneText[tone],
   );
+  const hasCustomIcon = icon !== undefined && icon !== null && typeof icon !== 'boolean';
 
-  if (icon) {
+  if (hasCustomIcon) {
     return (
-      <span
-        aria-hidden
-        data-slot="status-badge-marker"
-        className={cn('inline-flex shrink-0 [&_svg]:shrink-0', iconSize, toneText[tone])}
-      >
+      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
         {icon}
       </span>
     );
   }
 
-  if (tone === 'progress') {
+  // `progress` keeps its spinner over a dot: the motion is its meaning.
+  if (icon !== false && (tone === 'progress' || !dot)) {
+    const ToneIcon = toneIcon[tone];
     return (
-      <span
-        aria-hidden
-        data-slot="status-badge-marker"
-        className={cn('inline-flex shrink-0', iconSize, toneText[tone])}
-      >
-        <LoaderIcon className={spinnerClass} />
+      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
+        <ToneIcon className={tone === 'progress' ? spinnerClass : undefined} />
       </span>
     );
   }

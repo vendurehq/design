@@ -557,11 +557,9 @@ const APPEARANCES: {
   {
     appearance: 'chip',
     sample: (
-      <StatusBadge tone="success" dot>
-        Live
-      </StatusBadge>
+      <StatusBadge tone="success">Live</StatusBadge>
     ),
-    use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. Add dot or icon when the chip must scan in a dense group.',
+    use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. The tone icon comes with it; pass icon for a more exact shape, or dot in a dense group.',
   },
   {
     appearance: 'text',

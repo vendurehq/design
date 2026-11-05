@@ -6,11 +6,39 @@ import { StatusBadge } from './status-badge.tsx';
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
 describe('StatusBadge', () => {
-  test('the default chip has no marker', () => {
+  test('the default chip shows its tone icon at 13px', () => {
     const markup = html(<StatusBadge tone="success">Active</StatusBadge>);
 
     expect(markup).toContain('Active');
     expect(markup).toContain('h-6');
+    expect(markup).toContain('data-slot="status-badge-marker"');
+    expect(markup).toContain('lucide-circle-check');
+    expect(markup).toContain('[&amp;_svg]:size-3.25');
+  });
+
+  test('each tone has its own default icon', () => {
+    const icons = {
+      neutral: 'lucide-circle-dashed',
+      info: 'lucide-circle-dot',
+      warning: 'lucide-triangle-alert',
+      critical: 'lucide-circle-x',
+      progress: 'lucide-loader',
+    } as const;
+
+    for (const [tone, icon] of Object.entries(icons)) {
+      expect(html(<StatusBadge tone={tone as keyof typeof icons}>State</StatusBadge>)).toContain(
+        icon,
+      );
+    }
+  });
+
+  test('icon={false} leaves the chip without a marker', () => {
+    const markup = html(
+      <StatusBadge tone="success" icon={false}>
+        Active
+      </StatusBadge>,
+    );
+
     expect(markup).not.toContain('data-slot="status-badge-marker"');
   });
 
@@ -46,6 +74,7 @@ describe('StatusBadge', () => {
 
     expect(markup).toContain('data-slot="status-badge-marker"');
     expect(markup).toContain('text-success-text');
+    expect(markup).not.toContain('lucide-circle-check');
   });
 
   test('progress shows a spinner that stops under reduced motion', () => {
