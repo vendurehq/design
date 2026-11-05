@@ -45,12 +45,15 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+// The card-title role at body size: 13px/600 in foreground-secondary, quieter
+// than the data it labels. Spelled out because tailwind-merge would drop the
+// `text-style-card-title` utility next to `text-sm`.
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
       className={cn(
-        "text-style-card-title group-data-[size=sm]/card:text-sm",
+        "font-heading text-sm font-semibold tracking-[-0.005em] text-foreground-secondary",
         className
       )}
       {...props}
