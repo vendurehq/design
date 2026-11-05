@@ -67,13 +67,15 @@ export const lightTheme = {
   'neutral-subtle-foreground': neutral[900],
   'neutral-border': neutral[200],
   // Tone text: the text-safe tone colours for status words, deltas and field
-  // errors set directly on a surface tier. Each is the ramp step nearest the
-  // solid tone that holds 4.5:1 on every surface tier. Brighter than the
+  // errors set directly on a surface tier. Saturated literals, not ramp
+  // steps, so the tones sit beside the neon brand instead of reading pastel
+  // or olive: green, a burnt amber, red, and an info blue on the brand hue.
+  // Each holds 4.5:1 on every surface tier. Brighter than the
   // `{tone}-subtle-foreground` slots, which are tuned for the subtle fills.
-  'success-text': success[600],
-  'warning-text': warning[600],
-  'destructive-text': destructive[500],
-  'info-text': info[600],
+  'success-text': 'oklch(0.509 0.127 154)',
+  'warning-text': 'oklch(0.555 0.146 49)',
+  'destructive-text': 'oklch(0.54 0.193 24)',
+  'info-text': 'oklch(0.529 0.112 236)',
   // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
   // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
   // the syntax-highlighted text legible; accents draw the solid gutter bar.
@@ -171,10 +173,11 @@ export const darkTheme = {
   'neutral-subtle': `color-mix(in oklab, ${neutral[900]} 40%, transparent)`,
   'neutral-subtle-foreground': neutral[300],
   'neutral-border': neutral[800],
-  'success-text': success[300],
-  'warning-text': warning[500],
-  'destructive-text': destructive[400],
-  'info-text': info[400],
+  // The same tones, lifted for the dark canvas: bright, not pastel.
+  'success-text': 'oklch(0.794 0.175 156)',
+  'warning-text': 'oklch(0.845 0.147 79)',
+  'destructive-text': 'oklch(0.713 0.181 20)',
+  'info-text': 'oklch(0.8 0.125 231)',
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
