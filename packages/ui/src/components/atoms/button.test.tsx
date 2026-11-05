@@ -46,6 +46,23 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('border-input');
   });
 
+  test('primary, outline and destructive sit on shadow-control; disabled drops it', () => {
+    for (const variant of ['default', 'outline', 'destructive'] as const) {
+      expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
+    }
+    for (const variant of ['ghost', 'link', 'secondary'] as const) {
+      expect(buttonTokens(<Button variant={variant}>Save</Button>)).not.toContain('shadow-control');
+    }
+    expect(buttonTokens(<Button>Save</Button>)).toContain('disabled:shadow-none');
+  });
+
+  test('outline hover darkens the border, except inside a group or when invalid', () => {
+    const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
+    expect(tokens).toContain(
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
+    );
+  });
+
   // destructive-foreground on destructive is checked at 4.5:1 in both modes in
   // @vendure-io/design-tokens (src/contrast.test.ts).
   test('destructive is a solid fill with destructive-foreground text', () => {
@@ -68,6 +85,18 @@ describe('ButtonGroup', () => {
     expect(tokens).toEqual(expect.arrayContaining(['inset-ring', 'inset-ring-input', 'bg-card', 'rounded-xl']));
     expect(tokens).toContain('*:data-slot:border-transparent');
     expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-border');
+  });
+
+  test('the group sits on shadow-control; children and a layout row of groups drop it', () => {
+    const html = renderToStaticMarkup(
+      <ButtonGroup>
+        <Button variant="outline">Copy</Button>
+      </ButtonGroup>,
+    );
+    const tokens = slotTokens(html, 'button-group');
+    expect(tokens).toContain('shadow-control');
+    expect(tokens).toContain('[&>[data-slot]:not([data-slot=button-group])]:shadow-none');
+    expect(tokens).toContain('has-[>[data-slot=button-group]]:shadow-none');
   });
 
   test('variant="primary" puts the segments on one primary fill', () => {

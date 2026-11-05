@@ -208,7 +208,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-accent pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 in-data-[slot=dialog-content]:rounded-lg data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-moderate) data-ready:ease-out data-instant:transition-none! motion-reduce:data-ready:transition-opacity"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 in-data-[slot=dialog-content]:rounded-xl data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-moderate) data-ready:ease-out data-instant:transition-none! motion-reduce:data-ready:transition-opacity"
     />
   )
 }
@@ -267,7 +267,9 @@ function CommandSeparator({
 // cmdk writes data-selected="true" or "false" on every item, so the highlight
 // matches the value; a bare data-selected: variant would match every item.
 // In a CommandList with slidingHighlight, the list's highlight replaces the
-// item's own fill. Palette items (in the dialog) are 40px tall.
+// item's own fill. Palette items (in the dialog) are 40px tall and quiet at
+// rest: a medium label in foreground-secondary. The highlighted row turns the
+// label to foreground and its leading icon to the brand indicator.
 function CommandItem({
   className,
   children,
@@ -277,7 +279,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-lg! in-data-[slot=dialog-content]:px-2.5 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "data-[selected=true]:bg-muted data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-xl! in-data-[slot=dialog-content]:px-2.5 in-data-[slot=dialog-content]:font-medium in-data-[slot=dialog-content]:text-foreground-secondary! in-data-[slot=dialog-content]:transition-[color] in-data-[slot=dialog-content]:duration-120 in-data-[slot=dialog-content]:ease-[ease] in-data-[slot=dialog-content]:data-[selected=true]:text-foreground! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:duration-120 in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:ease-[ease] data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100! in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator!",
         className
       )}
       {...props}
