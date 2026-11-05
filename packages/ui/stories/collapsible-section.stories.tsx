@@ -71,20 +71,20 @@ export const DefaultOpen: Story = {
   ),
 };
 
-// Attention colours the count only, for rows that need the user. Open the section
-// by default when one of them has failed, so the failure is in view.
+// Attention colours the count only, for rows that wait on the user. Open the
+// section by default, so they are in view.
 export const Attention: Story = {
-  args: { title: 'Failed payment captures', count: 2, tone: 'attention' },
+  args: { title: 'Payments to review', count: 2, tone: 'attention', defaultOpen: true },
   render: (args) => (
     <CollapsibleSection {...args}>
       {['SB-2041', 'SB-2036'].map((code) => (
         <ListRow key={code}>
           <ListRowContent>
             <ListRowLink onClick={() => {}}>Order {code}</ListRowLink>
-            <ListRowMeta>Card declined by the issuer</ListRowMeta>
+            <ListRowMeta>Flagged by the fraud check</ListRowMeta>
           </ListRowContent>
           <ListRowTrailing>
-            <StatusBadge tone="critical">Capture failed</StatusBadge>
+            <StatusBadge tone="warning">Needs review</StatusBadge>
           </ListRowTrailing>
           <ListRowChevron />
         </ListRow>
@@ -93,14 +93,49 @@ export const Attention: Story = {
   ),
 };
 
-// The count also takes text, when one number does not say enough.
+// A detail after the count names the rows that matter. The tone colours the
+// detail only: here only "1 failed" is red, the count stays muted.
 export const TextCount: Story = {
-  args: { title: 'Returns awaiting inspection', count: '3 · 1 overdue', defaultOpen: true },
+  args: {
+    title: 'Pushes not deployed',
+    count: 2,
+    detail: '1 failed',
+    tone: 'critical',
+    defaultOpen: true,
+  },
   render: (args) => (
     <CollapsibleSection {...args}>
-      <ReturnRows />
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink onClick={() => {}}>Add Klarna payment method</ListRowLink>
+          <ListRowMeta>Build failed: tsc exited with code 2.</ListRowMeta>
+        </ListRowContent>
+        <ListRowTrailing>
+          <StatusBadge tone="critical">Failed</StatusBadge>
+        </ListRowTrailing>
+        <ListRowChevron />
+      </ListRow>
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink onClick={() => {}}>Update the shipping rates</ListRowLink>
+          <ListRowMeta>Replaced by a newer push before it deployed.</ListRowMeta>
+        </ListRowContent>
+        <ListRowChevron />
+      </ListRow>
     </CollapsibleSection>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    // The dot is hidden from screen readers; a comma takes its place.
+    await expect(
+      canvas.getByRole('button', { name: /^Pushes not deployed 2\s*,\s*1 failed$/ }),
+    ).toBeInTheDocument();
+    const count = canvasElement.querySelector('[data-slot=collapsible-section-count]');
+    const detail = canvasElement.querySelector('[data-slot=collapsible-section-count-detail]');
+    await expect(detail).toHaveTextContent('1 failed');
+    await expect(detail).toHaveClass('text-destructive-text');
+    await expect(count).toHaveClass('text-muted-foreground');
+  },
 };
 
 // Controlled: the page owns the open state, for example to open the section
@@ -118,6 +153,21 @@ export const Controlled: Story = {
         </CollapsibleSection>
       </div>
     );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /Returns awaiting inspection/ });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // The page opens it: the open prop reaches the section.
+    await userEvent.click(canvas.getByRole('button', { name: 'Show returns' }));
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Return RMA-318' })).toBeVisible());
+
+    // The header closes it: onOpenChange reaches the page, which flips its button.
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(canvas.getByRole('button', { name: 'Show returns' })).toBeVisible();
   },
 };
 

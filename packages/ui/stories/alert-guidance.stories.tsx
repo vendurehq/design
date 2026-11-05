@@ -86,7 +86,7 @@ export const ChoosingTheVariant: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="Warning names the risk and the action. The variant colors the title, description, and icon together."
+            caption="Warning names the risk and the action. The variant tints the fill and border and colours the icon; the title and description stay neutral."
           >
             <Alert variant="warning">
               <TriangleAlertIcon />
@@ -124,12 +124,36 @@ export const ChoosingTheVariant: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="A default Alert with a hand-colored icon. Use the variant so text and icon share the tone."
+            caption="A default Alert with a hand-colored icon. Use the variant: it tints the fill and border and colours the icon, and the title and description stay neutral."
           >
             <Alert>
               <CircleAlertIcon className="text-warning" />
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today.</AlertDescription>
+            </Alert>
+          </Example>
+        </div>
+      </Section>
+
+      <Section
+        title="A toned Alert carries its tone icon"
+        intro="The tint is faint, so the icon is the cue that names the tone. The warning tint is never the only cue."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example verdict="do" caption="The tone icon comes first, in the tone's colour.">
+            <Alert variant="warning">
+              <TriangleAlertIcon />
+              <AlertTitle>Sending limit almost reached</AlertTitle>
+              <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
+            </Alert>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="No icon: the faint tint alone does not say that this is a warning."
+          >
+            <Alert variant="warning">
+              <AlertTitle>Sending limit almost reached</AlertTitle>
+              <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
           </Example>
         </div>
