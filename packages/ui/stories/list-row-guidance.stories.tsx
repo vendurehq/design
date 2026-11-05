@@ -102,6 +102,7 @@ const SLOTS: { slot: string; holds: string }[] = [
   { slot: 'ListRowTrailing', holds: 'Always-visible columns: a StatusBadge, a time, an amount. Give a time a fixed width so the rows align.' },
   { slot: 'ListRowActions', holds: 'Secondary actions on the row, hidden until hover or focus. Never the only way to an action the user needs: the detail page has it too.' },
   { slot: 'ListRowChevron', holds: 'Shows that the row opens a page. Only on a row with a ListRowLink.' },
+  { slot: 'data-new (on ListRow)', holds: 'Marks a row the user just added, such as a new backup, so it enters once. Only rows added while the page is open; never the rows of the first render.' },
 ];
 
 // ── 1 · choosing the tool ────────────────────────────────────────────────────

@@ -104,9 +104,9 @@ export const lightTheme = {
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
   'control-border': 'oklch(0.62 0.005 231)',
-  // Brand focus ring. brand-700 holds 3:1 on every light surface tier;
-  // brand-500 and brand-600 do not.
-  ring: brand[700],
+  // Brand focus ring: the brand indicator blue, the v3 look's ring. It holds
+  // 3:1 on every light surface tier (the contrast test checks both slots).
+  ring: 'var(--brand-indicator)',
   'chart-1': viz[1],
   'chart-2': viz[2],
   'chart-3': viz[3],
@@ -119,7 +119,7 @@ export const lightTheme = {
   'sidebar-accent': 'oklch(0.935 0.004 231)',
   'sidebar-accent-foreground': neutral[900],
   'sidebar-border': 'var(--border)',
-  'sidebar-ring': brand[700],
+  'sidebar-ring': 'var(--brand-indicator)',
 } as const;
 
 export const darkTheme = {
