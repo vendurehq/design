@@ -20,7 +20,10 @@ describe('Button press feedback', () => {
     const tokens = buttonTokens(<Button>Save</Button>);
     expect(tokens).toContain('active:scale-[0.97]');
     expect(tokens).toContain('motion-reduce:active:scale-100');
-    expect(tokens).toContain('duration-(--transition-duration-moderate)');
+    expect(tokens).toContain(
+      '[transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)]',
+    );
+    expect(tokens).not.toContain('transition-all');
     expect(tokens.filter((token) => token.includes('data-pressed'))).toEqual([]);
   });
 });
@@ -34,7 +37,7 @@ describe('Button v3 look', () => {
   });
 
   test('default is 34px and sm is 28px, icon-only sizes are matching squares', () => {
-    expect(buttonTokens(<Button>Save</Button>)).toContain('h-8.5');
+    expect(buttonTokens(<Button>Save</Button>)).toEqual(expect.arrayContaining(['h-8.5', 'px-3.25', 'gap-1.75']));
     expect(buttonTokens(<Button size="sm">Save</Button>)).toContain('h-7');
     expect(buttonTokens(<Button size="icon" aria-label="More" />)).toContain('size-8.5');
     expect(buttonTokens(<Button size="icon-sm" aria-label="More" />)).toContain('size-7');
