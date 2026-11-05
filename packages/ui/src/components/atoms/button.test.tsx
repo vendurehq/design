@@ -20,7 +20,10 @@ describe('Button press feedback', () => {
     const tokens = buttonTokens(<Button>Save</Button>);
     expect(tokens).toContain('active:scale-[0.97]');
     expect(tokens).toContain('motion-reduce:active:scale-100');
-    expect(tokens).toContain('duration-(--transition-duration-moderate)');
+    expect(tokens).toContain(
+      '[transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)]',
+    );
+    expect(tokens).not.toContain('transition-all');
     expect(tokens.filter((token) => token.includes('data-pressed'))).toEqual([]);
   });
 });
@@ -34,7 +37,7 @@ describe('Button v3 look', () => {
   });
 
   test('default is 34px and sm is 28px, icon-only sizes are matching squares', () => {
-    expect(buttonTokens(<Button>Save</Button>)).toContain('h-8.5');
+    expect(buttonTokens(<Button>Save</Button>)).toEqual(expect.arrayContaining(['h-8.5', 'px-3.25', 'gap-1.75']));
     expect(buttonTokens(<Button size="sm">Save</Button>)).toContain('h-7');
     expect(buttonTokens(<Button size="icon" aria-label="More" />)).toContain('size-8.5');
     expect(buttonTokens(<Button size="icon-sm" aria-label="More" />)).toContain('size-7');
@@ -44,6 +47,23 @@ describe('Button v3 look', () => {
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain('bg-card');
     expect(tokens).toContain('border-input');
+  });
+
+  test('primary, outline and destructive sit on shadow-control; disabled drops it', () => {
+    for (const variant of ['default', 'outline', 'destructive'] as const) {
+      expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
+    }
+    for (const variant of ['ghost', 'link', 'secondary'] as const) {
+      expect(buttonTokens(<Button variant={variant}>Save</Button>)).not.toContain('shadow-control');
+    }
+    expect(buttonTokens(<Button>Save</Button>)).toContain('disabled:shadow-none');
+  });
+
+  test('outline hover darkens the border, except inside a group or when invalid', () => {
+    const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
+    expect(tokens).toContain(
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
+    );
   });
 
   // destructive-foreground on destructive is checked at 4.5:1 in both modes in
@@ -68,6 +88,18 @@ describe('ButtonGroup', () => {
     expect(tokens).toEqual(expect.arrayContaining(['inset-ring', 'inset-ring-input', 'bg-card', 'rounded-xl']));
     expect(tokens).toContain('*:data-slot:border-transparent');
     expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-border');
+  });
+
+  test('the group sits on shadow-control; children and a layout row of groups drop it', () => {
+    const html = renderToStaticMarkup(
+      <ButtonGroup>
+        <Button variant="outline">Copy</Button>
+      </ButtonGroup>,
+    );
+    const tokens = slotTokens(html, 'button-group');
+    expect(tokens).toContain('shadow-control');
+    expect(tokens).toContain('[&>[data-slot]:not([data-slot=button-group])]:shadow-none');
+    expect(tokens).toContain('has-[>[data-slot=button-group]]:shadow-none');
   });
 
   test('variant="primary" puts the segments on one primary fill', () => {

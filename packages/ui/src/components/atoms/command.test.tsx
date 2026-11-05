@@ -8,6 +8,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandItemDetail,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -192,5 +193,34 @@ describe('CommandList results crossfade', () => {
     expect(entering.some((token) => token.startsWith('motion-safe:') && token.endsWith(':starting:blur-[3px]'))).toBe(
       true,
     );
+  });
+});
+
+describe('CommandItemDetail', () => {
+  const html = renderToStaticMarkup(
+    <Command>
+      <CommandList>
+        <CommandItem value="database">
+          Database
+          <CommandItemDetail>Production · Acme</CommandItemDetail>
+        </CommandItem>
+      </CommandList>
+    </Command>,
+  );
+
+  test('shows on the highlighted item only', () => {
+    expect(classTokens(html, 'command-item-detail')).toEqual(
+      expect.arrayContaining([
+        'opacity-0',
+        'group-data-[selected=true]/command-item:opacity-100',
+        'group-data-[selected=true]/command-item:delay-40',
+        'motion-reduce:translate-x-0',
+        'motion-reduce:blur-none',
+      ]),
+    );
+  });
+
+  test('takes the place of the check mark', () => {
+    expect(html).toContain('group-has-data-[slot=command-item-detail]/command-item:hidden');
   });
 });

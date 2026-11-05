@@ -54,15 +54,19 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       {/* The palette: 600px wide, 12% of the viewport from the top so the
-          list can grow down without moving the input. */}
+          list can grow down without moving the input. It opens often, so its
+          motion is shorter than a dialog's: it drops 6px from 98% at the top
+          centre (opacity 160ms, transform 180ms) and closes in 110ms. Reduced
+          motion fades only. */}
       <DialogContent
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[160ms,180ms,180ms] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-110 data-ending-style:ease-[ease] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-120 motion-reduce:ease-[ease]",
           className
         )}
         showCloseButton={showCloseButton}
-        // The palette is transient and keeps the page in view: a lighter scrim.
-        overlayClassName="bg-scrim-subtle"
+        // The palette is transient and keeps the page in view: a lighter scrim
+        // with a 2px blur that fades with the palette.
+        overlayClassName="bg-scrim-subtle duration-160 data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
@@ -493,7 +497,7 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
   )
 }
@@ -507,6 +511,26 @@ function CommandShortcut({
       data-slot="command-shortcut"
       className={cn(
         "text-muted-foreground group-data-[selected=true]/command-item:text-foreground ml-auto text-xs tracking-widest",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// Where an item lives, such as "Production · Acme", at the end of the row. It
+// shows on the highlighted item only: repeated on every row it is noise. It
+// slides in 4px from a 1px blur as the highlight arrives (opacity 180ms,
+// transform 220ms, after 40ms) and leaves in 90ms. Reduced motion fades only.
+function CommandItemDetail({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="command-item-detail"
+      className={cn(
+        "text-muted-foreground ml-auto max-w-[55%] shrink-0 truncate pl-3 text-xs font-normal opacity-0 -translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-90 ease-[ease] group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-40 group-data-[selected=true]/command-item:duration-[180ms,220ms,180ms] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
         className
       )}
       {...props}
@@ -538,6 +562,7 @@ export {
   CommandGroup,
   CommandItem,
   CommandShortcut,
+  CommandItemDetail,
   CommandSeparator,
   CommandFooter,
 }
