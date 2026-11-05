@@ -105,9 +105,9 @@ function CommandList({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List> & {
   /**
-   * Draws the selected item's highlight as one fill that slides from item to
-   * item. It snaps while an arrow key repeats, so it never trails the
-   * selection. Off by default: each item then fills itself.
+   * Draws the selected item's highlight as one fill that follows the
+   * selection from item to item, and eases the list's scroll with it. Off by
+   * default: each item then fills itself.
    */
   slidingHighlight?: boolean
 }) {
@@ -127,19 +127,85 @@ function CommandList({
   )
 }
 
+// The follower's time constant. Each frame closes 1 - e^(-dt/42ms) of the
+// distance: about 95% in 130ms, with no overshoot.
+const FOLLOW_MS = 42
+const NAVIGATION_KEYS = new Set([
+  "ArrowDown",
+  "ArrowUp",
+  "Home",
+  "End",
+  "PageDown",
+  "PageUp",
+])
+
 // The sliding highlight of a CommandList. It sits in cmdk's list sizer, so it
 // scrolls with the items, and follows the item cmdk marks
 // data-selected="true": a MutationObserver catches the selection moving and
-// the results changing, a ResizeObserver catches layout changes. While a key
-// repeats the transition is off, so the highlight stays under the selection.
+// the results changing, a ResizeObserver catches layout changes.
+//
+// One follower moves the highlight and the list's scroll together, so they
+// never disagree. It approaches its target exponentially every frame, so a
+// new target while it moves (a held arrow key) continues from where it is
+// instead of restarting. cmdk scrolls the selected item into view at once;
+// after a key press the follower takes that scroll back and eases to it.
+// Wheel and pointer scrolling stay native. Reduced motion jumps.
 function CommandHighlight() {
   const ref = React.useRef<HTMLDivElement>(null)
 
   React.useLayoutEffect(() => {
     const highlight = ref.current
     const sizer = highlight?.parentElement
-    if (!highlight || !sizer) {
+    const list = sizer?.closest<HTMLElement>("[cmdk-list]")
+    if (!highlight || !sizer || !list) {
       return
+    }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
+
+    // y and h are shown, ty and th are the target. scroll is the list's
+    // shown scroll position, scrollTo its target while the follower scrolls.
+    const f = {
+      y: 0,
+      h: 0,
+      ty: 0,
+      th: 0,
+      scroll: list.scrollTop,
+      scrollTo: null as number | null,
+      placed: false,
+      byKey: false,
+      raf: 0,
+      last: 0,
+    }
+
+    const draw = () => {
+      highlight.style.transform = `translateY(${f.y}px)`
+      highlight.style.height = `${f.h}px`
+    }
+
+    const tick = (time: number) => {
+      const dt = f.last ? Math.min(time - f.last, 48) : 16
+      f.last = time
+      const k = reduced.matches ? 1 : 1 - Math.exp(-dt / FOLLOW_MS)
+      f.y = Math.abs(f.ty - f.y) < 0.25 ? f.ty : f.y + (f.ty - f.y) * k
+      f.h = Math.abs(f.th - f.h) < 0.25 ? f.th : f.h + (f.th - f.h) * k
+      draw()
+      let moving = f.y !== f.ty || f.h !== f.th
+      if (f.scrollTo !== null) {
+        const next = f.scroll + (f.scrollTo - f.scroll) * k
+        f.scroll = Math.abs(f.scrollTo - next) < 0.5 ? f.scrollTo : next
+        list.scrollTop = f.scroll
+        if (f.scroll === f.scrollTo) {
+          f.scrollTo = null
+        } else {
+          moving = true
+        }
+      }
+      if (moving) {
+        f.raf = requestAnimationFrame(tick)
+      } else {
+        f.raf = 0
+        f.last = 0
+      }
     }
 
     const place = () => {
@@ -148,6 +214,7 @@ function CommandHighlight() {
       )
       if (!selected) {
         delete highlight.dataset.shown
+        f.byKey = false
         return
       }
       // Layout offsets, not client rects: they ignore the dialog's scale-in.
@@ -161,10 +228,27 @@ function CommandHighlight() {
         top += node.offsetTop
         left += node.offsetLeft
       }
-      highlight.style.transform = `translate(${left}px, ${top}px)`
+      highlight.style.left = `${left}px`
       highlight.style.width = `${selected.offsetWidth}px`
-      highlight.style.height = `${selected.offsetHeight}px`
+      f.ty = top
+      f.th = selected.offsetHeight
+      if (!f.placed) {
+        f.placed = true
+        f.y = f.ty
+        f.h = f.th
+        draw()
+      }
       highlight.dataset.shown = ""
+      // cmdk has already scrolled the item into view. Show the old position
+      // and let the follower ease to cmdk's.
+      if (f.byKey && list.scrollTop !== f.scroll && !reduced.matches) {
+        f.scrollTo = list.scrollTop
+        list.scrollTop = f.scroll
+      }
+      f.byKey = false
+      if (!f.raf) {
+        f.raf = requestAnimationFrame(tick)
+      }
     }
 
     place()
@@ -182,23 +266,37 @@ function CommandHighlight() {
     resize.observe(sizer)
 
     const root = sizer.closest("[cmdk-root]")
+    // Only moves between items scroll through the follower. A new query
+    // starts at the top of the list at once.
     const onKeyDown = (event: Event) => {
-      if ((event as KeyboardEvent).repeat) {
-        highlight.dataset.instant = ""
+      const { key, ctrlKey } = event as KeyboardEvent
+      f.byKey =
+        NAVIGATION_KEYS.has(key) || (ctrlKey && "npjk".includes(key))
+    }
+    // Scrolling by hand takes over from the follower.
+    const onScroll = () => {
+      if (f.scrollTo === null) {
+        f.scroll = list.scrollTop
       }
     }
-    const onKeyUp = () => {
-      delete highlight.dataset.instant
+    const onManualScroll = () => {
+      f.scrollTo = null
+      f.scroll = list.scrollTop
     }
     root?.addEventListener("keydown", onKeyDown)
-    root?.addEventListener("keyup", onKeyUp)
+    list.addEventListener("scroll", onScroll, { passive: true })
+    list.addEventListener("wheel", onManualScroll, { passive: true })
+    list.addEventListener("pointerdown", onManualScroll)
 
     return () => {
       cancelAnimationFrame(frame)
+      cancelAnimationFrame(f.raf)
       mutations.disconnect()
       resize.disconnect()
       root?.removeEventListener("keydown", onKeyDown)
-      root?.removeEventListener("keyup", onKeyUp)
+      list.removeEventListener("scroll", onScroll)
+      list.removeEventListener("wheel", onManualScroll)
+      list.removeEventListener("pointerdown", onManualScroll)
     }
   }, [])
 
@@ -208,7 +306,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 in-data-[slot=dialog-content]:rounded-xl data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-moderate) data-ready:ease-out data-instant:transition-none! motion-reduce:data-ready:transition-opacity"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform in-data-[slot=dialog-content]:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-[ease]"
     />
   )
 }

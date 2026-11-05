@@ -146,8 +146,10 @@ describe('CommandList', () => {
     expect(highlight).toContain('aria-hidden="true"');
     expect(highlight).toContain('role="none"');
     expect(classTokens(html, 'command-highlight')).toEqual(
-      expect.arrayContaining(['data-instant:transition-none!', 'motion-reduce:data-ready:transition-opacity']),
+      expect.arrayContaining(['data-ready:transition-opacity', 'will-change-transform']),
     );
+    // The follower moves it from script, not through a CSS transition.
+    expect(classTokens(html, 'command-highlight').some((token) => token.includes('transition-[transform'))).toBe(false);
     expect(classTokens(html, 'command-item')).toContain('in-data-[highlight=slide]:data-[selected=true]:bg-transparent!');
   });
 });
