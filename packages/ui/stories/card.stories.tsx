@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect } from 'storybook/test';
 import { ChevronRightIcon } from 'lucide-react';
 import {
   Card,
@@ -100,6 +101,18 @@ export const WithRows: Story = {
       </CardRows>
     </Card>
   ),
+  // The one-line header is one 48px row: the first row starts 48px below the
+  // card's inner top edge, and the title sits on the row's centre line.
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector<HTMLElement>('[data-slot="card"]');
+    const title = canvasElement.querySelector<HTMLElement>('[data-slot="card-title"]');
+    const firstRow = canvasElement.querySelector<HTMLElement>('[data-slot="card-row"]');
+    if (!card || !title || !firstRow) throw new Error('Card parts not rendered');
+    const top = card.getBoundingClientRect().top + card.clientTop;
+    const titleBox = title.getBoundingClientRect();
+    await expect(firstRow.getBoundingClientRect().top - top).toBeCloseTo(48, 0);
+    await expect((titleBox.top + titleBox.bottom) / 2 - top).toBeCloseTo(24, 0);
+  },
 };
 
 /** CardRows as the first child: no top padding, and the first row drops its border. */
