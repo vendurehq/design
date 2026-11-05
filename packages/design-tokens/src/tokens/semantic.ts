@@ -45,6 +45,12 @@ export const lightTheme = {
   'accent-foreground': neutral[900],
   destructive: destructive[500],
   'destructive-foreground': 'oklch(0.98 0.01 25)',
+  // The subtle tier: `{tone}-subtle` fills, `{tone}-subtle-foreground` text
+  // and `{tone}-border` outlines. Alert and StatusBadge are not subtle (they
+  // mix their tone into the surface), so no ui component draws a status
+  // surface from this tier any more. ui still uses the subtle fills as
+  // Progress tracks, the neutral set in Badge, and `-subtle-foreground` for
+  // field errors. The rest is for consumers.
   'destructive-subtle': destructive[100],
   'destructive-subtle-foreground': destructive[900],
   'destructive-border': destructive[200],
@@ -78,11 +84,11 @@ export const lightTheme = {
   'warning-text': 'oklch(0.522 0.146 49)',
   'destructive-text': 'oklch(0.533 0.193 24)',
   'info-text': 'oklch(0.504 0.112 236)',
-  // Warning as a mark beside a label: the StatusBadge outline and fill, a
-  // highlight. `warning-text` is dark enough for text, so mixed into an
-  // outline or fill it reads beige. Not text, and never the only cue: on a
-  // light surface it is about 2:1, below the 3:1 non-text bar. Not for a
-  // standalone status dot.
+  // Warning as a mark beside a label: the StatusBadge outline and fill, the
+  // warning Alert tint, a highlight. `warning-text` is dark enough for text,
+  // so mixed into an outline or fill it reads beige. Not text, and never the
+  // only cue: on a light surface it is about 2:1, below the 3:1 non-text bar.
+  // Not for a standalone status dot.
   'warning-indicator': 'oklch(0.767 0.157 72)',
   // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
   // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
@@ -104,9 +110,9 @@ export const lightTheme = {
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
   'control-border': 'oklch(0.62 0.005 231)',
-  // Brand focus ring. brand-700 holds 3:1 on every light surface tier;
-  // brand-500 and brand-600 do not.
-  ring: brand[700],
+  // Brand focus ring: the brand indicator blue, the v3 look's ring. It holds
+  // 3:1 on every light surface tier (the contrast test checks both slots).
+  ring: 'var(--brand-indicator)',
   'chart-1': viz[1],
   'chart-2': viz[2],
   'chart-3': viz[3],
@@ -119,7 +125,7 @@ export const lightTheme = {
   'sidebar-accent': 'oklch(0.935 0.004 231)',
   'sidebar-accent-foreground': neutral[900],
   'sidebar-border': 'var(--border)',
-  'sidebar-ring': brand[700],
+  'sidebar-ring': 'var(--brand-indicator)',
 } as const;
 
 export const darkTheme = {

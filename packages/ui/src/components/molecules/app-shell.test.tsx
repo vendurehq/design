@@ -76,3 +76,23 @@ test('AppShellHeader is a 52px opaque sticky bar with an inset hairline', () => 
   expect(tokens).not.toContain('h-12');
   expect(tokens.filter((token) => /backdrop-blur|\/85$|^border-b$/.test(token))).toEqual([]);
 });
+
+// Forced-colors mode removes box shadows. The hairline comes back there as a
+// CanvasText border on an ::after line, which overlays the header instead of
+// taking a pixel from it. In normal mode nothing changes.
+test('AppShellHeader keeps a hairline in forced-colors mode without a border on the box', () => {
+  const html = renderToStaticMarkup(<AppShellHeader>Header</AppShellHeader>);
+  const tag = html.match(/<header[^>]*>/)?.[0] ?? '';
+  const tokens = (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  expect(tokens).toEqual(
+    expect.arrayContaining([
+      'forced-colors:after:absolute',
+      'forced-colors:after:bottom-0',
+      'forced-colors:after:inset-x-0',
+      'forced-colors:after:border-b',
+      'forced-colors:after:border-[CanvasText]',
+    ]),
+  );
+  expect(tokens.filter((token) => /^(forced-colors:)?border-b$/.test(token))).toEqual([]);
+});

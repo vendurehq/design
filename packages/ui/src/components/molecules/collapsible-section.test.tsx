@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Collapsible } from '../atoms/collapsible.tsx';
 import { CollapsibleSection } from './collapsible-section.tsx';
 
 const openTag = (html: string, slot: string) =>
@@ -40,23 +42,60 @@ describe('CollapsibleSection', () => {
     expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
   });
 
-  test('the count is plain text, not a pill, and takes text', () => {
-    const html = renderToStaticMarkup(
-      <CollapsibleSection title="Pushes not deployed" count="2 · 1 failed" />,
-    );
-    const count = openTag(html, 'collapsible-section-count');
-    expect(count).toContain('text-muted-foreground');
-    expect(count).not.toMatch(/\b(border|bg-|rounded)/);
-    expect(html).toContain('>2 · 1 failed</span>');
+  test('open and onOpenChange reach the Collapsible', () => {
+    const onOpenChange = () => {};
+    const element = CollapsibleSection({
+      title: 'Pending refunds',
+      open: true,
+      onOpenChange,
+    }) as ReactElement<{ open?: boolean; onOpenChange?: unknown }>;
+    expect(element.type).toBe(Collapsible);
+    expect(element.props.open).toBe(true);
+    expect(element.props.onOpenChange).toBe(onOpenChange);
   });
 
-  test('the attention tone colors the count text only', () => {
+  test('the count is a CardCount: plain text, not a pill, and it does not wrap or shrink', () => {
+    const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" count={4} />);
+    const count = openTag(html, 'collapsible-section-count');
+    expect(count).toContain('text-muted-foreground');
+    expect(count).toContain('text-xs font-semibold tabular-nums');
+    expect(count).toContain('shrink-0');
+    expect(count).toContain('whitespace-nowrap');
+    expect(count).not.toMatch(/\b(border|bg-|rounded)/);
+    expect(openTag(html, 'collapsible-section-title')).toContain('min-w-0');
+  });
+
+  test('a detail follows the count after a dot that screen readers skip', () => {
     const html = renderToStaticMarkup(
-      <CollapsibleSection title="Failed payments" count={2} tone="attention" />,
+      <CollapsibleSection title="Pushes not deployed" count={2} detail="1 failed" />,
     );
-    expect(openTag(html, 'collapsible-section-count')).toContain('text-warning-text');
-    expect(openTag(html, 'collapsible-section')).not.toContain('warning');
-    expect(openTag(html, 'collapsible-section-trigger')).not.toContain('warning');
+    expect(html).toContain('<span aria-hidden="true">·</span>');
+    expect(html).toContain('<span class="sr-only">, </span>');
+    expect(html).toMatch(/data-slot="collapsible-section-count-detail"[^>]*>1 failed<\/span>/);
+  });
+
+  test('with a detail, the tone colours the detail only', () => {
+    const html = renderToStaticMarkup(
+      <CollapsibleSection
+        title="Pushes not deployed"
+        count={2}
+        detail="1 failed"
+        tone="critical"
+      />,
+    );
+    expect(openTag(html, 'collapsible-section-count-detail')).toContain('text-destructive-text');
+    expect(openTag(html, 'collapsible-section-count')).toContain('text-muted-foreground');
+    expect(openTag(html, 'collapsible-section-count')).not.toContain('text-destructive-text');
+  });
+
+  test('without a detail, the tone colours the whole count', () => {
+    const html = renderToStaticMarkup(
+      <CollapsibleSection title="Failed payment captures" count={2} tone="critical" />,
+    );
+    const count = openTag(html, 'collapsible-section-count');
+    expect(count).toContain('text-destructive-text');
+    expect(count).not.toContain('text-muted-foreground');
+    expect(html).not.toContain('collapsible-section-count-detail');
   });
 
   test('no count, no count element', () => {

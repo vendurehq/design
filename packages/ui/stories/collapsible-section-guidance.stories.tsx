@@ -14,8 +14,9 @@ import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 
 /**
  * Guidance, not props. When a list of rows should start closed behind a
- * CollapsibleSection, when it should start open, and when to use the attention
- * tone on its count. For the component API, see the CollapsibleSection stories.
+ * CollapsibleSection, when it should start open, and when to tone its count:
+ * `attention` for rows that wait on the user, `critical` for rows that failed.
+ * For the component API, see the CollapsibleSection stories.
  */
 const meta = {
   title: 'Molecules/CollapsibleSection/Guidance',
@@ -159,7 +160,7 @@ export const ChoosingTheTool: Story = {
 // ── 2 · open state and tone ─────────────────────────────────────────────────
 
 export const OpenStateAndTone: Story = {
-  name: '2 · Open by default, and the attention tone',
+  name: '2 · Open by default, and the count tone',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
@@ -169,12 +170,13 @@ export const OpenStateAndTone: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="A failed capture is in the list: the section opens by itself and the count carries the attention tone."
+            caption="A failed capture is in the list: the section opens by itself and the detail names the failure in the critical tone."
           >
             <CollapsibleSection
               title="Payment captures"
               count={2}
-              tone="attention"
+              detail="1 failed"
+              tone="critical"
               defaultOpen
               headingLevel={3}
             >
@@ -186,7 +188,13 @@ export const OpenStateAndTone: Story = {
             verdict="dont"
             caption="The failure hides behind a closed header; only the count hints at it."
           >
-            <CollapsibleSection title="Payment captures" count={2} tone="attention" headingLevel={3}>
+            <CollapsibleSection
+              title="Payment captures"
+              count={2}
+              detail="1 failed"
+              tone="critical"
+              headingLevel={3}
+            >
               <OrderRow code="SB-2041" state="Capture failed" tone="critical" />
               <OrderRow code="SB-2039" state="Capture pending" tone="neutral" />
             </CollapsibleSection>
@@ -195,14 +203,22 @@ export const OpenStateAndTone: Story = {
       </Section>
 
       <Section
-        title="Attention means action, not volume"
-        intro="The attention tone colours the count in the warning tone, and nothing else. Use it when rows need the user. A long list of routine rows stays neutral, however long it is (accent rationing)."
+        title="Tone means action, not volume"
+        intro="A tone colours the count, and nothing else: attention (warning) for rows that wait on the user, critical (destructive) for rows that failed. With a detail, the tone colours the detail only. A long list of routine rows stays neutral, however long it is (accent rationing)."
       >
         <div className="grid gap-3 sm:grid-cols-2">
+          <Example verdict="do" caption="Two payments wait for a review: attention on the count.">
+            <CollapsibleSection
+              title="Payments to review"
+              count={2}
+              tone="attention"
+              headingLevel={3}
+            />
+          </Example>
           <Example verdict="do" caption="48 archived drafts: neutral. Nothing waits on the user.">
             <CollapsibleSection title="Archived drafts" count={48} headingLevel={3} />
           </Example>
-          <Example verdict="dont" caption="Attention for a big number trains users to ignore the tone.">
+          <Example verdict="dont" caption="A tone for a big number trains users to ignore it.">
             <CollapsibleSection
               title="Archived drafts"
               count={48}

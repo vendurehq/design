@@ -67,13 +67,15 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
 // hairline below it is an inset shadow, so the full 52px stays the content
 // box and the 30px controls centre on whole pixels. It is always on: showing
 // it only on scroll would need a scroll listener on a region the header does
-// not own.
+// not own. Forced-colors mode drops box shadows, so there a 1px border on an
+// ::after line at the bottom edge draws the hairline in CanvasText; it
+// overlays the box and does not change the 52px.
 function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="app-shell-header"
       className={cn(
-        'bg-background in-data-[slot=app-shell-content]:bg-surface md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)]',
+        'bg-background in-data-[slot=app-shell-content]:bg-surface md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
         className,
       )}
       {...props}

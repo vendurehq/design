@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandItemDetail,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -134,10 +135,10 @@ export const States: Story = {
 };
 
 const pages = [
-  { label: 'Orders', icon: ShoppingCart },
-  { label: 'Products', icon: Package },
-  { label: 'Customers', icon: Users },
-  { label: 'Analytics', icon: BarChart3 },
+  { label: 'Orders', icon: ShoppingCart, detail: 'Sales · Default channel' },
+  { label: 'Products', icon: Package, detail: 'Catalog · Default channel' },
+  { label: 'Customers', icon: Users, detail: 'Customers · Default channel' },
+  { label: 'Analytics', icon: BarChart3, detail: 'Insights' },
 ];
 const account = [
   { label: 'Profile', icon: User },
@@ -153,10 +154,11 @@ function PaletteBody() {
       <CommandList slidingHighlight>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Pages">
-          {pages.map(({ label, icon: Icon }) => (
-            <CommandItem key={label}>
+          {pages.map(({ label, icon: Icon, detail }) => (
+            <CommandItem key={label} value={label}>
               <Icon />
               {label}
+              <CommandItemDetail>{detail}</CommandItemDetail>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -194,7 +196,8 @@ function PaletteBody() {
  * The command palette: CommandDialog at 600px, 12% from the top, with an
  * unboxed input, 40px items and CommandFooter key hints. Items are quiet at
  * rest; the highlighted item's label turns foreground and its icon turns
- * the brand indicator. CommandList's
+ * the brand indicator. A page item names where it lives with
+ * CommandItemDetail, shown on the highlighted item only. CommandList's
  * slidingHighlight slides the highlight between items; hold an arrow key and
  * it stays under the selection. Type to filter: the list eases to its new
  * height. The palette drops 6px from 98% as it opens and closes in 110ms.
