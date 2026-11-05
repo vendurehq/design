@@ -81,6 +81,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `warning`, `warning-foreground` — Warning states
 - `info`, `info-foreground` — Informational states
 - `{tone}-text` — Text-safe tone colour on a surface tier (`success`, `warning`, `destructive`, `info`): status words, deltas, field errors (`text-success-text`)
+- `warning-indicator` — Warning as a mark beside a label: a status outline, a status dot, a highlight (`border-warning-indicator`, `bg-warning-indicator`). Lighter than `warning-text` in light mode, so a mix of it does not read beige. Not for text, and never the only cue: it is about 2:1 on light surfaces
 - `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` — The subtle tier for each tone (`success`, `warning`, `destructive`, `info`, `neutral`): tinted background, readable foreground, and matching border for soft status treatments (e.g. `bg-success-subtle text-success-subtle-foreground border-success-border`)
 - `border`, `input`, `ring` — The hairline divider between peers, the stronger outline of text inputs, and the brand focus ring
 - `control-border` — The boundary of controls that have no other visible edge: unchecked checkbox, radio, switch track, slider and progress tracks (`border-control-border`, `bg-control-border`). Text inputs keep `input`

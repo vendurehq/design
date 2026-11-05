@@ -134,6 +134,7 @@
   --warning-text: oklch(0.555 0.146 49);
   --destructive-text: oklch(0.54 0.193 24);
   --info-text: oklch(0.529 0.112 236);
+  --warning-indicator: oklch(0.767 0.157 72);
   --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
   --code-highlight-accent: oklch(0.55 0.19 250);
   --code-diff-add: color-mix(in oklab, oklch(0.55 0.17 145) 10%, transparent);
@@ -217,6 +218,7 @@
   --warning-text: oklch(0.845 0.147 79);
   --destructive-text: oklch(0.713 0.181 20);
   --info-text: oklch(0.8 0.125 231);
+  --warning-indicator: oklch(0.845 0.147 79);
   --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
   --code-highlight-accent: oklch(0.55 0.19 250);
   --code-diff-add: color-mix(in oklab, oklch(0.55 0.17 145) 10%, transparent);
