@@ -134,12 +134,13 @@ export const darkTheme = {
   background: 'oklch(0.205 0.01 231)',
   foreground: 'oklch(0.956 0.005 231)',
   'foreground-secondary': 'oklch(0.838 0.01 231)',
-  // Dark mode expresses all four tiers through lightness. `surface` sits
-  // halfway between the canvas and the raised tier; `overlay` takes one more
-  // step of the same size above `surface-raised`.
+  // Dark mode expresses the page tiers through lightness. `surface` sits
+  // halfway between the canvas and the raised tier. `overlay` matches
+  // `surface-raised`, as in the v3 look: the overlay shadow's 1px ring and
+  // drop separate floating content, not a lighter fill.
   surface: 'oklch(0.222 0.012 231)',
   'surface-raised': 'oklch(0.238 0.013 231)',
-  overlay: 'oklch(0.271 0.015 231)',
+  overlay: 'oklch(0.238 0.013 231)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   scrim: 'color-mix(in oklab, black 45%, transparent)',
   'scrim-subtle': 'color-mix(in oklab, black 42%, transparent)',
@@ -154,14 +155,15 @@ export const darkTheme = {
   'brand-indicator': brand[400],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
-  muted: 'color-mix(in oklab, var(--foreground) 4%, transparent)',
+  // Matches the v3 look's dark tint: 6% foreground over the canvas.
+  muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.014 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   // Between destructive-500 and destructive-400 on the destructive hue.
-  // destructive-500 drops to 2.8:1 on the overlay tier; 400 fails 4.5:1 for
-  // white text on the fill. This lightness holds both.
+  // destructive-500 is 3.07:1 on the raised and overlay tiers, at the
+  // floor; 400 fails 4.5:1 for white text on the fill. This lightness holds both.
   destructive: 'oklch(0.575 0.2 25)',
   'destructive-foreground': 'oklch(0.98 0.01 25)',
   // Subtle backgrounds are 40% alpha so they sit on any surface tier instead

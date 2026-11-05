@@ -15,11 +15,16 @@ export const shadows = {
 // `overlay` is for floating content (menus, popovers, dialogs): a 1px contact
 // ring plus a soft drop. Dark mode swaps the ring to white so the edge reads on
 // the dark overlay tier.
+// `control` lifts a resting control off its surface (outline buttons, button
+// groups): a 1px bottom edge and a faint 2px blur. Dark mode keeps only the
+// edge, darker, because a blur does not read on the dark tiers.
 export const lightShadows = {
   overlay:
     '0 0 0 1px oklch(0.173 0.011 231 / 0.06), 0 12px 32px -8px oklch(0.173 0.011 231 / 0.18), 0 4px 8px -4px oklch(0.173 0.011 231 / 0.08)',
+  control: '0 1px 0 oklch(0.173 0.011 231 / 0.04), 0 1px 2px oklch(0.173 0.011 231 / 0.04)',
 } as const;
 
 export const darkShadows = {
   overlay: '0 0 0 1px oklch(1 0 0 / 0.08), 0 16px 40px -8px oklch(0 0 0 / 0.6)',
+  control: '0 1px 0 oklch(0 0 0 / 0.2)',
 } as const;

@@ -73,7 +73,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Overlay is for floating content',
-        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on buttons, inputs, or cards.',
+        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs or cards. Buttons and button groups sit on shadow-control, a 1px lift off the surface.',
       },
       {
         title: 'Inset reads below its host',
@@ -119,7 +119,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances and ease-drawer for drawers and sheets that slide in from an edge.',
+        body: 'Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, and ease-press for the press scale of a control.',
       },
       {
         title: 'Match duration to distance and consequence',

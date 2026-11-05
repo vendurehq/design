@@ -54,15 +54,19 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       {/* The palette: 600px wide, 12% of the viewport from the top so the
-          list can grow down without moving the input. */}
+          list can grow down without moving the input. It opens often, so its
+          motion is shorter than a dialog's: it drops 6px from 98% at the top
+          centre (opacity 160ms, transform 180ms) and closes in 110ms. Reduced
+          motion fades only. */}
       <DialogContent
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[160ms,180ms,180ms] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-110 data-ending-style:ease-[ease] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-120 motion-reduce:ease-[ease]",
           className
         )}
         showCloseButton={showCloseButton}
-        // The palette is transient and keeps the page in view: a lighter scrim.
-        overlayClassName="bg-scrim-subtle"
+        // The palette is transient and keeps the page in view: a lighter scrim
+        // with a 2px blur that fades with the palette.
+        overlayClassName="bg-scrim-subtle duration-160 data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
@@ -208,7 +212,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-accent pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 in-data-[slot=dialog-content]:rounded-lg data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-moderate) data-ready:ease-out data-instant:transition-none! motion-reduce:data-ready:transition-opacity"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 in-data-[slot=dialog-content]:rounded-xl data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-moderate) data-ready:ease-out data-instant:transition-none! motion-reduce:data-ready:transition-opacity"
     />
   )
 }
@@ -267,7 +271,9 @@ function CommandSeparator({
 // cmdk writes data-selected="true" or "false" on every item, so the highlight
 // matches the value; a bare data-selected: variant would match every item.
 // In a CommandList with slidingHighlight, the list's highlight replaces the
-// item's own fill. Palette items (in the dialog) are 40px tall.
+// item's own fill. Palette items (in the dialog) are 40px tall and quiet at
+// rest: a medium label in foreground-secondary. The highlighted row turns the
+// label to foreground and its leading icon to the brand indicator.
 function CommandItem({
   className,
   children,
@@ -277,7 +283,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-lg! in-data-[slot=dialog-content]:px-2.5 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "data-[selected=true]:bg-muted data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-xl! in-data-[slot=dialog-content]:px-2.5 in-data-[slot=dialog-content]:font-medium in-data-[slot=dialog-content]:text-foreground-secondary! in-data-[slot=dialog-content]:transition-[color] in-data-[slot=dialog-content]:duration-120 in-data-[slot=dialog-content]:ease-[ease] in-data-[slot=dialog-content]:data-[selected=true]:text-foreground! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:duration-120 in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:ease-[ease] data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100! in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator!",
         className
       )}
       {...props}

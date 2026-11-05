@@ -10,9 +10,10 @@ import { Separator } from "@vendure-io/ui/components/atoms/separator"
 // never covers the group's inset ring, and a later child's leading border is
 // the 1px divider (a ButtonGroupSeparator replaces it). Only the outer ends
 // are rounded. A group that holds other groups is a layout row only: no edge,
-// no fill, and its child groups keep their own radius.
+// no fill, and its child groups keep their own radius. The group sits on
+// shadow-control; its children drop their own.
 const buttonGroupVariants = cva(
-  "has-[>[data-slot=button-group]]:gap-2 has-[>[data-slot=button-group]]:bg-transparent has-[>[data-slot=button-group]]:inset-ring-0 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-xl flex w-fit items-stretch rounded-xl *:data-slot:border-transparent *:focus-visible:z-10 *:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 [&>[data-slot=button-group-separator]+[data-slot]]:border-l-transparent! [&>[data-slot=button-group-separator]+[data-slot]]:border-t-transparent!",
+  "has-[>[data-slot=button-group]]:gap-2 has-[>[data-slot=button-group]]:bg-transparent has-[>[data-slot=button-group]]:inset-ring-0 has-[>[data-slot=button-group]]:shadow-none has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-xl flex w-fit items-stretch rounded-xl *:data-slot:border-transparent [&>[data-slot]:not([data-slot=button-group])]:shadow-none *:focus-visible:z-10 *:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 [&>[data-slot=button-group-separator]+[data-slot]]:border-l-transparent! [&>[data-slot=button-group-separator]+[data-slot]]:border-t-transparent!",
   {
     variants: {
       orientation: {
@@ -22,11 +23,11 @@ const buttonGroupVariants = cva(
           "[&>[data-slot]:not([data-slot=button-group])]:rounded-none [&>[data-slot]:not([data-slot]~*)]:rounded-t-xl! [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-xl! flex-col",
       },
       variant: {
-        default: "bg-card inset-ring inset-ring-input",
+        default: "bg-card inset-ring inset-ring-input shadow-control",
         // A primary split button: a main action and a menu trigger on one
         // primary fill. Use default Buttons inside. Children clip their fill
         // to the border box so a hovered segment fills edge to edge.
-        primary: "bg-primary *:data-slot:bg-clip-border",
+        primary: "bg-primary shadow-control *:data-slot:bg-clip-border",
       },
     },
     compoundVariants: [

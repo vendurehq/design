@@ -15,19 +15,22 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // A decorative icon next to the label is quieter than the label: 55% at rest,
 // 85% on hover or while its menu is open. Icon-only sizes keep the icon at
 // full strength, and a Spinner (role="status") is never dimmed.
+// Primary, outline and destructive sit on shadow-control, a 1px lift off the
+// surface; a disabled button drops it. Inside a ButtonGroup the group carries
+// the shadow and the edge, so an outline child keeps its border off on hover.
 const buttonVariants = cva(
-  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap transition-all duration-(--transition-duration-moderate) ease-(--ease-out) active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:transition-opacity [&>svg]:duration-(--transition-duration-moderate)",
+  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap transition-all duration-(--transition-duration-moderate) ease-(--ease-out) active:scale-[0.97] motion-reduce:active:scale-100 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:transition-opacity [&>svg]:duration-(--transition-duration-moderate)",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)] aria-expanded:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)]",
+          "bg-primary text-primary-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)] aria-expanded:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)]",
         // Identity/marketing CTA only ("Start free trial", "Upgrade to Cloud"):
         // a deliberate brand moment, not a louder `default` primary. Brand is a
         // signature, not a wallpaper; see Button guidance before reaching for it.
         brand: "bg-brand text-brand-foreground hover:bg-brand/80",
         outline:
-          "border-input bg-card text-foreground hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
+          "border-input bg-card text-foreground shadow-control [&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)] hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
@@ -36,7 +39,7 @@ const buttonVariants = cva(
         // modes (checked in @vendure-io/design-tokens). Hover mixes toward
         // destructive-900, a shade darker in both modes.
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-expanded:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)]",
+          "bg-destructive text-destructive-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-expanded:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)]",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

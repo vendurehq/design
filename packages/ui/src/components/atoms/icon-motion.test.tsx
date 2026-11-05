@@ -137,7 +137,24 @@ describe('slot variables in arbitrary values', () => {
 });
 
 describe('command palette', () => {
-  test('uses the lighter scrim', () => {
-    expect(source('atoms/command.tsx')).toContain('overlayClassName="bg-scrim-subtle"');
+  test('uses the lighter scrim with a 2px blur', () => {
+    const scrim = source('atoms/command.tsx').match(/overlayClassName="([^"]*)"/)?.[1]?.split(' ') ?? [];
+    expect(scrim).toEqual(
+      expect.arrayContaining(['bg-scrim-subtle', 'supports-backdrop-filter:backdrop-blur-[2px]']),
+    );
+  });
+
+  test('drops 6px from 98% to open, closes in 110ms, and only fades under reduced motion', () => {
+    const palette = source('atoms/command.tsx');
+    for (const token of [
+      'origin-top',
+      'duration-[160ms,180ms,180ms]',
+      'motion-safe:data-starting-style:-translate-y-1.5',
+      'motion-safe:data-starting-style:scale-98',
+      'data-ending-style:duration-110',
+      'motion-reduce:transition-opacity',
+    ]) {
+      expect(palette).toContain(token);
+    }
   });
 });
