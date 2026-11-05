@@ -8,6 +8,9 @@ export const easing = {
   spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   // Drawers and sheets that slide in from an edge.
   drawer: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  // A gentle ease-out for the press scale of a control. Softer than `out`,
+  // so a quick tap does not snap to its end value.
+  press: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
 } as const;
 
 export const duration = {

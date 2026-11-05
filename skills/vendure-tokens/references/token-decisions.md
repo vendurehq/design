@@ -23,7 +23,7 @@ Create hierarchy through semantic surface contrast and restrained neutral intens
 
 - **Surface contrast separates levels:** Use background, surface, surface-raised, overlay, and inset according to spatial hierarchy. Do not simulate every level with a border or shadow.
 - **Borders divide peers:** Use borders to separate siblings within the same surface level, not as the primary signal for every container.
-- **Overlay is for floating content:** Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on buttons, inputs, or cards.
+- **Overlay is for floating content:** Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs or cards. Buttons and button groups sit on shadow-control, a 1px lift off the surface.
 - **Inset reads below its host:** Use inset for wells, tracks, skeleton regions, or controls that should appear recessed.
 - **Neutral intensity has an order:** Use muted for the lowest emphasis, secondary for supporting filled surfaces, and accent for hover or selected emphasis.
 ## Typography
@@ -39,7 +39,7 @@ Use named type roles and shared font context rather than restyling headings ad h
 Use shared duration and easing tokens for purposeful state transitions.
 
 - **Motion explains change:** Animate entry, exit, reordering, feedback, or continuity. Do not add movement only to make a static surface feel lively.
-- **Use named duration and easing tokens:** Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances and ease-drawer for drawers and sheets that slide in from an edge.
+- **Use named duration and easing tokens:** Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, and ease-press for the press scale of a control.
 - **Match duration to distance and consequence:** Small local feedback is fast; larger spatial transitions may be slower. Routine interactions should not feel ceremonial.
 - **Preserve reduced-motion behavior:** Make non-essential motion removable and ensure meaning remains visible when animation is reduced.
 ## Theming ownership

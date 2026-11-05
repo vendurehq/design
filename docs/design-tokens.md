@@ -64,7 +64,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 - `background`, `foreground` — Page background and primary text
 - `foreground-secondary` — Secondary text on any surface tier: descriptions, table values, inactive navigation (`text-foreground-secondary`). It sits between `foreground` and `muted-foreground`. It is not the text on a `secondary` fill; that is `secondary-foreground`
-- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier
+- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier. In dark mode `overlay` has the same fill as `surface-raised`; the `shadow-overlay` ring and drop separate floating content
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
 - `scrim-subtle` — Lighter backdrop for a transient overlay that keeps the page in view, such as the command palette: `bg-scrim-subtle`
@@ -97,11 +97,11 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `critical` renders with the `destructive-*` slots.
 - `progress` renders with the `info` slots plus a spinner.
 
-**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`, and on the `muted`, `secondary` and `accent` fills over each tier. One known gap: dark `destructive-text` is 4.44:1 on `secondary` and 4.18:1 on `accent` over `overlay`. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.10:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
+**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`, and on the `muted`, `secondary` and `accent` fills over each tier. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.41:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
-- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` and `{tone}-text` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier (except the dark `destructive-text` gap above); for the subtle tier over `surface`, `surface-raised` and `overlay`; and for the StatusBadge label on its chip fill, for all six tones on every surface tier.
+- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` and `{tone}-text` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier; for the subtle tier over `surface`, `surface-raised` and `overlay`; and for the StatusBadge label on its chip fill, for all six tones on every surface tier.
 - 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier, and for the StatusBadge icon on its chip fill. `border` and `input` are exempt. `warning-indicator` is exempt in light mode (about 2:1; never the only cue) and holds 3:1 in dark mode.
 
 ### Typography
@@ -133,7 +133,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 ### Motion
 
-- **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge) — Tailwind `ease-*` utilities
+- **Easing**: `--ease-default`, `--ease-in`, `--ease-out` (a strong ease-out for entrances), `--ease-in-out`, `--ease-spring`, `--ease-drawer` (drawers and sheets that slide in from an edge), `--ease-press` (the press scale of a control) — Tailwind `ease-*` utilities
 - **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
 - **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner)
 
