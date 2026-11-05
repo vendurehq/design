@@ -8,7 +8,12 @@ function slotTokens(html: string, slot: string): string[] {
   const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0];
   if (!tag) throw new Error(`No ${slot} rendered`);
   const classAttr = tag.match(/class="([^"]*)"/)?.[1] ?? '';
-  return classAttr.replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&#x27;/g, "'").split(/\s+/).filter(Boolean);
+  return classAttr
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&#x27;/g, "'")
+    .split(/\s+/)
+    .filter(Boolean);
 }
 
 describe('ArrowLink', () => {
@@ -17,7 +22,9 @@ describe('ArrowLink', () => {
     expect(html).toStartWith('<a');
     expect(html).toContain('href="/deployments"');
     expect(html).toContain('data-slot="arrow-link"');
-    expect(html.indexOf('All deployments')).toBeLessThan(html.indexOf('data-slot="arrow-link-arrow"'));
+    expect(html.indexOf('All deployments')).toBeLessThan(
+      html.indexOf('data-slot="arrow-link-arrow"'),
+    );
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
   });
 
@@ -30,14 +37,26 @@ describe('ArrowLink', () => {
   });
 
   test('text is 82% foreground at rest and full on hover', () => {
-    const tokens = slotTokens(renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>), 'arrow-link');
+    const tokens = slotTokens(
+      renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>),
+      'arrow-link',
+    );
     expect(tokens).toEqual(
-      expect.arrayContaining(['text-sm', 'font-medium', 'text-foreground/82', 'hover:text-foreground', 'group/arrow-link']),
+      expect.arrayContaining([
+        'text-sm',
+        'font-medium',
+        'text-foreground/82',
+        'hover:text-foreground',
+        'group/arrow-link',
+      ]),
     );
   });
 
   test('the arrow is 15px at 45%, and on hover goes full and moves 2px out', () => {
-    const tokens = slotTokens(renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>), 'arrow-link-arrow');
+    const tokens = slotTokens(
+      renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>),
+      'arrow-link-arrow',
+    );
     expect(tokens).toEqual(
       expect.arrayContaining([
         'size-3.75',
