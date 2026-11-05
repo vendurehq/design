@@ -11,7 +11,8 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // card — a group selector matches any ancestor and leaks the outer card's
 // size into an inner one.
 // The v3 panel: a 12px radius, a full-strength hairline border and no shadow.
-// The 16px rhythm makes a one-line header row 52px tall (16 + title line + 16).
+// --card-head is the height of a one-line header: 48px, the height of a row,
+// so a header and the rows under it share one rhythm (44px in the sm size).
 function Card({
   className,
   size = "default",
@@ -22,13 +23,22 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] [--card-head:--spacing(12)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] data-[size=sm]:[--card-head:--spacing(11)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
         className
       )}
       {...props}
     />
   )
 }
+
+// A one-line header (only a CardTitle and an optional CardAction) is one
+// --card-head row with its content centred. As the first child it takes the
+// card's top padding into that row. Without a band border it also takes the
+// gap below, so CardRows or CardContent start right under the 48px row; with
+// border-b it drops its bottom padding, and the border sits at 48px. A header
+// with a description, controls or chips keeps the padded layout.
+const ONE_LINE_HEADER =
+  "[&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:min-h-(--card-head) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:content-center first:[&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:-mt-(--card-gap) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:[&:not(.border-b)]:-mb-(--card-gap) [&:has(>[data-slot=card-title]):not(:has(>:not([data-slot=card-title],[data-slot=card-action])))]:[.border-b]:pb-0"
 
 // Band dividers (consumer-applied border-b / border-t on header/footer) use the
 // same hairline as the card outline and the CardRows separators.
@@ -38,6 +48,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-header"
       className={cn(
         "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-2xl ps-(--card-ps) pe-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-gap)",
+        ONE_LINE_HEADER,
         className
       )}
       {...props}
