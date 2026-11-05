@@ -220,9 +220,11 @@ function PaletteBody() {
  * CommandItemDetail, shown on the highlighted item only. CommandList's
  * slidingHighlight follows the selection and eases the list's scroll with
  * it; hold an arrow key and it keeps up without restarting. Type to filter:
- * the list eases to its new height. The palette drops 6px from 98% as it
- * opens and closes in 110ms. Under reduced motion it only fades, the
- * highlight and the scroll jump and the height changes at once.
+ * the old results fade out with a blur while new ones fade in, rows that stay
+ * keep still, and the list eases to its new height. The palette drops 6px
+ * from 98% as it opens and closes in 110ms. Under reduced motion it only
+ * fades, the highlight and the scroll jump, new results only fade and the
+ * height changes at once.
  */
 export const Palette: Story = {
   parameters: { docs: { story: { inline: false, height: '560px' } } },
