@@ -283,7 +283,7 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
   )
 }
@@ -297,6 +297,26 @@ function CommandShortcut({
       data-slot="command-shortcut"
       className={cn(
         "text-muted-foreground group-data-[selected=true]/command-item:text-foreground ml-auto text-xs tracking-widest",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+// Where an item lives, such as "Production · Acme", at the end of the row. It
+// shows on the highlighted item only: repeated on every row it is noise. It
+// slides in 4px from a 1px blur as the highlight arrives (opacity 180ms,
+// transform 220ms, after 40ms) and leaves in 90ms. Reduced motion fades only.
+function CommandItemDetail({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="command-item-detail"
+      className={cn(
+        "text-muted-foreground ml-auto max-w-[55%] shrink-0 truncate pl-3 text-xs font-normal opacity-0 -translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-90 ease-[ease] group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-40 group-data-[selected=true]/command-item:duration-[180ms,220ms,180ms] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
         className
       )}
       {...props}
@@ -328,6 +348,7 @@ export {
   CommandGroup,
   CommandItem,
   CommandShortcut,
+  CommandItemDetail,
   CommandSeparator,
   CommandFooter,
 }
