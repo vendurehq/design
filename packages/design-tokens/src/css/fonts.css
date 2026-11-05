@@ -6,3 +6,17 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/public-sans";
 @import "@fontsource-variable/geist-mono";
+
+/* The v3 look renders all text with grayscale antialiasing. macOS otherwise
+   draws light text on dark surfaces with subpixel smoothing, which makes
+   Inter look heavier than its weight, most visibly in chips and table rows.
+   The rule lives here because this is the one stylesheet every consumer
+   loads (css/theme in the Console, css/shadcn in the Dashboard). It sits in
+   the `base` layer, so a `subpixel-antialiased` utility still wins. */
+@layer base {
+  html,
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

@@ -44,6 +44,8 @@ Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for I
 @import "@vendure-io/design-tokens/css/fonts";
 ```
 
+It also sets grayscale font smoothing on `html` and `body` (`-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`), as the v3 look renders all text. The rule is in the `base` layer, so the `subpixel-antialiased` utility still overrides it. An app that loads the fonts another way sets the rule itself.
+
 ### `@vendure-io/design-tokens` (TypeScript)
 
 Token values as TypeScript objects for programmatic access:
