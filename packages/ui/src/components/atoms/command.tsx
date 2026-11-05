@@ -95,6 +95,15 @@ function CommandInput({
   )
 }
 
+// In the palette, results that appear after the first render (a new query)
+// fade in from a 3px blur, 50ms after the old results start to leave. Rows that
+// stay are not touched: cmdk re-inserts them when it sorts, so the ghost marks
+// every shown result data-result-seen before the query changes. The colour
+// transition is the palette item's own (see CommandItem). Reduced motion drops
+// the blur.
+const ENTERING_RESULTS =
+  "[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:transition-[color,opacity,filter] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:duration-[120ms,200ms,240ms] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:delay-[0ms,50ms,50ms] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:ease-[ease,ease,var(--ease-out)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:opacity-0 motion-safe:[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:blur-[3px]"
+
 // cmdk measures the list's content and writes it to --cmdk-list-height, so the
 // list eases to its new height as results change. The first measure is not
 // animated (the height starts as auto). Reduced motion drops the animation.
@@ -117,13 +126,114 @@ function CommandList({
       data-highlight={slidingHighlight ? "slide" : undefined}
       className={cn(
         "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-drawer in-data-[slot=dialog-content]:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
+        ENTERING_RESULTS,
         className
       )}
       {...props}
     >
       {slidingHighlight && <CommandHighlight />}
+      <CommandResultsGhost />
       {children}
     </CommandPrimitive.List>
+  )
+}
+
+// The palette's results crossfade. Just before the query changes (beforeinput),
+// a copy of the current results goes into this layer, at the place they were
+// shown, and fades out with a 3px blur (opacity 140ms, blur 160ms) while the
+// new results fade in under it. Only in the palette (a CommandList in a
+// dialog). Reduced motion skips the copy: new results only fade in.
+function CommandResultsGhost() {
+  const ref = React.useRef<HTMLDivElement>(null)
+
+  React.useLayoutEffect(() => {
+    const ghost = ref.current
+    const sizer = ghost?.parentElement
+    const list = sizer?.closest<HTMLElement>("[cmdk-list]")
+    const root = sizer?.closest("[cmdk-root]")
+    if (
+      !ghost ||
+      !sizer ||
+      !list ||
+      !root ||
+      !list.closest("[data-slot=dialog-content]")
+    ) {
+      return
+    }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
+    let timer = 0
+
+    // Results rendered from now on are new: they fade in.
+    const frame = requestAnimationFrame(() => {
+      list.dataset.resultsReady = ""
+    })
+
+    const onBeforeInput = (event: Event) => {
+      if (!(event.target instanceof HTMLInputElement)) {
+        return
+      }
+      // Results shown now stay still if the new query keeps them.
+      for (const result of sizer.querySelectorAll<HTMLElement>(
+        "[cmdk-item],[cmdk-group-heading],[cmdk-empty]"
+      )) {
+        if (ghost.contains(result)) {
+          continue
+        }
+        if (result.offsetParent) {
+          result.dataset.resultSeen = ""
+        } else {
+          delete result.dataset.resultSeen
+        }
+      }
+      if (reduced.matches) {
+        return
+      }
+      const copies: Node[] = []
+      for (const child of sizer.children) {
+        if (
+          child === ghost ||
+          child.getAttribute("data-slot") === "command-highlight"
+        ) {
+          continue
+        }
+        const copy = child.cloneNode(true) as HTMLElement
+        // The copy must not answer cmdk's or the highlight's item queries.
+        for (const node of [copy, ...copy.querySelectorAll("*")]) {
+          node.removeAttribute("id")
+          node.removeAttribute("cmdk-item")
+          node.removeAttribute("cmdk-empty")
+          node.removeAttribute("data-result-seen")
+        }
+        copies.push(copy)
+      }
+      ghost.replaceChildren(...copies)
+      // A new query scrolls the list to the top: keep the copy where it was.
+      ghost.style.top = `${-list.scrollTop}px`
+      delete ghost.dataset.leaving
+      void ghost.offsetHeight
+      ghost.dataset.leaving = ""
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => ghost.replaceChildren(), 220)
+    }
+    root.addEventListener("beforeinput", onBeforeInput, true)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+      root.removeEventListener("beforeinput", onBeforeInput, true)
+      delete list.dataset.resultsReady
+    }
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden="true"
+      role="none"
+      inert
+      data-slot="command-results-ghost"
+      className="pointer-events-none absolute inset-x-0 top-0 z-10 p-1 empty:hidden data-leaving:*:opacity-0 data-leaving:*:blur-[3px] data-leaving:*:transition-[opacity,filter] data-leaving:*:duration-[140ms,160ms] data-leaving:*:ease-[ease]"
+    />
   )
 }
 

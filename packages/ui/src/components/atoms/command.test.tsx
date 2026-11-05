@@ -168,3 +168,29 @@ describe('CommandFooter', () => {
     expect(classTokens(html, 'command-footer')).toContain('border-t');
   });
 });
+
+describe('CommandList results crossfade', () => {
+  test('renders one hidden, inert ghost layer for the leaving results', () => {
+    const html = render();
+    expect(html.match(/data-slot="command-results-ghost"/g)).toHaveLength(1);
+    const ghost = html.match(/<div[^>]*data-slot="command-results-ghost"[^>]*>/)?.[0] ?? '';
+    expect(ghost).toContain('aria-hidden="true"');
+    expect(ghost).toContain('role="none"');
+    expect(ghost).toContain('inert');
+    expect(classTokens(html, 'command-results-ghost')).toEqual(
+      expect.arrayContaining(['data-leaving:*:opacity-0', 'data-leaving:*:blur-[3px]']),
+    );
+  });
+
+  test('new results fade in from a blur, rows that stay and the ghost do not', () => {
+    const entering = classTokens(render(), 'command-list').filter((token) => token.includes('[data-results-ready]'));
+    expect(entering.length).toBeGreaterThan(0);
+    for (const token of entering) {
+      expect(token).toContain(':not([data-result-seen],[data-slot=command-results-ghost]_*)');
+    }
+    expect(entering.some((token) => token.endsWith(':starting:opacity-0'))).toBe(true);
+    expect(entering.some((token) => token.startsWith('motion-safe:') && token.endsWith(':starting:blur-[3px]'))).toBe(
+      true,
+    );
+  });
+});
