@@ -559,7 +559,7 @@ const APPEARANCES: {
     sample: (
       <StatusBadge tone="success">Live</StatusBadge>
     ),
-    use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. The tone icon comes with it; pass icon for a more exact shape, or dot in a dense group.',
+    use: 'Default. A status that stands alone: beside a page title (size="lg"), in a card header, in a description list. The tone icon comes with it, so never put an icon in children. Pass icon={<Icon />} for a more exact shape, dot for a group of chips that is not a column, or icon={false} inline where the label already names the tone.',
   },
   {
     appearance: 'text',
@@ -641,7 +641,7 @@ export const Appearance: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="A chip on every row. Each box competes with the row it labels, and the one failure no longer stands out."
+            caption="A chip on every row, even with dot. Each box competes with the row it labels, and the one failure no longer stands out."
           >
             <div className="flex w-full flex-col gap-2 text-sm">
               {ROWS.map(({ name, tone, state }) => (

@@ -13,6 +13,7 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react';
 import type * as React from 'react';
+import { isValidElement } from 'react';
 
 type StatusBadgeAppearance = 'chip' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
@@ -21,7 +22,9 @@ type StatusBadgeSize = 'default' | 'lg';
 // colour: a faint 5% tone wash over the `muted` fill, a 1px inset outline at
 // 34%, and a label tinted 30% from `foreground-secondary` towards the tone. A
 // row of chips stays calm, and each one still reads its state at a glance.
-// The outline is an inset ring, not a border, so it adds no width. There is
+// The outline is an inset ring, not a border, so it adds no width. Forced
+// colours drop box shadows, so a transparent 1px outline, inset by its own
+// width, draws the chip's box there instead (still no width). There is
 // no solid mode: solid/brand chips stay on the base `Badge` (accent rationing
 // applied at the API level).
 //
@@ -37,7 +40,8 @@ const statusBadgeVariants = cva(
     'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium leading-none',
     'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
     'text-[color-mix(in_oklab,var(--status-label-tone,var(--status-tone))_var(--status-label-mix,30%),var(--foreground-secondary))]',
-    'transition-[box-shadow,background-color] duration-slow',
+    'outline-1 outline-transparent -outline-offset-1',
+    'transition-[box-shadow,background-color,color] duration-slow',
   ],
   {
     variants: {
@@ -63,14 +67,14 @@ const statusBadgeVariants = cva(
 );
 
 // The icon a chip shows when the caller passes none: the shape says the state
-// again, so a chip never depends on colour alone. `progress` spins its loader.
-const toneIcon: Record<Tone, LucideIcon> = {
+// again, so a chip never depends on colour alone. `progress` always spins its
+// `Loader` (see StatusBadgeMarker).
+const toneIcon: Record<Exclude<Tone, 'progress'>, LucideIcon> = {
   neutral: CircleDashedIcon,
   info: CircleDotIcon,
   success: CircleCheckIcon,
   warning: TriangleAlertIcon,
   critical: CircleXIcon,
-  progress: LoaderIcon,
 };
 
 // The marker colour of each tone: the dot fill, and the icon or spinner stroke.
@@ -116,18 +120,24 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /** Chip height: `default` (24px) or `lg` (28px, for page headers). Only for `appearance="chip"`. @default 'default' */
   size?: StatusBadgeSize;
   /**
-   * Show a leading dot in the tone colour in place of the tone icon. Opt in
-   * for dense tables. Only for `appearance="chip"`. `progress` keeps its
+   * Show a leading dot in the tone colour in place of the tone icon, for a
+   * group of chips that is not a list column (a list column uses
+   * `appearance="text"`). Only for `appearance="chip"`. `progress` keeps its
    * spinner, regardless of this prop.
    */
   dot?: boolean;
   /**
-   * The leading icon, in the tone colour. By default each tone shows its own
-   * icon: `CircleCheck` (success), `TriangleAlert` (warning), `CircleX`
-   * (critical), `CircleDot` (info), `CircleDashed` (neutral) and a spinning
-   * `Loader` (progress). Pass a lucide icon element for a state whose shape
-   * says more, e.g. `<MoonStarIcon />` for Asleep. Pass `false` for no icon.
-   * Only for `appearance="chip"`.
+   * The leading icon, in the tone colour. Only for `appearance="chip"`.
+   * - Leave it out for the tone's own icon: `CircleCheck` (success),
+   *   `TriangleAlert` (warning), `CircleX` (critical), `CircleDot` (info),
+   *   `CircleDashed` (neutral) and a spinning `Loader` (progress).
+   * - Pass a lucide icon element for a state whose shape says more, e.g.
+   *   `<MoonStarIcon />` for Asleep. It replaces the dot and the spinner too.
+   * - Pass `false` or `null` for no icon, on an inline chip whose label
+   *   already names the tone. `progress` still shows its spinner, and `dot`
+   *   still shows the dot.
+   *
+   * Never put an icon in `children`: the chip already brings one.
    */
   icon?: React.ReactNode;
 }
@@ -215,9 +225,8 @@ function StatusBadgeMarker({
     size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3.25',
     toneText[tone],
   );
-  const hasCustomIcon = icon !== undefined && icon !== null && typeof icon !== 'boolean';
 
-  if (hasCustomIcon) {
+  if (isValidElement(icon)) {
     return (
       <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
         {icon}
@@ -225,17 +234,27 @@ function StatusBadgeMarker({
     );
   }
 
-  // `progress` keeps its spinner over a dot: the motion is its meaning.
-  if (icon !== false && (tone === 'progress' || !dot)) {
-    const ToneIcon = toneIcon[tone];
+  // `progress` keeps its spinner over a dot and without an icon: the motion is
+  // its meaning, and without it the chip looks like `info`.
+  if (tone === 'progress') {
     return (
       <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
-        <ToneIcon className={tone === 'progress' ? spinnerClass : undefined} />
+        <LoaderIcon className={spinnerClass} />
       </span>
     );
   }
 
-  if (!dot) return null;
+  if (!dot) {
+    // `false`, `null` and any other value that is not an element (`''`, `0`)
+    // mean no icon. Only a left-out `icon` gets the tone's own.
+    if (icon !== undefined) return null;
+    const ToneIcon = toneIcon[tone];
+    return (
+      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
+        <ToneIcon />
+      </span>
+    );
+  }
 
   return (
     <span

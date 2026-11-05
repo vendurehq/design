@@ -49,6 +49,10 @@ export const tokenGuidance = [
         body: 'Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It holds 3:1 for non-text contrast, not 4.5:1 for text. The focus ring is brand too.',
       },
       {
+        title: 'Warning marks are never the only cue',
+        body: 'Use warning-indicator for a warning mark beside a label, such as the StatusBadge outline and fill. In light mode it is about 2:1, below the 3:1 non-text bar, so a label or icon must carry the state. Do not use it for a standalone status dot or for text.',
+      },
+      {
         title: 'Local color concepts remain semantic',
         body: 'A standalone external app may add a namespaced semantic slot for a genuinely product-specific concept, mapped through theme values. Graduate it when a second consumer needs it.',
       },

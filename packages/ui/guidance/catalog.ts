@@ -798,7 +798,11 @@ export const uiGuidance = [
       },
       {
         title: 'Pick the appearance by the room it has',
-        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Use appearance="text" for a fixed status column in a list. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
+        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
+      },
+      {
+        title: 'The chip brings its own icon',
+        body: 'Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
       },
     ],
     choices: [
