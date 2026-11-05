@@ -40,6 +40,15 @@ Use the shared application anatomy without moving app-owned routing or context i
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
 
 Related decisions: `page-header`.
+## ArrowLink
+
+Link to a page with more of what the user is looking at, at the end of the region it extends.
+
+- **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
+- **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
+- **Not inside running text:** A link inside a sentence or a form is `Button variant="link"` or a plain anchor; an arrow there breaks the sentence.
+
+Related decisions: `button`.
 ## Badge
 
 Use Badge for static classification or counts, neutral by default.
