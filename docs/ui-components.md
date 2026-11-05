@@ -226,10 +226,17 @@ const deploymentStates = defineStateEntries<DeploymentState>({
 Do not attach ramp colors to states. Unknown wire values deliberately fall back
 to neutral and warn once in development.
 
-`StatusBadge` renders as a chip by default. Use `appearance="text"` for a fixed
-status column in a list, and `appearance="dot"` only where no word fits (the
-label stays as screen-reader text). `size="lg"` is the 28px chip for a page
-header, and `icon` replaces the leading dot with an icon in the tone colour.
+`StatusBadge` renders as a chip by default, with the tone's own icon in front
+of the label (`progress` spins). Use `appearance="text"` for a list or table
+column, and `appearance="dot"` only where no word fits (the label stays as
+screen-reader text). `size="lg"` is the 28px chip for a page header.
+
+- `icon={<Icon />}` replaces the tone icon with a more exact shape. Never put
+  an icon in `children`.
+- `dot` shows a dot in place of the icon, for a group of chips that is not a
+  column.
+- `icon={false}` or `icon={null}` shows no icon, for an inline chip whose label
+  already names the tone. `progress` keeps its spinner and `dot` keeps the dot.
 
 ### Illustrations
 

@@ -81,7 +81,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `warning`, `warning-foreground` — Warning states
 - `info`, `info-foreground` — Informational states
 - `{tone}-text` — Text-safe tone colour on a surface tier (`success`, `warning`, `destructive`, `info`): status words, deltas, field errors (`text-success-text`)
-- `warning-indicator` — Warning as a mark beside a label: a status outline, a status dot, a highlight (`border-warning-indicator`, `bg-warning-indicator`). Lighter than `warning-text` in light mode, so a mix of it does not read beige. Not for text, and never the only cue: it is about 2:1 on light surfaces
+- `warning-indicator` — Warning as a mark beside a label: the StatusBadge outline and fill, a highlight (`border-warning-indicator`, `bg-warning-indicator`). Lighter than `warning-text` in light mode, so a mix of it does not read beige. Not for text and not for a standalone status dot. Never the only cue: it is about 2:1 on light surfaces. In dark mode it is `warning-text`
 - `{tone}-subtle`, `{tone}-subtle-foreground`, `{tone}-border` — The subtle tier for each tone (`success`, `warning`, `destructive`, `info`, `neutral`): tinted background, readable foreground, and matching border for soft status treatments (e.g. `bg-success-subtle text-success-subtle-foreground border-success-border`)
 - `border`, `input`, `ring` — The hairline divider between peers, the stronger outline of text inputs, and the brand focus ring
 - `control-border` — The boundary of controls that have no other visible edge: unchecked checkbox, radio, switch track, slider and progress tracks (`border-control-border`, `bg-control-border`). Text inputs keep `input`
@@ -95,14 +95,14 @@ All colors use the OKLCH color space for perceptual uniformity.
 **Tones.** The tone vocabulary is `neutral`, `info`, `success`, `warning`, `critical` and `progress`. Two tones have no slots of their own:
 
 - `critical` renders with the `destructive-*` slots.
-- `progress` renders with the `neutral-*` slots plus an `info` dot.
+- `progress` renders with the `info` slots plus a spinner.
 
-**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.10:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
+**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`, and on the `muted`, `secondary` and `accent` fills over each tier. One known gap: dark `destructive-text` is 4.44:1 on `secondary` and 4.18:1 on `accent` over `overlay`. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.10:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
-- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier; and for the subtle tier over `surface`, `surface-raised` and `overlay`.
-- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier. `border` and `input` are exempt.
+- 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` and `{tone}-text` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier (except the dark `destructive-text` gap above); for the subtle tier over `surface`, `surface-raised` and `overlay`; and for the StatusBadge label on its chip fill, for all six tones on every surface tier.
+- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier, and for the StatusBadge icon on its chip fill. `border` and `input` are exempt. `warning-indicator` is exempt in light mode (about 2:1; never the only cue) and holds 3:1 in dark mode.
 
 ### Typography
 

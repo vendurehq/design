@@ -55,8 +55,9 @@ export const AllTones: Story = {
   ),
 };
 
-// The leading dot replaces the tone icon, for dense tables; progress ignores
-// the prop and keeps its spinner.
+// The leading dot replaces the tone icon, for a group of chips that is not a
+// list column (a column uses `appearance="text"`). Progress ignores the prop
+// and keeps its spinner.
 export const WithDot: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
@@ -69,8 +70,8 @@ export const WithDot: Story = {
   ),
 };
 
-// `progress` renders a spinner, also with the `dot` prop. It turns once every
-// 1.6s and stands still under prefers-reduced-motion.
+// `progress` renders a spinner, also with `dot` and with `icon={false}`. It
+// turns once every 1.6s and stands still under prefers-reduced-motion.
 export const Progress: Story = {
   args: { tone: 'progress', children: 'Deploying' },
 };
@@ -94,14 +95,25 @@ export const WithIcon: Story = {
   ),
 };
 
-// `icon={false}`: the label alone, where the icon would repeat a column's meaning.
+// `icon={false}`: an inline chip whose label already names the tone. A list
+// column uses `appearance="text"` instead. `progress` keeps its spinner, so it
+// never looks like `info`.
+const INLINE: { text: string; tone: Tone; label: string }[] = [
+  { text: 'The last deploy', tone: 'critical', label: 'Failed' },
+  { text: 'The rollback is', tone: 'progress', label: 'In progress' },
+  { text: 'The staging environment is', tone: 'success', label: 'Healthy' },
+];
+
 export const WithoutIcon: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-2">
-      {TONES.map(({ tone, label }) => (
-        <StatusBadge key={tone} tone={tone} icon={false}>
-          {label}
-        </StatusBadge>
+    <div className="text-foreground-secondary flex flex-col gap-2 text-sm">
+      {INLINE.map(({ text, tone, label }) => (
+        <p key={label} className="flex items-center gap-1.5">
+          {text}
+          <StatusBadge tone={tone} icon={false}>
+            {label}
+          </StatusBadge>
+        </p>
       ))}
     </div>
   ),
@@ -164,7 +176,7 @@ export const DotAppearance: Story = {
 };
 
 // A status chip beside classification Badges. Solid/brand chips stay on Badge;
-// StatusBadge never fills with its tone.
+// StatusBadge takes only a faint wash of its tone over the muted fill.
 export const AlongsideBadge: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-2">
