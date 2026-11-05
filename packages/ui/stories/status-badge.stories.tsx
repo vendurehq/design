@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { CircleCheckIcon, CircleSlashIcon, CircleXIcon, MoonStarIcon } from 'lucide-react';
+import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
@@ -41,7 +41,8 @@ const TONES: { tone: Tone; label: string }[] = [
 
 export const Playground: Story = {};
 
-// Every tone as a chip: a faint tone wash on the muted fill, a tone outline and a tinted label.
+// Every tone as a chip: a faint tone wash on the muted fill, a tone outline,
+// a tinted label and the tone's own icon.
 export const AllTones: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
@@ -54,8 +55,8 @@ export const AllTones: Story = {
   ),
 };
 
-// The leading dot is opt-in for dense tables; progress ignores the prop and
-// always shows its spinner.
+// The leading dot replaces the tone icon, for dense tables; progress ignores
+// the prop and keeps its spinner.
 export const WithDot: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
@@ -68,23 +69,21 @@ export const WithDot: Story = {
   ),
 };
 
-// `progress` always renders a spinner regardless of the `dot` prop. It turns
-// once every 1.6s and stands still under prefers-reduced-motion.
+// `progress` renders a spinner, also with the `dot` prop. It turns once every
+// 1.6s and stands still under prefers-reduced-motion.
 export const Progress: Story = {
   args: { tone: 'progress', children: 'Deploying' },
 };
 
-// `icon` replaces the dot (and the progress spinner) with an icon in the tone
-// colour, for a state whose shape says more than a dot.
+// The default tone icons, and `icon` for a state whose shape says more than
+// its tone icon.
 export const WithIcon: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <StatusBadge tone="success" icon={<CircleCheckIcon />}>
-        Live
-      </StatusBadge>
-      <StatusBadge tone="critical" icon={<CircleXIcon />}>
-        Failed
-      </StatusBadge>
+      <StatusBadge tone="success">Live</StatusBadge>
+      <StatusBadge tone="progress">Building</StatusBadge>
+      <StatusBadge tone="warning">Degraded</StatusBadge>
+      <StatusBadge tone="critical">Failed</StatusBadge>
       <StatusBadge tone="neutral" icon={<CircleSlashIcon />}>
         Cancelled
       </StatusBadge>
@@ -95,18 +94,37 @@ export const WithIcon: Story = {
   ),
 };
 
-// `size="lg"` (28px) for the status beside a page title.
+// `icon={false}`: the label alone, where the icon would repeat a column's meaning.
+export const WithoutIcon: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      {TONES.map(({ tone, label }) => (
+        <StatusBadge key={tone} tone={tone} icon={false}>
+          {label}
+        </StatusBadge>
+      ))}
+    </div>
+  ),
+};
+
+// `size="lg"` (28px, 14px icon) for the status beside a page title.
 export const Large: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-2">
-      <StatusBadge size="lg" tone="success" icon={<CircleCheckIcon />}>
+      <StatusBadge size="lg" tone="success">
         Live
       </StatusBadge>
       <StatusBadge size="lg" tone="progress">
-        Deploying
+        Building
       </StatusBadge>
-      <StatusBadge size="lg" tone="warning" dot>
+      <StatusBadge size="lg" tone="warning">
         Degraded
+      </StatusBadge>
+      <StatusBadge size="lg" tone="critical">
+        Failed
+      </StatusBadge>
+      <StatusBadge size="lg" tone="neutral" icon={<MoonStarIcon />}>
+        Asleep
       </StatusBadge>
     </div>
   ),
