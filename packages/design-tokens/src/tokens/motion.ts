@@ -16,6 +16,8 @@ export const easing = {
 export const duration = {
   instant: '0ms',
   fast: '100ms',
+  // Colour changes on controls: fill, border and text of a button or link.
+  quick: '120ms',
   moderate: '150ms',
   normal: '200ms',
   slow: '300ms',

@@ -21,7 +21,7 @@ describe('Button press feedback', () => {
     expect(tokens).toContain('active:scale-[0.97]');
     expect(tokens).toContain('motion-reduce:active:scale-100');
     expect(tokens).toContain(
-      '[transition:background-color_120ms_ease,border-color_120ms_ease,color_120ms_ease,scale_150ms_var(--ease-press)]',
+      '[transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)]',
     );
     expect(tokens).not.toContain('transition-all');
     expect(tokens.filter((token) => token.includes('data-pressed'))).toEqual([]);
@@ -73,6 +73,15 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('bg-destructive');
     expect(tokens).toContain('text-destructive-foreground');
     expect(tokens.filter((token) => /^(bg-destructive\/|text-destructive-subtle)/.test(token))).toEqual([]);
+  });
+});
+
+describe('Button data-icon padding', () => {
+  test('no size narrows the icon side', () => {
+    for (const size of ['default', 'xs', 'sm', 'lg'] as const) {
+      const tokens = buttonTokens(<Button size={size}>Save</Button>);
+      expect(tokens.filter((token) => token.includes('data-[icon='))).toEqual([]);
+    }
   });
 });
 
