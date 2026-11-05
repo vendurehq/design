@@ -15,7 +15,7 @@ import {
 import type * as React from 'react';
 import { isValidElement } from 'react';
 
-type StatusBadgeAppearance = 'chip' | 'text' | 'dot';
+type StatusBadgeAppearance = 'chip' | 'bare' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
 
 // The chip takes its tone in three places, all mixed from one `--status-tone`
@@ -35,28 +35,59 @@ type StatusBadgeSize = 'default' | 'lg';
 // fill and outline in `warning-indicator`: mixed from `warning-text`, they
 // read beige. Its label mixes 70% of `warning-text` instead. Class strings
 // are static per tone so Tailwind's scanner picks them up.
+const toneVars = {
+  neutral: '[--status-tone:var(--muted-foreground)]',
+  info: '[--status-tone:var(--info-text)]',
+  success: '[--status-tone:var(--success-text)]',
+  warning:
+    '[--status-label-mix:70%] [--status-label-tone:var(--warning-text)] [--status-tone:var(--warning-indicator)]',
+  critical: '[--status-tone:var(--destructive-text)]',
+  progress: '[--status-tone:var(--info-text)]',
+} satisfies Record<Tone, string>;
+
+// The label colour every chip shares: 30% of the tone (70% of `warning-text`
+// for warning) into `foreground-secondary`.
+const chipLabel =
+  'text-[color-mix(in_oklab,var(--status-label-tone,var(--status-tone))_var(--status-label-mix,30%),var(--foreground-secondary))]';
+
 const statusBadgeVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium leading-none',
     'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
-    'text-[color-mix(in_oklab,var(--status-label-tone,var(--status-tone))_var(--status-label-mix,30%),var(--foreground-secondary))]',
+    chipLabel,
     'outline-1 outline-transparent -outline-offset-1',
     'transition-[box-shadow,background-color,color] duration-slow',
   ],
   {
     variants: {
-      tone: {
-        neutral: '[--status-tone:var(--muted-foreground)]',
-        info: '[--status-tone:var(--info-text)]',
-        success: '[--status-tone:var(--success-text)]',
-        warning:
-          '[--status-label-mix:70%] [--status-label-tone:var(--warning-text)] [--status-tone:var(--warning-indicator)]',
-        critical: '[--status-tone:var(--destructive-text)]',
-        progress: '[--status-tone:var(--info-text)]',
-      } satisfies Record<Tone, string>,
+      tone: toneVars,
       size: {
         default: 'h-6 gap-1.5 px-2.5 text-xs has-data-[slot=status-badge-marker]:pl-2',
         lg: 'h-7 gap-1.5 px-3 text-sm has-data-[slot=status-badge-marker]:pl-2.5',
+      } satisfies Record<StatusBadgeSize, string>,
+    },
+    defaultVariants: {
+      tone: 'neutral',
+      size: 'default',
+    },
+  },
+);
+
+// The `bare` appearance: the chip without its box. The same icon and tinted
+// label, no fill, outline or padding, for a state inside a tinted or accent
+// surface, where a chip would be a box inside a box.
+const bareVariants = cva(
+  [
+    'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium leading-none',
+    chipLabel,
+    'transition-colors duration-slow',
+  ],
+  {
+    variants: {
+      tone: toneVars,
+      size: {
+        default: 'text-xs',
+        lg: 'text-sm',
       } satisfies Record<StatusBadgeSize, string>,
     },
     defaultVariants: {
@@ -110,6 +141,9 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /**
    * How the status renders.
    * - `chip` (default): a tinted chip with a tone outline.
+   * - `bare`: the chip's icon and tinted label without the box. Use it for a
+   *   state inside a tinted or accent surface (a card that is already
+   *   coloured), where a chip would be a box inside a box.
    * - `text`: only the word, in the tone colour. Use it in a fixed status
    *   column of a list, where a column of chips is too heavy.
    * - `dot`: a lone 8px tone dot. The label stays in the DOM as screen-reader
@@ -117,17 +151,17 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * @default 'chip'
    */
   appearance?: StatusBadgeAppearance;
-  /** Chip height: `default` (24px) or `lg` (28px, for page headers). Only for `appearance="chip"`. @default 'default' */
+  /** Chip height: `default` (24px) or `lg` (28px, for page headers). For `bare`, the matching text and icon size. Only for `appearance="chip"` and `"bare"`. @default 'default' */
   size?: StatusBadgeSize;
   /**
    * Show a leading dot in the tone colour in place of the tone icon, for a
    * group of chips that is not a list column (a list column uses
-   * `appearance="text"`). Only for `appearance="chip"`. `progress` keeps its
+   * `appearance="text"`). Only for `appearance="chip"` and `"bare"`. `progress` keeps its
    * spinner, regardless of this prop.
    */
   dot?: boolean;
   /**
-   * The leading icon, in the tone colour. Only for `appearance="chip"`.
+   * The leading icon, in the tone colour. Only for `appearance="chip"` and `"bare"`.
    * - Leave it out for the tone's own icon: `CircleCheck` (success),
    *   `TriangleAlert` (warning), `CircleX` (critical), `CircleDot` (info),
    *   `CircleDashed` (neutral) and a spinning `Loader` (progress).
@@ -184,7 +218,8 @@ function StatusBadge({
       </>
     );
   } else {
-    classes = statusBadgeVariants({ tone, size });
+    classes =
+      appearance === 'bare' ? bareVariants({ tone, size }) : statusBadgeVariants({ tone, size });
     content = (
       <>
         <StatusBadgeMarker tone={tone} size={size} dot={dot} icon={icon} />

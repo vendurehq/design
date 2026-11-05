@@ -71,10 +71,30 @@ describe('v3 overlay look', () => {
     }
   });
 
-  test('the toaster defaults to bottom right on the 2xl radius and overlay shadow', () => {
+  test('the toaster defaults to bottom right on the 2xl radius, overlay shadow and a hairline', () => {
     const code = source('sonner.tsx');
     expect(code).toContain('position="bottom-right"');
     expect(code).toContain('var(--radius-2xl)');
-    expect(code).toContain('shadow-overlay!');
+    expect(code).toContain('shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!');
+  });
+
+  test('a toast is 44px, 10px 14px, 13px medium, 320px wide on the card surface', () => {
+    const code = source('sonner.tsx');
+    expect(code).toContain('min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!');
+    expect(code).toContain('"--width": "320px"');
+    expect(code).toContain('"--normal-bg": "var(--card)"');
+  });
+
+  test('the stack stays open: 8px gap, older toasts 3% smaller and 20% fainter', () => {
+    const code = source('sonner.tsx');
+    expect(code).toContain('expand\n');
+    expect(code).toContain('gap={8}');
+    expect(code).toContain('scale(calc(1-var(--index)*0.03))');
+    expect(code).toContain('opacity-[calc(1-var(--index)*0.2)]!');
+    expect(code).toContain('motion-reduce:[transition:opacity_220ms_ease]!');
+  });
+
+  test('the info icon is the brand mark', () => {
+    expect(source('sonner.tsx')).toContain('<InfoIcon className="text-brand-indicator');
   });
 });

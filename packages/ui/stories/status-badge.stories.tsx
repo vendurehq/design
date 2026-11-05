@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
+import { expect } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
@@ -20,7 +21,7 @@ const meta = {
       control: 'select',
       options: ['neutral', 'info', 'success', 'warning', 'critical', 'progress'],
     },
-    appearance: { control: 'inline-radio', options: ['chip', 'text', 'dot'] },
+    appearance: { control: 'inline-radio', options: ['chip', 'bare', 'text', 'dot'] },
     size: { control: 'inline-radio', options: ['default', 'lg'] },
     dot: { control: 'boolean' },
     children: { control: 'text' },
@@ -140,6 +141,38 @@ export const Large: Story = {
       </StatusBadge>
     </div>
   ),
+};
+
+// `appearance="bare"`: the chip's icon and tinted label without the box, for a
+// state inside a tinted or accent surface.
+export const BareAppearance: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-4">
+        {TONES.map(({ tone, label }) => (
+          <StatusBadge key={tone} tone={tone} appearance="bare">
+            {label}
+          </StatusBadge>
+        ))}
+      </div>
+      <div className="flex max-w-md items-center justify-between gap-3 rounded-xl border border-[color-mix(in_oklab,var(--info-text)_30%,var(--border))] bg-[color-mix(in_oklab,var(--info-text)_6%,var(--card))] px-4 py-3">
+        <span className="text-sm font-medium">Add Klarna payment handler</span>
+        <StatusBadge tone="progress" appearance="bare">
+          Building
+        </StatusBadge>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const badge = canvasElement.querySelector('[data-slot=status-badge]');
+    await expect(badge).not.toBeNull();
+    const style = getComputedStyle(badge as Element);
+    // No fill: the computed background has zero alpha.
+    await expect(style.backgroundColor.replace(/\s/g, '').endsWith(',0)')).toBe(true);
+    await expect(style.paddingLeft).toBe('0px');
+    await expect(style.boxShadow).toBe('none');
+    await expect(badge?.querySelector('[data-slot=status-badge-marker]')).not.toBeNull();
+  },
 };
 
 // `appearance="text"`: the word alone, in the tone colour. The progress spinner
