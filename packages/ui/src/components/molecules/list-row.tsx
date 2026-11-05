@@ -25,7 +25,8 @@ const LIFT_CONTROLS =
   '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:z-10';
 
 /**
- * One row of a list: 48px high, or taller with a ListRowMeta line. With a
+ * One row of a list: 48px high, or taller with a ListRowMeta line. Content
+ * starts 18px in and ends 16px from the edge, like a card header. With a
  * ListRowLink inside, the whole row opens the link and takes a `muted` hover
  * fill; keyboard focus on the link draws an inset ring around the row.
  */
@@ -34,7 +35,7 @@ function ListRow({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="list-row"
       className={cn(
-        'group/list-row relative flex min-h-12 items-center gap-3 border-t border-border px-4 text-sm first:border-t-0',
+        'group/list-row relative flex min-h-12 items-center gap-3 border-t border-border ps-4.5 pe-4 text-sm first:border-t-0',
         'has-data-[slot=list-row-meta]:py-2.5',
         'transition-colors duration-(--transition-duration-fast) ease-(--ease-default)',
         'has-data-[slot=list-row-link]:cursor-pointer has-data-[slot=list-row-link]:hover:bg-muted',
@@ -158,14 +159,22 @@ function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-/** The trailing chevron of a linked row. Decorative: the link carries the name. */
+/**
+ * The trailing chevron of a linked row: 15px, it appears on hover in 100ms and
+ * does not travel. Decorative: the link carries the name.
+ */
 function ListRowChevron({ className, ...props }: React.ComponentProps<typeof ChevronRight>) {
   return (
     <ChevronRight
       data-slot="list-row-chevron"
       aria-hidden="true"
       strokeWidth={1.75}
-      className={cn('size-4 shrink-0 text-muted-foreground', revealOnRowHover, className)}
+      className={cn(
+        'size-3.75 shrink-0 text-muted-foreground',
+        revealOnRowHover,
+        'duration-(--transition-duration-fast)',
+        className,
+      )}
       {...props}
     />
   );

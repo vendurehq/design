@@ -50,6 +50,7 @@ describe('Card', () => {
     expect(rows).toContain('*:last:rounded-b-2xl');
     const row = slotTokens(html, 'card-row');
     expect(row).toContain('border-t');
-    expect(row).toContain('px-(--card-px)');
+    expect(row).toContain('ps-(--card-ps)');
+    expect(row).toContain('pe-(--card-px)');
   });
 });
