@@ -10,6 +10,7 @@ import {
   CommandInput,
   CommandItem,
   CommandItemDetail,
+  CommandItemLabel,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -169,7 +170,7 @@ function PaletteBody() {
           {pages.map(({ label, icon: Icon, detail }) => (
             <CommandItem key={label} value={label}>
               <Icon />
-              {label}
+              <CommandItemLabel>{label}</CommandItemLabel>
               <CommandItemDetail>{detail}</CommandItemDetail>
             </CommandItem>
           ))}
@@ -178,7 +179,7 @@ function PaletteBody() {
           {account.map(({ label, icon: Icon }) => (
             <CommandItem key={label}>
               <Icon />
-              {label}
+              <CommandItemLabel>{label}</CommandItemLabel>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -186,7 +187,7 @@ function PaletteBody() {
           {settings.map(({ label, icon: Icon }) => (
             <CommandItem key={label}>
               <Icon />
-              {label}
+              <CommandItemLabel>{label}</CommandItemLabel>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -215,8 +216,10 @@ function PaletteBody() {
 /**
  * The command palette: CommandDialog at 600px, 12% from the top, with an
  * unboxed input, 40px items and CommandFooter key hints. Items are quiet at
- * rest; the highlighted item's label turns foreground and its icon turns
- * the brand indicator. A page item names where it lives with
+ * rest, with a medium CommandItemLabel; the highlighted item's label turns
+ * foreground and its icon turns the brand indicator. These styles apply in
+ * CommandDialog only: a Command elsewhere, even in a dialog, keeps the accent
+ * highlight. A page item names where it lives with
  * CommandItemDetail, shown on the highlighted item only. CommandList's
  * slidingHighlight follows the selection and eases the list's scroll with
  * it; hold an arrow key and it keeps up without restarting. Type to filter:

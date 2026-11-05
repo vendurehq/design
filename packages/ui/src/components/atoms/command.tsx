@@ -25,7 +25,7 @@ function Command({
     <CommandPrimitive
       data-slot="command"
       className={cn(
-        "bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl! in-data-[slot=dialog-content]:rounded-3xl!",
+        "bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl! in-data-command-palette:rounded-3xl!",
         className
       )}
       {...props}
@@ -55,18 +55,21 @@ function CommandDialog({
       </DialogHeader>
       {/* The palette: 600px wide, 12% of the viewport from the top so the
           list can grow down without moving the input. It opens often, so its
-          motion is shorter than a dialog's: it drops 6px from 98% at the top
-          centre (opacity 160ms, transform 180ms) and closes in 110ms. Reduced
-          motion fades only. */}
+          motion is smaller than a dialog's: it drops 6px from 98% at the top
+          centre instead of scaling from 96%. It takes a little longer to settle
+          (opacity 160ms, transform 180ms) and closes in 110ms. Reduced motion
+          fades only. data-command-palette scopes the palette styles of the
+          Command parts to this dialog. */}
       <DialogContent
+        data-command-palette=""
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[160ms,180ms,180ms] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-110 data-ending-style:ease-[ease] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-120 motion-reduce:ease-[ease]",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-palette-exit data-ending-style:ease-soft motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-palette-tint motion-reduce:ease-soft",
           className
         )}
         showCloseButton={showCloseButton}
         // The palette is transient and keeps the page in view: a lighter scrim
         // with a 2px blur that fades with the palette.
-        overlayClassName="bg-scrim-subtle duration-160 data-ending-style:duration-110 supports-backdrop-filter:backdrop-blur-[2px]"
+        overlayClassName="bg-scrim-subtle duration-palette-enter data-ending-style:duration-palette-exit supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
@@ -82,11 +85,11 @@ function CommandInput({
     // Unboxed: the input runs edge to edge above a hairline, with no field
     // border, fill or ring. 54px with 16px text in the palette dialog.
     <div data-slot="command-input-wrapper" className="border-border border-b">
-      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pr-3.5 shadow-none! ring-0! outline-none! in-data-[slot=dialog-content]:h-13.5! *:data-[slot=input-group-addon]:pl-3! in-data-[slot=dialog-content]:*:data-[slot=input-group-addon]:pl-4.5!">
+      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pr-3.5 shadow-none! ring-0! outline-none! in-data-command-palette:h-13.5! *:data-[slot=input-group-addon]:pl-3! in-data-command-palette:*:data-[slot=input-group-addon]:pl-4.5!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
-            "placeholder:text-muted-foreground w-full pl-2.5! text-sm outline-hidden in-data-[slot=dialog-content]:text-base disabled:cursor-not-allowed disabled:opacity-50",
+            "placeholder:text-muted-foreground w-full pl-2.5! text-sm outline-hidden in-data-command-palette:text-base disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
           {...props}
@@ -106,7 +109,7 @@ function CommandInput({
 // transition is the palette item's own (see CommandItem). Reduced motion drops
 // the blur.
 const ENTERING_RESULTS =
-  "[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:transition-[color,opacity,filter] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:duration-[120ms,200ms,240ms] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:delay-[0ms,50ms,50ms] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:ease-[ease,ease,var(--ease-out)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:opacity-0 motion-safe:[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:blur-[3px]"
+  "[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:transition-[color,opacity,filter] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:duration-[var(--transition-duration-palette-tint),var(--transition-duration-normal),var(--transition-duration-palette-result-blur)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:delay-[var(--transition-duration-instant),var(--transition-duration-palette-result-delay),var(--transition-duration-palette-result-delay)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:ease-[var(--ease-soft),var(--ease-soft),var(--ease-out)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:opacity-0 motion-safe:[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:blur-[3px]"
 
 // cmdk measures the list's content and writes it to --cmdk-list-height, so the
 // list eases to its new height as results change. The first measure is not
@@ -129,7 +132,7 @@ function CommandList({
       data-slot="command-list"
       data-highlight={slidingHighlight ? "slide" : undefined}
       className={cn(
-        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-drawer in-data-[slot=dialog-content]:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
+        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-drawer in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
         ENTERING_RESULTS,
         className
       )}
@@ -145,8 +148,8 @@ function CommandList({
 // The palette's results crossfade. Just before the query changes (beforeinput),
 // a copy of the current results goes into this layer, at the place they were
 // shown, and fades out with a 3px blur (opacity 140ms, blur 160ms) while the
-// new results fade in under it. Only in the palette (a CommandList in a
-// dialog). Reduced motion skips the copy: new results only fade in.
+// new results fade in under it. Only in the palette (a CommandList in
+// CommandDialog). Reduced motion skips the copy: new results only fade in.
 function CommandResultsGhost() {
   const ref = React.useRef<HTMLDivElement>(null)
 
@@ -160,7 +163,7 @@ function CommandResultsGhost() {
       !sizer ||
       !list ||
       !root ||
-      !list.closest("[data-slot=dialog-content]")
+      !list.closest("[data-command-palette]")
     ) {
       return
     }
@@ -236,7 +239,7 @@ function CommandResultsGhost() {
       role="none"
       inert
       data-slot="command-results-ghost"
-      className="pointer-events-none absolute inset-x-0 top-0 z-10 p-1 empty:hidden data-leaving:*:opacity-0 data-leaving:*:blur-[3px] data-leaving:*:transition-[opacity,filter] data-leaving:*:duration-[140ms,160ms] data-leaving:*:ease-[ease]"
+      className="pointer-events-none absolute inset-x-0 top-0 z-10 p-1 empty:hidden data-leaving:*:opacity-0 data-leaving:*:blur-[3px] data-leaving:*:transition-[opacity,filter] data-leaving:*:duration-[var(--transition-duration-palette-result-exit),var(--transition-duration-palette-enter)] data-leaving:*:ease-soft"
     />
   )
 }
@@ -420,7 +423,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform in-data-[slot=dialog-content]:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-[ease]"
+      className="bg-accent pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl in-data-command-palette:bg-muted data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-soft"
     />
   )
 }
@@ -479,9 +482,12 @@ function CommandSeparator({
 // cmdk writes data-selected="true" or "false" on every item, so the highlight
 // matches the value; a bare data-selected: variant would match every item.
 // In a CommandList with slidingHighlight, the list's highlight replaces the
-// item's own fill. Palette items (in the dialog) are 40px tall and quiet at
-// rest: a medium label in foreground-secondary. The highlighted row turns the
-// label to foreground and its leading icon to the brand indicator.
+// item's own fill. Outside the palette the highlight is the accent fill, as in
+// a combobox, select or menu. In forced colors, where fills drop, the
+// highlight is a Highlight outline. Palette items are 40px tall and quiet at
+// rest: foreground-secondary text, with the label (CommandItemLabel) in medium
+// weight. The highlighted row has the muted fill, turns its text to
+// foreground and its leading icon to the brand indicator.
 function CommandItem({
   className,
   children,
@@ -491,7 +497,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-muted data-[selected=true]:text-accent-foreground data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:h-10 in-data-[slot=dialog-content]:gap-3 in-data-[slot=dialog-content]:rounded-xl! in-data-[slot=dialog-content]:px-2.5 in-data-[slot=dialog-content]:font-medium in-data-[slot=dialog-content]:text-foreground-secondary! in-data-[slot=dialog-content]:transition-[color] in-data-[slot=dialog-content]:duration-120 in-data-[slot=dialog-content]:ease-[ease] in-data-[slot=dialog-content]:data-[selected=true]:text-foreground! data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:duration-120 in-data-[slot=dialog-content]:[&>svg:not([class*='opacity-'])]:ease-[ease] data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100! in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator!",
+        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none not-in-data-command-palette:data-[selected=true]:bg-accent not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-command-palette:data-[selected=true]:bg-muted in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
         className
       )}
       {...props}
@@ -499,6 +505,21 @@ function CommandItem({
       {children}
       <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
+  )
+}
+
+// An item's label. In the palette it is medium weight; text after it, such as
+// a hint or CommandItemDetail, keeps the regular weight.
+function CommandItemLabel({
+  className,
+  ...props
+}: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="command-item-label"
+      className={cn("min-w-0 truncate in-data-command-palette:font-medium", className)}
+      {...props}
+    />
   )
 }
 
@@ -530,7 +551,7 @@ function CommandItemDetail({
     <span
       data-slot="command-item-detail"
       className={cn(
-        "text-muted-foreground ml-auto max-w-[55%] shrink-0 truncate pl-3 text-xs font-normal opacity-0 -translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-90 ease-[ease] group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-40 group-data-[selected=true]/command-item:duration-[180ms,220ms,180ms] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
+        "text-muted-foreground ml-auto max-w-[55%] shrink-0 truncate pl-3 text-xs opacity-0 -translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-palette-detail-exit ease-soft group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay) group-data-[selected=true]/command-item:duration-[var(--transition-duration-palette-move),var(--transition-duration-palette-detail-move),var(--transition-duration-palette-move)] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
         className
       )}
       {...props}
@@ -561,6 +582,7 @@ export {
   CommandEmpty,
   CommandGroup,
   CommandItem,
+  CommandItemLabel,
   CommandShortcut,
   CommandItemDetail,
   CommandSeparator,

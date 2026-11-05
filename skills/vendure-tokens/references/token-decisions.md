@@ -39,7 +39,7 @@ Use named type roles and shared font context rather than restyling headings ad h
 Use shared duration and easing tokens for purposeful state transitions.
 
 - **Motion explains change:** Animate entry, exit, reordering, feedback, or continuity. Do not add movement only to make a static surface feel lively.
-- **Use named duration and easing tokens:** Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, and ease-press for the press scale of a control.
+- **Use named duration and easing tokens:** Choose instant, fast, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only.
 - **Match duration to distance and consequence:** Small local feedback is fast; larger spatial transitions may be slower. Routine interactions should not feel ceremonial.
 - **Preserve reduced-motion behavior:** Make non-essential motion removable and ensure meaning remains visible when animation is reduced.
 ## Theming ownership

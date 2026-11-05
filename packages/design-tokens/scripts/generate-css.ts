@@ -207,7 +207,7 @@ const easeLines = Object.entries(easing).map(
 // Duration lines — Tailwind duration-* utilities resolve named values from the
 // --transition-duration-* theme namespace
 const durationLines = Object.entries(duration).map(
-  ([key, value]) => `  --transition-duration-${key}: ${value};`,
+  ([key, value]) => `  --transition-duration-${kebabCase(key)}: ${value};`,
 );
 
 // Animation lines — Tailwind animate-* utilities. Each needs a matching
