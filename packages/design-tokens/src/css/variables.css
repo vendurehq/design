@@ -146,7 +146,7 @@
   --border: oklch(0.929 0.006 231);
   --input: oklch(0.882 0.009 231);
   --control-border: oklch(0.62 0.005 231);
-  --ring: oklch(0.54 0.16 231);
+  --ring: var(--brand-indicator);
   --chart-1: oklch(0.56 0.12 250);
   --chart-2: oklch(0.64 0.12 145);
   --chart-3: oklch(0.51 0.13 320);
@@ -159,7 +159,7 @@
   --sidebar-accent: oklch(0.935 0.004 231);
   --sidebar-accent-foreground: oklch(0.2 0.007 231);
   --sidebar-border: var(--border);
-  --sidebar-ring: oklch(0.54 0.16 231);
+  --sidebar-ring: var(--brand-indicator);
   --shadow-overlay:
     0 0 0 1px oklch(0.173 0.011 231 / 0.06), 0 12px 32px -8px oklch(0.173 0.011 231 / 0.18),
     0 4px 8px -4px oklch(0.173 0.011 231 / 0.08);
@@ -173,7 +173,7 @@
   --foreground-secondary: oklch(0.838 0.01 231);
   --surface: oklch(0.222 0.012 231);
   --surface-raised: oklch(0.238 0.013 231);
-  --overlay: oklch(0.271 0.015 231);
+  --overlay: oklch(0.238 0.013 231);
   --inset: color-mix(in oklab, black 40%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
   --scrim-subtle: color-mix(in oklab, black 42%, transparent);

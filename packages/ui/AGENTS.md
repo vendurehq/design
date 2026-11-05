@@ -25,7 +25,7 @@ Never run `add --overwrite` on an existing component — it discards our design 
 
 ### Known system-wide divergences from upstream
 
-- **Flat look**: `shadow-xs`/`shadow-2xs` classes are removed from primitives (buttons, inputs, cards, toggles, …). Overlay shadows (`shadow-md` and up) are kept. Don't reintroduce xs-tier shadows when cherry-picking.
+- **Flat look**: `shadow-xs`/`shadow-2xs` classes are removed from primitives (buttons, inputs, cards, toggles, …). Overlay shadows (`shadow-md` and up) are kept. Don't reintroduce xs-tier shadows when cherry-picking. The one exception is the themed `shadow-control` on buttons and button groups (the v3 look).
 - **Dead Radix selectors removed**: the base-vega registry still carries leftover Radix-era `data-[state=...]` selectors in places; Base UI never emits `data-state` (it emits `data-open`, `data-pressed`, etc.), so we've deleted them. Don't reintroduce.
 - **Popup sizing**: select/dropdown popups size to their content instead of being pinned to the trigger width (`min-w-(--anchor-width)` / no anchor width, rather than `w-(--anchor-width)`).
 

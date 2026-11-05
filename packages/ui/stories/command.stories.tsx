@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandItemDetail,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -139,10 +140,10 @@ export const States: Story = {
 };
 
 const pages = [
-  { label: 'Orders', icon: ShoppingCart },
-  { label: 'Products', icon: Package },
-  { label: 'Customers', icon: Users },
-  { label: 'Analytics', icon: BarChart3 },
+  { label: 'Orders', icon: ShoppingCart, detail: 'Sales · Default channel' },
+  { label: 'Products', icon: Package, detail: 'Catalog · Default channel' },
+  { label: 'Customers', icon: Users, detail: 'Customers · Default channel' },
+  { label: 'Analytics', icon: BarChart3, detail: 'Insights' },
 ];
 const account = [
   { label: 'Profile', icon: User },
@@ -165,10 +166,11 @@ function PaletteBody() {
       <CommandList slidingHighlight>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Pages">
-          {pages.map(({ label, icon: Icon }) => (
-            <CommandItem key={label}>
+          {pages.map(({ label, icon: Icon, detail }) => (
+            <CommandItem key={label} value={label}>
               <Icon />
               {label}
+              <CommandItemDetail>{detail}</CommandItemDetail>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -214,11 +216,13 @@ function PaletteBody() {
  * The command palette: CommandDialog at 600px, 12% from the top, with an
  * unboxed input, 40px items and CommandFooter key hints. Items are quiet at
  * rest; the highlighted item's label turns foreground and its icon turns
- * the brand indicator. CommandList's slidingHighlight follows the selection
- * and eases the list's scroll with it; hold an arrow key and it keeps up
- * without restarting. Type to filter: the list eases to its new height. Under
- * reduced motion the highlight and the scroll jump and the height changes at
- * once.
+ * the brand indicator. A page item names where it lives with
+ * CommandItemDetail, shown on the highlighted item only. CommandList's
+ * slidingHighlight follows the selection and eases the list's scroll with
+ * it; hold an arrow key and it keeps up without restarting. Type to filter:
+ * the list eases to its new height. The palette drops 6px from 98% as it
+ * opens and closes in 110ms. Under reduced motion it only fades, the
+ * highlight and the scroll jump and the height changes at once.
  */
 export const Palette: Story = {
   parameters: { docs: { story: { inline: false, height: '560px' } } },
