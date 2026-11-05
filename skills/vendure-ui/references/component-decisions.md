@@ -10,6 +10,7 @@ Use one Alert for a page or region notice, toned by its consequence for the view
 - **Tone follows consequence:** `warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.
 - **Tone is not volume:** Never use a tone to make a routine notice louder. A routine notice stays `default`.
 - **A page notice is one Alert:** Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.
+- **A toned Alert carries its tone icon:** Put the tone icon first in every `warning`, `info` and `destructive` Alert: TriangleAlert, Info or CircleAlert. The faint tint alone is not enough cue, and the warning tint is never the only cue.
 - **Actions go in AlertAction:** Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.
 
 **Choose:**
@@ -113,7 +114,8 @@ Keep one secondary list of rows behind a header that still says how many rows it
 - **Collapse what can wait:** Use CollapsibleSection for a secondary list on its own card. Rows that are the reason the user came to the page stay open on a plain card.
 - **Do not collapse a single row:** A closed section with one row costs a click to save one line. Show the row on a plain card.
 - **Open by default when a row needs the user:** Start closed when the rows are routine. When a row has failed or waits on the user, pass `defaultOpen` so the problem is in view.
-- **Attention means action, not volume:** `tone="attention"` puts the count pill in the warning tone, on the pill only. Use it when rows need the user, never because the count is high.
+- **Tone means action, not volume:** `tone="attention"` colours the count in the warning tone, for rows that wait on the user. `tone="critical"` colours it in the destructive tone, for rows that have failed. Never use a tone because the count is high.
+- **Name the rows that matter in the detail:** When some rows have failed, pass `detail` ("1 failed") with `tone="critical"`. The tone then colours the detail only and the count stays muted: "2 · 1 failed".
 
 **Choose:**
 

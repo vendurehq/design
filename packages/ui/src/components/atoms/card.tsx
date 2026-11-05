@@ -3,8 +3,10 @@ import * as React from "react"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // The size variant publishes the card's spacing contract as CSS variables
-// (--card-px: horizontal content padding, --card-gap: vertical rhythm shared
-// by the root padding and the flex gap). Slots consume the variables instead
+// (--card-ps: start padding, --card-px: end padding, --card-gap: vertical
+// rhythm shared by the root padding and the flex gap). The default card starts
+// its content 2px further in than it ends (18px / 16px), the inset the v3 look
+// gives every panel head and row. Slots consume the variables instead
 // of `group-data-[size=sm]` hooks so that nested cards resolve to the NEAREST
 // card — a group selector matches any ancestor and leaks the outer card's
 // size into an inner one.
@@ -20,7 +22,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-px:--spacing(4)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
         className
       )}
       {...props}
@@ -35,7 +37,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-2xl px-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-gap)",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-2xl ps-(--card-ps) pe-(--card-px) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-gap)",
         className
       )}
       {...props}
@@ -104,7 +106,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-(--card-px)", className)}
+      className={cn("ps-(--card-ps) pe-(--card-px)", className)}
       {...props}
     />
   )
@@ -127,7 +129,7 @@ function CardTable({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-table"
       className={cn(
-        "-my-(--card-gap) [&_tr>*:first-child]:pl-(--card-px) [&_tr>*:last-child]:pr-(--card-px)",
+        "-my-(--card-gap) [&_tr>*:first-child]:pl-(--card-ps) [&_tr>*:last-child]:pr-(--card-px)",
         className
       )}
       {...props}
@@ -163,7 +165,7 @@ function CardRow({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-row"
       className={cn(
-        "flex min-h-12 items-center gap-3 border-t px-(--card-px) py-2",
+        "flex min-h-12 items-center gap-3 border-t ps-(--card-ps) pe-(--card-px) py-2",
         className
       )}
       {...props}
@@ -176,7 +178,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-2xl px-(--card-px) [.border-t]:pt-(--card-gap)",
+        "flex items-center rounded-b-2xl ps-(--card-ps) pe-(--card-px) [.border-t]:pt-(--card-gap)",
         className
       )}
       {...props}

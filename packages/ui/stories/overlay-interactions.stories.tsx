@@ -154,7 +154,8 @@ export const DropdownMenuLook: Story = {
     await expect(itemStyle.fontSize).toBe('13px');
     const icon = item.querySelector('svg') as SVGElement;
     await expect(getComputedStyle(icon).strokeWidth).toBe('1.75px');
-    await expect(getComputedStyle(icon).width).toBe('16px');
+    await expect(getComputedStyle(icon).width).toBe('15px');
+    await expect(itemStyle.columnGap).toBe('10px');
 
     // The destructive item reads in the destructive-text slot.
     const destructive = body().getByRole('menuitem', { name: 'Log out' });

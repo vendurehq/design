@@ -20,12 +20,17 @@ import {
   Calculator,
   Calendar,
   CreditCard,
+  Globe,
+  Map as MapIcon,
   Package,
+  Percent,
   Settings,
   ShoppingCart,
   Smile,
+  Truck,
   User,
   Users,
+  Wallet,
 } from 'lucide-react';
 
 const meta = {
@@ -145,6 +150,13 @@ const account = [
   { label: 'Billing', icon: CreditCard },
   { label: 'Settings', icon: Settings },
 ];
+const settings = [
+  { label: 'Channels', icon: Globe },
+  { label: 'Zones', icon: MapIcon },
+  { label: 'Tax rates', icon: Percent },
+  { label: 'Payment methods', icon: Wallet },
+  { label: 'Shipping methods', icon: Truck },
+];
 
 /** The palette body: grouped results with a sliding highlight, then the key hints. */
 function PaletteBody() {
@@ -164,6 +176,14 @@ function PaletteBody() {
         </CommandGroup>
         <CommandGroup heading="Account">
           {account.map(({ label, icon: Icon }) => (
+            <CommandItem key={label}>
+              <Icon />
+              {label}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandGroup heading="Settings">
+          {settings.map(({ label, icon: Icon }) => (
             <CommandItem key={label}>
               <Icon />
               {label}
@@ -198,11 +218,11 @@ function PaletteBody() {
  * rest; the highlighted item's label turns foreground and its icon turns
  * the brand indicator. A page item names where it lives with
  * CommandItemDetail, shown on the highlighted item only. CommandList's
- * slidingHighlight slides the highlight between items; hold an arrow key and
- * it stays under the selection. Type to filter: the list eases to its new
- * height. The palette drops 6px from 98% as it opens and closes in 110ms.
- * Under reduced motion it only fades, the highlight moves without sliding and
- * the height changes at once.
+ * slidingHighlight follows the selection and eases the list's scroll with
+ * it; hold an arrow key and it keeps up without restarting. Type to filter:
+ * the list eases to its new height. The palette drops 6px from 98% as it
+ * opens and closes in 110ms. Under reduced motion it only fades, the
+ * highlight and the scroll jump and the height changes at once.
  */
 export const Palette: Story = {
   parameters: { docs: { story: { inline: false, height: '560px' } } },

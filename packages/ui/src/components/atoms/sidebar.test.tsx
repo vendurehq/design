@@ -57,10 +57,22 @@ describe('SidebarMenuButton icons', () => {
 
     const tokens = classTokens(html, 'sidebar-menu-button');
     expect(tokens).toContain('[&_svg]:size-4');
-    expect(tokens).toContain('[&>svg:first-child]:size-4.5');
     expect(tokens).toContain('[&>svg:first-child]:[stroke-width:1.75]');
     expect(tokens).toContain('data-active:[&>svg:first-child]:text-brand-indicator');
-    expect(tokens).not.toContain('[&_svg]:size-4.5');
+    expect(tokens.some((token) => token.includes('size-4.5'))).toBe(false);
+  });
+});
+
+describe('SidebarMenuButton weight', () => {
+  test('items are medium weight at rest, not only when active', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuButton>Orders</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+    const tokens = classTokens(html, 'sidebar-menu-button');
+    expect(tokens).toContain('font-medium');
+    expect(tokens).not.toContain('data-active:font-medium');
   });
 });
 
@@ -165,7 +177,7 @@ describe('SidebarMenu sliding indicator', () => {
     const indicator = html.match(/<li[^>]*data-slot="sidebar-menu-indicator"[^>]*>/)?.[0] ?? '';
     expect(indicator).toContain('aria-hidden="true"');
     expect(classTokens(html, 'sidebar-menu-indicator')).toEqual(
-      expect.arrayContaining(['data-ready:ease-drawer', 'motion-reduce:data-ready:transition-opacity']),
+      expect.arrayContaining(['shadow-control', 'data-ready:ease-drawer', 'motion-reduce:data-ready:transition-opacity']),
     );
     expect(classTokens(html, 'sidebar-menu-button')).toEqual(
       expect.arrayContaining([

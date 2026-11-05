@@ -132,8 +132,8 @@ export const Header: Story = {
           <div className="rounded-lg border p-4 text-sm">
             <p className="text-destructive-subtle-foreground font-semibold">Don&apos;t</p>
             <p className="text-muted-foreground mt-2">
-              Give the header its own background, border or height. The tint, blur and hairline
-              follow the surface it sits on.
+              Give the header its own background, border or height. Its opaque fill follows the
+              surface it sits on, and its hairline is built in.
             </p>
           </div>
         </div>
