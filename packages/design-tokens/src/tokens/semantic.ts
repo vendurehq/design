@@ -149,7 +149,8 @@ export const darkTheme = {
   'brand-indicator': brand[400],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
-  muted: 'color-mix(in oklab, var(--foreground) 4%, transparent)',
+  // Matches the v3 look's dark tint: 6% foreground over the canvas.
+  muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.014 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
