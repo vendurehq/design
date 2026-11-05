@@ -39,10 +39,11 @@ function DropdownMenuContent({
         side={side}
         sideOffset={sideOffset}
       >
+        {/* Opens with a 2px drop away from the trigger: opacity 160ms, scale and translate 200ms on the strong ease-out; closes in 120ms. Reduced motion keeps the fade. */}
         {/* No w-(--anchor-width) here: pinning the popup to the trigger width makes wide items wrap — the popup sizes to its content, min-w-32 keeps the floor */}
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
-          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto outline-none data-closed:overflow-hidden origin-(--transform-origin) transition-[opacity,scale] duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-96 motion-safe:data-ending-style:scale-96", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-32 overflow-x-hidden overflow-y-auto outline-none data-closed:overflow-hidden origin-(--transform-origin) transition-[opacity,scale,translate] [transition-duration:160ms,200ms,200ms] ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-120 data-ending-style:ease-[ease] motion-safe:data-starting-style:scale-96 motion-safe:data-ending-style:scale-96 motion-safe:data-starting-style:-translate-y-0.5 motion-safe:data-ending-style:-translate-y-0.5 motion-safe:data-[side=top]:data-starting-style:translate-y-0.5 motion-safe:data-[side=top]:data-ending-style:translate-y-0.5", className )}
           {...props}
         />
       </MenuPrimitive.Positioner>
