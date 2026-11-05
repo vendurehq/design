@@ -148,10 +148,10 @@ describe('command palette', () => {
     const palette = source('atoms/command.tsx');
     for (const token of [
       'origin-top',
-      'duration-[160ms,180ms,180ms]',
+      'duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)]',
       'motion-safe:data-starting-style:-translate-y-1.5',
       'motion-safe:data-starting-style:scale-98',
-      'data-ending-style:duration-110',
+      'data-ending-style:duration-palette-exit',
       'motion-reduce:transition-opacity',
     ]) {
       expect(palette).toContain(token);

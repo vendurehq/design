@@ -210,6 +210,7 @@
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
   --transition-duration-instant: 0ms;
   --transition-duration-fast: 100ms;
   --transition-duration-quick: 120ms;
@@ -217,6 +218,16 @@
   --transition-duration-normal: 200ms;
   --transition-duration-slow: 300ms;
   --transition-duration-slower: 500ms;
+  --transition-duration-palette-detail-delay: 40ms;
+  --transition-duration-palette-result-delay: 50ms;
+  --transition-duration-palette-detail-exit: 90ms;
+  --transition-duration-palette-exit: 110ms;
+  --transition-duration-palette-tint: 120ms;
+  --transition-duration-palette-result-exit: 140ms;
+  --transition-duration-palette-enter: 160ms;
+  --transition-duration-palette-move: 180ms;
+  --transition-duration-palette-detail-move: 220ms;
+  --transition-duration-palette-result-blur: 240ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
 }

@@ -119,7 +119,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, and ease-press for the press scale of a control.',
+        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only.',
       },
       {
         title: 'Match duration to distance and consequence',

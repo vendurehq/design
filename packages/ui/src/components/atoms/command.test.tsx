@@ -9,6 +9,7 @@ import {
   CommandInput,
   CommandItem,
   CommandItemDetail,
+  CommandItemLabel,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -50,21 +51,58 @@ describe('CommandItem highlight', () => {
   test('the highlight only applies to data-selected="true"', () => {
     const item = classTokens(render(), 'command-item');
     expect(item).toEqual(
-      expect.arrayContaining(['data-[selected=true]:bg-muted', 'data-[selected=true]:text-accent-foreground']),
+      expect.arrayContaining([
+        'not-in-data-command-palette:data-[selected=true]:bg-accent',
+        'not-in-data-command-palette:data-[selected=true]:text-accent-foreground',
+      ]),
     );
-    expect(item.filter((token) => token.startsWith('data-selected:'))).toEqual([]);
+    expect(item.filter((token) => token.includes('data-selected:'))).toEqual([]);
+  });
+
+  test('the highlight is a Highlight outline in forced colors', () => {
+    const item = classTokens(render(), 'command-item');
+    expect(item).toEqual(
+      expect.arrayContaining([
+        'not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid',
+        'not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight]',
+      ]),
+    );
+    // outline-hidden keeps a transparent outline in forced colors: every row would be outlined.
+    expect(item).not.toContain('outline-hidden');
+  });
+
+  test('palette styles key on the palette, not on any dialog', () => {
+    const html = render();
+    expect(html).not.toContain('in-data-[slot=dialog-content]');
+    const item = classTokens(html, 'command-item');
+    expect(item).toContain('in-data-command-palette:data-[selected=true]:bg-muted');
+    expect(item.filter((token) => token.endsWith('!') && token.includes(':text-'))).toEqual([]);
   });
 
   test('palette items are quiet at rest and turn foreground with a brand icon on the highlight', () => {
     const item = classTokens(render(), 'command-item');
     expect(item).toEqual(
       expect.arrayContaining([
-        'in-data-[slot=dialog-content]:font-medium',
-        'in-data-[slot=dialog-content]:text-foreground-secondary!',
-        'in-data-[slot=dialog-content]:data-[selected=true]:text-foreground!',
-        "in-data-[slot=dialog-content]:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator!",
+        'in-data-command-palette:text-foreground-secondary',
+        'in-data-command-palette:data-[selected=true]:text-foreground',
+        "in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
       ]),
     );
+  });
+
+  test('only the label is medium weight in the palette', () => {
+    const html = renderToStaticMarkup(
+      <Command>
+        <CommandList>
+          <CommandItem value="orders">
+            <CommandItemLabel>Orders</CommandItemLabel>
+            <CommandItemDetail>Sales</CommandItemDetail>
+          </CommandItem>
+        </CommandList>
+      </Command>,
+    );
+    expect(classTokens(html, 'command-item-label')).toContain('in-data-command-palette:font-medium');
+    expect(classTokens(html, 'command-item').filter((token) => token.includes('font-'))).toEqual([]);
   });
 
   test('the shortcut only brightens on the highlighted item', () => {
@@ -108,7 +146,7 @@ describe('CommandInput', () => {
     expect(html).toContain('data-slot="input-group-addon"');
     expect(classTokens(html, 'command-input-wrapper')).toContain('border-b');
     expect(classTokens(html, 'input-group')).toEqual(
-      expect.arrayContaining(['border-0!', 'bg-transparent!', 'ring-0!', 'in-data-[slot=dialog-content]:h-13.5!']),
+      expect.arrayContaining(['border-0!', 'bg-transparent!', 'ring-0!', 'in-data-command-palette:h-13.5!']),
     );
   });
 });
@@ -147,7 +185,13 @@ describe('CommandList', () => {
     expect(highlight).toContain('aria-hidden="true"');
     expect(highlight).toContain('role="none"');
     expect(classTokens(html, 'command-highlight')).toEqual(
-      expect.arrayContaining(['data-ready:transition-opacity', 'will-change-transform']),
+      expect.arrayContaining([
+        'data-ready:transition-opacity',
+        'will-change-transform',
+        'bg-accent',
+        'in-data-command-palette:bg-muted',
+        'forced-colors:outline-[Highlight]',
+      ]),
     );
     // The follower moves it from script, not through a CSS transition.
     expect(classTokens(html, 'command-highlight').some((token) => token.includes('transition-[transform'))).toBe(false);
@@ -213,7 +257,7 @@ describe('CommandItemDetail', () => {
       expect.arrayContaining([
         'opacity-0',
         'group-data-[selected=true]/command-item:opacity-100',
-        'group-data-[selected=true]/command-item:delay-40',
+        'group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay)',
         'motion-reduce:translate-x-0',
         'motion-reduce:blur-none',
       ]),
