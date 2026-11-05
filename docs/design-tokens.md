@@ -109,7 +109,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Font families**: `--font-sans` (Inter), `--font-heading` (Inter), `--font-body` (Inter), `--font-mono` (Geist Mono)
 - **Inter features**: `--font-sans--font-feature-settings`, `--font-heading--font-feature-settings` and `--font-body--font-feature-settings` turn on `cv11`, `ss01` and `ss03`. Tailwind applies the sans value to the page and each value to its `font-*` utility
 - **Mono features**: `--font-mono--font-feature-settings` turns off the `liga` and `calt` ligatures. Tailwind applies it to `font-mono` and to `code`, `pre`, `kbd` and `samp`, so a space before `--` stays visible
-- **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text; `text-2xs` (11px) is micro text such as keyboard hints
+- **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text and keyboard hints; `text-2xs` (11px) is micro text
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
 - **Text styles**: named type compositions (font, size, weight, tracking, leading — no color), applied as a single utility class:
