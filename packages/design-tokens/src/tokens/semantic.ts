@@ -76,6 +76,11 @@ export const lightTheme = {
   'warning-text': 'oklch(0.555 0.146 49)',
   'destructive-text': 'oklch(0.54 0.193 24)',
   'info-text': 'oklch(0.529 0.112 236)',
+  // Warning as a mark beside a label: the StatusBadge outline, a status dot,
+  // a highlight. `warning-text` is dark enough for text, so mixed into an
+  // outline or fill it reads beige. Not text, and not the only cue: on a
+  // light surface it is about 2:1.
+  'warning-indicator': 'oklch(0.767 0.157 72)',
   // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
   // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
   // the syntax-highlighted text legible; accents draw the solid gutter bar.
@@ -178,6 +183,8 @@ export const darkTheme = {
   'warning-text': 'oklch(0.845 0.147 79)',
   'destructive-text': 'oklch(0.713 0.181 20)',
   'info-text': 'oklch(0.8 0.125 231)',
+  // Dark `warning-text` is already bright enough for a mark.
+  'warning-indicator': 'oklch(0.845 0.147 79)',
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
