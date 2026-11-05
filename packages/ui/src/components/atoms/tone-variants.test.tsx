@@ -4,8 +4,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Alert, AlertDescription, AlertTitle } from './alert.tsx';
 import { Progress, type ProgressTone } from './progress.tsx';
 
-// A toned Alert sits on the tone's subtle fill and border with its icon in the
-// tone's text slot; title and description keep the neutral text slots.
+// A toned Alert is a faint tint of its tone (fill and border mixed from one
+// tone colour) with its icon in the tone's text slot; title and description
+// keep the neutral text slots.
 // Progress fills use ramp step 600 in light mode and subtle-foreground in dark
 // mode; both reach 3:1 on the track and the page. The solid tone slots are not
 // text- or fill-safe.
@@ -20,8 +21,13 @@ function slotTokens(html: string, slot: string): string[] {
 
 describe('Alert tone variants', () => {
   const slots = { destructive: 'destructive', warning: 'warning', info: 'info' } as const;
+  const tints = {
+    destructive: 'destructive-text',
+    warning: 'warning-indicator',
+    info: 'info-text',
+  } as const;
   for (const [tone, slot] of Object.entries(slots)) {
-    test(`${tone} sits on the ${slot} subtle fill and border with a ${slot}-text icon`, () => {
+    test(`${tone} is a faint ${tints[tone as keyof typeof tints]} tint with a ${slot}-text icon`, () => {
       const tokens = slotTokens(
         renderToStaticMarkup(
           <Alert variant={tone as keyof typeof slots}>
@@ -31,8 +37,12 @@ describe('Alert tone variants', () => {
         ),
         'alert',
       );
-      expect(tokens).toContain(`bg-${slot}-subtle`);
-      expect(tokens).toContain(`border-${slot}-border`);
+      expect(tokens).toContain(`[--alert-tone:var(--${tints[tone as keyof typeof tints]})]`);
+      expect(tokens).toContain('bg-[color-mix(in_oklab,var(--alert-tone)_7%,var(--card))]');
+      expect(tokens).toContain('border-[color-mix(in_oklab,var(--alert-tone)_22%,var(--border))]');
+      expect(tokens).toContain('dark:bg-[color-mix(in_oklab,var(--alert-tone)_10%,transparent)]');
+      expect(tokens).toContain('dark:border-[color-mix(in_oklab,var(--alert-tone)_30%,transparent)]');
+      expect(tokens.filter((token) => /-(subtle|border)$/.test(token))).toEqual([]);
       expect(tokens).toContain('text-foreground');
       expect(tokens).toContain(`*:[svg]:text-${slot}-text`);
       expect(tokens.filter((token) => new RegExp(`(^|:)(text|bg)-${slot}$`).test(token))).toEqual([]);
