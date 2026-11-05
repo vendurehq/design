@@ -180,8 +180,10 @@ function CommandResultsGhost() {
         return
       }
       // Results shown now stay still if the new query keeps them.
-      for (const result of sizer.querySelectorAll<HTMLElement>(
-        "[cmdk-item],[cmdk-group-heading],[cmdk-empty]"
+      for (const result of Array.from(
+        sizer.querySelectorAll<HTMLElement>(
+          "[cmdk-item],[cmdk-group-heading],[cmdk-empty]"
+        )
       )) {
         if (ghost.contains(result)) {
           continue
@@ -196,7 +198,7 @@ function CommandResultsGhost() {
         return
       }
       const copies: Node[] = []
-      for (const child of sizer.children) {
+      for (const child of Array.from(sizer.children)) {
         if (
           child === ghost ||
           child.getAttribute("data-slot") === "command-highlight"
@@ -205,7 +207,7 @@ function CommandResultsGhost() {
         }
         const copy = child.cloneNode(true) as HTMLElement
         // The copy must not answer cmdk's or the highlight's item queries.
-        for (const node of [copy, ...copy.querySelectorAll("*")]) {
+        for (const node of [copy, ...Array.from(copy.querySelectorAll("*"))]) {
           node.removeAttribute("id")
           node.removeAttribute("cmdk-item")
           node.removeAttribute("cmdk-empty")
