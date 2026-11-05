@@ -8,7 +8,7 @@ import {
 } from '@vendure-io/ui/components/atoms/collapsible';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
-import { ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
 // The count says how many rows the section holds, open and closed, like a
@@ -46,7 +46,8 @@ type CollapsibleSectionProps = Omit<
 
 /**
  * A card-surface section whose header opens and closes its rows. The header
- * is one button: title, count, and a chevron that turns 90° when open.
+ * is one full-width button, filled on hover like a row: title, count, and a
+ * down chevron that turns over when open.
  */
 function CollapsibleSection({
   title,
@@ -69,9 +70,13 @@ function CollapsibleSection({
       <Heading data-slot="collapsible-section-heading" className="m-0">
         <CollapsibleTrigger
           data-slot="collapsible-section-trigger"
-          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none transition-colors duration-fast hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
-          <span data-slot="collapsible-section-title" className="text-sm font-semibold">
+          {/* The title is quieter than the rows it labels. */}
+          <span
+            data-slot="collapsible-section-title"
+            className="text-sm font-semibold text-foreground-secondary"
+          >
             {title}
           </span>
           {count != null ? (
@@ -79,10 +84,12 @@ function CollapsibleSection({
               {count}
             </span>
           ) : null}
-          <ChevronRight
+          {/* The chevron turns on the panel's height timing, so both settle
+              together; its colour and opacity follow the hover faster. */}
+          <ChevronDown
             aria-hidden="true"
             strokeWidth={1.75}
-            className="ml-auto size-4 shrink-0 text-muted-foreground transition-[color,rotate] duration-(--transition-duration-slow) ease-(--ease-drawer) group-hover/collapsible-section-trigger:text-foreground group-data-panel-open/collapsible-section-trigger:rotate-90 motion-reduce:transition-colors"
+            className="ml-auto size-3.75 shrink-0 text-muted-foreground opacity-70 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-moderate),opacity_var(--transition-duration-moderate)] group-hover/collapsible-section-trigger:text-foreground group-hover/collapsible-section-trigger:opacity-100 group-data-panel-open/collapsible-section-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-moderate),opacity_var(--transition-duration-moderate)]"
           />
         </CollapsibleTrigger>
       </Heading>
