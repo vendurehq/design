@@ -6,7 +6,7 @@ const openTag = (html: string, slot: string) =>
   html.match(new RegExp(`<[a-z0-9]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
 
 describe('CollapsibleSection', () => {
-  test('closed: the header is a collapsed button in a heading and the pill shows the count', () => {
+  test('closed: the header is a collapsed button in a heading and shows the count', () => {
     const html = renderToStaticMarkup(
       <CollapsibleSection title="Pending refunds" count={4}>
         <p>row</p>
@@ -14,20 +14,20 @@ describe('CollapsibleSection', () => {
     );
     expect(openTag(html, 'collapsible-section-heading').startsWith('<h2')).toBe(true);
     expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
-    const pill = openTag(html, 'collapsible-section-count');
-    expect(pill).not.toContain('aria-hidden');
+    expect(openTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
     expect(html).toContain('>4</span>');
     expect(html).not.toContain('<p>row</p>');
   });
 
-  test('open: the rows render and the pill leaves the accessibility tree', () => {
+  test('open: the rows render and the count stays', () => {
     const html = renderToStaticMarkup(
       <CollapsibleSection title="Pending refunds" count={4} defaultOpen>
         <p>row</p>
       </CollapsibleSection>,
     );
     expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="true"');
-    expect(openTag(html, 'collapsible-section-count')).toContain('aria-hidden="true"');
+    expect(openTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
+    expect(html).toContain('>4</span>');
     expect(html).toContain('<p>row</p>');
   });
 
@@ -40,16 +40,26 @@ describe('CollapsibleSection', () => {
     expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
   });
 
-  test('the attention tone colors the pill only', () => {
+  test('the count is plain text, not a pill, and takes text', () => {
+    const html = renderToStaticMarkup(
+      <CollapsibleSection title="Pushes not deployed" count="2 · 1 failed" />,
+    );
+    const count = openTag(html, 'collapsible-section-count');
+    expect(count).toContain('text-muted-foreground');
+    expect(count).not.toMatch(/\b(border|bg-|rounded)/);
+    expect(html).toContain('>2 · 1 failed</span>');
+  });
+
+  test('the attention tone colors the count text only', () => {
     const html = renderToStaticMarkup(
       <CollapsibleSection title="Failed payments" count={2} tone="attention" />,
     );
-    expect(openTag(html, 'collapsible-section-count')).toContain('bg-warning-subtle');
+    expect(openTag(html, 'collapsible-section-count')).toContain('text-warning-text');
     expect(openTag(html, 'collapsible-section')).not.toContain('warning');
     expect(openTag(html, 'collapsible-section-trigger')).not.toContain('warning');
   });
 
-  test('no count, no pill', () => {
+  test('no count, no count element', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" />);
     expect(html).not.toContain('collapsible-section-count');
   });
@@ -59,11 +69,8 @@ describe('CollapsibleSection', () => {
     expect(openTag(html, 'collapsible-section-heading').startsWith('<h3')).toBe(true);
   });
 
-  test('reduced motion keeps the fades and drops the height and the blur', () => {
+  test('reduced motion keeps the fades and drops the height', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
     expect(openTag(html, 'collapsible-section-panel')).toContain('motion-safe:transition-[height]');
-    expect(openTag(html, 'collapsible-section-count')).toContain(
-      'motion-safe:group-data-panel-open/collapsible-section-trigger:blur-xs',
-    );
   });
 });

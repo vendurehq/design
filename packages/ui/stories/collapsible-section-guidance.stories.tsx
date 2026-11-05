@@ -145,7 +145,7 @@ export const ChoosingTheTool: Story = {
               <OrderRow code="SB-2041" state="Capture failed" tone="critical" />
             </Card>
           </Example>
-          <Example verdict="dont" caption="One row behind a header and a pill that says 1.">
+          <Example verdict="dont" caption="One row behind a header and a count that says 1.">
             <CollapsibleSection title="Failed payment captures" count={1} headingLevel={3}>
               <OrderRow code="SB-2041" state="Capture failed" tone="critical" />
             </CollapsibleSection>
@@ -169,7 +169,7 @@ export const OpenStateAndTone: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="A failed capture is in the list: the section opens by itself and the pill carries the attention tone."
+            caption="A failed capture is in the list: the section opens by itself and the count carries the attention tone."
           >
             <CollapsibleSection
               title="Payment captures"
@@ -184,7 +184,7 @@ export const OpenStateAndTone: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="The failure hides behind a closed header; only the pill hints at it."
+            caption="The failure hides behind a closed header; only the count hints at it."
           >
             <CollapsibleSection title="Payment captures" count={2} tone="attention" headingLevel={3}>
               <OrderRow code="SB-2041" state="Capture failed" tone="critical" />
@@ -196,7 +196,7 @@ export const OpenStateAndTone: Story = {
 
       <Section
         title="Attention means action, not volume"
-        intro="The attention tone puts the count in the warning tone, on the pill only. Use it when rows need the user. A long list of routine rows stays neutral, however long it is (accent rationing)."
+        intro="The attention tone colours the count in the warning tone, and nothing else. Use it when rows need the user. A long list of routine rows stays neutral, however long it is (accent rationing)."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example verdict="do" caption="48 archived drafts: neutral. Nothing waits on the user.">
