@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@vendure-io/ui/components/atoms/card';
+import { Card, CardCount } from '@vendure-io/ui/components/atoms/card';
 import {
   Collapsible,
   CollapsibleContent,
@@ -11,15 +11,17 @@ import { cva } from 'class-variance-authority';
 import { ChevronRight } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
-// The count says how many rows the section holds, open and closed, like a
-// CardCount beside a card title. Attention colours its text in the warning
-// tone, for rows that need the user: the section itself stays neutral
-// (accent rationing).
-const countVariants = cva('text-xs font-semibold tabular-nums', {
+// The count says how many rows the section holds, open and closed. It is a
+// CardCount, the same count as beside a card title. `detail` adds a short
+// fact after it ("2 · 1 failed"). The tone colours the detail when there is
+// one, and the whole count otherwise: the number stays muted beside a toned
+// fact, and the section itself stays neutral (accent rationing).
+const toneVariants = cva('', {
   variants: {
     tone: {
       neutral: 'text-muted-foreground',
       attention: 'text-warning-text',
+      critical: 'text-destructive-text',
     },
   },
   defaultVariants: {
@@ -33,10 +35,16 @@ type CollapsibleSectionProps = Omit<
 > & {
   /** The section title. Also the name of the toggle button. */
   title: ReactNode;
-  /** How many rows the section holds, beside the title. A number, or text such as "2 · 1 failed". */
-  count?: ReactNode;
-  /** `attention` colours the count in the warning tone, for rows that need the user. Default `neutral`. */
-  tone?: 'neutral' | 'attention';
+  /** How many rows the section holds, beside the title. */
+  count?: number | string;
+  /** A short fact after the count, such as "1 failed". Renders as "{count} · {detail}". */
+  detail?: string;
+  /**
+   * Colours the detail, or the whole count when there is no detail. `attention`
+   * (warning tone): rows wait on the user. `critical` (destructive tone): rows
+   * have failed. Default `neutral`.
+   */
+  tone?: 'neutral' | 'attention' | 'critical';
   /** Heading level of the title in the page outline. Default `2`. */
   headingLevel?: 2 | 3 | 4 | 5 | 6;
   className?: string;
@@ -51,6 +59,7 @@ type CollapsibleSectionProps = Omit<
 function CollapsibleSection({
   title,
   count,
+  detail,
   tone = 'neutral',
   headingLevel = 2,
   className,
@@ -71,13 +80,31 @@ function CollapsibleSection({
           data-slot="collapsible-section-trigger"
           className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 px-4 text-left outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
-          <span data-slot="collapsible-section-title" className="text-sm font-semibold">
+          <span data-slot="collapsible-section-title" className="min-w-0 text-sm font-semibold">
             {title}
           </span>
           {count != null ? (
-            <span data-slot="collapsible-section-count" className={countVariants({ tone })}>
+            <CardCount
+              data-slot="collapsible-section-count"
+              className={cn(
+                'ms-0 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap',
+                detail ? undefined : toneVariants({ tone }),
+              )}
+            >
               {count}
-            </span>
+              {detail ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="sr-only">, </span>
+                  <span
+                    data-slot="collapsible-section-count-detail"
+                    className={toneVariants({ tone })}
+                  >
+                    {detail}
+                  </span>
+                </>
+              ) : null}
+            </CardCount>
           ) : null}
           <ChevronRight
             aria-hidden="true"

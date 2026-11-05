@@ -20,6 +20,10 @@ export const uiGuidance = [
         body: 'Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
       },
       {
+        title: 'A toned Alert carries its tone icon',
+        body: 'Put the tone icon first in every `warning`, `info` and `destructive` Alert: TriangleAlert, Info or CircleAlert. The faint tint alone is not enough cue, and the warning tint is never the only cue.',
+      },
+      {
         title: 'Actions go in AlertAction',
         body: 'Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.',
       },
@@ -225,8 +229,12 @@ export const uiGuidance = [
         body: 'Start closed when the rows are routine. When a row has failed or waits on the user, pass `defaultOpen` so the problem is in view.',
       },
       {
-        title: 'Attention means action, not volume',
-        body: '`tone="attention"` puts the count pill in the warning tone, on the pill only. Use it when rows need the user, never because the count is high.',
+        title: 'Tone means action, not volume',
+        body: '`tone="attention"` colours the count in the warning tone, for rows that wait on the user. `tone="critical"` colours it in the destructive tone, for rows that have failed. Never use a tone because the count is high.',
+      },
+      {
+        title: 'Name the rows that matter in the detail',
+        body: 'When some rows have failed, pass `detail` ("1 failed") with `tone="critical"`. The tone then colours the detail only and the count stays muted: "2 · 1 failed".',
       },
     ],
     choices: [
