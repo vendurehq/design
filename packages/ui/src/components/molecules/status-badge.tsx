@@ -9,28 +9,38 @@ import type * as React from 'react';
 type StatusBadgeAppearance = 'chip' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
 
-// The chip: a neutral `muted` fill and a `foreground` label, so a row of chips
-// reads as one calm column. The tone shows in two places only: the 1px outline
-// and the leading marker (dot, icon or spinner). There is no solid mode:
-// solid/brand chips stay on the base `Badge` (accent rationing applied at the
-// API level).
+// The chip takes its tone in three places, all mixed from one `--status-tone`
+// colour: a faint 5% tone wash over the `muted` fill, a 1px inset outline at
+// 34%, and a label tinted 30% from `foreground-secondary` towards the tone. A
+// row of chips stays calm, and each one still reads its state at a glance.
+// The outline is an inset ring, not a border, so it adds no width. There is
+// no solid mode: solid/brand chips stay on the base `Badge` (accent rationing
+// applied at the API level).
 //
 // Slot = tone, with two aliases: `critical` uses the `destructive` slots (the
-// token keeps its shadcn-compatible name) and `progress` uses the `info` slots
-// for its spinner on a neutral outline: the neutral outline says "no outcome
-// yet", the spinner says "in motion". Class strings are static per tone so
-// Tailwind's scanner picks them up.
+// token keeps its shadcn-compatible name) and `progress` uses the `info`
+// slots, so a chip in motion is blue before it lands on its outcome.
+// `neutral` takes the muted text colour as its tone. `warning` draws its
+// fill and outline in `warning-indicator`: mixed from `warning-text`, they
+// read beige. Its label mixes 70% of `warning-text` instead. Class strings
+// are static per tone so Tailwind's scanner picks them up.
 const statusBadgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg border bg-muted font-medium leading-none text-foreground',
+  [
+    'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium leading-none',
+    'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
+    'text-[color-mix(in_oklab,var(--status-label-tone,var(--status-tone))_var(--status-label-mix,30%),var(--foreground-secondary))]',
+    'transition-[box-shadow,background-color] duration-slow',
+  ],
   {
     variants: {
       tone: {
-        neutral: 'border-control-border/40',
-        info: 'border-info-text/40',
-        success: 'border-success-text/40',
-        warning: 'border-warning-text/50',
-        critical: 'border-destructive-text/40',
-        progress: 'border-control-border/40',
+        neutral: '[--status-tone:var(--muted-foreground)]',
+        info: '[--status-tone:var(--info-text)]',
+        success: '[--status-tone:var(--success-text)]',
+        warning:
+          '[--status-label-mix:70%] [--status-label-tone:var(--warning-text)] [--status-tone:var(--warning-indicator)]',
+        critical: '[--status-tone:var(--destructive-text)]',
+        progress: '[--status-tone:var(--info-text)]',
       } satisfies Record<Tone, string>,
       size: {
         default: 'h-6 gap-1.5 px-2.5 text-xs has-data-[slot=status-badge-marker]:pl-2',
@@ -176,7 +186,11 @@ function StatusBadgeMarker({
   dot: boolean;
   icon: React.ReactNode;
 }) {
-  const iconSize = size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3';
+  // The marker eases to a new tone with the outline, when a status changes in place.
+  const iconSize = cn(
+    size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3',
+    'transition-colors duration-slow',
+  );
 
   if (icon) {
     return (

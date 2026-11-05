@@ -41,7 +41,7 @@ const TONES: { tone: Tone; label: string }[] = [
 
 export const Playground: Story = {};
 
-// Every tone as a chip: a neutral fill, the tone in the outline only.
+// Every tone as a chip: a faint tone wash on the muted fill, a tone outline and a tinted label.
 export const AllTones: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
