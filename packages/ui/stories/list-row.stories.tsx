@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontal, Package, RotateCcw, Truck } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card } from '../src/components/atoms/card.tsx';
@@ -269,4 +269,43 @@ export const OpensFromAnyPoint: Story = {
     await userEvent.tab();
     await expect(control).toHaveFocus();
   },
+};
+
+// A row the user just added takes `data-new`: its space opens first, so the rows
+// below glide down, then its content fades in from a light blur. Rows of the
+// first render never take it, so the list does not animate on page load.
+function NewRowDemo() {
+  const [backups, setBackups] = useState([
+    { id: 'bk-0412', label: 'Backup 4 Nov, 02:00', isNew: false },
+    { id: 'bk-0411', label: 'Backup 3 Nov, 02:00', isNew: false },
+  ]);
+  const add = () =>
+    setBackups((rows) => [
+      { id: `bk-${rows.length + 1}`, label: `Manual backup ${rows.length - 1}`, isNew: true },
+      ...rows,
+    ]);
+  return (
+    <div className="flex max-w-3xl flex-col items-start gap-4">
+      <Button variant="outline" onClick={add}>
+        Create backup
+      </Button>
+      <Card className="w-full gap-0 py-0">
+        {backups.map((backup) => (
+          <ListRow key={backup.id} data-new={backup.isNew ? '' : undefined}>
+            <ListRowContent>
+              <ListRowLink onClick={() => {}}>{backup.label}</ListRowLink>
+            </ListRowContent>
+            <ListRowTrailing>
+              <IdChip value={backup.id} />
+            </ListRowTrailing>
+            <ListRowChevron />
+          </ListRow>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
+export const NewRow: Story = {
+  render: () => <NewRowDemo />,
 };
