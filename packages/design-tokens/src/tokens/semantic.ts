@@ -36,7 +36,8 @@ export const lightTheme = {
   // percentages reproduce the previous absolute values on the default surface.
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': neutral[900],
-  muted: 'color-mix(in oklab, var(--foreground) 5%, transparent)',
+  // The v3 look's light tints: 5.5% at rest, 8.5% on hover.
+  muted: 'color-mix(in oklab, var(--foreground) 5.5%, transparent)',
   // Darker than the plain surface needs: muted text also sits on the `muted`
   // and `secondary` fills (kbd, avatar fallback, chips) and on the `accent`
   // hover fill (menu and list rows), and holds 4.5:1 there.
@@ -45,7 +46,7 @@ export const lightTheme = {
   // Below 4.5:1, so only for a native `::placeholder`, never for text a user
   // must read.
   'faint-foreground': 'oklch(0.707 0.012 231)',
-  accent: 'color-mix(in oklab, var(--foreground) 8%, transparent)',
+  accent: 'color-mix(in oklab, var(--foreground) 8.5%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
   'destructive-foreground': 'oklch(0.98 0.01 25)',
@@ -84,10 +85,10 @@ export const lightTheme = {
   // and `accent` fills over each tier: a status word in a hovered row stays
   // legible. Brighter than the `{tone}-subtle-foreground` slots, which are
   // tuned for the subtle fills.
-  'success-text': 'oklch(0.494 0.127 154)',
-  'warning-text': 'oklch(0.522 0.146 49)',
-  'destructive-text': 'oklch(0.533 0.193 24)',
-  'info-text': 'oklch(0.504 0.112 236)',
+  'success-text': 'oklch(0.491 0.127 154)',
+  'warning-text': 'oklch(0.519 0.146 49)',
+  'destructive-text': 'oklch(0.53 0.193 24)',
+  'info-text': 'oklch(0.501 0.112 236)',
   // Warning as a mark beside a label: the StatusBadge outline and fill, the
   // warning Alert tint, a highlight. `warning-text` is dark enough for text,
   // so mixed into an outline or fill it reads beige. Not text, and never the
@@ -167,12 +168,12 @@ export const darkTheme = {
   'brand-indicator': brand[400],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
-  // Matches the v3 look's dark tint: 6% foreground over the canvas.
+  // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.
   muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.014 231)',
   'faint-foreground': 'oklch(0.522 0.015 231)',
-  accent: 'color-mix(in oklab, var(--foreground) 9%, transparent)',
+  accent: 'color-mix(in oklab, var(--foreground) 9.5%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   // Between destructive-500 and destructive-400 on the destructive hue.
   // destructive-500 is 3.07:1 on the raised and overlay tiers, at the
