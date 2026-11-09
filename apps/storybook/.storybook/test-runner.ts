@@ -34,6 +34,27 @@ async function pressText(
   if (page.url() !== url) throw new Error(`pressText: the press navigated to ${page.url()}`);
 }
 
+/**
+ * `parameters.pressRowText` presses a piece of plain text in a table row with
+ * a real mouse, as `pressText` does, and expects the press to open the row's
+ * link: the URL hash must become `expectHash`. A press scale on the link would
+ * make it the containing block of its stretched ::after, so the mouseup would
+ * miss it; only a real press shows that.
+ */
+async function pressRowText(page: Page, press?: { text: string; expectHash: string }) {
+  if (!press) return;
+  const root = page.locator('#storybook-root');
+  const box = await root.getByText(press.text, { exact: true }).boundingBox();
+  if (!box) throw new Error(`pressRowText: "${press.text}" is not visible`);
+  await page.evaluate(() => history.replaceState(null, '', location.pathname + location.search));
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const hash = await page.evaluate(() => location.hash);
+  await page.evaluate(() => history.replaceState(null, '', location.pathname + location.search));
+  if (hash !== press.expectHash) {
+    throw new Error(`pressRowText: expected ${press.expectHash}, the press opened "${hash}"`);
+  }
+}
+
 const config: TestRunnerConfig = {
   async preVisit(page) {
     await injectAxe(page);
@@ -41,6 +62,7 @@ const config: TestRunnerConfig = {
   async postVisit(page, context) {
     const storyContext = await getStoryContext(page, context);
     await pressText(page, storyContext.parameters?.pressText);
+    await pressRowText(page, storyContext.parameters?.pressRowText);
 
     // Opt a story out via `parameters.a11y.skip` in its meta or story export.
     // See docs/testing.md for when this is an acceptable escape hatch.

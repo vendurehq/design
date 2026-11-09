@@ -369,6 +369,10 @@ export const uiGuidance = [
         body: 'The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.',
       },
       {
+        title: 'A row that opens an item opens it from any point',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control.',
+      },
+      {
         title: 'Cell text lines up with the header',
         body: 'Badge, StatusBadge, Button and IdChip set --content-inset, the distance from their box to their first letter, and a DataTable cell pulls its first element back by it. Do not add per-column offsets. Mark a leading icon with data-icon="inline-start". Custom styled content sets --content-inset on the element that starts the cell.',
       },

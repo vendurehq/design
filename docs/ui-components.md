@@ -412,6 +412,34 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable row links
+
+A row that opens a detail page opens it from any point of the row. Wrap the item name in `DataTableRowLink`. It renders an `<a>`; pass `href`, or `render` with a router link:
+
+```tsx
+import { Link } from "@tanstack/react-router";
+import { DataTableRowLink } from "@vendure-io/ui/components/molecules/data-table/data-table";
+
+const columns: ColumnDef<Variant>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => (
+      <DataTableRowLink render={<Link to={`./${row.original.id}`} />}>
+        {row.original.name}
+      </DataTableRowLink>
+    ),
+  },
+  // ...
+];
+```
+
+- The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
+- A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
+- Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
+- Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.
+- Do not render it as a `Button`: a pressed button scales, which makes it the containing block of its `::after`, and the click misses the link.
+
 ## Optional Peer Dependencies
 
 These packages are optional — install them only if you use the features that need them:
