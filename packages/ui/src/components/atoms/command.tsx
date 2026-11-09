@@ -132,7 +132,7 @@ function CommandList({
       data-slot="command-list"
       data-highlight={slidingHighlight ? "slide" : undefined}
       className={cn(
-        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-drawer in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
+        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-height in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
         ENTERING_RESULTS,
         className
       )}

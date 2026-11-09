@@ -415,7 +415,7 @@ function SidebarGroupLabel({
     props: mergeProps<"div">(
       {
         className: cn(
-          "text-muted-foreground h-5.5 overflow-hidden rounded-md px-2.5 text-xs leading-4.5 font-medium whitespace-nowrap transition-[height,opacity] duration-(--transition-duration-slow) ease-drawer motion-reduce:transition-opacity group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:opacity-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:size-4 flex shrink-0 items-start outline-hidden [&>svg]:shrink-0",
+          "text-muted-foreground h-5.5 overflow-hidden rounded-md px-2.5 text-xs leading-4.5 font-medium whitespace-nowrap transition-[height,opacity] duration-(--transition-duration-slow) ease-height motion-reduce:transition-opacity group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:opacity-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:size-4 flex shrink-0 items-start outline-hidden [&>svg]:shrink-0",
           className
         ),
       },
