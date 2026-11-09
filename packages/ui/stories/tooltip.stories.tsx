@@ -68,8 +68,11 @@ export const FromTriggerToTrigger: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
-    await userEvent.hover(canvas.getByRole('button', { name: 'First' }));
-    await body.findByText('First tooltip');
+    // A production build can run the play before the trigger listens; hover until it opens.
+    await waitFor(async () => {
+      await userEvent.hover(canvas.getByRole('button', { name: 'First' }));
+      await expect(body.getByText('First tooltip')).toBeInTheDocument();
+    });
     await userEvent.unhover(canvas.getByRole('button', { name: 'First' }));
     await userEvent.hover(canvas.getByRole('button', { name: 'Second' }));
     const popup = (await body.findByText('Second tooltip')).closest(
