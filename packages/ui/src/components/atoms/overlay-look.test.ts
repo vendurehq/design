@@ -79,6 +79,29 @@ describe('v3 overlay look', () => {
     expect(code).toContain('shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!');
   });
 
+  test('the toast has one edge: no border between the shadow ring and the hairline', () => {
+    const code = source('sonner.tsx');
+    expect(code).toContain('"border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!"');
+    expect(code).not.toContain('"--normal-border"');
+  });
+
+  test('the icon sits 14px in and 10px from the text, 20px from the corner', () => {
+    const code = source('sonner.tsx');
+    for (const name of ['icon-margin-start', 'icon-margin-end', 'svg-margin-start', 'svg-margin-end']) {
+      expect(code).toContain(`"--toast-${name}": "0px"`);
+    }
+    expect(code).toContain('offset={20}');
+    expect(code).toContain('icon: "text-foreground/60"');
+  });
+
+  test("the tone icons take the tokens, not Sonner's colours of the same name", () => {
+    const code = source('sonner.tsx');
+    for (const tone of ['success', 'warning', 'info']) {
+      expect(code).toContain(`"--toaster-${tone}-text": "var(--${tone}-text)"`);
+      expect(code).toContain(`"--${tone}-text": "var(--toaster-${tone}-text)"`);
+    }
+  });
+
   test('a toast is 44px, 10px 14px, 13px medium, 320px wide on the card surface', () => {
     const code = source('sonner.tsx');
     expect(code).toContain('min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!');
