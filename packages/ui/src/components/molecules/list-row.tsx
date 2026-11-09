@@ -32,9 +32,11 @@ const LIFT_CONTROLS =
 // @starting-style runs it on mount only, so a list never animates on page
 // load unless the caller marks rows. `interpolate-size` lets the height run to
 // `auto`, which keeps a two-line row exact; a browser without it skips the
-// height and keeps the fade. Reduced motion keeps the fade only.
+// height and keeps the fade. The height opens in `slow` on `drawer`, like the
+// Accordion panel; the content fades in `slow` on `soft` and unblurs on `out`,
+// both a `fast` beat later. Reduced motion keeps the fade only.
 const ENTER_NEW =
-  'data-new:overflow-clip data-new:[interpolate-size:allow-keywords] motion-safe:data-new:[transition:height_var(--transition-duration-slow)_var(--ease-drawer),min-height_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-normal)_var(--ease-default)_var(--transition-duration-fast),filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast),background-color_var(--transition-duration-fast)_var(--ease-default)] motion-safe:data-new:starting:h-0 motion-safe:data-new:starting:min-h-0 motion-safe:data-new:starting:blur-[3px] data-new:starting:opacity-0 motion-reduce:data-new:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
+  'data-new:overflow-clip data-new:[interpolate-size:allow-keywords] motion-safe:data-new:[transition:height_var(--transition-duration-slow)_var(--ease-drawer),min-height_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast),filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast),background-color_var(--transition-duration-fast)_var(--ease-default)] motion-safe:data-new:starting:h-0 motion-safe:data-new:starting:min-h-0 motion-safe:data-new:starting:blur-[3px] data-new:starting:opacity-0 motion-reduce:data-new:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
 
 // Rows that a "Show older" action adds (`laterIndex`) enter once, 28ms after
 // the row above: each fades in and rises 6px out of a 3px blur on the strong
@@ -210,10 +212,11 @@ function ListRowTrailing({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-// Hover-revealed controls stay visible while the row has focus, while one of
-// them has its menu open, and on touch screens, where there is no hover.
+// Hover-revealed controls fade in `quick` on `soft`. They stay visible while
+// the row has focus, while one of them has its menu open, and on touch
+// screens, where there is no hover.
 const revealOnRowHover =
-  'opacity-0 transition-opacity duration-(--transition-duration-moderate) ease-(--ease-default) group-hover/list-row:opacity-100 group-focus-within/list-row:opacity-100 [@media(hover:none)]:opacity-100';
+  'opacity-0 transition-opacity duration-(--transition-duration-quick) ease-(--ease-soft) group-hover/list-row:opacity-100 group-focus-within/list-row:opacity-100 [@media(hover:none)]:opacity-100';
 
 /** Secondary row actions. Hidden until the row is hovered or has focus. */
 function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {

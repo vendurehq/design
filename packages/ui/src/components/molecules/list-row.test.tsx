@@ -102,6 +102,21 @@ describe('ListRow', () => {
     expect(html).not.toContain('<button');
   });
 
+  test('row actions and a new row run on the v3-look timings', () => {
+    const actions = openTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
+    expect(actions).toContain('duration-(--transition-duration-quick)');
+    expect(actions).toContain('ease-(--ease-soft)');
+    const row = openTag(renderToStaticMarkup(<ListRow data-new="" />), 'list-row');
+    // The content fades in on `ease` after the height has started to open.
+    expect(row).toContain(
+      'opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)',
+    );
+    expect(row).toContain('height_var(--transition-duration-slow)_var(--ease-drawer)');
+    expect(row).toContain(
+      'filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast)',
+    );
+  });
+
   test('a group heading sits between rows with a rule above, and the row under it drops its own', () => {
     const html = renderToStaticMarkup(
       // biome-ignore lint/a11y/useHeadingContent: ListRowGroupHeading injects the text via render
