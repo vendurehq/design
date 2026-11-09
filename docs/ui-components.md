@@ -382,6 +382,19 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
 </Card>
 ```
 
+`variant="accent"` marks the one card that holds the live subject of the page, such as the deployment that is building: a border tinted toward the brand and a faint brand wash that fades out down the card. Use it on at most one card per view. Show state inside it with `StatusBadge appearance="bare"`, not a chip.
+
+```tsx
+<Card variant="accent">
+  <CardHeader>
+    <CardTitle>Current deployment</CardTitle>
+    <CardAction>
+      <StatusBadge tone="progress" appearance="bare">Building</StatusBadge>
+    </CardAction>
+  </CardHeader>
+</Card>
+```
+
 ### DataTable loading rows
 
 While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:

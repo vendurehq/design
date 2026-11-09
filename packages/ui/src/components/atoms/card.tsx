@@ -14,17 +14,31 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // themed shadow-control, the 1px lift a resting control has.
 // --card-head is the height of a one-line header: 48px, the height of a row,
 // so a header and the rows under it share one rhythm (44px in the sm size).
+// variant="accent" marks the one card that holds the live subject of the
+// page, such as the deployment that is building: the border mixes 38% toward
+// the brand, and a 1.5% brand wash fades out by 55% of the height. The bright
+// brand (brand-500) is the same in both modes. Use it on at most one card per
+// view, and show state inside it with a bare StatusBadge, not a chip.
+const ACCENT_CARD =
+  "data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))] data-[variant=accent]:bg-[image:linear-gradient(180deg,color-mix(in_oklab,var(--brand-500)_1.5%,transparent),transparent_55%)]"
+
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  variant?: "default" | "accent"
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
         "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] [--card-head:--spacing(12)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] data-[size=sm]:[--card-head:--spacing(11)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border shadow-control py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        ACCENT_CARD,
         className
       )}
       {...props}
