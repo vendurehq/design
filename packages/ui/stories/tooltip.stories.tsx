@@ -87,3 +87,29 @@ export const FromTriggerToTrigger: Story = {
     await waitFor(() => expect(body.queryByText('Second tooltip')).toBeNull());
   },
 };
+
+/**
+ * A tooltip without a TooltipProvider opens at once, as it does inside one.
+ * A TooltipProvider is only needed to set a delay for a group of tooltips.
+ */
+export const WithoutProvider: Story = {
+  render: () => (
+    <div className="p-12">
+      <Tooltip>
+        <TooltipTrigger render={<Button variant="outline" />}>Copy</TooltipTrigger>
+        <TooltipContent>Copy the order code</TooltipContent>
+      </Tooltip>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+    // A production build can run the play before the trigger listens.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await userEvent.hover(canvas.getByRole('button', { name: 'Copy' }));
+    // Base UI's own default waits 600ms; this tooltip must open well before that.
+    await expect(
+      await body.findByText('Copy the order code', {}, { timeout: 300 }),
+    ).toBeInTheDocument();
+  },
+};

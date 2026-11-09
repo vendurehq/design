@@ -24,6 +24,10 @@ async function pressText(page: Page, presses?: TextPress | TextPress[]) {
 }
 
 async function pressOneText(page: Page, press: TextPress) {
+  // A tooltip from the last press can cover this text. Move the pointer away
+  // first, as a user would, and wait for every tooltip to close.
+  await page.mouse.move(0, 0);
+  await page.locator('[data-slot=tooltip-content]').first().waitFor({ state: 'detached' });
   const root = page.locator('#storybook-root');
   const box = await root.getByText(press.text, { exact: true }).boundingBox();
   if (!box) throw new Error(`pressText: "${press.text}" is not visible`);
