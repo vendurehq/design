@@ -223,7 +223,7 @@ export const OneLinkPerRow: Story = {
                   <ListRowMeta>Kept for 14 days</ListRowMeta>
                 </ListRowContent>
                 <ListRowTrailing>02:00</ListRowTrailing>
-                <ListRowChevron className="opacity-100" />
+                <ListRowChevron className="opacity-100 motion-safe:translate-x-0" />
               </ListRow>
             </RowCard>
           </Example>

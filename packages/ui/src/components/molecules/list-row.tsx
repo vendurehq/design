@@ -176,9 +176,26 @@ function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+// The row-end chevron of ListRow and of a DataTable row with a row link: one
+// recipe, so the two cannot drift. Hidden at rest; while its row is hovered
+// or holds keyboard focus it fades in and slides 3px toward the end (fade only
+// under reduced motion). On a touch screen it always shows. The row is the
+// ListRow (`group/list-row`) or the DataTable row (`group/row`). The class
+// names stay literal so Tailwind can scan them.
+const ROW_CHEVRON_CLASS = [
+  'size-3.75 shrink-0 text-muted-foreground opacity-0 rtl:-scale-x-100',
+  'transition-[opacity,translate] duration-(--transition-duration-fast) ease-(--ease-out)',
+  'motion-safe:-translate-x-0.75 motion-safe:rtl:translate-x-0.75',
+  'group-hover/list-row:translate-x-0 group-hover/list-row:opacity-100 group-has-[:focus-visible]/list-row:translate-x-0 group-has-[:focus-visible]/list-row:opacity-100',
+  'group-hover/row:translate-x-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:translate-x-0 group-has-[:focus-visible]/row:opacity-100',
+  '[@media(hover:none)]:translate-x-0 [@media(hover:none)]:opacity-100',
+].join(' ');
+
 /**
- * The trailing chevron of a linked row: 15px, it appears on hover in 100ms and
- * does not travel. Decorative: the link carries the name.
+ * The trailing chevron of a linked row: 15px. While the row is hovered or
+ * holds keyboard focus, it fades in and slides 3px toward the end in 100ms
+ * (fade only under reduced motion). Decorative: the link carries the name.
+ * DataTableRowLink renders the same chevron.
  */
 function ListRowChevron({ className, ...props }: React.ComponentProps<typeof ChevronRight>) {
   return (
@@ -186,12 +203,7 @@ function ListRowChevron({ className, ...props }: React.ComponentProps<typeof Che
       data-slot="list-row-chevron"
       aria-hidden="true"
       strokeWidth={1.75}
-      className={cn(
-        'size-3.75 shrink-0 text-muted-foreground',
-        revealOnRowHover,
-        'duration-(--transition-duration-fast)',
-        className,
-      )}
+      className={cn(ROW_CHEVRON_CLASS, className)}
       {...props}
     />
   );
