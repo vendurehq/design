@@ -263,4 +263,61 @@ describe('StatusBadge content inset', () => {
     );
     expect(html(<StatusBadge appearance="dot">Live</StatusBadge>)).not.toContain('--content-inset');
   });
+
+  test('reveal="row" hides the badge until its row is hovered or focused', () => {
+    const markup = html(
+      <StatusBadge tone="success" reveal="row">
+        Enabled
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('data-reveal="row"');
+    expect(markup).toContain('opacity-0');
+    expect(markup).toContain('group-hover/row:opacity-100');
+    expect(markup).toContain('group-has-[:focus-visible]/row:opacity-100');
+    // Touch screens have no hover: the badge always shows there.
+    expect(markup).toContain('[@media(hover:none)]:opacity-100');
+    // The label stays in the accessibility tree.
+    expect(markup).toContain('Enabled');
+  });
+
+  test('reveal="row" fades on the IdChip motion: 150ms, ease-out, and one duration', () => {
+    for (const appearance of ['chip', 'bare', 'text', 'dot'] as const) {
+      const classes =
+        html(
+          <StatusBadge tone="success" appearance={appearance} reveal="row">
+            Enabled
+          </StatusBadge>,
+        )
+          .match(/^<span[^>]*class="([^"]*)"/)?.[1]
+          ?.split(' ') ?? [];
+
+      expect(classes).toContain('transition-[opacity,box-shadow,background-color,color]');
+      expect(classes).toContain('duration-moderate');
+      expect(classes).toContain('ease-out');
+      // The tone transition's 300ms would win over the reveal's 150ms in the CSS.
+      expect(classes).not.toContain('duration-slow');
+      // Reduced motion keeps the fade: nothing moves.
+      expect(classes.some((c) => c.startsWith('motion-reduce:'))).toBe(false);
+    }
+  });
+
+  test('reveal="row" keeps the content inset, so the label lines up with its header', () => {
+    const markup = html(
+      <StatusBadge tone="success" reveal="row">
+        Enabled
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('[--content-inset:calc(var(--spacing)*6.75)]');
+    expect(markup).toContain(':-ms-(--content-inset)');
+  });
+
+  test('a badge shows by default, with its 300ms tone transition', () => {
+    const markup = html(<StatusBadge tone="neutral">Disabled</StatusBadge>);
+
+    expect(markup).not.toContain('data-reveal');
+    expect(markup).not.toContain('opacity-0');
+    expect(markup).toContain('duration-slow');
+  });
 });
