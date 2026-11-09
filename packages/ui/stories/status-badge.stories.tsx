@@ -192,7 +192,7 @@ export const TextAppearance: Story = {
   ),
 };
 
-// `appearance="dot"`: a lone 8px dot. The label is still in the DOM as
+// `appearance="dot"`: a lone 7px dot. The label is still in the DOM as
 // screen-reader text, so the state is never colour-only for assistive tech.
 export const DotAppearance: Story = {
   render: () => (

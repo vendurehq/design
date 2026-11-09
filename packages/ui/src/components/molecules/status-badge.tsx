@@ -146,8 +146,8 @@ const toneIcon: Record<Exclude<Tone, 'progress'>, LucideIcon> = {
   critical: CircleXIcon,
 };
 
-// The marker colour of each tone: the dot fill, and the icon or spinner stroke.
-// `neutral` has no tone slot, so it uses the muted text colour.
+// The marker colour of each tone: the icon or spinner stroke. `neutral` has
+// no tone slot, so it uses the muted text colour.
 const toneText: Record<Tone, string> = {
   neutral: 'text-muted-foreground',
   info: 'text-info-text',
@@ -157,10 +157,19 @@ const toneText: Record<Tone, string> = {
   progress: 'text-info-text',
 };
 
+// The dot fill of each tone. A dot is a filled shape, not a stroke or a
+// word, so warning takes `warning-indicator`, the amber the warning chip
+// fill mixes from: in `warning-text` the dot reads brown.
+const toneDot: Record<Tone, string> = {
+  ...toneText,
+  warning: 'text-warning-indicator',
+};
+
 // The `text` appearance: the word itself carries the tone. A neutral word
-// steps down to muted text and regular weight, so the column stays quiet.
+// steps down to muted text at the same weight, so the column stays quiet and
+// every word in it has the same weight.
 const toneWord: Record<Tone, string> = {
-  neutral: 'text-muted-foreground font-normal',
+  neutral: 'text-muted-foreground',
   info: 'text-info-text',
   success: 'text-success-text',
   warning: 'text-warning-text',
@@ -184,7 +193,7 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    *   coloured), where a chip would be a box inside a box.
    * - `text`: only the word, in the tone colour. Use it in a fixed status
    *   column of a list, where a column of chips is too heavy.
-   * - `dot`: a lone 8px tone dot. The label stays in the DOM as screen-reader
+   * - `dot`: a lone 7px tone dot. The label stays in the DOM as screen-reader
    *   text. Use it only where there is no room for a word.
    * @default 'chip'
    */
@@ -243,12 +252,11 @@ function StatusBadge({
 
   if (appearance === 'dot') {
     content = <span className="sr-only">{children}</span>;
+    // A lone dot stays still, also in progress: it marks a state in a
+    // breadcrumb or a menu, where motion would pull the eye from the page.
     classes = cn(
-      'inline-flex size-2 shrink-0 rounded-full bg-current',
-      toneText[tone],
-      // A lone dot cannot spin; in progress it pulses instead, and stands still
-      // under reduced motion.
-      tone === 'progress' && 'motion-safe:animate-pulse',
+      'inline-flex size-1.75 shrink-0 rounded-full bg-current',
+      toneDot[tone],
       reveal === 'row' && rowRevealClass,
     );
   } else if (appearance === 'text') {
@@ -350,7 +358,7 @@ function StatusBadgeMarker({
       aria-hidden
       data-marker="dot"
       data-slot="status-badge-marker"
-      className={cn('size-1.5 shrink-0 rounded-full bg-current', toneText[tone])}
+      className={cn('size-1.5 shrink-0 rounded-full bg-current', toneDot[tone])}
     />
   );
 }
