@@ -73,7 +73,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Overlay is for floating content',
-        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs or cards. Buttons, button groups and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface.',
+        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs. Buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface.',
       },
       {
         title: 'Inset reads below its host',

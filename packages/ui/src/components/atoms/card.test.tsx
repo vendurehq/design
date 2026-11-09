@@ -11,12 +11,12 @@ function slotTokens(html: string, slot: string): string[] {
 }
 
 describe('Card', () => {
-  test('is a 2xl panel with a full hairline border and no shadow', () => {
+  test('is a 2xl panel with a full hairline border on the shadow-control shadow', () => {
     const tokens = slotTokens(renderToStaticMarkup(<Card>Body</Card>), 'card');
     expect(tokens).toContain('rounded-2xl');
     expect(tokens).toContain('border');
     expect(tokens).toContain('border-border');
-    expect(tokens.filter((token) => token.startsWith('shadow'))).toEqual([]);
+    expect(tokens.filter((token) => token.startsWith('shadow'))).toEqual(['shadow-control']);
   });
 
   test('CardCount sits in the title as muted tabular numbers', () => {
