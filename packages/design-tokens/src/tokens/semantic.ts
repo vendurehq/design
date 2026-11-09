@@ -125,11 +125,13 @@ export const lightTheme = {
   'chart-4': viz[4],
   'chart-5': viz[5],
   sidebar: 'var(--background)',
-  'sidebar-foreground': 'oklch(0.3 0.007 231)',
+  // The v3 look: items rest on the secondary text and the active one takes
+  // the full foreground.
+  'sidebar-foreground': 'var(--foreground-secondary)',
   'sidebar-primary': neutral[900],
   'sidebar-primary-foreground': neutral[50],
   'sidebar-accent': 'oklch(0.935 0.004 231)',
-  'sidebar-accent-foreground': neutral[900],
+  'sidebar-accent-foreground': 'var(--foreground)',
   'sidebar-border': 'var(--border)',
   'sidebar-ring': 'var(--brand-indicator)',
 } as const;
