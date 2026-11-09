@@ -6,16 +6,21 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { useActiveLabelWidth } from "@vendure-io/ui/hooks/use-active-label-width"
 import { cn } from "@vendure-io/ui/lib/utils"
 
+/** True inside a TooltipProvider, whose delay then applies to each trigger. */
+const InTooltipProvider = React.createContext(false)
+
 function TooltipProvider({
   delay = 0,
   ...props
 }: TooltipPrimitive.Provider.Props) {
   return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delay={delay}
-      {...props}
-    />
+    <InTooltipProvider.Provider value={true}>
+      <TooltipPrimitive.Provider
+        data-slot="tooltip-provider"
+        delay={delay}
+        {...props}
+      />
+    </InTooltipProvider.Provider>
   )
 }
 
@@ -23,8 +28,20 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
 }
 
-function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+/**
+ * Opens at once, as inside a TooltipProvider. Without a provider, Base UI
+ * would wait 600ms, so the trigger sets `delay` to 0 itself. Inside a
+ * provider it leaves `delay` unset, so the provider's delay applies.
+ */
+function TooltipTrigger({ delay, ...props }: TooltipPrimitive.Trigger.Props) {
+  const inProvider = React.useContext(InTooltipProvider)
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      delay={delay ?? (inProvider ? undefined : 0)}
+      {...props}
+    />
+  )
 }
 
 function TooltipContent({
