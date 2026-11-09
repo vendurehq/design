@@ -12,16 +12,25 @@ const THEMES = ['light', 'dark'] as const;
  * `parameters.pressText` asks for a real mouse press on a piece of text, which
  * a play function cannot make: `userEvent` dispatches events to an element, so
  * nothing is hit-tested and `:active` never applies. The press must end on a
- * button named `expectButton` and must not navigate.
+ * button named `expectButton` and must not navigate. `reducedMotion: true`
+ * presses with `prefers-reduced-motion: reduce` emulated.
  */
-async function pressText(page: Page, press?: { text: string; expectButton: string }) {
+async function pressText(
+  page: Page,
+  press?: { text: string; expectButton: string; reducedMotion?: boolean },
+) {
   if (!press) return;
   const root = page.locator('#storybook-root');
   const box = await root.getByText(press.text, { exact: true }).boundingBox();
   if (!box) throw new Error(`pressText: "${press.text}" is not visible`);
   const url = page.url();
-  await page.mouse.click(box.x + 4, box.y + box.height / 2);
-  await root.getByRole('button', { name: press.expectButton }).waitFor({ timeout: 1000 });
+  if (press.reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' });
+  try {
+    await page.mouse.click(box.x + 4, box.y + box.height / 2);
+    await root.getByRole('button', { name: press.expectButton }).waitFor({ timeout: 1000 });
+  } finally {
+    if (press.reducedMotion) await page.emulateMedia({ reducedMotion: null });
+  }
   if (page.url() !== url) throw new Error(`pressText: the press navigated to ${page.url()}`);
 }
 

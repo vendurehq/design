@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { ChevronRight, Loader2, Mail } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
 
@@ -98,6 +98,41 @@ export const AsLink: Story = {
     render: <a href="https://vendure.io" />,
     children: 'Rendered as a link',
   },
+};
+
+function PlanCard() {
+  const [selected, setSelected] = useState(false);
+  return (
+    <div className="bg-card relative flex w-80 items-center justify-between gap-3 rounded-xl border p-4">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-medium">Starter plan</span>
+        <span className="text-muted-foreground text-xs">2 vCPU, 4 GB memory</span>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        className="after:absolute after:inset-0 active:scale-none"
+        onClick={() => setSelected(true)}
+      >
+        {selected ? 'Selected' : 'Select'}
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * A button that stretches its `::after` over a card makes the whole card its
+ * click target. It takes `active:scale-none`: any `scale` other than `none`
+ * makes the button the containing block of its `::after`, which then shrinks
+ * to the button between mousedown and mouseup, and a press on the card text
+ * clicks nothing. The test runner presses the card text with a real mouse,
+ * with reduced motion emulated.
+ */
+export const StretchedClickArea: Story = {
+  parameters: {
+    pressText: { text: 'Starter plan', expectButton: 'Selected', reducedMotion: true },
+  },
+  render: () => <PlanCard />,
 };
 
 type Theme = 'light' | 'dark';
