@@ -12,8 +12,8 @@ import { cn } from '@vendure-io/ui/lib/utils';
 // `title` is redefined as `ReactNode`, so drop the native string `title` attr.
 export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
   /**
-   * Leading icon element, rendered in the muted icon chip, or bare in a
-   * `compact` state. Ignored once `illustration` renders (see below).
+   * Leading icon element, drawn bare: 28px, a light stroke and 40% opacity.
+   * Ignored once `illustration` renders (see below).
    */
   icon?: React.ReactNode;
   /**
@@ -29,16 +29,16 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
   /** Actions/CTA — rendered in the content slot below the header. */
   children?: React.ReactNode;
   /**
-   * Draw the dashed box. Defaults to `true`. Set `false` when the empty state
-   * fills a region that already has a frame, such as a table body: the table
-   * owns its perimeter.
+   * Draw a dashed box around the state. Defaults to `false`: the state sits
+   * bare in its region. Set `true` for a drop zone or a slot that needs a
+   * visible outline.
    */
   bordered?: boolean;
   /**
    * `compact` drops the illustration and tightens the spacing, for a small
    * panel or side column where the full state is too tall. An explicit `icon`
-   * renders bare (no chip) above a 14px title. Keep it to a title, a
-   * description and at most one action. Defaults to `default`.
+   * sits above a 14px title. Keep it to a title, a description and at most
+   * one action. Defaults to `default`.
    */
   size?: 'default' | 'compact';
 }
@@ -48,9 +48,9 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
  * `Empty` atom's header/media/title/description/content stack that three
  * codebases (custom-ui, ops-admin, dashboard-common) kept re-assembling inline.
  *
- * The `Empty` atom ships `border-dashed` but no `border` width so it stays
- * shadcn-aligned; the molecule adds `border` to draw the dashed box every donor
- * implementation had (spike decision).
+ * The v3 look has no box: a bare icon, a 16px title and the copy. The `Empty`
+ * atom ships `border-dashed` but no `border` width, so the molecule adds
+ * `border` only when `bordered` asks for the dashed box.
  */
 function EmptyState({
   icon,
@@ -58,7 +58,7 @@ function EmptyState({
   title,
   description,
   children,
-  bordered = true,
+  bordered = false,
   size = 'default',
   className,
   ...props
@@ -91,7 +91,10 @@ function EmptyState({
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
         ) : icon ? (
-          <EmptyMedia variant={compact ? 'bare' : 'icon'}>{icon}</EmptyMedia>
+          // 20px from the icon to the title in the default size.
+          <EmptyMedia variant="bare" className={cn(!compact && 'mb-3')}>
+            {icon}
+          </EmptyMedia>
         ) : null}
         <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
         {description ? (

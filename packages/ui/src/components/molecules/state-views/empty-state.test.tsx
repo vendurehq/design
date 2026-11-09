@@ -10,18 +10,16 @@ function rootClasses(html: string): string[] {
 }
 
 describe('EmptyState border', () => {
-  test('draws the dashed box by default', () => {
+  test('draws no box by default', () => {
     const classes = rootClasses(renderToStaticMarkup(<EmptyState title="No orders" />));
-    expect(classes).toContain('border');
-    expect(classes).toContain('border-dashed');
-  });
-
-  test('bordered={false} removes the box so a table can own its perimeter', () => {
-    const classes = rootClasses(
-      renderToStaticMarkup(<EmptyState bordered={false} title="No orders" />),
-    );
     expect(classes).not.toContain('border');
     expect(classes).toContain('rounded-none');
+  });
+
+  test('bordered draws the dashed box', () => {
+    const classes = rootClasses(renderToStaticMarkup(<EmptyState bordered title="No orders" />));
+    expect(classes).toContain('border');
+    expect(classes).toContain('border-dashed');
   });
 
   test('bordered={false} clears the dashed style, so a consumer border is solid', () => {
@@ -59,6 +57,15 @@ describe('compact state views', () => {
     expect(html).toContain('data-variant="bare"');
     expect(html).not.toContain('data-variant="icon"');
     expect(html).toContain('text-style-card-title');
+  });
+
+  test('EmptyState default draws an explicit icon bare, 20px above a 16px title', () => {
+    const html = renderToStaticMarkup(<EmptyState icon={<svg />} title="No domains" />);
+    const media = html.match(/<[^>]*data-slot="empty-icon"[^>]*>/)?.[0] ?? '';
+    expect(media).toContain('data-variant="bare"');
+    expect(media).toContain('mb-3');
+    expect(html).not.toContain('data-variant="icon"');
+    expect(html).toContain('text-style-section-title');
   });
 
   test('EmptyState default keeps the illustration', () => {
