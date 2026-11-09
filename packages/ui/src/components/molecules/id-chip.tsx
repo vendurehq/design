@@ -70,6 +70,11 @@ const chipCopyButtonProps = {
  * Tooltip text of a whole-chip copy target: "Copy" until the copy succeeds,
  * then "Copied", swapped in one motion by `TooltipLabelSwap`. `detail` (the
  * full value of a shortened chip) sits above it.
+ *
+ * The tooltip closes as soon as the pointer leaves the chip. In a list it can
+ * open below the chip and cover the chip in the next row; a tooltip that stays
+ * open while the pointer moves onto it would block that chip. Nothing in it
+ * needs the pointer.
  */
 function ChipCopyTooltip({
   chip,
@@ -85,7 +90,7 @@ function ChipCopyTooltip({
   detail?: React.ReactNode;
 }) {
   return (
-    <Tooltip>
+    <Tooltip disableHoverablePopup>
       {/* The click that copies must not close the tooltip, or "Copied" is never seen. */}
       <TooltipTrigger render={chip} closeOnClick={false} />
       <TooltipContent>
@@ -210,8 +215,9 @@ function IdChip({
   // Nothing is hidden when the chip shows the whole value.
   if (!shortened) return chip;
 
+  // Closes when the pointer leaves the chip, like the copy tooltip.
   return (
-    <Tooltip>
+    <Tooltip disableHoverablePopup>
       <TooltipTrigger render={chip} />
       <TooltipContent className="font-mono">{value}</TooltipContent>
     </Tooltip>
