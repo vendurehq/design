@@ -242,11 +242,11 @@
   --chart-4: oklch(0.66 0.12 85);
   --chart-5: oklch(0.58 0.13 25);
   --sidebar: var(--background);
-  --sidebar-foreground: oklch(0.85 0.004 231);
+  --sidebar-foreground: var(--foreground-secondary);
   --sidebar-primary: oklch(0.93 0.004 231);
   --sidebar-primary-foreground: oklch(0.2 0.007 231);
   --sidebar-accent: oklch(0.27 0.014 231);
-  --sidebar-accent-foreground: oklch(0.95 0.004 231);
+  --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: oklch(0.76 0.15 231);
   --shadow-overlay: 0 0 0 1px oklch(1 0 0 / 0.08), 0 16px 40px -8px oklch(0 0 0 / 0.6);

@@ -252,7 +252,7 @@ export const uiGuidance = [
       },
       {
         title: 'Tone means action, not volume',
-        body: '`tone="attention"` colours the count in the warning tone, for rows that wait on the user. `tone="critical"` colours it in the destructive tone, for rows that have failed. Never use a tone because the count is high.',
+        body: '`tone="warning"` colours the count for rows that wait on the user. `tone="critical"` colours it for rows that have failed. Never use a tone because the count is high.',
       },
       {
         title: 'Name the rows that matter in the detail',

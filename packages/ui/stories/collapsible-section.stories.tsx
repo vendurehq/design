@@ -71,10 +71,10 @@ export const DefaultOpen: Story = {
   ),
 };
 
-// Attention colours the count only, for rows that wait on the user. Open the
+// Warning colours the count only, for rows that wait on the user. Open the
 // section by default, so they are in view.
-export const Attention: Story = {
-  args: { title: 'Payments to review', count: 2, tone: 'attention', defaultOpen: true },
+export const Warning: Story = {
+  args: { title: 'Payments to review', count: 2, tone: 'warning', defaultOpen: true },
   render: (args) => (
     <CollapsibleSection {...args}>
       {['SB-2041', 'SB-2036'].map((code) => (
