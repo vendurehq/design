@@ -25,8 +25,8 @@ describe('v3 overlay look', () => {
       const code = source(file);
       expect(code).toContain('data-starting-style:opacity-0');
       expect(code).toMatch(/motion-safe:data-starting-style:scale-9[67]/);
-      // The tooltip opens on a plain `ease`; everything else on the strong ease-out.
-      expect(code).toContain(file === 'tooltip.tsx' ? 'ease-[ease]' : 'ease-(--ease-out)');
+      // The tooltip opens on ease-soft (the CSS `ease`); everything else on the strong ease-out.
+      expect(code).toContain(file === 'tooltip.tsx' ? 'ease-soft' : 'ease-(--ease-out)');
       // The keyframe entrance and its reduced-motion switch-off are gone:
       // reduced motion keeps the fade and drops only the scale.
       expect(code).not.toContain('animate-in');
