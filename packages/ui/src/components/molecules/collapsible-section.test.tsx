@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { slotTag } from '../../test/slot-tokens.ts';
+import { slotTag, slotTokens, tagTokens } from '../../test/slot-tokens.ts';
 import { Collapsible } from '../atoms/collapsible.tsx';
 import { CollapsibleSection } from './collapsible-section.tsx';
 
@@ -108,7 +108,9 @@ describe('CollapsibleSection', () => {
 
   test('reduced motion keeps the fades and drops the height', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
-    expect(slotTag(html, 'collapsible-section-panel')).toContain('motion-safe:transition-[height]');
+    expect(slotTokens(html, 'collapsible-section-panel')).toContain(
+      'motion-safe:transition-[height]',
+    );
   });
   test('a disabled header shows no hover fill', () => {
     const html = renderToStaticMarkup(
@@ -118,7 +120,7 @@ describe('CollapsibleSection', () => {
     );
     const trigger = slotTag(html, 'collapsible-section-trigger');
     expect(trigger).toContain('data-disabled');
-    const classes = trigger.match(/class="([^"]*)"/)?.[1]?.split(' ') ?? [];
+    const classes = tagTokens(trigger);
     expect(classes).toContain('not-data-disabled:hover:bg-muted');
     expect(classes).not.toContain('hover:bg-muted');
   });
@@ -126,10 +128,14 @@ describe('CollapsibleSection', () => {
   test('the header fill and the chevron hover share one duration and ease', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" />);
     const trigger = slotTag(html, 'collapsible-section-trigger');
-    const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
-    expect(trigger).toContain('duration-(--transition-duration-fast) ease-(--ease-default)');
+    const chevron = tagTokens(html.match(/<svg[^>]*>/)?.[0] ?? '');
+    expect(tagTokens(trigger)).toEqual(
+      expect.arrayContaining(['duration-(--transition-duration-fast)', 'ease-(--ease-default)']),
+    );
+    // One transition list: the turn on the height curve, colour and opacity
+    // on the fill's timing.
     expect(chevron).toContain(
-      'color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)',
+      '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
     );
   });
 
@@ -139,9 +145,11 @@ describe('CollapsibleSection', () => {
         <p>row</p>
       </CollapsibleSection>,
     );
-    const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
-    expect(chevron).toContain('rotate_var(--transition-duration-slow)_var(--ease-height)');
-    expect(slotTag(html, 'collapsible-section-panel')).toContain(
+    const chevron = tagTokens(html.match(/<svg[^>]*>/)?.[0] ?? '');
+    expect(chevron).toContain(
+      '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
+    );
+    expect(slotTokens(html, 'collapsible-section-panel')).toContain(
       'motion-safe:ease-(--ease-height)',
     );
   });

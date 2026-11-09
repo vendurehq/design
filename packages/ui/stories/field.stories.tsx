@@ -158,11 +158,6 @@ export const ValidAndInvalid: Story = {
 };
 
 /**
- * Every field in the v3 look, side by side: the muted fill, a 1px inset
- * hairline, the 6px radius, 34px tall, and a 2px ring inside the field on
- * keyboard focus. The play function reads the computed styles.
- */
-/**
  * The v3 field label and placeholder: a 12px, weight 500 label in the muted
  * text colour, 6px above its field, and a placeholder fainter than muted text.
  * An invalid field keeps its red label.
@@ -214,6 +209,11 @@ export const LabelLook: Story = {
   },
 };
 
+/**
+ * Every field in the v3 look, side by side: the muted fill, a 1px inset
+ * hairline, the 6px radius, 34px tall, and a 2px ring inside the field on
+ * keyboard focus. The play function reads the computed styles.
+ */
 export const FieldLook: Story = {
   render: () => (
     <div className="grid w-80 gap-4">

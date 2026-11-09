@@ -28,9 +28,9 @@ function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
 /**
  * The header of an item: one full-width button with the title and a down
  * chevron. The chevron sits 2px down, centred on the title's first 20px line,
- * so it stays on that line when the title wraps. A closed trigger fills on hover. The chevron turns over on the
- * panel's height timing, so both settle together; its colour follows the
- * hover on the fill's timing.
+ * so it stays on that line when the title wraps. A closed trigger fills on
+ * hover. The chevron turns over on the panel's height timing, so both settle
+ * together; its colour follows the hover on the fill's timing.
  */
 function AccordionTrigger({
   className,

@@ -111,13 +111,22 @@ export const WithoutProvider: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
-    // A production build can run the play before the trigger listens.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    await userEvent.hover(canvas.getByRole('button', { name: 'Copy' }));
-    // Base UI's own default waits 600ms; this tooltip must open well before that.
-    await expect(
-      await body.findByText('Copy the order code', {}, { timeout: 300 }),
-    ).toBeInTheDocument();
+    const trigger = canvas.getByRole('button', { name: 'Copy' });
+    // Base UI's own default waits 600ms; this tooltip must open well before
+    // that, within 300ms of a hover. A production build can run the play
+    // before the trigger listens, so a hover that lands too early is retried:
+    // each try leaves the trigger first, which cancels any pending open, so a
+    // delayed tooltip still fails every try.
+    await waitFor(
+      async () => {
+        await userEvent.unhover(trigger);
+        await userEvent.hover(trigger);
+        await expect(
+          await body.findByText('Copy the order code', {}, { timeout: 300 }),
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   },
 };
 
