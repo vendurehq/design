@@ -36,7 +36,8 @@ export const Ownership: Story = {
         <p className="text-muted-foreground max-w-2xl text-sm">
           Every authenticated surface gets one skip link, one navigation region, one compact header,
           and one focusable main region. Prefer AppShellMain as the scroll owner so the
-          viewport-bound shell keeps its header and canvas inset visible. When integrating with an
+          viewport-bound shell keeps its header in view. The page is flat: one background,
+          the sidebar split off by a 1px border, and content that is not inset. When integrating with an
           established shell that already owns scrolling, set scrollOwner=&quot;container&quot;. Apps
           fill the slots with their own router links, organization switcher, user menu, and route
           outlet.
@@ -74,8 +75,8 @@ export const Ownership: Story = {
           <div className="rounded-lg border p-4 text-sm">
             <p className="text-destructive-subtle-foreground font-semibold">Don&apos;t</p>
             <p className="text-muted-foreground mt-2">
-              Copy the full shell to change a logo or user-menu action. Those are slot content, not
-              reasons for a new layout contract.
+              Copy the full shell to change a logo or user-menu action, or wrap the content in an
+              inset card. Logos and menus are slot content, not reasons for a new layout contract.
             </p>
           </div>
         </div>
@@ -93,12 +94,12 @@ export const Header: Story = {
           AppShellHeader is one 52px row: the sidebar trigger, the breadcrumb, then page-level
           tools at the end. It sticks to the top of the scrolling element. With
           scrollOwner=&quot;container&quot; the page passes under it. The header is opaque in the
-          pane&apos;s colour with a hairline below, so a log or a long table never shows through.
+          page&apos;s colour with a hairline below, so a log or a long table never shows through.
           Scroll the example.
         </p>
         <div className="h-72 overflow-hidden rounded-xl border">
           <AppShell className="h-full">
-            {/* The pane scrolls here, so it takes focus for keyboard scrolling. */}
+            {/* The content scrolls here, so it takes focus for keyboard scrolling. */}
             <AppShellContent
               className="overflow-auto"
               tabIndex={0}

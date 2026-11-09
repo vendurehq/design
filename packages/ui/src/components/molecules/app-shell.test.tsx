@@ -1,7 +1,13 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SidebarInset } from '../atoms/sidebar.tsx';
-import { AppShell, AppShellContent, AppShellHeader, AppShellMain } from './app-shell.tsx';
+import {
+  AppShell,
+  AppShellContent,
+  AppShellHeader,
+  AppShellMain,
+  AppShellSidebar,
+} from './app-shell.tsx';
 import { SkipLink } from './skip-link.tsx';
 
 test('AppShell exposes a matching skip link and focus target', () => {
@@ -22,7 +28,7 @@ test('AppShell exposes a matching skip link and focus target', () => {
   expect(html).toContain('data-slot="app-shell-header"');
 });
 
-test('AppShell keeps its canvas inset visible while main scrolls', () => {
+test('AppShell is viewport-bound, so main scrolls and the header stays in view', () => {
   const html = renderToStaticMarkup(
     <AppShell>
       <AppShellContent>
@@ -69,7 +75,6 @@ test('AppShellHeader is a 52px opaque sticky bar with an inset hairline', () => 
       'sticky',
       'top-0',
       'bg-background',
-      'in-data-[slot=app-shell-content]:bg-surface',
       'shadow-[inset_0_-1px_0_var(--border)]',
     ]),
   );
@@ -95,4 +100,32 @@ test('AppShellHeader keeps a hairline in forced-colors mode without a border on 
     ]),
   );
   expect(tokens.filter((token) => /^(forced-colors:)?border-b$/.test(token))).toEqual([]);
+});
+
+/** Class tokens of the first element carrying the given data-slot. */
+function slotTokens(html: string, slot: string): string[] {
+  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
+  return (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
+}
+
+test('the page is flat: the content is not inset, and the sidebar has a 1px right border', () => {
+  const html = renderToStaticMarkup(
+    <AppShell>
+      <AppShellSidebar>Nav</AppShellSidebar>
+      <AppShellContent>
+        <AppShellHeader>Header</AppShellHeader>
+        <AppShellMain>Content</AppShellMain>
+      </AppShellContent>
+    </AppShell>,
+  );
+  const content = slotTokens(html, 'app-shell-content');
+  for (const token of ['m-3', 'rounded-xl', 'border', 'border-border/60', 'bg-surface']) {
+    expect(content).not.toContain(token);
+  }
+  expect(slotTokens(html, 'app-shell-sidebar')).toEqual(
+    expect.arrayContaining(['border-r', 'border-sidebar-border']),
+  );
+  expect(slotTokens(html, 'app-shell-header')).not.toContain(
+    'in-data-[slot=app-shell-content]:bg-surface',
+  );
 });

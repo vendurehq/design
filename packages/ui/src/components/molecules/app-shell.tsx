@@ -1,24 +1,23 @@
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 
-// AppShell — the recessed-surface app layout, built on the surface ramp.
+// AppShell — the app layout: a flat page, as in the v3 look.
 //
-// Nests three surface tiers so the chrome reads as "deep" the way Linear's does:
+// One background for the whole window. The sidebar sits on it with a 1px right
+// border, and the content fills the rest with no inset, radius or border:
 //
-//   AppShell         → --background     the canvas the whole window sits on
-//   AppShellSidebar  → --sidebar        nav rail; equals the canvas, so it recedes
-//   AppShellContent  → --surface        the content pane, stepped forward + inset
+//   AppShell         → --background   the page
+//   AppShellSidebar  → --sidebar      nav rail; equals the page, split by a 1px border
+//   AppShellContent  → (inherits)     header + main, flush against the sidebar
 //
-// Cards dropped into the content pane resolve to --surface-raised (via the `card`
-// token), completing the third step. In dark mode each tier is a lightness step;
-// in light mode the ramp collapses to white, so the pane's border + shadow carry
-// the step instead. That asymmetry is intentional, not a gap.
+// Cards in the content resolve to --surface-raised (via the `card` token), so
+// they are the one step up from the page.
 //
 // The sidebar slot is deliberately unopinionated: drop the full `Sidebar` atom in
 // for a real app, or use `AppShellSidebar` for a lightweight rail. Content owns a
 // header + main anatomy so every consumer gets the same scroll boundary and skip
 // link target without coupling the design system to a router or auth provider. The
-// shell is viewport-bound so the canvas inset remains visible while main scrolls.
+// shell is viewport-bound, so main scrolls and the header stays in view.
 
 function AppShell({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -35,7 +34,7 @@ function AppShellSidebar({ className, ...props }: React.ComponentProps<'aside'>)
     <aside
       data-slot="app-shell-sidebar"
       className={cn(
-        'bg-sidebar text-sidebar-foreground flex w-58 shrink-0 flex-col gap-1 px-2.5 py-3',
+        'bg-sidebar text-sidebar-foreground border-sidebar-border flex w-58 shrink-0 flex-col gap-1 border-r px-2.5 py-3',
         className,
       )}
       {...props}
@@ -47,14 +46,7 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="app-shell-content"
-      className={cn(
-        // The missing tier: step up to --surface and inset from the canvas so the
-        // shell frames the pane on all sides, including a gutter between the
-        // sidebar and the pane. Flat by design: the border carries the tier in
-        // light mode (see AGENTS.md "flat look"), so no drop shadow.
-        'bg-surface m-3 flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/60',
-        className,
-      )}
+      className={cn('flex min-w-0 flex-1 flex-col overflow-hidden', className)}
       {...props}
     />
   );
@@ -62,8 +54,8 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
 
 // The header is 52px and sticks to the top of whichever element scrolls. It
 // is opaque: content that scrolls under it (a log, a long table) never shows
-// through. Its fill follows the surface it sits on: --background by default,
-// --surface inside the AppShellContent pane or the inset Sidebar's pane. The
+// through. Its fill follows the surface it sits on: --background on the flat
+// page, --surface inside the pane of a Sidebar with variant="inset". The
 // hairline below it is an inset shadow, so the full 52px stays the content
 // box and the 30px controls centre on whole pixels. It is always on: showing
 // it only on scroll would need a scroll listener on a region the header does
@@ -75,7 +67,7 @@ function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>)
     <header
       data-slot="app-shell-header"
       className={cn(
-        'bg-background in-data-[slot=app-shell-content]:bg-surface md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
+        'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
         className,
       )}
       {...props}
