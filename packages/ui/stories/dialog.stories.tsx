@@ -149,3 +149,35 @@ export const WithCloseButton: Story = {
     </Dialog>
   ),
 };
+
+/**
+ * A long title stops before the close button, and the button is centred on
+ * the title's first line.
+ */
+export const WithCloseButtonLongTitle: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Show details</DialogTrigger>
+      <DialogContent showCloseButton>
+        <DialogHeader>
+          <DialogTitle>Build details for the production environment of the storefront</DialogTitle>
+          <DialogDescription>Built from main in 2 min 14 s.</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show details' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    // Measure after the entrance: its scale changes every rect.
+    await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+    const title = within(dialog).getByRole('heading').getBoundingClientRect();
+    const close = within(dialog).getByRole('button', { name: 'Close' }).getBoundingClientRect();
+    const lineHeight = Number.parseFloat(getComputedStyle(within(dialog).getByRole('heading')).lineHeight);
+    await expect(title.right).toBeLessThanOrEqual(close.left);
+    const firstLineCentre = title.top + lineHeight / 2;
+    const closeCentre = close.top + close.height / 2;
+    await expect(Math.abs(closeCentre - firstLineCentre)).toBeLessThanOrEqual(0.5);
+    await userEvent.keyboard('{Escape}');
+  },
+};
