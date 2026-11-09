@@ -1,7 +1,7 @@
+import type { Page } from '@playwright/test';
 import type { TestRunnerConfig } from '@storybook/test-runner';
 import { getStoryContext } from '@storybook/test-runner';
 import { getViolations, injectAxe } from 'axe-playwright';
-import type { Page } from '@playwright/test';
 
 // Violations at these impact levels fail the build. `minor`/`moderate` findings
 // are logged but non-blocking, matching axe-core's own severity scale.
@@ -14,7 +14,8 @@ const THEMES = ['light', 'dark'] as const;
  * nothing is hit-tested and `:active` never applies. The press must end on a
  * button named `expectButton` and must not navigate. `reducedMotion: true`
  * presses with `prefers-reduced-motion: reduce` emulated. Pass a list to press
- * several texts in turn.
+ * several texts in turn. The button name must match exactly, so "Select" does
+ * not pass for a button named "Selected".
  */
 type TextPress = { text: string; expectButton: string; reducedMotion?: boolean };
 
@@ -30,7 +31,9 @@ async function pressOneText(page: Page, press: TextPress) {
   if (press.reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' });
   try {
     await page.mouse.click(box.x + 4, box.y + box.height / 2);
-    await root.getByRole('button', { name: press.expectButton }).waitFor({ timeout: 1000 });
+    await root
+      .getByRole('button', { name: press.expectButton, exact: true })
+      .waitFor({ timeout: 1000 });
   } finally {
     if (press.reducedMotion) await page.emulateMedia({ reducedMotion: null });
   }
