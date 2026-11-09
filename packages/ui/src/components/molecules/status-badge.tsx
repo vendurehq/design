@@ -18,6 +18,7 @@ import { isValidElement } from 'react';
 
 type StatusBadgeAppearance = 'chip' | 'bare' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
+type StatusBadgeReveal = 'always' | 'row';
 
 // The chip takes its tone in three places, all mixed from one `--status-tone`
 // colour: a faint 5% tone wash over the `muted` fill, a 1px inset outline at
@@ -52,6 +53,19 @@ const toneVars = {
   progress: '[--status-tone:var(--info-text)]',
 } satisfies Record<Tone, string>;
 
+// `reveal="row"`: the badge is transparent at rest and fades in while its row
+// (`group/row`) is hovered or holds keyboard focus, on one transition (150ms,
+// ease-out), the same as the IdChip row reveal. It keeps its box, so nothing
+// moves when it appears and the label still lines up with the column header.
+// Only opacity changes, so reduced motion keeps the fade. Without hover
+// (touch), the badge always shows. A tone change keeps its outline and fill
+// transition, at the reveal's pace. Without `reveal`, a chip eases to a new
+// tone over 300ms.
+const rowRevealClass = [
+  'transition-[opacity,box-shadow,background-color,color] duration-moderate ease-out',
+  'opacity-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:opacity-100 [@media(hover:none)]:opacity-100',
+];
+
 // The label colour every chip shares: 30% of the tone (70% of `warning-text`
 // for warning) into `foreground-secondary`.
 const chipLabel =
@@ -63,7 +77,6 @@ const statusBadgeVariants = cva(
     'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
     chipLabel,
     'outline-1 outline-transparent -outline-offset-1',
-    'transition-[box-shadow,background-color,color] duration-slow',
     contentInsetPull,
   ],
   {
@@ -79,10 +92,15 @@ const statusBadgeVariants = cva(
           '[--content-inset:calc(var(--spacing)*3)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*7.5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5.5)]',
         ],
       } satisfies Record<StatusBadgeSize, string[]>,
+      reveal: {
+        always: 'transition-[box-shadow,background-color,color] duration-slow',
+        row: rowRevealClass,
+      } satisfies Record<StatusBadgeReveal, string | string[]>,
     },
     defaultVariants: {
       tone: 'neutral',
       size: 'default',
+      reveal: 'always',
     },
   },
 );
@@ -94,7 +112,6 @@ const bareVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium leading-none',
     chipLabel,
-    'transition-colors duration-slow',
     contentInsetPull,
   ],
   {
@@ -105,10 +122,15 @@ const bareVariants = cva(
           'text-xs has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*4.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
         lg: 'text-sm has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
       } satisfies Record<StatusBadgeSize, string>,
+      reveal: {
+        always: 'transition-colors duration-slow',
+        row: rowRevealClass,
+      } satisfies Record<StatusBadgeReveal, string | string[]>,
     },
     defaultVariants: {
       tone: 'neutral',
       size: 'default',
+      reveal: 'always',
     },
   },
 );
@@ -190,6 +212,15 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * Never put an icon in `children`: the chip already brings one.
    */
   icon?: React.ReactNode;
+  /**
+   * `'row'` shows the badge only while its table row is hovered or holds
+   * keyboard focus. Pass it for the normal state of a list column (for
+   * example "Enabled"), and leave it out for the other states ("Disabled"),
+   * so only the exceptions show at rest. The badge stays in the layout and in
+   * the accessibility tree. The row needs the `group/row` class (the
+   * `DataTable` rows have it). @default 'always'
+   */
+  reveal?: StatusBadgeReveal;
 }
 
 function StatusBadge({
@@ -199,6 +230,7 @@ function StatusBadge({
   size = 'default',
   dot = false,
   icon,
+  reveal = 'always',
   render,
   children,
   ...props
@@ -217,11 +249,13 @@ function StatusBadge({
       // A lone dot cannot spin; in progress it pulses instead, and stands still
       // under reduced motion.
       tone === 'progress' && 'motion-safe:animate-pulse',
+      reveal === 'row' && rowRevealClass,
     );
   } else if (appearance === 'text') {
     classes = cn(
       'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium',
       toneWord[tone],
+      reveal === 'row' && rowRevealClass,
     );
     // The spinner comes after the word, so every word in a column starts on
     // the same edge.
@@ -235,7 +269,9 @@ function StatusBadge({
     );
   } else {
     classes =
-      appearance === 'bare' ? bareVariants({ tone, size }) : statusBadgeVariants({ tone, size });
+      appearance === 'bare'
+        ? bareVariants({ tone, size, reveal })
+        : statusBadgeVariants({ tone, size, reveal });
     content = (
       <>
         <StatusBadgeMarker tone={tone} size={size} dot={dot} icon={icon} />
@@ -254,6 +290,8 @@ function StatusBadge({
       slot: 'status-badge',
       tone,
       appearance,
+      // `data-reveal="row"` only when the badge reveals.
+      reveal: reveal === 'row' ? 'row' : undefined,
     },
   });
 }
@@ -318,4 +356,4 @@ function StatusBadgeMarker({
 }
 
 export { StatusBadge, statusBadgeVariants };
-export type { StatusBadgeAppearance, StatusBadgeProps, StatusBadgeSize };
+export type { StatusBadgeAppearance, StatusBadgeProps, StatusBadgeReveal, StatusBadgeSize };

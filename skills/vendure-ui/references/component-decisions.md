@@ -343,6 +343,7 @@ Map domain states to the six shared tones by consequence for the viewer.
 - **Unknown wire values fall back safely:** Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color.
 - **Pick the appearance by the room it has:** Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.
 - **The chip brings its own icon:** Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.
+- **Quiet normal, loud abnormal in a list column:** When most rows of a list column share one normal state (Enabled, Public), pass reveal="row" for that state only: its badge shows while its group/row row is hovered or focused, and the other states always show. The consumer decides which state is normal.
 
 **Choose:**
 

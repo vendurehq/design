@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
-import { expect } from 'storybook/test';
+import { expect, waitFor } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
+import { type ColumnDef, DataTable } from '../src/components/molecules/data-table/data-table.tsx';
+import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
-import type { Tone } from '../src/lib/state-dictionary.ts';
+import { commonStates, type Tone } from '../src/lib/state-dictionary.ts';
 
 const meta = {
   title: 'Molecules/StatusBadge',
@@ -24,6 +26,7 @@ const meta = {
     appearance: { control: 'inline-radio', options: ['chip', 'bare', 'text', 'dot'] },
     size: { control: 'inline-radio', options: ['default', 'lg'] },
     dot: { control: 'boolean' },
+    reveal: { control: 'inline-radio', options: ['always', 'row'] },
     children: { control: 'text' },
   },
 } satisfies Meta<typeof StatusBadge>;
@@ -265,3 +268,118 @@ export const InAList: Story = {
     </div>
   ),
 };
+
+interface Variant {
+  id: string;
+  name: string;
+  sku: string;
+  enabled: boolean;
+  price: string;
+}
+
+const VARIANTS: Variant[] = [
+  { id: '1', name: 'Laptop 13 inch 8GB', sku: 'L2201308', enabled: true, price: '$1,558.80' },
+  { id: '2', name: 'Laptop 15 inch 8GB', sku: 'L2201508', enabled: true, price: '$1,678.80' },
+  { id: '3', name: 'Laptop 13 inch 16GB', sku: 'L2201316', enabled: false, price: '$2,638.80' },
+  { id: '4', name: 'Tablet 32GB', sku: 'TBL200032', enabled: true, price: '$394.80' },
+];
+
+const variantColumns: ColumnDef<Variant>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => (
+      <a href={`#${row.original.sku}`} className="hover:underline">
+        {row.original.name}
+      </a>
+    ),
+  },
+  {
+    accessorKey: 'sku',
+    header: 'SKU',
+    enableSorting: false,
+    cell: ({ row }) => <IdChip value={row.original.sku} truncate="none" reveal="row" />,
+  },
+  {
+    accessorKey: 'enabled',
+    header: 'Status',
+    enableSorting: false,
+    // Enabled is the normal state: it shows on row hover. Disabled always shows.
+    cell: ({ row }) => {
+      const state = row.original.enabled ? 'enabled' : 'disabled';
+      return (
+        <StatusBadge
+          tone={commonStates.toneFor(state)}
+          reveal={row.original.enabled ? 'row' : 'always'}
+        >
+          {commonStates.labelFor(state)}
+        </StatusBadge>
+      );
+    },
+  },
+  { accessorKey: 'price', header: 'Price', enableSorting: false },
+];
+
+// The left edge of the first visible letter in an element.
+function textLeft(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+  });
+  const node = walker.nextNode();
+  if (!node?.textContent) throw new Error(`No text in ${element.outerHTML}`);
+  const range = document.createRange();
+  const start = node.textContent.search(/\S/);
+  range.setStart(node, start);
+  range.setEnd(node, start + 1);
+  return range.getBoundingClientRect().left;
+}
+
+/**
+ * Quiet normal, loud abnormal. Pass `reveal="row"` for the normal state of a
+ * list column, here Enabled, and leave it out for the others. At rest only
+ * the Disabled row shows its badge. Hover a row, or tab to its link, and its
+ * Enabled badge fades in with the SKU chip (150ms, ease-out). The badge keeps
+ * its place, so nothing moves and its label lines up with the Status header.
+ * On a touch screen every badge shows.
+ */
+export const RevealInDataTable: Story = {
+  args: { reveal: 'row' },
+  render: () => (
+    <DataTable<Variant>
+      rows={VARIANTS}
+      columns={variantColumns}
+      getRowId={(variant) => variant.id}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const badges = [...canvasElement.querySelectorAll('[data-slot=status-badge]')];
+    const opacity = (element: Element) => getComputedStyle(element).opacity;
+    const [enabled, , disabled, otherEnabled] = badges as HTMLElement[];
+
+    // At rest: only Disabled shows.
+    await expect(badges).toHaveLength(VARIANTS.length);
+    await expect(opacity(enabled as Element)).toBe('0');
+    await expect(opacity(disabled as Element)).toBe('1');
+
+    // Every badge, hidden or not, lines up with the Status header.
+    const header = [...canvasElement.querySelectorAll('thead th')].find(
+      (th) => th.textContent === 'Status',
+    );
+    if (!header) throw new Error('No Status header');
+    for (const badge of badges) {
+      const offset = textLeft(badge) - textLeft(header);
+      await expect(Math.abs(offset), badge.textContent ?? '').toBeLessThanOrEqual(0.5);
+    }
+
+    // Keyboard focus in a row reveals its badge, and only its badge.
+    const link = enabled?.closest('tr')?.querySelector('a');
+    link?.focus({ focusVisible: true } as FocusOptions);
+    if (link?.matches(':focus-visible')) {
+      await waitFor(() => expect(opacity(enabled as Element)).toBe('1'));
+      await expect(opacity(otherEnabled as Element)).toBe('0');
+    }
+    link?.blur();
+  },
+};
+
