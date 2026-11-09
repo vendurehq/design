@@ -449,6 +449,16 @@ These packages are optional — install them only if you use the features that n
 | `next`             | Next.js framework features |
 | `next-themes`      | Dark mode toggle in Next.js (ThemeProvider) |
 
+## Migrating from 2.x to 3.0
+
+### Breaking changes in `@vendure-io/ui`
+
+1. Default, brand, destructive and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+
+### Breaking changes in `@vendure-io/design-tokens`
+
+1. `--overlay` is `var(--surface-raised)` in both themes, not its own colour. An override of `--surface-raised` now also changes `--overlay`, `--popover` and every floating surface.
+
 ## Migrating from 1.x to 2.0
 
 `@vendure-io/ui` 2.0 and `@vendure-io/design-tokens` 2.0 ship together. Upgrade both in the same change.
@@ -458,7 +468,7 @@ These packages are optional — install them only if you use the features that n
 1. Export paths moved. `@vendure-io/ui/components/ui/*` is now `@vendure-io/ui/components/atoms/*`, and `@vendure-io/ui/components/custom/*` is now `@vendure-io/ui/components/molecules/*`. The old paths are removed.
 2. Badge `default` is neutral subtle, not solid brand. Use `variant="brand"` for solid brand. `variant="secondary"` is removed: delete the prop.
 3. Button `default` and every use of the `primary` slot are neutral. Use `variant="brand"` for an identity moment.
-4. The look is flat. Primitives have no `shadow-xs` or `shadow-2xs`. Buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Select and dropdown popups size to their content, not to the trigger width.
+4. The look is flat. Primitives have no `shadow-xs` or `shadow-2xs`. Select and dropdown popups size to their content, not to the trigger width.
 5. The `react-hook-form` peer dependency is removed.
 6. `@vendure-io/design-tokens` is a peer dependency. Install it next to `@vendure-io/ui`.
 7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported. StatCard no longer exports `statCardDeltaVariants`.

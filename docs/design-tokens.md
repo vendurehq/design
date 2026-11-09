@@ -66,7 +66,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 - `background`, `foreground` — Page background and primary text
 - `foreground-secondary` — Secondary text on any surface tier: descriptions, table values, inactive navigation (`text-foreground-secondary`). It sits between `foreground` and `muted-foreground`. It is not the text on a `secondary` fill; that is `secondary-foreground`
-- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier. In dark mode `overlay` has the same fill as `surface-raised`; the `shadow-overlay` ring and drop separate floating content
+- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier. `overlay` points at `surface-raised` in both themes; the `shadow-overlay` ring and drop separate floating content
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
 - `scrim-subtle` — Lighter backdrop for a transient overlay that keeps the page in view, such as the command palette: `bg-scrim-subtle`
@@ -77,7 +77,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `brand-indicator` — Vendure blue as a non-text mark: the active navigation icon, the selected-item marker, a link underline (`text-brand-indicator` on an icon, `bg-brand-indicator`). It holds 3:1 on every surface tier. Do not use it for body text or as a fill behind text
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
-- `accent`, `accent-foreground` — Hover and selected highlights
+- `accent`, `accent-foreground` — The hover step for a control that already rests on `muted`, such as an IdChip
 - `destructive`, `destructive-foreground` — Destructive/error states
 - `success`, `success-foreground` — Success states
 - `warning`, `warning-foreground` — Warning states
@@ -93,7 +93,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `chart-1` through `chart-5` — Data visualization (map to `viz-1` to `viz-5`)
 - `sidebar-*` — Sidebar-specific variants
 
-**Intensity.** `muted`, `secondary` and `accent` are translucent foreground mixes, ordered by strength: `muted` < `secondary` < `accent`. Use a lower intensity to de-emphasize. Use a higher intensity for hover and selected states.
+**Intensity.** `muted`, `secondary` and `accent` are translucent foreground mixes, ordered by strength: `muted` < `secondary` < `accent`. Use a lower intensity to de-emphasize. Hover and selected fills on rows, items and ghost controls use `muted`. A control that already rests on `muted` steps up to `accent` on hover.
 
 **Tones.** The tone vocabulary is `neutral`, `info`, `success`, `warning`, `critical` and `progress`. Two tones have no slots of their own:
 
@@ -132,7 +132,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
 - `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a 1px contact ring and a soft drop. Light and dark have different values. Use `shadow-overlay`
-- `--shadow-control` — The themed shadow for a resting control on a surface (outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
+- `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
 
 ### Motion
 

@@ -15,8 +15,9 @@ export const shadows = {
 // `overlay` is for floating content (menus, popovers, dialogs): a 1px contact
 // ring plus a soft drop. Dark mode swaps the ring to white so the edge reads on
 // the dark overlay tier.
-// `control` lifts a resting control or a card off its surface (outline buttons,
-// button groups, Card): a 1px bottom edge and a faint 2px blur. Dark mode keeps only the
+// `control` lifts a resting control or a card off its surface (default, brand,
+// destructive and outline buttons, button groups, Card): a 1px bottom edge and
+// a faint 2px blur. Dark mode keeps only the
 // edge, darker, because a blur does not read on the dark tiers.
 export const lightShadows = {
   overlay:

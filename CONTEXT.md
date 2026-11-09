@@ -27,11 +27,11 @@ The soft rendering of a tone — tinted background, readable foreground, matchin
 _Avoid_: soft, light, pastel
 
 **Surface**:
-A background level, ordered `background` < `surface` < `surface-raised` < `overlay`. Contrast between surfaces, not borders, is what separates content.
+A background level, ordered `background` < `surface` < `surface-raised`. `overlay` shares the `surface-raised` fill; the overlay shadow, not lightness, lifts floating content. Contrast between surfaces, not borders, is what separates content.
 _Avoid_: elevation, layer
 
 **Intensity**:
-The strength ordering of the neutral surface slots: `muted` (lowest) < `secondary` < `accent` (highest). De-emphasis uses lower intensity; hover/selected treatments use higher.
+The strength ordering of the neutral surface slots: `muted` (lowest) < `secondary` < `accent` (highest). Hover and selected fills on rows, items and ghost controls use `muted`. `accent` is the hover step for a control that already rests on `muted`.
 _Avoid_: emphasis level, prominence
 
 **Accent rationing**:
