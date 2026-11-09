@@ -45,6 +45,10 @@ export const tokenGuidance = [
         body: 'Use foreground for primary text, foreground-secondary for supporting text such as descriptions and table values, and muted-foreground for the lowest emphasis. secondary-foreground is only the text on a secondary fill.',
       },
       {
+        title: 'Placeholders are fainter than muted text',
+        body: 'Use faint-foreground for a native input placeholder. It is below 4.5:1, so never use it for text a user must read, such as a select or date picker that shows its placeholder as text.',
+      },
+      {
         title: 'Brand marks are non-text',
         body: 'Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It holds 3:1 for non-text contrast, not 4.5:1 for text. The focus ring is brand too.',
       },

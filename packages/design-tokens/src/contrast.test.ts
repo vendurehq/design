@@ -347,6 +347,14 @@ for (const [themeName, theme] of Object.entries(themes)) {
         }
       }
 
+      // Placeholder text sits on the field fill (`muted`). It is a hint, not
+      // content, so it reads fainter than muted text but stays visible.
+      test(`faint-foreground on muted over ${surface} is fainter than muted-foreground, >= 2`, () => {
+        const faint = contrastOf(theme, 'faint-foreground', 'muted', surface);
+        expect(faint).toBeLessThan(contrastOf(theme, 'muted-foreground', 'muted', surface));
+        expect(faint).toBeGreaterThanOrEqual(2);
+      });
+
       test(`foreground on code-inline over ${surface} >= 4.5`, () => {
         expect(contrastOf(theme, 'foreground', 'code-inline', surface)).toBeGreaterThanOrEqual(
           MIN_CONTRAST,
