@@ -1,7 +1,7 @@
 import type { useRender } from '@base-ui/react/use-render';
 import { DirectionLink } from './direction-link.tsx';
 
-// The v3 look: text in `foreground-secondary` and a trailing arrow; the look,
+// The v3 look: text in `foreground-secondary` and a trailing chevron; the look,
 // motion and right-to-left handling live in DirectionLink.
 //
 // The link is `group/arrow-link`. A card or row that opens the same page
