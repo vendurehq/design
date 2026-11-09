@@ -27,6 +27,7 @@ describe('package exports', () => {
     'components/molecules/code-block/file-type-icons',
     'components/molecules/code-block/process-code',
     'components/molecules/data-table/data-table-helpers',
+    'components/atoms/label-swap',
   ])('%s is internal', (subpath) => {
     expect(() => resolve(subpath)).toThrow();
   });
@@ -40,6 +41,7 @@ describe('package exports', () => {
     'components/atoms/button',
     'lib/state-dictionary',
     'hooks/use-copy',
+    'hooks/use-active-label-size',
   ])('%s is public', (subpath) => {
     expect(resolve(subpath)).toStartWith(join(import.meta.dir, '..', 'src'));
   });

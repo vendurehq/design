@@ -13,6 +13,7 @@
   "sideEffects": false,
   "exports": {
     "./components/atoms/*": "./src/components/atoms/*.tsx",
+    "./components/atoms/label-swap": null,
     "./components/molecules/*": "./src/components/molecules/*.tsx",
     "./components/molecules/code-block/*": null,
     "./components/molecules/data-table/data-table-helpers": null,
