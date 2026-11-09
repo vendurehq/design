@@ -372,7 +372,7 @@ import {
 </Card>
 ```
 
-For a card whose body is a list, put a `CardCount` in the title and the rows in `CardRows`. Each `CardRow` draws its own top border and runs edge to edge, so the header needs no `border-b`. A `CardFooter` after the rows carries `border-t`.
+For a card whose body is a list, put a `CardCount` in the title and the rows in `CardRows`. The count is muted; give it `tone="critical"` for failures or `tone="attention"` for rows that wait on the user, and the card stays neutral. Each `CardRow` draws its own top border and runs edge to edge, so the header needs no `border-b`. A `CardFooter` after the rows carries `border-t`.
 
 ```tsx
 <Card>

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Card, CardAction, CardCount, CardHeader, CardRow, CardRows, CardTitle } from './card.tsx';
@@ -48,7 +49,17 @@ describe('Card', () => {
     const tokens = slotTokens(html, 'card-count');
     expect(tokens).toContain('text-muted-foreground');
     expect(tokens).toContain('tabular-nums');
+    // 10px after the title, as in the v3 look.
+    expect(tokens).toContain('ms-2.5');
     expect(html).toMatch(/data-slot="card-title"[^>]*>Deployments <span[^>]*data-slot="card-count"/);
+  });
+
+  test('CardCount takes an attention or critical tone, and stays muted by default', () => {
+    const tone = (node: ReactElement) => slotTokens(renderToStaticMarkup(node), 'card-count');
+    expect(tone(<CardCount tone="critical">1 failed</CardCount>)).toContain('text-destructive-text');
+    expect(tone(<CardCount tone="critical">1 failed</CardCount>)).not.toContain('text-muted-foreground');
+    expect(tone(<CardCount tone="attention">2</CardCount>)).toContain('text-warning-text');
+    expect(tone(<CardCount>2</CardCount>)).toContain('text-muted-foreground');
   });
 
   test('CardRows runs its rows edge to edge, each row drawing its own top border', () => {
