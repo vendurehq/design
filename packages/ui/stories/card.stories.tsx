@@ -196,3 +196,43 @@ export const Accent: Story = {
     expect(getComputedStyle(plain!).backgroundImage).toBe('none');
   },
 };
+
+/**
+ * A count that needs action takes a tone: `critical` for failures, `attention`
+ * for rows that wait on the user. The count sits 10px after the title. The
+ * card stays neutral; only the count is coloured.
+ */
+export const CountTone: Story = {
+  render: () => (
+    <div className="flex w-[520px] flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Failed pushes <CardCount tone="critical">2</CardCount>
+          </CardTitle>
+        </CardHeader>
+        <CardRows role="list">
+          <CardRow role="listitem">Read the gift card prefix from the environment</CardRow>
+          <CardRow role="listitem">Add the gift card balance to the customer account page</CardRow>
+        </CardRows>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Payments to review <CardCount tone="attention">1</CardCount>
+          </CardTitle>
+        </CardHeader>
+        <CardRows role="list">
+          <CardRow role="listitem">Order SB-2041 · flagged by the fraud check</CardRow>
+        </CardRows>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [critical, attention] = canvasElement.querySelectorAll<HTMLElement>('[data-slot=card-count]');
+    const title = canvasElement.querySelector<HTMLElement>('[data-slot=card-title]');
+    expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(attention!).color);
+    expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(title!).color);
+    expect(getComputedStyle(critical!).marginInlineStart).toBe('10px');
+  },
+};

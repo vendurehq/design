@@ -64,7 +64,7 @@ describe('IdChip', () => {
     expect(markup).toContain('group-has-[:focus-visible]/row:[&amp;_[data-chip-copy]]:opacity-100');
   });
 
-  test('reveal="row" fades in 150ms on one duration; the chip alone presses in 100ms', () => {
+  test('reveal="row" fades in 150ms on one duration; the chip alone fills in 120ms on ease', () => {
     const chipClasses = (node: React.ReactElement) =>
       html(node)
         .match(/^<span[^>]*class="([^"]*)"/)?.[1]
@@ -76,8 +76,8 @@ describe('IdChip', () => {
       'ease-out',
     ]);
     expect(chipClasses(<IdChip value="L2201516" truncate="none" />)).toEqual([
-      'duration-fast',
-      'ease-out',
+      'duration-quick',
+      'ease-soft',
     ]);
   });
 

@@ -78,3 +78,44 @@ export const Multiple: Story = {
     </Accordion>
   ),
 };
+
+/** The chevron centres on the first line of the title. Measures the centre of the chevron against the centre of the first line box. */
+function chevronOffset(trigger: HTMLElement) {
+  const text = Array.from(trigger.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
+  if (!text) throw new Error('The trigger has no title text');
+  const range = document.createRange();
+  range.selectNodeContents(text);
+  const firstLine = range.getClientRects()[0];
+  const chevron = trigger.querySelector('[data-slot="accordion-trigger-icon"]')?.getBoundingClientRect();
+  if (!firstLine || !chevron) throw new Error('Nothing to measure');
+  const lineHeight = Number.parseFloat(getComputedStyle(trigger).lineHeight);
+  const lineTop = firstLine.top + (firstLine.height - lineHeight) / 2;
+  return chevron.top + chevron.height / 2 - (lineTop + lineHeight / 2);
+}
+
+/**
+ * A title that wraps keeps the chevron on its first line, centred on it.
+ */
+export const LongTitle: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const name of [/Can I move a store/, 'Is it short?']) {
+      const trigger = canvas.getByRole('button', { name });
+      await expect(Math.abs(chevronOffset(trigger))).toBeLessThanOrEqual(0.5);
+    }
+  },
+  render: () => (
+    <Accordion className="w-full max-w-xs">
+      <AccordionItem value="long">
+        <AccordionTrigger>
+          Can I move a store to another region without taking it offline for customers?
+        </AccordionTrigger>
+        <AccordionContent>Yes. Cloud copies the data first and switches over at the end.</AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="short">
+        <AccordionTrigger>Is it short?</AccordionTrigger>
+        <AccordionContent>Yes.</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  ),
+};

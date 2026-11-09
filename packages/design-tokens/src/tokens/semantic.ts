@@ -42,6 +42,10 @@ export const lightTheme = {
   // and `secondary` fills (kbd, avatar fallback, chips) and on the `accent`
   // hover fill (menu and list rows), and holds 4.5:1 there.
   'muted-foreground': 'oklch(0.505 0.013 231)',
+  // Placeholder text: fainter than `muted-foreground`, a hint and not content.
+  // Below 4.5:1, so only for a native `::placeholder`, never for text a user
+  // must read.
+  'faint-foreground': 'oklch(0.707 0.012 231)',
   accent: 'color-mix(in oklab, var(--foreground) 8.5%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
@@ -168,6 +172,7 @@ export const darkTheme = {
   muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.014 231)',
+  'faint-foreground': 'oklch(0.522 0.015 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9.5%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   // Between destructive-500 and destructive-400 on the destructive hue.

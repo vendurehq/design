@@ -27,7 +27,8 @@ function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
 
 /**
  * The header of an item: one full-width button with the title and a down
- * chevron. A closed trigger fills on hover. The chevron turns over on the
+ * chevron. The chevron sits 2px down, centred on the title's first 20px line,
+ * so it stays on that line when the title wraps. A closed trigger fills on hover. The chevron turns over on the
  * panel's height timing, so both settle together; its colour follows the
  * hover on the fill's timing.
  */
@@ -41,7 +42,7 @@ function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 cursor-pointer items-start justify-between rounded-md border border-transparent px-3 py-4 text-left text-sm font-medium outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-aria-expanded:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4",
+          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 cursor-pointer items-start justify-between rounded-md border border-transparent px-3 py-4 text-left text-sm font-medium outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-aria-expanded:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:mt-0.5",
           className
         )}
         {...props}

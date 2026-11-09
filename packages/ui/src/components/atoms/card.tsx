@@ -91,13 +91,27 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 // A count beside the title, such as the number of rows in the card. Place it
-// inside CardTitle so it sits on the title line.
-function CardCount({ className, ...props }: React.ComponentProps<"span">) {
+// inside CardTitle so it sits on the title line, 10px after the title. The
+// count is muted; `tone` colours a count that needs action, such as failed
+// pushes (critical) or rows waiting on the user (attention). The card itself
+// stays neutral.
+const cardCountTone = {
+  neutral: "text-muted-foreground",
+  attention: "text-warning-text",
+  critical: "text-destructive-text",
+}
+
+function CardCount({
+  className,
+  tone = "neutral",
+  ...props
+}: React.ComponentProps<"span"> & { tone?: keyof typeof cardCountTone }) {
   return (
     <span
       data-slot="card-count"
       className={cn(
-        "text-muted-foreground ms-2 text-xs font-semibold tabular-nums",
+        cardCountTone[tone],
+        "ms-2.5 text-xs font-semibold tabular-nums",
         className
       )}
       {...props}

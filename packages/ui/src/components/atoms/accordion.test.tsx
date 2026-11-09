@@ -39,6 +39,13 @@ describe('Accordion', () => {
     expect(panel).toContain('motion-safe:ease-(--ease-drawer)');
   });
 
+  test('the chevron sits 2px down, centred on the first 20px line of the title', () => {
+    const trigger = classesOf(slotTag(render(false), 'accordion-trigger'));
+    expect(trigger).toContain('items-start');
+    expect(trigger).toContain('**:data-[slot=accordion-trigger-icon]:size-4');
+    expect(trigger).toContain('**:data-[slot=accordion-trigger-icon]:mt-0.5');
+  });
+
   test('a closed trigger fills on hover and does not underline', () => {
     const trigger = classesOf(slotTag(render(false), 'accordion-trigger'));
     expect(trigger).toContain('not-aria-expanded:hover:bg-muted');
