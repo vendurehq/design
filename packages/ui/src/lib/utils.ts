@@ -36,6 +36,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'palette-move',
             'palette-detail-move',
             'palette-result-blur',
+            'tooltip-enter',
           ],
         },
       ],
