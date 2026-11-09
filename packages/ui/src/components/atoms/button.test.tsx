@@ -177,15 +177,10 @@ describe('ButtonLabelSwap', () => {
     expect(html).not.toContain('data-swap="in" aria-hidden');
   });
 
-  test('crossfades with a slide and blur, and eases its width only with full motion', () => {
+  test('clips its width on one line, with the button timing', () => {
     const tokens = slotTokens(swapHtml(0), 'button-label-swap');
-    expect(tokens).toContain('motion-safe:transition-[width]');
     expect(tokens).toContain('overflow-x-clip');
-    const label = slotTokens(swapHtml(0).replace('data-swap="in"', 'data-slot="label" data-swap="in"'), 'label');
-    expect(label).toContain('data-[swap=after]:opacity-0');
-    expect(label).toContain('motion-safe:data-[swap=after]:translate-y-1');
-    expect(label).toContain('motion-safe:data-[swap=before]:-translate-y-1');
-    expect(label).toContain('motion-safe:data-[swap=after]:blur-[2px]');
-    expect(label.filter((token) => token.startsWith('data-[swap') && token.includes('translate'))).toEqual([]);
+    expect(tokens).toContain('whitespace-nowrap');
+    expect(tokens).toContain('[--label-swap-shift:calc(var(--spacing)*1)]');
   });
 });

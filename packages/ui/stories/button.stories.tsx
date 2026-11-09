@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, waitFor, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
 import { Check, ChevronRight, Loader2, Mail } from 'lucide-react';
 import { Button, ButtonLabelSwap } from '../src/components/atoms/button.tsx';
@@ -150,6 +151,29 @@ export const StretchedClickArea: Story = {
     ],
   },
   render: () => <PlanCard />,
+};
+
+/**
+ * The button follows its label's size, also when the label changes size
+ * without a swap: a web font that loads after the first paint, or a label
+ * whose text changes. The play function makes the active label larger and
+ * expects the button to grow with it.
+ */
+export const LabelFollowsItsSize: Story = {
+  render: () => (
+    <Button variant="outline">
+      <ButtonLabelSwap labels={['Deploy', 'Deployed']} active={0} />
+    </Button>
+  ),
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole('button', { name: 'Deploy' });
+    const swap = button.querySelector<HTMLElement>('[data-slot=button-label-swap]');
+    const label = button.querySelector<HTMLElement>('[data-swap=in]');
+    if (!swap || !label) throw new Error('No label swap rendered');
+    await waitFor(() => expect(swap.style.width).toBe(`${label.offsetWidth}px`));
+    label.style.fontSize = '1.5rem';
+    await waitFor(() => expect(swap.style.width).toBe(`${label.offsetWidth}px`));
+  },
 };
 
 type Theme = 'light' | 'dark';
