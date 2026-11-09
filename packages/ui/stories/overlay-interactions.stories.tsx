@@ -22,6 +22,7 @@ import {
   ComboboxTrigger,
   ComboboxValue,
 } from '../src/components/atoms/combobox.tsx';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -30,6 +31,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/atoms/hover-card.tsx';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '../src/components/atoms/navigation-menu.tsx';
 import {
   Popover,
   PopoverContent,
@@ -129,8 +139,9 @@ export const TooltipLook: Story = {
 async function expectPopupMotion(element: HTMLElement) {
   const style = getComputedStyle(element);
   await waitFor(() => {
-    expect(style.transitionProperty).toBe('opacity, scale, translate');
-    expect(style.transitionDuration).toBe('0.16s, 0.2s, 0.2s');
+    // The NavigationMenu popup also resizes, so it lists width and height after these.
+    expect(style.transitionProperty).toMatch(/^opacity, scale, translate(,|$)/);
+    expect(style.transitionDuration).toMatch(/^0\.16s, 0\.2s, 0\.2s(,|$)/);
   });
 }
 
@@ -263,6 +274,80 @@ export const ComboboxLook: Story = {
     popup.parentElement?.append(probe);
     await expect(getComputedStyle(popup).boxShadow).toBe(getComputedStyle(probe).boxShadow);
     probe.remove();
+  },
+};
+
+export const HoverCardLook: Story = {
+  render: () => (
+    // Open from the start: a hover waits out the open delay.
+    <HoverCard defaultOpen>
+      <HoverCardTrigger render={<Button variant="link" />}>Acme Inc.</HoverCardTrigger>
+      <HoverCardContent>Customer since 2021 · 48 orders</HoverCardContent>
+    </HoverCard>
+  ),
+  play: async () => {
+    const card = await findSlot('hover-card-content');
+    await expectOverlaySurface(card, '8px');
+    await expectPopupMotion(card);
+  },
+};
+
+export const ContextMenuLook: Story = {
+  render: () => (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div className="flex h-24 w-64 items-center justify-center rounded-lg border border-dashed text-sm">
+          Order #1042
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Copy order code</ContextMenuItem>
+        <ContextMenuItem>Open customer</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.pointer({ keys: '[MouseRight]', target: within(canvasElement).getByText('Order #1042') });
+    const menu = await findSlot('context-menu-content');
+    await expectOverlaySurface(menu, '8px');
+    await expectPopupMotion(menu);
+  },
+};
+
+export const NavigationMenuLook: Story = {
+  render: () => (
+    <NavigationMenu>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Catalog</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <ul className="grid w-64 gap-1 p-2">
+              <li>
+                <NavigationMenuLink href="#">Products</NavigationMenuLink>
+              </li>
+              <li>
+                <NavigationMenuLink href="#">Collections</NavigationMenuLink>
+              </li>
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Catalog' }));
+    const content = await findSlot('navigation-menu-content');
+    // The popup that holds the content has no slot of its own: it is the
+    // nearest ancestor on the overlay shadow.
+    let popup = content.parentElement;
+    while (popup && !popup.className.includes('shadow-overlay')) popup = popup.parentElement;
+    await expect(popup).not.toBeNull();
+    await expectOverlaySurface(popup as HTMLElement, '8px');
+    await expectPopupMotion(popup as HTMLElement);
+    // Close it before the a11y scan: the open menu's focus guards are
+    // aria-hidden and tabbable, which axe flags.
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(document.querySelector('[data-slot="navigation-menu-content"]')).toBeNull());
   },
 };
 

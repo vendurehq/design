@@ -1,26 +1,18 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fieldSurface } from '@vendure-io/ui/lib/field-surface';
+import { fieldNames, fieldTokens } from '../../test/fields';
 
 // The v3 field, as Input has it: the muted fill, a 1px inset hairline in the
-// border colour, the lg (6px) radius, 34px tall, and a 2px ring inside the
-// field. Every field shares the recipe in lib/field-surface, so they cannot
-// drift apart. These checks read the source; the story
-// Atoms/Forms/Field/FieldLook checks the computed look in a browser.
+// border colour, the lg (6px) radius, 34px tall, a 2px ring inside the field,
+// and the text 10px in. Every field shares the recipe in lib/field-surface, so
+// they cannot drift apart. The per-field checks render each field and read the
+// classes it ends up with, so a class that overrides the recipe fails them;
+// the story Atoms/Forms/Field/FieldLook checks the computed look in a browser.
 
 const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
 const recipe = readFileSync(join(import.meta.dir, '../../lib/field-surface.ts'), 'utf8');
-
-const fields = [
-  'atoms/input.tsx',
-  'atoms/select.tsx',
-  'atoms/combobox.tsx',
-  'atoms/textarea.tsx',
-  'atoms/native-select.tsx',
-  'molecules/date-picker.tsx',
-  'molecules/date-range-picker.tsx',
-  'molecules/date-time-picker.tsx',
-];
 
 // The pre-v3 field: a transparent fill, a 1px input border, a 36px height and
 // a translucent ring when invalid.
@@ -43,31 +35,40 @@ describe('v3 field look', () => {
     }
   });
 
-  for (const file of fields) {
-    test(`${file} uses the field recipe`, () => {
-      const code = source(file);
-      // The pickers take it through fieldButton, the recipe for a Button drawn as a field.
-      expect(code).toMatch(/\bfield(Surface|Button)\b/);
-      for (const token of retired) expect({ file, token, found: code.includes(token) }).toEqual({ file, token, found: false });
+  for (const name of fieldNames) {
+    test(`${name} renders the whole field recipe`, () => {
+      const tokens = fieldTokens(name);
+      for (const token of fieldSurface.split(' ')) expect({ name, token, rendered: tokens.includes(token) }).toEqual({ name, token, rendered: true });
+      for (const token of retired) expect({ name, token, rendered: tokens.includes(token) }).toEqual({ name, token, rendered: false });
     });
+
+    test(`${name} has no border: the fill reaches the edge`, () => {
+      const tokens = fieldTokens(name);
+      for (const token of ['border', 'bg-clip-padding']) expect({ name, token, rendered: tokens.includes(token) }).toEqual({ name, token, rendered: false });
+    });
+
+    if (name !== 'Textarea') {
+      test(`${name} is 34px`, () => {
+        const tokens = fieldTokens(name);
+        expect(tokens.includes('h-8.5') || tokens.includes('data-[size=default]:h-8.5')).toBe(true);
+      });
+    }
+
+    // An InputGroup and the Combobox input start with their addon or input.
+    if (!['InputGroup', 'ComboboxInput'].includes(name)) {
+      test(`${name} starts its text 10px in`, () => {
+        const tokens = fieldTokens(name);
+        expect(tokens.includes('px-2.5') || tokens.includes('pl-2.5')).toBe(true);
+      });
+    }
   }
 
-  test('single-line fields are 34px', () => {
-    for (const file of ['atoms/select.tsx', 'atoms/combobox.tsx']) {
-      expect(source(file)).toContain('data-[size=default]:h-8.5');
-    }
-    for (const file of ['atoms/input.tsx', 'atoms/native-select.tsx', 'atoms/input-group.tsx']) {
-      expect(source(file)).toContain('h-8.5');
-    }
-  });
-
   test('InputGroup draws the field around its control and rings it inside', () => {
-    const code = source('atoms/input-group.tsx');
-    expect(code).toContain('fieldSurface');
-    expect(code).toContain('has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2');
-    expect(code).toContain('has-[[data-slot][aria-invalid=true]]:shadow-[inset_0_0_0_1px_var(--destructive)]');
+    const tokens = fieldTokens('InputGroup');
+    expect(tokens).toContain('has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2');
+    expect(tokens).toContain('has-[[data-slot][aria-invalid=true]]:shadow-[inset_0_0_0_1px_var(--destructive)]');
     for (const token of ['border-input', 'dark:bg-input/30', 'has-[[data-slot][aria-invalid=true]]:ring-3']) {
-      expect(code).not.toContain(token);
+      expect(tokens).not.toContain(token);
     }
   });
 

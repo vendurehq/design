@@ -4,16 +4,13 @@ import { join } from 'node:path';
 
 // Floating content renders in a portal, which server rendering skips, so these
 // checks read the atom source. The mounted checks (computed radius, shadow,
-// item size, focus) live in stories/overlay-interactions.stories.tsx.
+// item size, focus, motion) live in stories/overlay-interactions.stories.tsx.
+// A popup that takes the shared popup recipe is checked there, on the
+// transition it computes, so a class that overrides the recipe fails.
 
 const source = (file: string) => readFileSync(join(import.meta.dir, file), 'utf8');
-
-// An atom that uses the shared popup recipe is read together with it.
 const recipe = readFileSync(join(import.meta.dir, '../../lib/popup-motion.ts'), 'utf8');
-const look = (file: string) => {
-  const code = source(file);
-  return code.includes('popupMotion') ? `${code}\n${recipe}` : code;
-};
+const stories = readFileSync(join(import.meta.dir, '../../../stories/overlay-interactions.stories.tsx'), 'utf8');
 
 const floating = [
   'tooltip.tsx',
@@ -39,10 +36,13 @@ const popups = [
   'navigation-menu.tsx',
 ];
 
+// The popups whose motion the recipe gives.
+const recipeUsers = floating.filter((file) => source(file).includes('popupMotion'));
+
 describe('v3 overlay look', () => {
-  for (const file of floating) {
+  for (const file of floating.filter((name) => !recipeUsers.includes(name))) {
     test(`${file} enters with opacity and scale`, () => {
-      const code = look(file);
+      const code = source(file);
       expect(code).toContain('data-starting-style:opacity-0');
       expect(code).toMatch(/motion-safe:data-starting-style:scale-9[67]/);
       // The tooltip opens on ease-soft (the CSS `ease`); everything else on the strong ease-out.
@@ -54,9 +54,18 @@ describe('v3 overlay look', () => {
     });
   }
 
+  // Each recipe user has a story that opens it and checks the computed motion.
+  for (const file of recipeUsers) {
+    test(`${file} has a story that checks its popup motion`, () => {
+      const name = file.replace('.tsx', '').replace(/(^|-)(\w)/g, (_, __, letter: string) => letter.toUpperCase());
+      const story = stories.match(new RegExp(`export const ${name}Look: Story = \\{[\\s\\S]*?\\n\\};`))?.[0] ?? '';
+      expect(story).toContain('expectPopupMotion(');
+    });
+  }
+
   for (const file of floating.filter((name) => name !== 'tooltip.tsx')) {
     test(`${file} floats on the overlay shadow, not a ring`, () => {
-      const code = look(file);
+      const code = source(file);
       expect(code).toContain('shadow-overlay');
       expect(code).not.toContain('ring-foreground/10');
     });
