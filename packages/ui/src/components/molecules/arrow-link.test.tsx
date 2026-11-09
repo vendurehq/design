@@ -16,6 +16,11 @@ function slotTokens(html: string, slot: string): string[] {
     .filter(Boolean);
 }
 
+/** Stands in for a router's link component. */
+function RouterLink(props: React.ComponentProps<'a'>) {
+  return <a data-router="" {...props} />;
+}
+
 describe('ArrowLink', () => {
   test('renders an anchor with the label, then a decorative arrow', () => {
     const html = renderToStaticMarkup(<ArrowLink href="/deployments">All deployments</ArrowLink>);
@@ -30,7 +35,7 @@ describe('ArrowLink', () => {
 
   test('render swaps the element for a router link and keeps the look', () => {
     const html = renderToStaticMarkup(
-      <ArrowLink render={<a href="/logs" data-router="" />}>Open worker logs</ArrowLink>,
+      <ArrowLink render={<RouterLink href="/logs" />}>Open worker logs</ArrowLink>,
     );
     expect(html).toStartWith('<a');
     expect(html).toContain('data-router');
@@ -76,10 +81,7 @@ describe('ArrowLink', () => {
   test('motion runs on tokens', () => {
     const html = renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>);
     expect(slotTokens(html, 'arrow-link')).toEqual(
-      expect.arrayContaining([
-        'duration-(--transition-duration-quick)',
-        'ease-(--ease-soft)',
-      ]),
+      expect.arrayContaining(['duration-(--transition-duration-quick)', 'ease-(--ease-soft)']),
     );
     expect(slotTokens(html, 'arrow-link-arrow')).toContain(
       '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
