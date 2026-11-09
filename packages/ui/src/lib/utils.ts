@@ -12,7 +12,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
   extend: {
     theme: {
       shadow: ['control', 'overlay'],
-      ease: ['default', 'spring', 'drawer', 'press', 'soft'],
+      ease: ['default', 'spring', 'drawer', 'height', 'press', 'soft'],
       animate: ['shimmer', 'spin-slow', 'progress-sweep'],
     },
     classGroups: {
@@ -41,6 +41,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'tooltip-label-move',
             'tooltip-resize',
             'progress-fill',
+            'row-enter',
           ],
         },
       ],

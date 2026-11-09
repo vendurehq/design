@@ -211,6 +211,7 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-height: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
   --transition-duration-instant: 0ms;
@@ -235,6 +236,7 @@
   --transition-duration-tooltip-label-move: 260ms;
   --transition-duration-tooltip-resize: 320ms;
   --transition-duration-progress-fill: 240ms;
+  --transition-duration-row-enter: 340ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;

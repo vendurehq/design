@@ -111,7 +111,7 @@ describe('ListRow', () => {
     expect(row).toContain(
       'opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)',
     );
-    expect(row).toContain('height_var(--transition-duration-slow)_var(--ease-drawer)');
+    expect(row).toContain('height_var(--transition-duration-row-enter)_var(--ease-height)');
     expect(row).toContain(
       'filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast)',
     );
