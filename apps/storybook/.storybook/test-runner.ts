@@ -67,7 +67,7 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
           const open = [
             ...document.querySelectorAll('[data-slot=tooltip-content]:not([data-ending-style])'),
           ];
-          return open.length === 1 && open[0].textContent?.includes(expected);
+          return open.length === 1 && Boolean(open[0]?.textContent?.includes(expected));
         },
         hover.expectTooltip,
         { timeout: 1000 },
