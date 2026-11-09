@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Progress, ProgressValue } from './progress.tsx';
+import type { Tone } from '../../lib/state-dictionary.ts';
+import { Progress, type ProgressTone, ProgressValue } from './progress.tsx';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 
 describe('Progress', () => {
@@ -46,6 +47,16 @@ describe('Progress', () => {
     expect(fill('critical')).toContain('[--progress-fill:var(--destructive-text)]');
     expect(fill('info')).toContain('[--progress-fill:var(--info-text)]');
     expect(fill('neutral')).toEqual(expect.arrayContaining(['[--progress-fill:var(--muted-foreground)]', 'opacity-55']));
+  });
+
+  test('takes every glossary tone; progress, the running step, fills in the info colour', () => {
+    const tones: ProgressTone[] = ['default', ...(['neutral', 'info', 'success', 'warning', 'critical', 'progress'] satisfies Tone[])];
+    for (const tone of tones) {
+      const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress tone={tone} value={null} />), 'progress-indicator'));
+      expect(fill.some((c) => c.startsWith('[--progress-fill:'))).toBe(true);
+    }
+    const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress tone="progress" value={null} />), 'progress-indicator'));
+    expect(fill).toContain('[--progress-fill:var(--info-text)]');
   });
 
   test('the root and the track say the tone', () => {

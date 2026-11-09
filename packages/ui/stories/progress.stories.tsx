@@ -113,8 +113,8 @@ export const Tones: Story = {
             <ProgressLabel>Critical · storage full</ProgressLabel>
             <ProgressValue />
           </Progress>
-          <Progress tone="info" value={null}>
-            <ProgressLabel>Info · build running</ProgressLabel>
+          <Progress tone="progress" value={null}>
+            <ProgressLabel>Progress · build running</ProgressLabel>
           </Progress>
           <Progress tone="neutral" value={100}>
             <ProgressLabel>Neutral · roll-out cancelled</ProgressLabel>
@@ -143,14 +143,14 @@ export const Indeterminate: Story = {
 
 const steps = [
   { label: 'Queued', detail: '1 min', tone: 'success', value: 100 },
-  { label: 'Build', detail: '2 min so far', tone: 'info', value: null },
+  { label: 'Build', detail: '2 min so far', tone: 'progress', value: null },
   { label: 'Roll out', detail: '—', tone: 'default', value: 0 },
   { label: 'Live', detail: '—', tone: 'default', value: 0 },
 ] as const;
 
 /**
  * The step bars of a deployment: one bar per step. A done step fills green,
- * the running step sweeps in info blue, and a step that has not started shows
+ * the running step (`progress`) sweeps in the info colour, and a step that has not started shows
  * the empty track. A failed step would be `critical` at 100, and a stopped
  * one `neutral` at 100.
  */
@@ -195,7 +195,7 @@ export const RightToLeft: Story = {
           <ProgressLabel>رفع الملفات</ProgressLabel>
           <ProgressValue />
         </Progress>
-        <Progress tone="info" value={null}>
+        <Progress tone="progress" value={null}>
           <ProgressLabel>بناء الصورة</ProgressLabel>
         </Progress>
       </div>

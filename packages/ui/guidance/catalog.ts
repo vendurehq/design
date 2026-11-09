@@ -720,12 +720,16 @@ export const uiGuidance = [
       },
       {
         title: 'One bar per step of a pipeline',
-        body: 'A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.',
+        body: 'A done step is `success` at 100, a failed step `critical` at 100, the running step `progress` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.',
       },
     ],
     choices: [
       { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
-      { choice: 'info', when: 'The running step of a pipeline.' },
+      { choice: 'progress', when: 'The running step of a pipeline. It fills in the info colour.' },
+      {
+        choice: 'info',
+        when: 'A level worth noting that is neither good nor bad. Running work is `progress`.',
+      },
       {
         choice: 'success',
         when: 'A meter whose filled level is the healthy outcome, or a done step.',
