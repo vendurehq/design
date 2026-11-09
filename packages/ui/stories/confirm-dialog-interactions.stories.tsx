@@ -133,7 +133,7 @@ export const TypeToConfirmEnablesAction: Story = {
   },
 };
 
-/** `initialFocus` reaches the popup: here it focuses the confirm action. */
+/** `initialFocus` reaches the popup: here it focuses Cancel. */
 export const InitialFocusPassthrough: Story = {
   render: () => (
     <ConfirmDialog
@@ -141,7 +141,7 @@ export const InitialFocusPassthrough: Story = {
       confirmLabel="Publish"
       initialFocus={() =>
         document.querySelector<HTMLElement>(
-          '[data-slot=confirm-dialog] [data-slot=alert-dialog-action]',
+          '[data-slot=confirm-dialog] [data-slot=alert-dialog-cancel]',
         ) ?? true
       }
       onConfirm={() => {}}
@@ -153,7 +153,86 @@ export const InitialFocusPassthrough: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open' }));
     const dialog = await within(document.body).findByRole('alertdialog');
     await waitFor(() =>
-      expect(within(dialog).getByRole('button', { name: 'Publish' })).toHaveFocus(),
+      expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
     );
+  },
+};
+
+/** The ring a focused dialog button shows: 2px solid at a 2px offset. */
+async function expectRing(button: HTMLElement) {
+  const style = getComputedStyle(button);
+  await expect(style.outlineStyle).toBe('solid');
+  await expect(style.outlineWidth).toBe('2px');
+  await expect(style.outlineOffset).toBe('2px');
+}
+
+/**
+ * A dialog that is not destructive focuses Confirm, so Enter confirms. The
+ * focused button shows its ring at once, also when a mouse click opened the
+ * dialog: with two buttons, the ring is how you see which one Enter presses.
+ */
+export const DefaultFocusesConfirm: Story = {
+  parameters: { pressOpen: { text: 'Open', expectFocus: 'Publish' } },
+  render: () => (
+    <ConfirmDialog title="Publish changes?" confirmLabel="Publish" onConfirm={() => {}}>
+      <Button>Open</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    const publish = within(dialog).getByRole('button', { name: 'Publish' });
+    await waitFor(() => expect(publish).toHaveFocus());
+    await expectRing(publish);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/** A destructive dialog focuses Cancel, and Cancel shows the ring. */
+export const DestructiveCancelShowsRing: Story = {
+  parameters: { pressOpen: { text: 'Delete', expectFocus: 'Cancel' } },
+  render: () => (
+    <ConfirmDialog
+      title="Delete product?"
+      confirmLabel="Delete"
+      variant="destructive"
+      onConfirm={() => {}}
+    >
+      <Button variant="destructive">Delete</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Delete' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
+    await waitFor(() => expect(cancel).toHaveFocus());
+    await expectRing(cancel);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/** While Confirm is disabled it cannot take focus: Cancel takes it. */
+export const DisabledConfirmFocusesCancel: Story = {
+  render: () => (
+    <ConfirmDialog
+      title="Publish changes?"
+      confirmLabel="Publish"
+      confirmDisabled
+      confirmDisabledReason="Checking the changes…"
+      onConfirm={() => {}}
+    >
+      <Button>Open</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
+    );
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
   },
 };
