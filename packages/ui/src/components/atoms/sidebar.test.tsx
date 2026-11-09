@@ -52,6 +52,24 @@ describe('SidebarMenuButton icons', () => {
   });
 });
 
+describe('SidebarMenuButton hover fill', () => {
+  test('the fill and text ease in the fast duration, like a ListRow', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuButton>Orders</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+    const tokens = slotTokens(html, 'sidebar-menu-button');
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        'transition-[width,height,padding,background-color,color]',
+        'duration-(--transition-duration-fast)',
+        'ease-(--ease-default)',
+      ]),
+    );
+  });
+});
+
 describe('SidebarMenuButton weight', () => {
   test('items are medium weight at rest, not only when active', () => {
     const html = renderToStaticMarkup(
