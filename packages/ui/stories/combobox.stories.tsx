@@ -70,6 +70,40 @@ export const Default: Story = {
   },
 };
 
+// With a value and `showClear`, the clear button takes the place of the open
+// button. Opens the list with the keyboard, so the a11y scan runs with the
+// list open, while Base UI hides everything outside the input and the list.
+export const WithClear: Story = {
+  render: function ComboboxWithClear() {
+    return (
+      <Combobox items={frameworks} defaultValue={frameworks[1]}>
+        <ComboboxInput aria-label="Framework" placeholder="Search frameworks..." showClear />
+        <ComboboxContent>
+          <ComboboxEmpty>No framework found.</ComboboxEmpty>
+          <ComboboxList>
+            {(framework: (typeof frameworks)[number]) => (
+              <ComboboxItem key={framework.value} value={framework}>
+                {framework.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    // Like the open button, the clear button has a name and stays out of the
+    // tab order: Backspace clears the input from the keyboard.
+    const clear = canvas.getByRole('button', { name: 'Clear' });
+    await expect(clear.tabIndex).toBe(-1);
+    const input = canvas.getByRole('combobox', { name: 'Framework' });
+    await userEvent.click(input);
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(within(document.body).getAllByRole('option').length).toBeGreaterThan(0));
+  },
+};
+
 const countries = ['Austria', 'France', 'Germany', 'Netherlands', 'Switzerland'];
 
 // A select-like combobox: the trigger shows the value and has field styling

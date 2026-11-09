@@ -50,10 +50,15 @@ function ComboboxTrigger({
   )
 }
 
-function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
+// Icon-only, so it carries a name. Like the open button, it stays out of the
+// tab order: Backspace clears the input from the keyboard, and while the list
+// is open Base UI hides it from assistive technology.
+function ComboboxClear({ className, "aria-label": ariaLabel = "Clear", ...props }: ComboboxPrimitive.Clear.Props) {
   return (
     <ComboboxPrimitive.Clear
       data-slot="combobox-clear"
+      aria-label={ariaLabel}
+      tabIndex={-1}
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
       className={cn(className)}
       {...props}
@@ -70,12 +75,15 @@ function ComboboxInput({
   showTrigger = true,
   showClear = false,
   triggerLabel = "Open options",
+  clearLabel = "Clear",
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean
   showClear?: boolean
   /** Accessible name of the icon-only trigger button. */
   triggerLabel?: string
+  /** Accessible name of the icon-only clear button. */
+  clearLabel?: string
 }) {
   return (
     <InputGroup className={cn("w-auto", className)}>
@@ -107,7 +115,7 @@ function ComboboxInput({
             <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4" />
           </InputGroupButton>
         )}
-        {showClear && <ComboboxClear disabled={disabled} />}
+        {showClear && <ComboboxClear aria-label={clearLabel} disabled={disabled} />}
       </InputGroupAddon>
       {children}
     </InputGroup>
