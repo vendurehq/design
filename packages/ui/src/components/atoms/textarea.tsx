@@ -12,7 +12,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
       data-slot="textarea"
       className={cn(
         fieldSurface,
-        "placeholder:text-muted-foreground flex field-sizing-content min-h-16 w-full px-2.5 py-2 text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "placeholder:text-faint-foreground flex field-sizing-content min-h-16 w-full px-2.5 py-2 text-base disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className
       )}
       {...useFieldControlProps(props)}

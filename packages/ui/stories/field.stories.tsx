@@ -162,6 +162,58 @@ export const ValidAndInvalid: Story = {
  * hairline, the 6px radius, 34px tall, and a 2px ring inside the field on
  * keyboard focus. The play function reads the computed styles.
  */
+/**
+ * The v3 field label and placeholder: a 12px, weight 500 label in the muted
+ * text colour, 6px above its field, and a placeholder fainter than muted text.
+ * An invalid field keeps its red label.
+ */
+export const LabelLook: Story = {
+  render: () => (
+    <div className="grid w-80 gap-4">
+      <Field>
+        <FieldLabel htmlFor="label-look-name">Name</FieldLabel>
+        <Input id="label-look-name" placeholder="Acme Inc." />
+      </Field>
+      <Field data-invalid>
+        <FieldLabel htmlFor="label-look-email">Email</FieldLabel>
+        <Input id="label-look-email" aria-invalid placeholder="you@example.com" />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="label-look-note">Note</FieldLabel>
+        <Textarea id="label-look-note" placeholder="Visible to your team" />
+      </Field>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const probe = document.createElement('span');
+    canvasElement.append(probe);
+    const colorOf = (className: string) => {
+      probe.className = className;
+      return getComputedStyle(probe).color;
+    };
+
+    const name = canvas.getByLabelText('Name');
+    const label = canvas.getByText('Name');
+    const style = getComputedStyle(label);
+    await expect(style.fontSize).toBe('12px');
+    await expect(style.fontWeight).toBe('500');
+    await expect(style.color).toBe(colorOf('text-muted-foreground'));
+    await expect(Math.round(name.getBoundingClientRect().top - label.getBoundingClientRect().bottom)).toBe(6);
+
+    await expect(getComputedStyle(canvas.getByText('Email')).color).toBe(
+      colorOf('text-destructive-subtle-foreground'),
+    );
+
+    const faint = colorOf('text-faint-foreground');
+    await expect(faint).not.toBe(colorOf('text-muted-foreground'));
+    for (const field of [name, canvas.getByLabelText('Note')]) {
+      await expect(getComputedStyle(field, '::placeholder').color).toBe(faint);
+    }
+    probe.remove();
+  },
+};
+
 export const FieldLook: Story = {
   render: () => (
     <div className="grid w-80 gap-4">
