@@ -14,9 +14,10 @@ import { TriangleAlertIcon } from 'lucide-react';
 // `title` is redefined as `ReactNode`, so drop the native string `title` attr.
 export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
   /**
-   * Leading icon, tinted `text-destructive`. Defaults to an alert triangle.
-   * In a `compact` state only an explicit icon renders, bare and tinted
-   * `text-destructive-text`. Ignored once `illustration` renders (see below).
+   * Leading icon, drawn bare like EmptyState's: 28px and a light stroke, in
+   * the `text-destructive-text` tone. Defaults to an alert triangle. In a
+   * `compact` state only an explicit icon renders. Ignored once
+   * `illustration` renders (see below).
    */
   icon?: React.ReactNode;
   /**
@@ -36,21 +37,22 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
   /** Extra actions (e.g. a not-found "Go back" link) rendered beside retry. */
   children?: React.ReactNode;
   /**
-   * Draw the box. Defaults to `true`. Set `false` when the error state fills a
-   * region that already has a frame, such as a table body or a card.
+   * Draw a dashed box around the state. Defaults to `false`: the state sits
+   * bare in its region, like EmptyState. Set `true` for a slot that needs a
+   * visible outline.
    */
   bordered?: boolean;
   /**
    * `compact` drops the illustration and tightens the spacing, for a small
    * panel or side column where the full state is too tall. An explicit `icon`
-   * renders bare (no chip) above a 14px title. Keep it to a title, a
+   * sits above a 14px title. Keep it to a title, a
    * description and at most one action. Defaults to `default`.
    */
   size?: 'default' | 'compact';
 }
 
 /**
- * The one canonical error presentation: a centered box that carries semantics
+ * The one canonical error presentation: a centered state that carries semantics
  * no atom has — `role="alert"`, a destructive-tinted icon (or illustration),
  * and an optional retry CTA. Same anatomy as `EmptyState` so failed and empty
  * states line up.
@@ -63,7 +65,7 @@ function ErrorState({
   onRetry,
   retryLabel = 'Try again',
   children,
-  bordered = true,
+  bordered = false,
   size = 'default',
   className,
   ...props
@@ -100,9 +102,10 @@ function ErrorState({
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
         ) : resolvedIcon ? (
+          // 20px from the icon to the title in the default size.
           <EmptyMedia
-            variant={compact ? 'bare' : 'icon'}
-            className={compact ? 'text-destructive-text opacity-100' : 'text-destructive'}
+            variant="bare"
+            className={cn('text-destructive-text opacity-100', !compact && 'mb-3')}
           >
             {resolvedIcon}
           </EmptyMedia>
