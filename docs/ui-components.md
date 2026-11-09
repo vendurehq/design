@@ -458,7 +458,7 @@ These packages are optional — install them only if you use the features that n
 1. Export paths moved. `@vendure-io/ui/components/ui/*` is now `@vendure-io/ui/components/atoms/*`, and `@vendure-io/ui/components/custom/*` is now `@vendure-io/ui/components/molecules/*`. The old paths are removed.
 2. Badge `default` is neutral subtle, not solid brand. Use `variant="brand"` for solid brand. `variant="secondary"` is removed: delete the prop.
 3. Button `default` and every use of the `primary` slot are neutral. Use `variant="brand"` for an identity moment.
-4. The look is flat. Primitives have no `shadow-xs` or `shadow-2xs`. Buttons and button groups sit on the themed `shadow-control`, a 1px lift. Select and dropdown popups size to their content, not to the trigger width.
+4. The look is flat. Primitives have no `shadow-xs` or `shadow-2xs`. Buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Select and dropdown popups size to their content, not to the trigger width.
 5. The `react-hook-form` peer dependency is removed.
 6. `@vendure-io/design-tokens` is a peer dependency. Install it next to `@vendure-io/ui`.
 7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported. StatCard no longer exports `statCardDeltaVariants`.

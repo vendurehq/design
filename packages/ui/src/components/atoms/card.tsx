@@ -10,7 +10,8 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // of `group-data-[size=sm]` hooks so that nested cards resolve to the NEAREST
 // card — a group selector matches any ancestor and leaks the outer card's
 // size into an inner one.
-// The v3 panel: a 12px radius, a full-strength hairline border and no shadow.
+// The v3 panel: a 12px radius, a full-strength hairline border and the
+// themed shadow-control, the 1px lift a resting control has.
 // --card-head is the height of a one-line header: 48px, the height of a row,
 // so a header and the rows under it share one rhythm (44px in the sm size).
 function Card({
@@ -23,7 +24,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] [--card-head:--spacing(12)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] data-[size=sm]:[--card-head:--spacing(11)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] [--card-head:--spacing(12)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] data-[size=sm]:[--card-head:--spacing(11)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border shadow-control py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
         className
       )}
       {...props}
