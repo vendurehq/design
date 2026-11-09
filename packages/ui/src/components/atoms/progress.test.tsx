@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Progress } from './progress.tsx';
+import { Progress, ProgressValue } from './progress.tsx';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 
 describe('Progress', () => {
@@ -22,6 +22,14 @@ describe('Progress', () => {
     expect(fill).toContain('motion-safe:not-data-indeterminate:starting:scale-x-0');
     expect(fill).toContain('motion-safe:duration-(--transition-duration-progress-fill)');
     expect(fill).toContain('motion-safe:ease-(--ease-out)');
+  });
+
+  test('right to left: the fill grows from the right, the band sweeps in reverse, the value sits at the end', () => {
+    const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress value={null} />), 'progress-indicator'));
+    expect(fill).toEqual(expect.arrayContaining(['origin-left', 'rtl:origin-right', 'motion-safe:data-indeterminate:rtl:after:[animation-direction:reverse]']));
+    const value = tagTokens(slotTag(renderToStaticMarkup(<Progress value={40}><ProgressValue /></Progress>), 'progress-value'));
+    expect(value).toContain('ms-auto');
+    expect(value).not.toContain('ml-auto');
   });
 
   test('a value outside min and max clamps the scale', () => {

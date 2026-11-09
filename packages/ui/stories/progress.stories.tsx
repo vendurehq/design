@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, waitFor, within } from 'storybook/test';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import {
   Progress,
   ProgressLabel,
@@ -167,4 +169,57 @@ export const Steps: Story = {
       ))}
     </div>
   ),
+};
+
+/** The sweep's translateX in px at a point in its loop, or null when there is no sweep. */
+function sweepOffset(indicator: Element, progress: number) {
+  const sweep = indicator
+    .getAnimations({ subtree: true })
+    .find((a) => (a.effect as KeyframeEffect | null)?.pseudoElement === '::after');
+  if (!sweep) return null;
+  const duration = Number(sweep.effect?.getComputedTiming().duration);
+  sweep.pause();
+  sweep.currentTime = duration * progress;
+  return new DOMMatrix(getComputedStyle(indicator, '::after').transform).m41;
+}
+
+/**
+ * In a right-to-left layout the fill grows from the right and the band of an
+ * indeterminate bar sweeps from right to left. The test runner checks both.
+ */
+export const RightToLeft: Story = {
+  render: () => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl" className="flex w-[400px] flex-col gap-4">
+        <Progress value={25}>
+          <ProgressLabel>رفع الملفات</ProgressLabel>
+          <ProgressValue />
+        </Progress>
+        <Progress tone="info" value={null}>
+          <ProgressLabel>بناء الصورة</ProgressLabel>
+        </Progress>
+      </div>
+    </DirectionProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const [known, running] = within(canvasElement).getAllByRole('progressbar');
+    const track = known.querySelector('[data-slot="progress-track"]') as HTMLElement;
+    const fill = known.querySelector('[data-slot="progress-indicator"]') as HTMLElement;
+    await waitFor(() => {
+      const t = track.getBoundingClientRect();
+      const f = fill.getBoundingClientRect();
+      expect(Math.abs(f.right - t.right)).toBeLessThan(1);
+      expect(Math.abs(f.width - t.width / 4)).toBeLessThan(1);
+    });
+
+    const value = known.querySelector('[data-slot="progress-value"]') as HTMLElement;
+    const label = known.querySelector('[data-slot="progress-label"]') as HTMLElement;
+    await expect(value.getBoundingClientRect().left).toBeLessThan(label.getBoundingClientRect().left);
+    await expect(Math.abs(value.getBoundingClientRect().left - track.getBoundingClientRect().left)).toBeLessThan(1);
+
+    const band = running.querySelector('[data-slot="progress-indicator"]') as HTMLElement;
+    const early = sweepOffset(band, 0.25);
+    const late = sweepOffset(band, 0.75);
+    if (early !== null && late !== null) await expect(late).toBeLessThan(early);
+  },
 };
