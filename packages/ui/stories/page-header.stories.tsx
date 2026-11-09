@@ -1,14 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ChevronLeftIcon, PlusIcon } from 'lucide-react';
+import { GitBranchIcon, GlobeIcon, MapPinIcon, PlusIcon } from 'lucide-react';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import {
   PageHeader,
   PageHeaderActions,
+  PageHeaderBack,
   PageHeaderBackLink,
   PageHeaderContent,
   PageHeaderDescription,
+  PageHeaderFact,
+  PageHeaderFacts,
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
 
@@ -71,15 +74,16 @@ export const WithBadgeAndId: Story = {
   ),
 };
 
-// The back-link row sits above the header as a sibling.
+/**
+ * The back-link row sits above the header as a sibling. PageHeaderBack draws
+ * the chevron: on hover the text reaches full foreground and the chevron moves
+ * 2px back. Pass `render` for a router link.
+ */
 export const WithBackLink: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
       <PageHeaderBackLink>
-        <a href="#products" className="inline-flex items-center gap-1 hover:text-foreground">
-          <ChevronLeftIcon className="size-4" />
-          Back to products
-        </a>
+        <PageHeaderBack href="#products">Products</PageHeaderBack>
       </PageHeaderBackLink>
       <PageHeader>
         <PageHeaderContent>
@@ -132,6 +136,42 @@ export const NarrowViewport: Story = {
             <PlusIcon />
             New method
           </Button>
+        </PageHeaderActions>
+      </PageHeader>
+    </div>
+  ),
+};
+
+/**
+ * The facts row under the title: an icon at 45% and its text per fact, 18px
+ * between facts. It wraps on a narrow screen.
+ */
+export const WithFacts: Story = {
+  render: () => (
+    <div className="flex flex-col gap-2">
+      <PageHeaderBackLink>
+        <PageHeaderBack href="#environments">Environments</PageHeaderBack>
+      </PageHeaderBackLink>
+      <PageHeader>
+        <PageHeaderContent className="gap-2">
+          <PageHeaderTitle>Production</PageHeaderTitle>
+          <PageHeaderFacts>
+            <PageHeaderFact>
+              <GitBranchIcon aria-hidden="true" />
+              <span className="font-mono">main</span>
+            </PageHeaderFact>
+            <PageHeaderFact>
+              <MapPinIcon aria-hidden="true" />
+              Ireland, Europe <span className="text-muted-foreground">eu-west-1</span>
+            </PageHeaderFact>
+            <PageHeaderFact>
+              <GlobeIcon aria-hidden="true" />
+              acme-shop.vendure.cloud
+            </PageHeaderFact>
+          </PageHeaderFacts>
+        </PageHeaderContent>
+        <PageHeaderActions>
+          <Button variant="outline">Redeploy</Button>
         </PageHeaderActions>
       </PageHeader>
     </div>
