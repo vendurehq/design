@@ -51,6 +51,12 @@ There is deliberately no `organisms/` — composition depth is not a boundary he
 - `./lib/*` → utilities
 - `./hooks/*` → hooks
 
+An internal helper (a sub-part, a shared recipe, a hook only the package uses)
+is mapped to `null` in `package.json` and listed as internal in
+`src/package-exports.test.ts`. Import it by a relative path, never by its
+`@vendure-io/ui/...` path: consumers transpile this source, and there the
+package path resolves through the exports map.
+
 The "no barrels" rule applies to **wrapper components**: do not aggregate
 `components/atoms/*` or `components/molecules/*` behind an index file. The single
 exception is `src/lib/base-ui.ts`, which re-exports `@base-ui/react` primitive

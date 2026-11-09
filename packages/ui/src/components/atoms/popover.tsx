@@ -4,7 +4,7 @@ import * as React from "react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
+import { popupMotion } from "../../lib/popup-motion.ts"
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />

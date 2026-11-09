@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -21,15 +21,37 @@ function resolve(subpath: string): string {
   return Bun.resolveSync(`@vendure-io/ui/${subpath}`, consumer);
 }
 
+const internal = [
+  'components/molecules/code-block/transform-command',
+  'components/molecules/code-block/file-type-icons',
+  'components/molecules/code-block/process-code',
+  'components/molecules/data-table/data-table-helpers',
+  'components/atoms/label-swap',
+  'components/molecules/direction-link',
+  'lib/popup-motion',
+  'hooks/use-active-label-size',
+];
+
 describe('package exports', () => {
-  test.each([
-    'components/molecules/code-block/transform-command',
-    'components/molecules/code-block/file-type-icons',
-    'components/molecules/code-block/process-code',
-    'components/molecules/data-table/data-table-helpers',
-    'components/atoms/label-swap',
-  ])('%s is internal', (subpath) => {
+  test.each(internal)('%s is internal', (subpath) => {
     expect(() => resolve(subpath)).toThrow();
+  });
+
+  // A consumer transpiles this source, so a package-path import resolves
+  // through the exports map there: an internal module must be imported by a
+  // relative path.
+  test('no source file imports an internal module by its package path', () => {
+    const offenders = [...new Bun.Glob('**/*.{ts,tsx}').scanSync(import.meta.dir)].filter(
+      (file) => {
+        const code = readFileSync(join(import.meta.dir, file), 'utf8');
+        return internal.some(
+          (subpath) =>
+            code.includes(`'@vendure-io/ui/${subpath}'`) ||
+            code.includes(`"@vendure-io/ui/${subpath}"`),
+        );
+      },
+    );
+    expect(offenders).toEqual([]);
   });
 
   test.each([
@@ -41,7 +63,7 @@ describe('package exports', () => {
     'components/atoms/button',
     'lib/state-dictionary',
     'hooks/use-copy',
-    'hooks/use-active-label-size',
+    'lib/field-surface',
   ])('%s is public', (subpath) => {
     expect(resolve(subpath)).toStartWith(join(import.meta.dir, '..', 'src'));
   });
