@@ -4,6 +4,7 @@ import * as React from "react"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 
 function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
@@ -52,7 +53,7 @@ function ContextMenuContent({
       >
         <ContextMenuPrimitive.Popup
           data-slot="context-menu-content"
-          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-36 overflow-x-hidden overflow-y-auto outline-none origin-(--transform-origin) transition-[opacity,scale] duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-96 motion-safe:data-ending-style:scale-96", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-36 overflow-x-hidden overflow-y-auto outline-none", popupMotion, className )}
           {...props}
         />
       </ContextMenuPrimitive.Positioner>
@@ -101,7 +102,7 @@ function ContextMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "focus:bg-muted focus:text-accent-foreground data-[variant=destructive]:text-destructive-text data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:focus:*:[svg]:text-accent-foreground group/context-menu-item relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "focus:bg-muted focus:text-accent-foreground data-[variant=destructive]:text-destructive-text data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:focus:*:[svg]:text-accent-foreground group/context-menu-item relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

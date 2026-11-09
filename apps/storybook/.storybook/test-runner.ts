@@ -1,7 +1,7 @@
+import type { Page } from '@playwright/test';
 import type { TestRunnerConfig } from '@storybook/test-runner';
 import { getStoryContext } from '@storybook/test-runner';
 import { getViolations, injectAxe } from 'axe-playwright';
-import type { Page } from '@playwright/test';
 
 // Violations at these impact levels fail the build. `minor`/`moderate` findings
 // are logged but non-blocking, matching axe-core's own severity scale.
@@ -14,7 +14,8 @@ const THEMES = ['light', 'dark'] as const;
  * nothing is hit-tested and `:active` never applies. The press must end on a
  * button named `expectButton` and must not navigate. `reducedMotion: true`
  * presses with `prefers-reduced-motion: reduce` emulated. Pass a list to press
- * several texts in turn.
+ * several texts in turn. The button name must match exactly, so "Select" does
+ * not pass for a button named "Selected".
  */
 type TextPress = { text: string; expectButton: string; reducedMotion?: boolean };
 
@@ -30,7 +31,9 @@ async function pressOneText(page: Page, press: TextPress) {
   if (press.reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' });
   try {
     await page.mouse.click(box.x + 4, box.y + box.height / 2);
-    await root.getByRole('button', { name: press.expectButton }).waitFor({ timeout: 1000 });
+    await root
+      .getByRole('button', { name: press.expectButton, exact: true })
+      .waitFor({ timeout: 1000 });
   } finally {
     if (press.reducedMotion) await page.emulateMedia({ reducedMotion: null });
   }
@@ -58,6 +61,34 @@ async function pressRowText(page: Page, press?: { text: string; expectHash: stri
   }
 }
 
+/**
+ * `parameters.pressOpen` presses a trigger's text with a real mouse, so the
+ * browser counts the open as a pointer interaction. A play function's click
+ * is synthetic and leaves `:focus-visible` matching. The opened overlay must
+ * move focus to the button named `expectFocus`, and that button must show a
+ * solid outline. Escape closes the overlay again.
+ */
+async function pressOpen(page: Page, press?: { text: string; expectFocus: string }) {
+  if (!press) return;
+  const root = page.locator('#storybook-root');
+  const box = await root.getByText(press.text, { exact: true }).boundingBox();
+  if (!box) throw new Error(`pressOpen: "${press.text}" is not visible`);
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  const focused = page.locator('body').getByRole('button', { name: press.expectFocus, exact: true });
+  await page.waitForFunction(
+    (name) => document.activeElement?.textContent?.trim() === name,
+    press.expectFocus,
+    { timeout: 2000 },
+  ).catch(() => {
+    throw new Error(`pressOpen: "${press.expectFocus}" did not take focus`);
+  });
+  const outline = await focused.evaluate((button) => getComputedStyle(button).outlineStyle);
+  if (outline !== 'solid') {
+    throw new Error(`pressOpen: "${press.expectFocus}" has focus but no ring (outline ${outline})`);
+  }
+  await page.keyboard.press('Escape');
+}
+
 const config: TestRunnerConfig = {
   async preVisit(page) {
     await injectAxe(page);
@@ -66,6 +97,7 @@ const config: TestRunnerConfig = {
     const storyContext = await getStoryContext(page, context);
     await pressText(page, storyContext.parameters?.pressText);
     await pressRowText(page, storyContext.parameters?.pressRowText);
+    await pressOpen(page, storyContext.parameters?.pressOpen);
 
     // Opt a story out via `parameters.a11y.skip` in its meta or story export.
     // See docs/testing.md for when this is an acceptable escape hatch.

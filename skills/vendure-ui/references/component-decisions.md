@@ -163,7 +163,7 @@ Use the batteries-included collection engine while keeping URL, fetching, and pe
 - **The consumer owns state outside the table:** The consumer owns URL state, fetching, authorization, and persistence. DataTable owns one TanStack table instance and UI composition.
 - **Use composition seams before wrappers:** Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.
 - **Shape loading rows like loaded rows:** The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.
-- **A row that opens an item opens it from any point:** Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control.
+- **A row that opens an item opens it from any point:** Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.
 - **Cell text lines up with the header:** Badge, StatusBadge, Button and IdChip set --content-inset, the distance from their box to their first letter, and a DataTable cell pulls its first element back by it. Do not add per-column offsets. Mark a leading icon with data-icon="inline-start". Custom styled content sets --content-inset on the element that starts the cell.
 - **Do not use DataTable for static layout:** Use Table or DescriptionList when there is no interactive collection behavior to coordinate.
 
@@ -227,7 +227,8 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 - **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 - **The whole chip copies:** A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.
-- **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).
+- **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. DataTable and ListRow rows keep a copy chip above their stretched row link, so it copies and does not open the row.
+- **A lookup key that names the row is still a chip:** When the lookup key is also the row's name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader
@@ -249,6 +250,8 @@ Render a short list of entities where each row opens one detail page from any po
 - **The link holds the title only:** The link text is the accessible name of the row. Put who, how many, and how long in ListRowMeta, and state in a StatusBadge in ListRowTrailing.
 - **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.
 - **Hidden actions are never the only way:** ListRowActions appears on hover or focus. Every action in it is also available on the detail page.
+- **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
+- **Only rows added later animate:** Set data-new on a row the user just created, and laterIndex (0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take neither, so the list does not animate on page load.
 
 Related decisions: `collapsible-section`, `data-table`, `id-chip`, `status-badge`.
 ## Money
@@ -289,13 +292,16 @@ Show task completion or usage against a limit, toned only when the level has a c
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
 - **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
 - **Indeterminate when the length is unknown:** Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.
+- **One bar per step of a pipeline:** A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.
 
 **Choose:**
 
 - `default`: Task progress, or a meter with no limit the user must act on.
-- `success`: A meter whose filled level is the healthy outcome.
+- `info`: The running step of a pipeline.
+- `success`: A meter whose filled level is the healthy outcome, or a done step.
 - `warning`: Near a limit the user must act on.
-- `critical`: At or over the limit.
+- `critical`: At or over the limit, or a failed step.
+- `neutral`: A step that stopped and needs nothing from the user, such as a cancelled one.
 
 Related decisions: `status-badge`, `stat-card`.
 ## SecretValue
@@ -326,8 +332,8 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Ask waiting, empty, or failed in that order:** Loading means the answer is in flight, Empty means the request succeeded with nothing, and Error means the system failed.
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
-- **Tables own their perimeter:** When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.
-- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}. An icon is optional and renders bare, without the chip.
+- **Tables own their perimeter:** When EmptyState replaces a table body, it renders flush within the table container: EmptyState draws no box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.
+- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush. An icon is optional and renders bare, as in the full state.
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.

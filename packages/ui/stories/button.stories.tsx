@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
-import { ChevronRight, Loader2, Mail } from 'lucide-react';
-import { Button } from '../src/components/atoms/button.tsx';
+import { Check, ChevronRight, Loader2, Mail } from 'lucide-react';
+import { Button, ButtonLabelSwap } from '../src/components/atoms/button.tsx';
 
 const meta = {
   title: 'Atoms/General/Button',
@@ -103,7 +103,7 @@ export const AsLink: Story = {
 function PlanCard() {
   const [selected, setSelected] = useState(false);
   return (
-    <div className="bg-card relative flex w-80 items-center justify-between gap-3 rounded-xl border p-4">
+    <div className="bg-card relative flex w-80 items-center justify-between gap-3 rounded-xl border p-4 [transition:background-color_var(--transition-duration-fast)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] hover:bg-muted motion-safe:active:scale-[0.985]">
       <div className="flex flex-col gap-0.5">
         <span className="text-sm font-medium">Starter plan</span>
         <span className="text-muted-foreground text-xs">2 vCPU, 4 GB memory</span>
@@ -112,9 +112,18 @@ function PlanCard() {
         variant="outline"
         size="sm"
         className="after:absolute after:inset-0 active:scale-none"
-        onClick={() => setSelected(true)}
+        onClick={() => setSelected((value) => !value)}
       >
-        {selected ? 'Selected' : 'Select'}
+        <ButtonLabelSwap
+          labels={[
+            'Select',
+            <>
+              <Check />
+              Selected
+            </>,
+          ]}
+          active={selected ? 1 : 0}
+        />
       </Button>
     </div>
   );
@@ -122,15 +131,23 @@ function PlanCard() {
 
 /**
  * A button that stretches its `::after` over a card makes the whole card its
- * click target. It takes `active:scale-none`: any `scale` other than `none`
- * makes the button the containing block of its `::after`, which then shrinks
- * to the button between mousedown and mouseup, and a press on the card text
- * clicks nothing. The test runner presses the card text with a real mouse,
- * with reduced motion emulated.
+ * click target. The card shows it is one target: it takes the `muted` row
+ * fill on hover, and a press scales the card to 0.985, not the button. The
+ * button takes `active:scale-none`: any `scale` other than `none` makes the
+ * button the containing block of its `::after`, which then shrinks to the
+ * button between mousedown and mouseup, and a press on the card text clicks
+ * nothing. The card is already the containing block, so its scale is safe.
+ * `ButtonLabelSwap` crossfades "Select" and "Selected" and eases the button
+ * to the new width. With reduced motion the card does not scale and the
+ * labels only crossfade. The test runner presses the card text with a real
+ * mouse, once with full motion and once with reduced motion emulated.
  */
 export const StretchedClickArea: Story = {
   parameters: {
-    pressText: { text: 'Starter plan', expectButton: 'Selected', reducedMotion: true },
+    pressText: [
+      { text: 'Starter plan', expectButton: 'Selected' },
+      { text: 'Starter plan', expectButton: 'Select', reducedMotion: true },
+    ],
   },
   render: () => <PlanCard />,
 };

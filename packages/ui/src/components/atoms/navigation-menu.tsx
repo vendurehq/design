@@ -2,6 +2,7 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cva } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
 import { ChevronDownIcon } from "lucide-react"
 
 function NavigationMenu({
@@ -84,7 +85,7 @@ function NavigationMenuContent({
     <NavigationMenuPrimitive.Content
       data-slot="navigation-menu-content"
       className={cn(
-        "data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out motion-safe:data-[motion=from-end]:slide-in-from-right-52 motion-safe:data-[motion=from-start]:slide-in-from-left-52 motion-safe:data-[motion=to-end]:slide-out-to-right-52 motion-safe:data-[motion=to-start]:slide-out-to-left-52 group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:data-open:animate-in group-data-[viewport=false]/navigation-menu:data-closed:animate-out motion-safe:group-data-[viewport=false]/navigation-menu:data-closed:zoom-out-95 motion-safe:group-data-[viewport=false]/navigation-menu:data-open:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-open:fade-in-0 group-data-[viewport=false]/navigation-menu:data-closed:fade-out-0 group-data-[viewport=false]/navigation-menu:ring-foreground/10 motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pr-2.5 transition-[opacity,transform,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-opacity group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:ring-1 group-data-[viewport=false]/navigation-menu:data-open:duration-(--transition-duration-normal) group-data-[viewport=false]/navigation-menu:data-open:ease-(--ease-out) group-data-[viewport=false]/navigation-menu:data-closed:duration-(--transition-duration-fast) group-data-[viewport=false]/navigation-menu:data-closed:ease-(--ease-in) data-ending-style:opacity-0 data-starting-style:opacity-0",
+        "motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pr-2.5 transition-[opacity,transform,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
         className
       )}
       {...props}
@@ -113,7 +114,8 @@ function NavigationMenuPositioner({
         )}
         {...props}
       >
-        <NavigationMenuPrimitive.Popup className="bg-popover text-popover-foreground ring-foreground/10 data-[ending-style]:easing-[ease] xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-lg shadow ring-1 transition-[opacity,transform,width,height,scale,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] outline-none motion-reduce:transition-opacity motion-safe:data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) data-ending-style:ease-(--ease-in) motion-safe:data-starting-style:scale-90 data-starting-style:opacity-0">
+        {/* Opens with popupMotion. While open, it resizes to the next item's content in 350ms. */}
+        <NavigationMenuPrimitive.Popup className={cn("bg-popover text-popover-foreground shadow-overlay xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) rounded-xl outline-none", popupMotion, "transition-[opacity,scale,translate,width,height] [transition-duration:160ms,200ms,200ms,350ms,350ms] motion-reduce:transition-opacity")}>
           <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
         </NavigationMenuPrimitive.Popup>
       </NavigationMenuPrimitive.Positioner>
@@ -146,12 +148,12 @@ function NavigationMenuIndicator({
 }: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Icon>) {
   // Base UI's Icon emits data-popup-open while its item's popup is open (never Radix-style
   // data-[state=...]) and stays mounted when closed with no closed/ending attribute, so the
-  // closed state is hidden via opacity instead of an exit animation
+  // closed state is hidden via opacity, faded in step with the popup
   return (
     <NavigationMenuPrimitive.Icon
       data-slot="navigation-menu-indicator"
       className={cn(
-        "data-popup-open:animate-in data-popup-open:fade-in not-data-popup-open:opacity-0 top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
+        "transition-opacity duration-[160ms] ease-(--ease-out) not-data-popup-open:opacity-0 top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
         className
       )}
       {...props}

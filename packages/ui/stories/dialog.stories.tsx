@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../src/components/atoms/dialog.tsx';
+import { RocketIcon, TriangleAlertIcon } from 'lucide-react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 
 /**
@@ -61,8 +63,88 @@ export const WithForm: Story = {
           </div>
         </div>
         <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button>Save changes</Button>
         </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+/**
+ * An 18px icon before the title. It is the foreground at 60% by default;
+ * `tone` colours it for a state. The dialog is 440px wide, the description
+ * sits 10px under the title and the buttons 20px under the description.
+ */
+export const WithIcon: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Deploy</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle icon={<RocketIcon />}>Deploy main to Production?</DialogTitle>
+          <DialogDescription>
+            Cloud builds the latest commit on main, then swaps the server and the worker one at a time. The shop stays up.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button>Deploy</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Deploy' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(dialog.getBoundingClientRect().width).toBe(440));
+    // No ✕ by default: Cancel, Escape and the backdrop close the dialog.
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    const title = dialog.querySelector('[data-slot=dialog-title]')!;
+    const description = dialog.querySelector('[data-slot=dialog-description]')!;
+    const footer = dialog.querySelector('[data-slot=dialog-footer]')!;
+    await expect(description.getBoundingClientRect().top - title.getBoundingClientRect().bottom).toBeCloseTo(10, 0);
+    await expect(footer.getBoundingClientRect().top - description.getBoundingClientRect().bottom).toBeCloseTo(20, 0);
+    const icon = dialog.querySelector('[data-slot=dialog-title-icon] svg')!.getBoundingClientRect();
+    await expect(icon.width).toBe(18);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+  },
+};
+
+/** `tone` colours the icon for a state: here a warning. */
+export const WithToneIcon: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Restore backup</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle icon={<TriangleAlertIcon />} tone="warning">
+            Restore the backup from 09:00?
+          </DialogTitle>
+          <DialogDescription>
+            Changes made after 09:00 are lost. The shop is read-only while the restore runs.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button>Restore</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+};
+
+/** `showCloseButton` adds a ✕ for a dialog that has no Cancel button. */
+export const WithCloseButton: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Show details</DialogTrigger>
+      <DialogContent showCloseButton>
+        <DialogHeader>
+          <DialogTitle>Build details</DialogTitle>
+          <DialogDescription>Built from main in 2 min 14 s.</DialogDescription>
+        </DialogHeader>
       </DialogContent>
     </Dialog>
   ),

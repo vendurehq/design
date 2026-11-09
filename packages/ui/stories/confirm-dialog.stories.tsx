@@ -201,10 +201,10 @@ export const TypeToConfirm: Story = {
 };
 
 /**
- * `initialFocus` picks the element that takes focus on open. A safe,
- * frequent confirm can focus its own action, so Enter confirms.
+ * `initialFocus` overrides the default. A confirm that is not destructive but
+ * costly can focus Cancel, so Enter does not start it.
  */
-export const InitialFocusOnConfirm: Story = {
+export const InitialFocusOnCancel: Story = {
   render: () => (
     <ConfirmDialog
       title="Publish changes?"
@@ -212,7 +212,7 @@ export const InitialFocusOnConfirm: Story = {
       confirmLabel="Publish"
       initialFocus={() =>
         document.querySelector<HTMLElement>(
-          '[data-slot=confirm-dialog] [data-slot=alert-dialog-action]',
+          '[data-slot=confirm-dialog] [data-slot=alert-dialog-cancel]',
         ) ?? true
       }
       onConfirm={() => console.log('published')}

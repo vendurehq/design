@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Button } from './button.tsx';
+import { Button, ButtonLabelSwap } from './button.tsx';
 import { ButtonGroup } from './button-group.tsx';
 
 /** Class tokens of the element carrying the given data-slot, entity-decoded. */
@@ -165,5 +165,34 @@ describe('ButtonGroup', () => {
     expect(tokens).toContain('bg-primary');
     expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-primary-foreground/20');
     expect(tokens).not.toContain('inset-ring');
+  });
+});
+
+describe('ButtonLabelSwap', () => {
+  const labels = ['Select', 'Selected'];
+  const swapHtml = (active: number) =>
+    renderToStaticMarkup(
+      <Button>
+        <ButtonLabelSwap labels={labels} active={active} />
+      </Button>,
+    );
+
+  test('shows the active label; the others are hidden from the accessible name', () => {
+    const html = swapHtml(1);
+    expect(html).toContain('<span data-swap="before" aria-hidden="true"');
+    expect(html).toContain('<span data-swap="in"');
+    expect(html).not.toContain('data-swap="in" aria-hidden');
+  });
+
+  test('crossfades with a slide and blur, and eases its width only with full motion', () => {
+    const tokens = slotTokens(swapHtml(0), 'button-label-swap');
+    expect(tokens).toContain('motion-safe:transition-[width]');
+    expect(tokens).toContain('overflow-x-clip');
+    const label = slotTokens(swapHtml(0).replace('data-swap="in"', 'data-slot="label" data-swap="in"'), 'label');
+    expect(label).toContain('data-[swap=after]:opacity-0');
+    expect(label).toContain('motion-safe:data-[swap=after]:translate-y-1');
+    expect(label).toContain('motion-safe:data-[swap=before]:-translate-y-1');
+    expect(label).toContain('motion-safe:data-[swap=after]:blur-[2px]');
+    expect(label.filter((token) => token.startsWith('data-[swap') && token.includes('translate'))).toEqual([]);
   });
 });

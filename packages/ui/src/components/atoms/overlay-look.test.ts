@@ -8,6 +8,13 @@ import { join } from 'node:path';
 
 const source = (file: string) => readFileSync(join(import.meta.dir, file), 'utf8');
 
+// An atom that uses the shared popup recipe is read together with it.
+const recipe = readFileSync(join(import.meta.dir, '../../lib/popup-motion.ts'), 'utf8');
+const look = (file: string) => {
+  const code = source(file);
+  return code.includes('popupMotion') ? `${code}\n${recipe}` : code;
+};
+
 const floating = [
   'tooltip.tsx',
   'popover.tsx',
@@ -15,14 +22,27 @@ const floating = [
   'dropdown-menu.tsx',
   'context-menu.tsx',
   'select.tsx',
+  'combobox.tsx',
+  'navigation-menu.tsx',
   'dialog.tsx',
   'alert-dialog.tsx',
+];
+
+// Popups that open from a trigger, like the v3-look menu.
+const popups = [
+  'dropdown-menu.tsx',
+  'context-menu.tsx',
+  'select.tsx',
+  'combobox.tsx',
+  'popover.tsx',
+  'hover-card.tsx',
+  'navigation-menu.tsx',
 ];
 
 describe('v3 overlay look', () => {
   for (const file of floating) {
     test(`${file} enters with opacity and scale`, () => {
-      const code = source(file);
+      const code = look(file);
       expect(code).toContain('data-starting-style:opacity-0');
       expect(code).toMatch(/motion-safe:data-starting-style:scale-9[67]/);
       // The tooltip opens on ease-soft (the CSS `ease`); everything else on the strong ease-out.
@@ -36,14 +56,38 @@ describe('v3 overlay look', () => {
 
   for (const file of floating.filter((name) => name !== 'tooltip.tsx')) {
     test(`${file} floats on the overlay shadow, not a ring`, () => {
-      const code = source(file);
+      const code = look(file);
       expect(code).toContain('shadow-overlay');
       expect(code).not.toContain('ring-foreground/10');
     });
   }
 
+  for (const file of popups) {
+    test(`${file} opens like the v3-look menu`, () => {
+      expect(source(file)).toContain('popupMotion');
+      expect(source(file)).not.toContain('ring-foreground/10');
+    });
+  }
+
+  test('the popup recipe: opacity 160ms, scale and translate 200ms from 2px away, closes in 120ms', () => {
+    for (const token of [
+      'origin-(--transform-origin)',
+      'transition-[opacity,scale,translate]',
+      '[transition-duration:160ms,200ms,200ms]',
+      'ease-(--ease-out)',
+      'data-starting-style:opacity-0',
+      'data-ending-style:opacity-0',
+      'data-ending-style:duration-120',
+      'motion-safe:data-starting-style:scale-96',
+      'motion-safe:data-starting-style:-translate-y-0.5',
+      'motion-safe:data-[side=top]:data-starting-style:translate-y-0.5',
+    ]) {
+      expect(recipe).toContain(token);
+    }
+  });
+
   test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
-    for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx']) {
+    for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx', 'navigation-menu.tsx']) {
       expect(source(file)).toContain('rounded-xl');
     }
     for (const file of ['dialog.tsx', 'alert-dialog.tsx']) {
@@ -77,6 +121,18 @@ describe('v3 overlay look', () => {
     }
   });
 
+  test('a dropdown menu is at least 240px wide', () => {
+    expect(source('dropdown-menu.tsx')).toContain('min-w-60');
+  });
+
+  test('destructive menu items hover with a 10% destructive tint in both themes', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
+      const code = source(file);
+      expect(code).toContain('data-[variant=destructive]:focus:bg-destructive/10');
+      expect(code).not.toContain('dark:data-[variant=destructive]:focus:bg-destructive/20');
+    }
+  });
+
   test('destructive menu items read in destructive-text', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
@@ -92,6 +148,20 @@ describe('v3 overlay look', () => {
       expect(code).toContain('bg-scrim');
       expect(code).not.toContain('ease-[cubic-bezier(0.32,0.72,0,1)]');
     }
+  });
+
+  test('a dialog is 440px, has no close button by default, and a 10px header gap', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('showCloseButton = false,');
+    expect(code).toContain('sm:max-w-110');
+    expect(code).toContain('"flex flex-col gap-2.5"');
+  });
+
+  test('a dialog title takes an 18px icon, neutral at 60% or in its tone', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('size-4.5');
+    expect(code).toContain('neutral: "text-foreground/60"');
+    expect(code).toContain('critical: "text-destructive-text"');
   });
 
   test('the toaster defaults to bottom right on the 2xl radius, overlay shadow and a hairline', () => {

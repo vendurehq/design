@@ -22,6 +22,12 @@ import {
   useState,
 } from 'react';
 
+// The dialog's buttons show the ring on any focus, not only keyboard focus:
+// the dialog moves focus itself when it opens, and after a mouse click some
+// browsers do not match :focus-visible. With two buttons, the ring is how you
+// see which one Enter presses.
+const focusRing = 'focus:outline-solid focus:outline-2 focus:outline-offset-2 focus:outline-ring';
+
 interface ConfirmDialogProps {
   title: ReactNode;
   /**
@@ -54,9 +60,11 @@ interface ConfirmDialogProps {
   /** Why confirm is disabled, shown beside the buttons while `confirmDisabled` is set. */
   confirmDisabledReason?: ReactNode;
   /**
-   * The element that takes focus when the dialog opens. By default focus goes
-   * to the first focusable element: a field in `body` if there is one,
-   * otherwise Cancel, so Enter never confirms a destructive action by accident.
+   * The element that takes focus when the dialog opens. By default a field in
+   * `body` takes it. Without one, Confirm takes it, so Enter confirms. A
+   * destructive dialog, or one whose Confirm is disabled, focuses Cancel, so
+   * Enter never destroys by accident. The focused button shows its ring at
+   * once, also when a mouse click opened the dialog.
    */
   initialFocus?: ComponentProps<typeof AlertDialogContent>['initialFocus'];
   /** Uncontrolled mode — the element that opens the dialog. */
@@ -90,6 +98,18 @@ function ConfirmDialog({
   const pendingRef = useRef(false);
   const actualOpen = isControlled ? open : internalOpen;
   const reasonId = useId();
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  const defaultInitialFocus = () => {
+    const field = bodyRef.current?.querySelector<HTMLElement>(
+      'input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [contenteditable="true"]',
+    );
+    if (field) return field;
+    if (variant === 'destructive' || confirmDisabled) return cancelRef.current ?? true;
+    return confirmRef.current ?? true;
+  };
   const showReason = confirmDisabled && !pending && Boolean(confirmDisabledReason);
 
   const setOpen = (next: boolean) => {
@@ -121,7 +141,10 @@ function ConfirmDialog({
       }}
     >
       {children ? <AlertDialogTrigger render={children} /> : null}
-      <AlertDialogContent data-slot="confirm-dialog" initialFocus={initialFocus}>
+      <AlertDialogContent
+        data-slot="confirm-dialog"
+        initialFocus={initialFocus ?? defaultInitialFocus}
+      >
         <AlertDialogHeader>
           {icon ? (
             <AlertDialogTitle className="flex items-center gap-2.5">
@@ -142,7 +165,11 @@ function ConfirmDialog({
           )}
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
-        {body ? <div data-slot="confirm-dialog-body">{body}</div> : null}
+        {body ? (
+          <div ref={bodyRef} data-slot="confirm-dialog-body">
+            {body}
+          </div>
+        ) : null}
         <AlertDialogFooter>
           {showReason ? (
             <p
@@ -153,7 +180,9 @@ function ConfirmDialog({
               {confirmDisabledReason}
             </p>
           ) : null}
-          <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel ref={cancelRef} disabled={pending} className={focusRing}>
+            {cancelLabel}
+          </AlertDialogCancel>
           {/* AlertDialogAction is a plain Button (not a Close), so closing stays
               under our control — the promise decides when the dialog leaves. */}
           {/* While pending, the spinner takes the label's place. The label stays
@@ -164,7 +193,8 @@ function ConfirmDialog({
             aria-busy={pending || undefined}
             aria-describedby={showReason ? reasonId : undefined}
             onClick={handleConfirm}
-            className="relative"
+            ref={confirmRef}
+            className={cn('relative', focusRing)}
           >
             <span data-slot="confirm-dialog-label" className={cn(pending && 'opacity-0')}>
               {confirmLabel}

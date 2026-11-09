@@ -14,6 +14,15 @@ import {
 } from '../src/components/atoms/alert-dialog.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
+  Combobox,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+} from '../src/components/atoms/combobox.tsx';
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -112,6 +121,19 @@ export const TooltipLook: Story = {
   },
 };
 
+/**
+ * The menu motion every popup shares: opacity in 160ms, scale and translate in
+ * 200ms, from 2px away from the trigger. Waits for Base UI to turn the
+ * transition on after positioning.
+ */
+async function expectPopupMotion(element: HTMLElement) {
+  const style = getComputedStyle(element);
+  await waitFor(() => {
+    expect(style.transitionProperty).toBe('opacity, scale, translate');
+    expect(style.transitionDuration).toBe('0.16s, 0.2s, 0.2s');
+  });
+}
+
 export const PopoverLook: Story = {
   render: () => (
     <Popover>
@@ -126,7 +148,9 @@ export const PopoverLook: Story = {
   ),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Dimensions' }));
-    await expectOverlaySurface(await findSlot('popover-content'), '8px');
+    const popover = await findSlot('popover-content');
+    await expectOverlaySurface(popover, '8px');
+    await expectPopupMotion(popover);
   },
 };
 
@@ -152,7 +176,10 @@ export const DropdownMenuLook: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Actions' }));
     const menu = await findSlot('dropdown-menu-content');
     await expectOverlaySurface(menu, '8px');
+    await expectPopupMotion(menu);
     await expect(getComputedStyle(menu).paddingTop).toBe('5px');
+    // offsetWidth ignores the entrance scale. Short items still get a 240px menu.
+    await expect(menu.offsetWidth).toBeGreaterThanOrEqual(240);
 
     const item = body().getByRole('menuitem', { name: 'Settings' });
     const itemStyle = getComputedStyle(item);
@@ -171,6 +198,10 @@ export const DropdownMenuLook: Story = {
     probe.className = 'text-destructive-text';
     destructive.append(probe);
     await expect(getComputedStyle(destructive).color).toBe(getComputedStyle(probe).color);
+    // It hovers with a 10% destructive tint, in light and dark.
+    probe.className = 'bg-destructive/10';
+    await userEvent.hover(destructive);
+    await waitFor(() => expect(getComputedStyle(destructive).backgroundColor).toBe(getComputedStyle(probe).backgroundColor));
     probe.remove();
   },
 };
@@ -195,9 +226,43 @@ export const SelectLook: Story = {
   ),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
-    await expectOverlaySurface(await findSlot('select-content'), '8px');
+    const popup = await findSlot('select-content');
+    await expectOverlaySurface(popup, '8px');
+    await expectPopupMotion(popup);
     const option = await body().findByRole('option', { name: 'US dollar' });
     await expect(option.offsetHeight).toBe(34);
+  },
+};
+
+export const ComboboxLook: Story = {
+  render: () => (
+    <Combobox items={['Austria', 'France', 'Germany']}>
+      <ComboboxTrigger aria-label="Country" className="w-64">
+        <ComboboxValue placeholder="Select a country" />
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <ComboboxInput aria-label="Search countries" placeholder="Search" showTrigger={false} />
+        <ComboboxList>
+          {(item: string) => (
+            <ComboboxItem key={item} value={item}>
+              {item}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Country' }));
+    const popup = await findSlot('combobox-content');
+    await expectOverlaySurface(popup, '8px');
+    await expectPopupMotion(popup);
+    // The overlay shadow alone, with no ring on top.
+    const probe = document.createElement('div');
+    probe.className = 'shadow-overlay';
+    popup.parentElement?.append(probe);
+    await expect(getComputedStyle(popup).boxShadow).toBe(getComputedStyle(probe).boxShadow);
+    probe.remove();
   },
 };
 
