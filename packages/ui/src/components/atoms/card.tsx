@@ -143,7 +143,7 @@ function CardTable({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-table"
       className={cn(
-        "-my-(--card-gap) [&_tr>*:first-child]:pl-(--card-ps) [&_tr>*:last-child]:pr-(--card-px)",
+        "-my-(--card-gap) [&_tr>*:first-child]:pl-[calc(var(--card-ps)+var(--column-indent,0px))] [&_tr>*:last-child]:pr-(--card-px)",
         className
       )}
       {...props}

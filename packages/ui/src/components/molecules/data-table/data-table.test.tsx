@@ -14,7 +14,9 @@ import {
   getSelectedOriginals,
   getSelectedRowIds,
   isControlled,
+  measureColumnIndents,
   resolveSlot,
+  sameIndents,
 } from './data-table-helpers.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
@@ -170,7 +172,7 @@ describe('DataTable loading state', () => {
     expect(count(body, /data-slot="data-table-skeleton-line"/g)).toBe(4);
     expect(count(body, /class="[^"]*size-8/g)).toBe(2);
     expect(count(body, /relative w-0 p-0 pl-0!/g)).toBe(2);
-    expect(count(body, /class="[^"]*pl-8/g)).toBe(2);
+    expect(count(body, /class="[^"]*pl-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
     expect(count(body, /class="[^"]*py-0/g)).toBe(2);
   });
 
@@ -891,5 +893,121 @@ describe('isControlled', () => {
 
   test('an absent config is uncontrolled', () => {
     expect(isControlled(undefined)).toBe(false);
+  });
+});
+
+// The browser measure (alignment within 0.5px, nothing leaves its cell) runs in
+// the `Molecules/DataTable/Cell Text Alignment` story. These cover the wiring
+// and the arithmetic without a DOM.
+describe('cell text alignment', () => {
+  test('body cells pull their first element back by its content inset', () => {
+    const markup = renderToStaticMarkup(
+      <DataTable<Country> rows={rows} columns={columns} getRowId={(row) => row.id} />,
+    );
+    expect(markup).toContain('data-column-id="name"');
+    expect(markup).toContain('[:where(&amp;&gt;:first-child)]:-ms-(--content-inset)');
+  });
+
+  test('the sort header pulls back by its own content inset', () => {
+    const markup = renderToStaticMarkup(
+      <DataTable<Country>
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={{ defaultValue: [] }}
+      />,
+    );
+    expect(markup).toContain('-ms-(--content-inset)');
+    expect(markup).not.toContain('-ml-2.5');
+  });
+});
+
+describe('measureColumnIndents', () => {
+  // A cell starts at x=0 with 8px padding on each side, unless set. `content`
+  // is the left edge of its first element, `inner` that of the element inside
+  // it (content one wrapper deep). `indent` is the column indent already
+  // applied, which the padding includes.
+  type FakeCell = {
+    columnId: string;
+    start?: number;
+    end?: number;
+    indent?: number;
+    content?: number;
+    inner?: number;
+  };
+
+  const box = (left: number) => ({
+    getBoundingClientRect: () => ({ left, right: left + 40, width: 40 }) as DOMRect,
+  });
+
+  function measure(cells: FakeCell[]) {
+    const styles = new Map<object, object>();
+    const elements = cells.map((cell) => {
+      const inner = cell.inner === undefined ? null : box(cell.inner);
+      const first =
+        cell.content === undefined ? null : { ...box(cell.content), firstElementChild: inner };
+      const element = {
+        ...box(0),
+        firstElementChild: first,
+        dataset: { columnId: cell.columnId },
+        style: { getPropertyValue: () => (cell.indent ? `${cell.indent}px` : '') },
+      };
+      styles.set(element, {
+        direction: 'ltr',
+        paddingInlineStart: `${(cell.start ?? 8) + (cell.indent ?? 0)}px`,
+        paddingInlineEnd: `${cell.end ?? 8}px`,
+      });
+      return element;
+    });
+    const original = globalThis.getComputedStyle;
+    globalThis.getComputedStyle = ((element: object) =>
+      styles.get(element)) as unknown as typeof getComputedStyle;
+    try {
+      return measureColumnIndents({
+        querySelectorAll: () => elements,
+      } as unknown as HTMLTableElement);
+    } finally {
+      globalThis.getComputedStyle = original;
+    }
+  }
+
+  test('content within the gutter needs no indent', () => {
+    expect(
+      measure([
+        { columnId: 'sku', content: 0 },
+        { columnId: 'name', content: 8 },
+      ]),
+    ).toEqual({});
+  });
+
+  test('a column indents by its widest overshoot', () => {
+    expect(
+      measure([
+        { columnId: 'state', content: -19 },
+        { columnId: 'state', content: -2 },
+        { columnId: 'state', content: 8 },
+        { columnId: 'sku', content: -1 },
+      ]),
+    ).toEqual({ state: 19, sku: 1 });
+  });
+
+  test('content one wrapper deep counts too', () => {
+    expect(measure([{ columnId: 'state', content: 8, inner: -19 }])).toEqual({ state: 19 });
+  });
+
+  test('in an edge column the content keeps the card inset clear, less one gutter', () => {
+    // 20px card inset: a 20px pull-back may only take the 8px gutter.
+    expect(measure([{ columnId: 'state', start: 20, content: 0 }])).toEqual({ state: 12 });
+  });
+
+  test('the measure is stable once the indent is applied', () => {
+    // Indented by 19px, the chip now starts on the cell edge.
+    expect(measure([{ columnId: 'state', indent: 19, content: 0 }])).toEqual({ state: 19 });
+  });
+
+  test('sameIndents compares by value', () => {
+    expect(sameIndents({ a: 1 }, { a: 1 })).toBe(true);
+    expect(sameIndents({ a: 1 }, { a: 2 })).toBe(false);
+    expect(sameIndents({ a: 1 }, {})).toBe(false);
   });
 });

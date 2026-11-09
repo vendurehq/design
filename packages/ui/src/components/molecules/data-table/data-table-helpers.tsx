@@ -71,3 +71,59 @@ export function getSelectedOriginals<TData>(
 export function getSelectedRowIds(selection: RowSelectionState): string[] {
   return Object.keys(selection).filter((id) => selection[id]);
 }
+
+/**
+ * How far each column must indent its header and cells, so that cell content
+ * that pulls back by its own start inset (`--content-inset`) stays inside the
+ * column gutter. Keyed by `data-column-id`; a column that needs no indent is
+ * left out.
+ *
+ * Content may pull back into its start padding by up to the gutter between
+ * two columns: the cell's end padding. In a middle column that reaches the
+ * cell edge. The first column's start padding is the card's inset and the
+ * leading column's holds the selection checkbox, so there the content keeps
+ * the rest of the padding clear. A bigger pull-back (a chip with a leading
+ * icon) indents the column by the rest instead, and its header and plain-text
+ * cells follow.
+ *
+ * The measure reads boxes, so it also covers a consumer's own margin. It
+ * checks the cell's first element and that element's first element (content
+ * one wrapper deep). The result does not change with the indent already
+ * applied, so a second measure returns the same result.
+ */
+export function measureColumnIndents(table: HTMLTableElement): Record<string, number> {
+  const indents: Record<string, number> = {};
+  // Array.from, not for…of: a consumer's lib may not type NodeList as iterable.
+  const cells = Array.from(
+    table.querySelectorAll<HTMLElement>(':scope > tbody > tr > td[data-column-id]'),
+  );
+  for (const cell of cells) {
+    const id = cell.dataset.columnId;
+    const first = cell.firstElementChild;
+    if (id == null || first == null) continue;
+    const style = getComputedStyle(cell);
+    const rtl = style.direction === 'rtl';
+    const start = (rect: DOMRect) => (rtl ? -rect.right : rect.left);
+    const cellStart = start(cell.getBoundingClientRect());
+    const indent = Number.parseFloat(cell.style.getPropertyValue('--column-indent')) || 0;
+    const padding = Number.parseFloat(style.paddingInlineStart) - indent;
+    const gutter = Math.min(padding, Number.parseFloat(style.paddingInlineEnd));
+    // The nearest the content may start to the cell edge, without the indent.
+    const clear = padding - gutter;
+    for (const content of [first, first.firstElementChild]) {
+      if (content == null) continue;
+      const rect = content.getBoundingClientRect();
+      if (rect.width === 0) continue;
+      // Rounded to a hundredth of a pixel, so float noise never moves the text.
+      const need = Math.round((clear + indent - (start(rect) - cellStart)) * 100) / 100;
+      if (need > (indents[id] ?? 0)) indents[id] = need;
+    }
+  }
+  return indents;
+}
+
+/** Shallow equality of two indent maps, so an unchanged measure keeps its state. */
+export function sameIndents(a: Record<string, number>, b: Record<string, number>): boolean {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+}

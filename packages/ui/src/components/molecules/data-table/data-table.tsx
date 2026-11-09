@@ -59,7 +59,13 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
-import { buildDisplayColumns, getSelectedRowIds, resolveSlot } from './data-table-helpers.tsx';
+import {
+  buildDisplayColumns,
+  getSelectedRowIds,
+  measureColumnIndents,
+  resolveSlot,
+  sameIndents,
+} from './data-table-helpers.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
@@ -370,13 +376,46 @@ function DataTable<TData>({
     // gutter arrangement out; important because CardTable's descendant rule
     // out-specifies a plain utility on the cell.
     if (generated === 'select') return 'relative w-0 p-0 pl-0!';
-    if (id === leadingColumnId) return 'pl-8';
+    // Every other cell adds its column's indent (`--column-indent`, see
+    // `columnIndents`) to its start padding. CardTable's edge-cell padding
+    // adds it too.
+    if (id === leadingColumnId) return 'pl-[calc(var(--spacing)*8+var(--column-indent,0px))]';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
     // row; `align-middle` on the cell keeps it centred.
-    if (generated === 'actions') return 'py-0';
-    return undefined;
+    return cn(
+      'pl-[calc(var(--spacing)*2+var(--column-indent,0px))]',
+      generated === 'actions' && 'py-0',
+    );
   };
+  // The cell text lines up with the header text. A styled cell content (a
+  // Badge, a StatusBadge chip, a Button, an IdChip) sets `--content-inset` to
+  // the distance from its box to its first letter, and the cell pulls its
+  // first element back by that much (`contentInsetPull` in the atoms covers
+  // content one wrapper deep). The rule has zero specificity, so a margin the
+  // content sets itself still wins. The cell resets the variable, so a plain
+  // wrapper element does not inherit one.
+  const bodyCellClass = '[--content-inset:0px] [:where(&>:first-child)]:-ms-(--content-inset)';
+
+  // A pull-back that reaches past the cell's start padding indents the whole
+  // column instead (see measureColumnIndents), so no content leaves its cell.
+  // Measured before paint, whenever the rows or the visible columns change.
+  const tableRef = React.useRef<HTMLTableElement>(null);
+  const [columnIndents, setColumnIndents] = React.useState<Record<string, number>>({});
+  const visibleColumnKey = table
+    .getVisibleLeafColumns()
+    .map((column) => column.id)
+    .join(' ');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the rows and visible columns are what change the cell content
+  React.useLayoutEffect(() => {
+    if (!tableRef.current) return;
+    const next = measureColumnIndents(tableRef.current);
+    setColumnIndents((current) => (sameIndents(current, next) ? current : next));
+  }, [bodyRows, visibleColumnKey, isLoading]);
+  const columnIndentStyle = (id: string): React.CSSProperties | undefined =>
+    columnIndents[id]
+      ? ({ '--column-indent': `${columnIndents[id]}px` } as React.CSSProperties)
+      : undefined;
 
   // Loading cells follow the real column layout (same ids, same cell classes),
   // so a consumer's `skeletonCells` entry can match its loaded cell's height.
@@ -499,7 +538,7 @@ function DataTable<TData>({
       )}
 
       <CardTable>
-        <Table>
+        <Table ref={tableRef}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="group/header-row">
@@ -511,7 +550,9 @@ function DataTable<TData>({
                     <TableHead
                       key={headerCell.id}
                       aria-sort={ariaSort(sorting != null, headerCell.column)}
+                      data-column-id={headerCell.column.id}
                       className={columnClass(headerCell.column.id)}
+                      style={columnIndentStyle(headerCell.column.id)}
                     >
                       {sorting != null && !headerCell.isPlaceholder ? (
                         <DataTableColumnHeader
@@ -539,7 +580,12 @@ function DataTable<TData>({
                     </TableCell>
                   ) : (
                     table.getVisibleLeafColumns().map((column) => (
-                      <TableCell key={column.id} className={columnClass(column.id)}>
+                      <TableCell
+                        key={column.id}
+                        data-column-id={column.id}
+                        className={columnClass(column.id)}
+                        style={columnIndentStyle(column.id)}
+                      >
                         {skeletonCell(column.id)}
                       </TableCell>
                     ))
@@ -564,7 +610,13 @@ function DataTable<TData>({
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className={columnClass(cell.column.id)}>
+                        <TableCell
+                          key={cell.id}
+                          data-column-id={cell.column.id}
+                          data-content-inset-cell=""
+                          className={cn(columnClass(cell.column.id), bodyCellClass)}
+                          style={columnIndentStyle(cell.column.id)}
+                        >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
