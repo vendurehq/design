@@ -5,7 +5,7 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
-import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
+import { popupMotion } from "../../lib/popup-motion.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import {
   InputGroup,

@@ -3,7 +3,7 @@
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
+import { popupMotion } from "../../lib/popup-motion.ts"
 
 function HoverCard({ ...props }: PreviewCardPrimitive.Root.Props) {
   return <PreviewCardPrimitive.Root data-slot="hover-card" {...props} />

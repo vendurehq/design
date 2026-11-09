@@ -4,7 +4,7 @@ import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
+import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {

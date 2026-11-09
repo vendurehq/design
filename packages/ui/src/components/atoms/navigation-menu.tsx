@@ -2,7 +2,7 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cva } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
+import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronDownIcon } from "lucide-react"
 
 function NavigationMenu({

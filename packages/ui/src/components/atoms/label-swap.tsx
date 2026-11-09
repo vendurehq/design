@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { useActiveLabelSize } from "@vendure-io/ui/hooks/use-active-label-size"
+import { useActiveLabelSize } from "../../hooks/use-active-label-size.ts"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 /**
