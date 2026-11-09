@@ -1,10 +1,12 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
+import { slotTag, slotTokens, tagTokens } from '../../test/slot-tokens.ts';
+import { ArrowLink } from './arrow-link.tsx';
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBack,
+  PageHeaderBackRow,
   PageHeaderContent,
   PageHeaderFact,
   PageHeaderFacts,
@@ -37,20 +39,50 @@ test('PageHeaderBack is a link with a leading chevron, not an arrow', () => {
 
 test('PageHeaderBack: muted 13px text that reaches foreground; the chevron moves 2px back', () => {
   const html = renderToStaticMarkup(<PageHeaderBack href="/">Deployments</PageHeaderBack>);
-  const link = tagTokens(html.match(/<a[^>]*>/)?.[0] ?? '');
+  const link = slotTokens(html, 'page-header-back');
   expect(link).toEqual(
-    expect.arrayContaining(['text-style-body', 'text-muted-foreground', 'hover:text-foreground']),
+    expect.arrayContaining([
+      'text-sm',
+      'font-medium',
+      'text-muted-foreground',
+      'hover:text-foreground',
+    ]),
   );
-  const chevron = tagTokens(slotTag(html, 'page-header-back-chevron'));
-  expect(chevron).toEqual(
+  expect(link).not.toContain('text-foreground-secondary');
+  expect(slotTokens(html, 'page-header-back-chevron')).toEqual(
     expect.arrayContaining([
       'size-3.75',
       'opacity-45',
-      'group-hover/page-header-back:-translate-x-0.5',
-      'group-hover/page-header-back:opacity-100',
+      'group-hover/arrow-link:opacity-100',
+      'group-hover/arrow-link:-translate-x-0.5',
+      'group-focus-visible/arrow-link:-translate-x-0.5',
+      'rtl:group-hover/arrow-link:translate-x-0.5',
       'motion-reduce:translate-none!',
     ]),
   );
+});
+
+test('PageHeaderBack and ArrowLink share one look; only the tone and direction differ', () => {
+  const back = renderToStaticMarkup(<PageHeaderBack href="/">Deployments</PageHeaderBack>);
+  const forward = renderToStaticMarkup(<ArrowLink href="/">All deployments</ArrowLink>);
+  const tone = /^text-(muted-foreground|foreground-secondary)$/;
+  expect(slotTokens(back, 'page-header-back').filter((t) => !tone.test(t))).toEqual(
+    slotTokens(forward, 'arrow-link').filter((t) => !tone.test(t)),
+  );
+  const move = /translate-x|^lucide-/;
+  expect(slotTokens(back, 'page-header-back-chevron').filter((t) => !move.test(t))).toEqual(
+    slotTokens(forward, 'arrow-link-arrow').filter((t) => !move.test(t)),
+  );
+});
+
+test('PageHeaderBackRow is the row above the header, not a link', () => {
+  const html = renderToStaticMarkup(
+    <PageHeaderBackRow>
+      <PageHeaderBack href="/">Deployments</PageHeaderBack>
+    </PageHeaderBackRow>,
+  );
+  expect(html).toStartWith('<div');
+  expect(html).toContain('data-slot="page-header-back-row"');
 });
 
 test('PageHeaderBack renders a router link through render', () => {

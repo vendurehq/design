@@ -28,7 +28,7 @@ const outset = [
   'atoms/slider.tsx',
   'atoms/resizable.tsx',
   'atoms/navigation-menu.tsx',
-  'molecules/arrow-link.tsx',
+  'molecules/direction-link.tsx',
   'molecules/relative-time.tsx',
   'molecules/skip-link.tsx',
   'molecules/data-table/data-table-filters.tsx',
