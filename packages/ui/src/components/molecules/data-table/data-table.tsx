@@ -57,8 +57,8 @@ import {
   ListHeaderControls,
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
+import { ListRowChevron } from '@vendure-io/ui/components/molecules/list-row';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
@@ -162,16 +162,9 @@ function DataTableRowLink({
         children: (
           <>
             {children}
-            <ChevronRight
+            <ListRowChevron
               data-slot="data-table-row-chevron"
-              aria-hidden="true"
-              strokeWidth={1.75}
-              className={cn(
-                'pointer-events-none absolute end-(--card-px) top-1/2 size-3.75 -translate-y-1/2 text-muted-foreground opacity-0 rtl:-scale-x-100',
-                'transition-[opacity,translate] duration-(--transition-duration-fast) ease-(--ease-out)',
-                'motion-safe:-translate-x-0.75 motion-safe:rtl:translate-x-0.75',
-                'group-hover/row:translate-x-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:translate-x-0 group-has-[:focus-visible]/row:opacity-100',
-              )}
+              className="pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2"
             />
           </>
         ),
