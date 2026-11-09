@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Toggle } from '../src/components/atoms/toggle.tsx';
 import { ToggleGroup, ToggleGroupItem } from '../src/components/atoms/toggle-group.tsx';
 import { AlignLeft, AlignCenter, AlignRight, Bold } from 'lucide-react';
+import { expect, within } from 'storybook/test';
 
 const meta = {
   title: 'Atoms/Forms/ToggleGroup',
@@ -114,4 +115,37 @@ export const States: Story = {
       <StatesPanel dark />
     </div>
   ),
+};
+
+/** The fill and text colour a utility class gives, read from a probe. */
+function probeColours(className: string) {
+  const probe = document.createElement('span');
+  probe.className = className;
+  document.body.append(probe);
+  const { backgroundColor, color } = getComputedStyle(probe);
+  probe.remove();
+  return { backgroundColor, color };
+}
+
+/**
+ * A pressed item is filled with the accent tint and keeps the foreground
+ * text. In the outline variant its border stays the colour of the group's.
+ */
+export const PressedTint: Story = {
+  render: () => (
+    <ToggleGroup variant="outline" defaultValue={['center']} aria-label="Alignment">
+      <ToggleGroupItem value="left" aria-label="Align left"><AlignLeft /></ToggleGroupItem>
+      <ToggleGroupItem value="center" aria-label="Align center"><AlignCenter /></ToggleGroupItem>
+      <ToggleGroupItem value="right" aria-label="Align right"><AlignRight /></ToggleGroupItem>
+    </ToggleGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const pressed = getComputedStyle(canvas.getByRole('button', { name: 'Align center' }));
+    const unpressed = getComputedStyle(canvas.getByRole('button', { name: 'Align right' }));
+    const tint = probeColours('bg-accent text-foreground');
+    await expect(pressed.backgroundColor).toBe(tint.backgroundColor);
+    await expect(pressed.color).toBe(tint.color);
+    await expect(pressed.borderTopColor).toBe(unpressed.borderTopColor);
+  },
 };
