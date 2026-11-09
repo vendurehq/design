@@ -153,6 +153,8 @@ export const DropdownMenuLook: Story = {
     const menu = await findSlot('dropdown-menu-content');
     await expectOverlaySurface(menu, '8px');
     await expect(getComputedStyle(menu).paddingTop).toBe('5px');
+    // offsetWidth ignores the entrance scale. Short items still get a 240px menu.
+    await expect(menu.offsetWidth).toBeGreaterThanOrEqual(240);
 
     const item = body().getByRole('menuitem', { name: 'Settings' });
     const itemStyle = getComputedStyle(item);
@@ -171,6 +173,10 @@ export const DropdownMenuLook: Story = {
     probe.className = 'text-destructive-text';
     destructive.append(probe);
     await expect(getComputedStyle(destructive).color).toBe(getComputedStyle(probe).color);
+    // It hovers with a 10% destructive tint, in light and dark.
+    probe.className = 'bg-destructive/10';
+    await userEvent.hover(destructive);
+    await waitFor(() => expect(getComputedStyle(destructive).backgroundColor).toBe(getComputedStyle(probe).backgroundColor));
     probe.remove();
   },
 };
