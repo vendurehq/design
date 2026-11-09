@@ -6,15 +6,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 const toggleVariants = cva(
-  // Pressed uses the solid primary pair, like checked Checkbox, Radio and
-  // Switch: bg-muted was the hover shade and nearly vanished on dark overlays.
+  // Pressed is the accent tint with foreground text, as in the v3 look. Hover
+  // is the muted fill, so a hovered item never reads as pressed; a pressed item
+  // keeps its tint on hover. The outline border keeps its colour when pressed,
+  // so a pressed item stays part of its group.
   // Base UI sets both aria-pressed and data-pressed; both are styled.
-  "hover:text-foreground aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/80 aria-pressed:hover:text-primary-foreground data-pressed:bg-primary data-pressed:text-primary-foreground data-pressed:hover:bg-primary/80 data-pressed:hover:text-primary-foreground focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4 group/toggle hover:bg-muted inline-flex items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "hover:text-foreground aria-pressed:bg-accent aria-pressed:text-foreground aria-pressed:hover:bg-accent data-pressed:bg-accent data-pressed:text-foreground data-pressed:hover:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4 group/toggle hover:bg-muted inline-flex items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default: "bg-transparent",
-        outline: "border-input hover:bg-muted aria-pressed:border-primary data-pressed:border-primary border bg-transparent",
+        outline: "border-input hover:bg-muted border bg-transparent",
       },
       size: {
         default: "h-9 min-w-9 px-2",
