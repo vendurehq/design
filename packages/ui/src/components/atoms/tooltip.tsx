@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 
 import { cn } from "@vendure-io/ui/lib/utils"
@@ -47,11 +48,11 @@ function TooltipContent({
         sideOffset={sideOffset}
         className="isolate z-50"
       >
-        {/* No arrow: the popup scales in from the trigger side (--transform-origin) in 125ms (tooltip-enter) and leaves in 100ms (fast), both on ease-soft (the CSS `ease`). data-instant marks a tooltip that opens while another one is showing, so it skips the transition. */}
+        {/* No arrow: the popup scales in from the trigger side (--transform-origin) in 125ms (tooltip-enter) and leaves in 100ms (fast), both on ease-soft (the CSS `ease`). data-instant marks a tooltip that opens while another one is showing, so it skips the transition.  A TooltipLabelSwap inside clips to the bubble, so a wider label that leaves never shows past its edge. */}
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "bg-foreground text-background z-50 w-fit max-w-xs origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-instant:transition-none",
+            "bg-foreground text-background z-50 w-fit max-w-xs origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-instant:transition-none has-data-[slot=tooltip-label-swap]:overflow-hidden",
             className
           )}
           {...props}
@@ -63,4 +64,57 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+/**
+ * A tooltip label that changes in place, such as "Copy" → "Copied". The
+ * labels share one grid cell and `active` picks the one that shows. A label
+ * before it leaves 6px upward, a label after it waits 6px below, both faded
+ * out with a 2px blur. The part eases to the width of the active label, so
+ * the bubble never snaps. With reduced motion the labels only crossfade; the
+ * width still eases, so the wider label never crowds the bubble edge.
+ */
+function TooltipLabelSwap({
+  labels,
+  active,
+  className,
+  style,
+  ...props
+}: Omit<React.ComponentProps<"span">, "children"> & {
+  labels: readonly React.ReactNode[]
+  active: number
+}) {
+  const refs = React.useRef<(HTMLSpanElement | null)[]>([])
+  const [width, setWidth] = React.useState<number>()
+  // offsetWidth ignores the popup's entrance scale, which getBoundingClientRect would include.
+  React.useLayoutEffect(() => {
+    const label = refs.current[active]
+    if (label) setWidth(label.offsetWidth)
+  }, [active, labels])
+  return (
+    <span
+      data-slot="tooltip-label-swap"
+      className={cn(
+        "grid grid-cols-[100%] justify-items-center whitespace-nowrap transition-[width] duration-tooltip-resize ease-drawer",
+        className
+      )}
+      style={width === undefined ? style : { ...style, width }}
+      {...props}
+    >
+      {labels.map((label, index) => (
+        <span
+          // The labels are positions in a fixed list, so the index is their identity.
+          key={index}
+          ref={(element) => {
+            refs.current[index] = element
+          }}
+          data-swap={index === active ? "in" : index < active ? "before" : "after"}
+          aria-hidden={index === active ? undefined : true}
+          className="col-start-1 row-start-1 [transition:opacity_var(--transition-duration-tooltip-label-fade)_var(--ease-soft),translate_var(--transition-duration-tooltip-label-move)_var(--ease-out),filter_var(--transition-duration-tooltip-label-fade)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-1.5 motion-safe:data-[swap=before]:-translate-y-1.5 motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]"
+        >
+          {label}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipLabelSwap, TooltipProvider }

@@ -1,6 +1,11 @@
 'use client';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipLabelSwap,
+  TooltipTrigger,
+} from '@vendure-io/ui/components/atoms/tooltip';
 import { CopyButton, useCopyAction } from '@vendure-io/ui/components/molecules/copyable-text';
 import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
 import { cn } from '@vendure-io/ui/lib/utils';
@@ -62,7 +67,8 @@ const chipCopyButtonProps = {
 
 /**
  * Tooltip text of a whole-chip copy target: "Copy" until the copy succeeds,
- * then "Copied". `detail` (the full value of a shortened chip) sits above it.
+ * then "Copied", swapped in one motion by `TooltipLabelSwap`. `detail` (the
+ * full value of a shortened chip) sits above it.
  */
 function ChipCopyTooltip({
   chip,
@@ -83,12 +89,7 @@ function ChipCopyTooltip({
       <TooltipTrigger render={chip} closeOnClick={false} />
       <TooltipContent>
         {detail ? <span className="block font-mono">{detail}</span> : null}
-        <span
-          key={copied ? 'copied' : 'copy'}
-          className="block animate-in fade-in-0 duration-moderate ease-out motion-safe:slide-in-from-bottom-1"
-        >
-          {copied ? copiedLabel : copyLabel}
-        </span>
+        <TooltipLabelSwap labels={[copyLabel, copiedLabel]} active={copied ? 1 : 0} />
       </TooltipContent>
     </Tooltip>
   );

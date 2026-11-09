@@ -40,6 +40,12 @@ export const duration = {
   // The tooltip opens on its own beat, a touch quicker than `moderate`.
   // It leaves in `fast`. Only TooltipContent uses it.
   tooltipEnter: '125ms',
+  // A tooltip label that changes in place (Copy → Copied): the labels fade
+  // and blur in `tooltipLabelFade`, slide in `tooltipLabelMove`, and the
+  // bubble eases to the new width in `tooltipResize`.
+  tooltipLabelFade: '180ms',
+  tooltipLabelMove: '260ms',
+  tooltipResize: '320ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a
