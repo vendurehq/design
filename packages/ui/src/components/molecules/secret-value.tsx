@@ -7,6 +7,7 @@ import {
   type CopyButtonProps,
 } from '@vendure-io/ui/components/molecules/copyable-text';
 import { chipChromeClass } from '@vendure-io/ui/components/molecules/id-chip';
+import { cn } from '@vendure-io/ui/lib/utils';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import type * as React from 'react';
 import { useReducer, useRef } from 'react';
@@ -41,6 +42,18 @@ interface SecretValueProps extends Omit<React.ComponentProps<'span'>, 'children'
 }
 
 const MASK = '••••••••';
+
+// The trailing buttons look like the IdChip copy button: a 13px icon in the
+// chip's text colour at 55%, and the chip's 6px end padding as the visible
+// inset. Each one is its own control (the chip has two), so it brightens on
+// its own hover, and its ::after widens the target to 21px. A loading spinner
+// and the copied check keep full strength.
+const CHIP_BUTTON_CLASS = cn(
+  "relative size-3.25 shrink-0 [&_svg:not([class*='size-'])]:size-3.25 after:absolute after:-inset-1",
+  'text-inherit hover:text-foreground hover:bg-transparent dark:hover:bg-transparent',
+  '[&>svg:not([role=status])]:opacity-55 hover:[&>svg:not([role=status])]:opacity-100',
+  '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55 hover:[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-100',
+);
 
 type RevealState =
   | { status: 'hidden' }
@@ -118,7 +131,8 @@ function SecretValue({
       data-slot="secret-value"
       data-state={state.status}
       role="group"
-      className={chipChromeClass(copyable, className)}
+      // The reveal button always ends the chip, so it always takes the 6px end.
+      className={chipChromeClass(true, className)}
       {...props}
     >
       {/* The mask is fixed: no fake prefix or suffix. The value is visible text
@@ -146,7 +160,7 @@ function SecretValue({
         aria-label={revealed ? hideLabel : showLabel}
         aria-busy={loading || undefined}
         aria-disabled={loading || undefined}
-        className="text-muted-foreground hover:text-foreground relative size-4 shrink-0 after:absolute after:-inset-1"
+        className={CHIP_BUTTON_CLASS}
         onClick={() => {
           if (loading) return;
           if (revealed) hide();
@@ -163,7 +177,7 @@ function SecretValue({
           onCopyError={onCopyError}
           copyLabel={copyLabel}
           copiedLabel={copiedLabel}
-          className="relative size-4 shrink-0 after:absolute after:-inset-1"
+          className={CHIP_BUTTON_CLASS}
         />
       ) : null}
       {state.status === 'error' ? (
