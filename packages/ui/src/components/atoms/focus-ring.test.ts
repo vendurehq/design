@@ -1,19 +1,16 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fieldNames, fieldTokens } from '../../test/fields';
 
 // The v3 focus ring: a 2px solid `ring` outline on focus-visible. An outline
 // never changes the box, so the ring never shifts layout. Controls take it
 // 2px outside their edge; rows and items inside lists, menus, tables and scroll
 // boxes take it 2px inside, where an outside ring would be clipped. Several
-// parts render in a portal or need a browser, so these checks read the source.
+// parts render in a portal or need a browser, so most checks read the source;
+// the fields render, so the checks read the classes they end up with.
 
-const fieldRecipe = readFileSync(join(import.meta.dir, '../../lib/field-surface.ts'), 'utf8');
-// A field that uses the shared field recipe is read together with it.
-const source = (file: string) => {
-  const code = readFileSync(join(import.meta.dir, '..', file), 'utf8');
-  return code.includes('fieldSurface') ? `${code}\n${fieldRecipe}` : code;
-};
+const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
 
 const OUTSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:outline-offset-2'];
 const INSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:-outline-offset-2'];
@@ -34,12 +31,11 @@ const outset = [
   'molecules/data-table/data-table-filters.tsx',
 ];
 
+// The v3 field draws its ring inside, over its hairline: see the rendered
+// field checks below.
+const fieldFiles = ['atoms/input.tsx', 'atoms/textarea.tsx', 'atoms/native-select.tsx', 'atoms/combobox.tsx', 'atoms/input-group.tsx'];
+
 const inset = [
-  // The v3 field: the ring sits inside the tinted field, over its hairline.
-  'atoms/input.tsx',
-  'atoms/textarea.tsx',
-  'atoms/native-select.tsx',
-  'atoms/combobox.tsx',
   'atoms/accordion.tsx',
   'atoms/tabs.tsx',
   'atoms/item.tsx',
@@ -85,6 +81,14 @@ describe('v3 focus ring', () => {
     });
   }
 
+  // Rendered, so a class that overrides the field recipe's ring fails.
+  for (const name of fieldNames) {
+    test(`${name} draws the ring 2px inside, over its hairline`, () => {
+      const tokens = fieldTokens(name);
+      for (const token of [...INSET, 'focus-visible:outline-ring']) expect({ name, token, rendered: tokens.includes(token) }).toEqual({ name, token, rendered: true });
+    });
+  }
+
   test('sidebar items, labels and actions take the inset ring in the sidebar ring slot', () => {
     const code = source('atoms/sidebar.tsx');
     for (const token of INSET) expect(code).toContain(token);
@@ -113,10 +117,10 @@ describe('v3 focus ring', () => {
     }
     // Fields have no border: their hairline is an inset shadow, so invalid
     // swaps the shadow colour.
-    for (const file of ['atoms/input.tsx', 'atoms/textarea.tsx', 'atoms/select.tsx']) {
-      const code = source(file);
-      expect(code).toContain('aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]');
-      expect(code).toContain('aria-invalid:focus-visible:outline-destructive');
+    for (const name of ['Input', 'Textarea', 'Select'] as const) {
+      const tokens = fieldTokens(name);
+      expect(tokens).toContain('aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]');
+      expect(tokens).toContain('aria-invalid:focus-visible:outline-destructive');
     }
   });
 
@@ -135,7 +139,7 @@ describe('v3 focus ring', () => {
   });
 
   test('no part keeps the retired halo ring', () => {
-    const files = [...new Set([...outset, ...inset, 'atoms/sidebar.tsx', 'atoms/calendar.tsx', 'molecules/file-dropzone.tsx'])];
+    const files = [...new Set([...outset, ...inset, ...fieldFiles, 'atoms/sidebar.tsx', 'atoms/calendar.tsx', 'molecules/file-dropzone.tsx'])];
     for (const file of files) {
       const code = source(file);
       for (const token of retired) expect({ file, token, found: code.includes(token) }).toEqual({ file, token, found: false });
