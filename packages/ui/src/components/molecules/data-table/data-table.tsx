@@ -143,7 +143,12 @@ const ROW_CHEVRON_SLOT_CLASS =
  * the end of the row: it fades in and slides 3px toward the end (fade only
  * under reduced motion). It is decorative: the link carries the name.
  */
-function DataTableRowLink({ className, render, children, ...props }: useRender.ComponentProps<'a'>) {
+function DataTableRowLink({
+  className,
+  render,
+  children,
+  ...props
+}: useRender.ComponentProps<'a'>) {
   return useRender({
     defaultTagName: 'a',
     render,

@@ -117,7 +117,9 @@ describe('DataTableRowLink', () => {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <DataTableRowLink href={`/countries/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+        <DataTableRowLink href={`/countries/${row.original.id}`}>
+          {row.original.name}
+        </DataTableRowLink>
       ),
     },
     { accessorKey: 'code', header: 'Code' },
@@ -152,7 +154,9 @@ describe('DataTableRowLink', () => {
         ]}
       />,
     );
-    expect(markup).toMatch(/<a data-router-link="" href="\/countries\/1"[^>]*data-slot="data-table-row-link"/);
+    expect(markup).toMatch(
+      /<a data-router-link="" href="\/countries\/1"[^>]*data-slot="data-table-row-link"/,
+    );
     expect(markup).toContain('Aland Islands');
   });
 
