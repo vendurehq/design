@@ -104,7 +104,7 @@ export const uiGuidance = [
       },
       {
         title: 'Not inside running text',
-        body: 'A link inside a sentence or a form is `Button variant="link"` or a plain anchor; an arrow there breaks the sentence.',
+        body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; an arrow there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
       },
     ],
     related: ['button'],
@@ -849,6 +849,10 @@ export const uiGuidance = [
       {
         title: 'Quiet normal, loud abnormal in a list column',
         body: 'When most rows of a list column share one normal state (Enabled, Public), pass reveal="row" for that state only: its badge shows while its group/row row is hovered or focused, and the other states always show. The consumer decides which state is normal.',
+      },
+      {
+        title: 'A state explains itself in a tooltip',
+        body: 'To say why a state is what it is (which service is degraded, since when), render the StatusBadge as the TooltipTrigger: <TooltipTrigger render={<StatusBadge …/>} />. The badge then becomes a tab stop with the focus ring, and a chip takes the hover fill. Do not wrap it in a Button. A lone dot never opens a tooltip.',
       },
     ],
     choices: [

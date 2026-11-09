@@ -74,7 +74,7 @@ behavior you need instead of rebuilding it from atoms.
 ### Molecules
 
 #### Application structure
-`app-shell`, `page-header`, `skip-link`
+`app-shell`, `page-header`, `skip-link`, `arrow-link`
 
 #### Forms & selection
 `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
@@ -86,7 +86,7 @@ behavior you need instead of rebuilding it from atoms.
 `confirm-dialog`, `state-views/*`, `status-badge`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`
 
 #### Data display
-`code-block`, `data-table/*`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/*`, `list-row`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
 ## Utilities
 
@@ -237,6 +237,10 @@ screen-reader text). `size="lg"` is the 28px chip for a page header.
   column.
 - `icon={false}` or `icon={null}` shows no icon, for an inline chip whose label
   already names the tone. `progress` keeps its spinner and `dot` keeps the dot.
+- To explain a state on hover, render the badge as the tooltip trigger:
+  `<TooltipTrigger render={<StatusBadge tone="warning">Degraded</StatusBadge>} />`.
+  The badge becomes a tab stop with the focus ring, and a chip takes the hover
+  fill.
 
 ### Illustrations
 
@@ -394,6 +398,27 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
   </CardHeader>
 </Card>
 ```
+
+### ArrowLink
+
+`ArrowLink` goes to a page with more of what the user is looking at: "View details", "All deployments". It renders an `<a>`; pass `render` with a router link. It is navigation only: an action is a `Button`.
+
+A card or row that opens the same page drives the link's hover and takes its click. Give the parent `group/arrow-link relative` and the link `after:absolute after:inset-0`:
+
+```tsx
+<Card className="group/arrow-link relative">
+  <CardContent className="flex items-center justify-between gap-4">
+    <span>Add a payment handler to checkout</span>
+    <ArrowLink render={<Link to="/payment-handlers" />} className="after:absolute after:inset-0">
+      View details
+    </ArrowLink>
+  </CardContent>
+</Card>
+```
+
+- The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its arrow.
+- Keep the link itself unpositioned: a `relative` link becomes the containing block of its `::after`, which then shrinks to the link.
+- Keyboard focus shows the same emphasis as hover, with the focus ring 2px outside the link.
 
 ### DataTable loading rows
 

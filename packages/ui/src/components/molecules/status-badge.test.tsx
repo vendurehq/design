@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../atoms/tooltip.tsx';
 import { StatusBadge } from './status-badge.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
@@ -108,9 +109,9 @@ describe('StatusBadge', () => {
     expect(markup).not.toContain('border');
   });
 
-  test('the label eases with the fill and the outline', () => {
+  test('the label and outline ease slowly, the fill quickly', () => {
     expect(html(<StatusBadge tone="success">Active</StatusBadge>)).toContain(
-      'transition-[box-shadow,background-color,color]',
+      '[transition:box-shadow_var(--transition-duration-slow),color_var(--transition-duration-slow),background-color_var(--transition-duration-quick)]',
     );
   });
 
@@ -392,5 +393,55 @@ describe('StatusBadge content inset', () => {
     expect(markup).not.toContain('data-reveal');
     expect(markup).not.toContain('opacity-0');
     expect(markup).toContain('duration-slow');
+  });
+});
+
+describe('StatusBadge as a tooltip trigger', () => {
+  const trigger = (node: React.ReactElement) =>
+    html(
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger render={node} />
+          <TooltipContent>Worker restarting since 09:12</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>,
+    ).match(/<span[^>]*data-slot="tooltip-trigger"[^>]*>/)?.[0] ?? '';
+
+  test('a chip is a tab stop with the hover fill and the focus ring', () => {
+    const tag = trigger(<StatusBadge tone="warning">Degraded</StatusBadge>);
+
+    expect(tag).toContain('tabindex="0"');
+    expect(tag).toContain('hover:bg-accent');
+    expect(tag).toContain('focus-visible:outline-ring');
+  });
+
+  test('a word is a tab stop with a rounded focus ring and no fill', () => {
+    const tag = trigger(
+      <StatusBadge tone="critical" appearance="text">
+        Failed
+      </StatusBadge>,
+    );
+
+    expect(tag).toContain('tabindex="0"');
+    expect(tag).toContain('rounded-md');
+    expect(tag).not.toContain('hover:bg-accent');
+  });
+
+  test('a badge that opens nothing is not a tab stop', () => {
+    const markup = html(<StatusBadge tone="warning">Degraded</StatusBadge>);
+
+    expect(markup).not.toContain('tabindex');
+    expect(markup).not.toContain('focus-visible:outline-ring');
+    expect(markup).not.toContain('hover:bg-accent');
+  });
+
+  test('a lone dot never becomes a tab stop', () => {
+    const tag = trigger(
+      <StatusBadge tone="critical" appearance="dot">
+        Failed
+      </StatusBadge>,
+    );
+
+    expect(tag).not.toContain('tabindex');
   });
 });

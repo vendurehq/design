@@ -47,7 +47,7 @@ Link to a page with more of what the user is looking at, at the end of the regio
 
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
-- **Not inside running text:** A link inside a sentence or a form is `Button variant="link"` or a plain anchor; an arrow there breaks the sentence.
+- **Not inside running text:** A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; an arrow there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.
 
 Related decisions: `button`.
 ## Badge
@@ -345,6 +345,7 @@ Map domain states to the six shared tones by consequence for the viewer.
 - **Pick the appearance by the room it has:** Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.
 - **The chip brings its own icon:** Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.
 - **Quiet normal, loud abnormal in a list column:** When most rows of a list column share one normal state (Enabled, Public), pass reveal="row" for that state only: its badge shows while its group/row row is hovered or focused, and the other states always show. The consumer decides which state is normal.
+- **A state explains itself in a tooltip:** To say why a state is what it is (which service is degraded, since when), render the StatusBadge as the TooltipTrigger: <TooltipTrigger render={<StatusBadge …/>} />. The badge then becomes a tab stop with the focus ring, and a chip takes the hover fill. Do not wrap it in a Button. A lone dot never opens a tooltip.
 
 **Choose:**
 

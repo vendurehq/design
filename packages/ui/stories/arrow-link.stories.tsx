@@ -21,11 +21,6 @@ export const Default: Story = {
   },
 };
 
-/** `render` swaps the `<a>` for a router link or, as here, a `<button>`. */
-export const AsButton: Story = {
-  render: () => <ArrowLink render={<button type="button" />}>Open worker logs</ArrowLink>,
-};
-
 /** A panel head with its link at the end. The link carries the hover for the arrow. */
 export const InAPanelHead: Story = {
   render: () => (
@@ -40,18 +35,34 @@ export const InAPanelHead: Story = {
 };
 
 /**
- * A parent with `group/arrow-link` drives the hover: pointing anywhere on the
- * card brightens the link and moves its arrow.
+ * A card that opens the same page as its link: the card takes
+ * `group/arrow-link relative` and the link `after:absolute after:inset-0`.
+ * The link's ::after covers the card, so a click anywhere on it follows the
+ * link, and pointing anywhere on it brightens the link and moves its arrow.
+ * The test runner presses the card text with a real mouse and expects the
+ * link to open.
  */
 export const ParentDrivesHover: Story = {
+  parameters: {
+    pressRowText: { text: 'Add a payment handler to checkout', expectHash: '#/payment-handlers' },
+  },
   render: () => (
-    <Card className="group/arrow-link max-w-xl">
+    <Card className="group/arrow-link relative max-w-xl">
       <CardContent className="flex items-center justify-between gap-4 text-sm">
         <span>Add a payment handler to checkout</span>
-        <ArrowLink href="#">View details</ArrowLink>
+        <ArrowLink href="#/payment-handlers" className="after:absolute after:inset-0">
+          View details
+        </ArrowLink>
       </CardContent>
     </Card>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const link = canvas.getByRole('link', { name: 'View details' });
+    const text = canvas.getByText('Add a payment handler to checkout').getBoundingClientRect();
+    const hit = document.elementFromPoint(text.left + 4, text.top + text.height / 2);
+    await expect(hit).toBe(link);
+  },
 };
 
 /** In a right-to-left layout the arrow points and moves left. */

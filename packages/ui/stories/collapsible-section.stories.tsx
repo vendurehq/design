@@ -210,3 +210,24 @@ export const Toggles: Story = {
     await waitFor(() => expect(canvas.queryByRole('button', { name: 'Return RMA-318' })).toBeNull());
   },
 };
+
+/**
+ * A disabled section keeps its rows in their state: the header does not
+ * toggle and shows no hover fill or pointer, so it does not look clickable.
+ * It stays in the tab order and says it is disabled.
+ */
+export const Disabled: Story = {
+  args: { disabled: true },
+  render: (args) => (
+    <CollapsibleSection {...args}>
+      <ReturnRows />
+    </CollapsibleSection>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /Returns awaiting inspection/ });
+    await expect(trigger).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  },
+};
