@@ -81,8 +81,36 @@ describe('Button data-icon padding', () => {
   test('no size narrows the icon side', () => {
     for (const size of ['default', 'xs', 'sm', 'lg'] as const) {
       const tokens = buttonTokens(<Button size={size}>Save</Button>);
-      expect(tokens.filter((token) => token.includes('data-[icon='))).toEqual([]);
+      // Only the content inset reads the icon; no padding does.
+      expect(
+        tokens.filter((token) => token.includes('data-[icon=') && !token.includes('--content-inset')),
+      ).toEqual([]);
     }
+  });
+});
+
+describe('Button content inset', () => {
+  // The distance from the box to the first letter: padding + 1px border, plus a
+  // leading icon and the gap. A DataTable cell pulls the button back by it.
+  test('each text size sets its inset, wider with a leading icon', () => {
+    const expected = {
+      default: ['3.25+1px', '9+1px'],
+      xs: ['2+1px', '6+1px'],
+      sm: ['2.5+1px', '8.25+1px'],
+      lg: ['4+1px', '10+1px'],
+    } as const;
+    for (const [size, [plain, withIcon]] of Object.entries(expected)) {
+      const tokens = buttonTokens(<Button size={size as keyof typeof expected}>Save</Button>);
+      expect(tokens).toContain(`[--content-inset:calc(var(--spacing)*${plain})]`);
+      expect(tokens).toContain(
+        `has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*${withIcon})]`,
+      );
+    }
+  });
+
+  test('icon-only sizes set no inset', () => {
+    const tokens = buttonTokens(<Button size="icon" aria-label="More" />);
+    expect(tokens.filter((token) => token.includes('[--content-inset:'))).toEqual([]);
   });
 });
 

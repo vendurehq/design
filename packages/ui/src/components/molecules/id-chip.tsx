@@ -2,6 +2,7 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { CopyButton, useCopyAction } from '@vendure-io/ui/components/molecules/copyable-text';
+import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 
@@ -10,7 +11,9 @@ type TruncateMode = 'middle' | 'start' | 'none';
 /**
  * Shared chrome for the identifier-chip family (`IdChip`, `AnonymizedToken`,
  * `SecretValue`): a borderless `bg-muted`, monospace `text-xs` chip, 24px
- * tall, sized to its content. Kept in one place so the chips can't drift
+ * tall, sized to its content. Its `--content-inset` (the 8px start padding)
+ * lets a DataTable cell line the value up with the column header. Kept in
+ * one place so the chips can't drift
  * apart: only their *contents* differ (a plain value, a blurred
  * reveal-on-hover secret, or a masked secret loaded on click).
  *
@@ -20,8 +23,9 @@ type TruncateMode = 'middle' | 'start' | 'none';
  */
 function chipChromeClass(copyable: boolean, className?: string): string {
   return cn(
-    'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 pl-2 font-mono text-xs text-foreground-secondary',
+    'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 pl-2 [--content-inset:calc(var(--spacing)*2)] font-mono text-xs text-foreground-secondary',
     'transition-[background-color,color,scale] duration-fast ease-out',
+    contentInsetPull,
     'has-data-chip-copy:cursor-pointer has-data-chip-copy:hover:bg-accent has-data-chip-copy:hover:text-foreground motion-safe:has-data-chip-copy:active:scale-[0.97]',
     // The chip is the copy target, so the focus ring goes around the chip, not the 13px button.
     'has-[[data-chip-copy]:focus-visible]:outline-2 has-[[data-chip-copy]:focus-visible]:outline-offset-2 has-[[data-chip-copy]:focus-visible]:outline-ring has-[[data-chip-copy]:focus-visible]:outline-solid',
@@ -96,13 +100,13 @@ const TRUNCATE_THRESHOLD = 13;
 
 /**
  * `reveal="row"`: in a table row the chip reads as plain text, lined up with
- * the column (it shifts left by its own 8px start padding). While the row
+ * the column (it shifts back by its `--content-inset`, its 8px start padding). While the row
  * (`group/row`) is hovered or holds keyboard focus, the fill and the copy icon
  * fade in together, on one transition (150ms, ease-out). Nothing moves, so
  * reduced motion keeps the fade. Without hover (touch), the chip always shows.
  */
 const ROW_REVEAL_CLASS = cn(
-  '-ml-2 bg-transparent transition-[background-color,color,scale] duration-moderate ease-out',
+  '-ms-(--content-inset) bg-transparent transition-[background-color,color,scale] duration-moderate ease-out',
   'group-hover/row:bg-muted group-has-[:focus-visible]/row:bg-muted [@media(hover:none)]:bg-muted',
   '[&_[data-chip-copy]]:opacity-0 [&_[data-chip-copy]]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-out)]',
   'group-hover/row:[&_[data-chip-copy]]:opacity-100 group-has-[:focus-visible]/row:[&_[data-chip-copy]]:opacity-100 [@media(hover:none)]:[&_[data-chip-copy]]:opacity-100',
