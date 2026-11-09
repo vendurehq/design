@@ -55,6 +55,28 @@ describe('v3 overlay look', () => {
     expect(source('tooltip.tsx')).not.toContain('TooltipPrimitive.Arrow');
   });
 
+  // One highlight for every menu-like list, so the same list looks the same
+  // whichever component opens it. Destructive items keep their own fill.
+  test('every menu highlights items and open submenu triggers with the muted fill', () => {
+    const highlight = {
+      'dropdown-menu.tsx': 'focus:bg-muted',
+      'context-menu.tsx': 'focus:bg-muted',
+      'menubar.tsx': 'focus:bg-muted',
+      'select.tsx': 'focus:bg-muted',
+      'combobox.tsx': 'data-highlighted:bg-muted',
+      'command.tsx': 'data-[selected=true]:bg-muted',
+    };
+    for (const [file, token] of Object.entries(highlight)) {
+      const code = source(file);
+      expect(code).toContain(token);
+      expect(code).not.toMatch(/(?:focus|data-highlighted|data-open|data-popup-open|data-\[selected=true\]):bg-accent\b/);
+      expect(code).not.toMatch(/"bg-accent /);
+    }
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
+      expect(source(file)).toContain('data-popup-open:bg-muted');
+    }
+  });
+
   test('destructive menu items read in destructive-text', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
