@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, within } from 'storybook/test';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../src/components/atoms/table.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 
 const meta = {
@@ -19,6 +27,7 @@ const meta = {
       options: ['middle', 'start', 'none'],
     },
     copyable: { control: 'boolean' },
+    reveal: { control: 'inline-radio', options: ['always', 'row'] },
   },
 } satisfies Meta<typeof IdChip>;
 
@@ -91,3 +100,48 @@ function stubClipboard() {
     value: { writeText: async () => {} },
   });
 }
+
+const VARIANTS = [
+  { name: 'Laptop 13 inch 8GB', sku: 'L2201308', price: '$1,558.80' },
+  { name: 'Laptop 15 inch 16GB', sku: 'L2201516', price: '$2,758.80' },
+  { name: 'Tablet 32GB', sku: 'TBL200032', price: '$394.80' },
+];
+
+/**
+ * `reveal="row"` in a list. At rest the SKU reads as plain text, lined up with
+ * its column header. Hover a row, or tab to its copy button, and the fill and
+ * the copy icon fade in together; the text does not move. Each row opens its
+ * page through a stretched link; the chip stacks above it (`z-10`), so a click
+ * on the chip copies and does not open the row.
+ */
+export const RevealInTableRow: Story = {
+  args: { value: 'L2201516', reveal: 'row' },
+  parameters: { pressText: { text: 'L2201516', expectButton: 'Copied' } },
+  play: () => stubClipboard(),
+  render: () => (
+    <Table className="w-[560px]">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>SKU</TableHead>
+          <TableHead className="text-right">Price</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {VARIANTS.map((variant) => (
+          <TableRow key={variant.sku} className="group/row relative cursor-pointer">
+            <TableCell>
+              <a href={`#${variant.sku}`} className="outline-none after:absolute after:inset-0">
+                {variant.name}
+              </a>
+            </TableCell>
+            <TableCell>
+              <IdChip value={variant.sku} truncate="none" reveal="row" className="z-10" />
+            </TableCell>
+            <TableCell className="text-right tabular-nums">{variant.price}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  ),
+};

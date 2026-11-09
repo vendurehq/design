@@ -55,6 +55,19 @@ describe('IdChip', () => {
     expect(buttonClass).not.toContain('motion-reduce:active:scale-100');
   });
 
+  test('reveal="row" hides the fill and the copy icon until the row is hovered or focused', () => {
+    const markup = html(<IdChip value="L2201516" truncate="none" reveal="row" />);
+
+    expect(markup).toContain('data-reveal="row"');
+    expect(markup).toContain('bg-transparent');
+    expect(markup).toContain('group-hover/row:bg-muted');
+    expect(markup).toContain('group-has-[:focus-visible]/row:[&amp;_[data-chip-copy]]:opacity-100');
+  });
+
+  test('a chip shows by default', () => {
+    expect(html(<IdChip value="L2201516" />)).not.toContain('data-reveal');
+  });
+
   test('a non-copyable chip has no whole-chip copy target', () => {
     expect(html(<IdChip value="abc123" copyable={false} />)).not.toContain('data-chip-copy=""');
   });

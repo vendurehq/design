@@ -94,6 +94,20 @@ function ChipCopyTooltip({
 // below that length would lose information without saving space — skip it.
 const TRUNCATE_THRESHOLD = 13;
 
+/**
+ * `reveal="row"`: in a table row the chip reads as plain text, lined up with
+ * the column (it shifts left by its own 8px start padding). While the row
+ * (`group/row`) is hovered or holds keyboard focus, the fill and the copy icon
+ * fade in together, on one transition (150ms, ease-out). Nothing moves, so
+ * reduced motion keeps the fade. Without hover (touch), the chip always shows.
+ */
+const ROW_REVEAL_CLASS = cn(
+  '-ml-2 bg-transparent transition-[background-color,color,scale] duration-moderate ease-out',
+  'group-hover/row:bg-muted group-has-[:focus-visible]/row:bg-muted [@media(hover:none)]:bg-muted',
+  '[&_[data-chip-copy]]:opacity-0 [&_[data-chip-copy]]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-out)]',
+  'group-hover/row:[&_[data-chip-copy]]:opacity-100 group-has-[:focus-visible]/row:[&_[data-chip-copy]]:opacity-100 [@media(hover:none)]:[&_[data-chip-copy]]:opacity-100',
+);
+
 function truncateId(value: string, mode: TruncateMode): string {
   if (mode === 'none' || value.length <= TRUNCATE_THRESHOLD) return value;
   // Middle keeps a recognizable head + tail (proven `AnonymizedToken` pattern);
@@ -110,6 +124,14 @@ interface IdChipProps {
   truncate?: TruncateMode;
   /** Render the copy affordance. @default true */
   copyable?: boolean;
+  /**
+   * `'row'` shows the chip only while its table row is hovered or holds
+   * keyboard focus; at rest the value reads as plain text, lined up with the
+   * column. The row needs the `group/row` class (the `DataTable` rows have
+   * it). Over a stretched row link, stack the chip above the link (for
+   * example `z-10`). @default 'always'
+   */
+  reveal?: 'always' | 'row';
   className?: string;
   /** Called after a successful copy. Wire your toast here — the DS never toasts. Falls back to `CopyFeedbackProvider`. */
   onCopied?: () => void;
@@ -135,6 +157,7 @@ function IdChip({
   display,
   truncate = 'middle',
   copyable = true,
+  reveal = 'always',
   className,
   onCopied,
   onCopyError,
@@ -146,7 +169,11 @@ function IdChip({
   const text = display ?? truncateId(value, truncate);
   const shortened = text !== value;
   const chip = (
-    <span data-slot="id-chip" className={chipChromeClass(copyable, className)}>
+    <span
+      data-slot="id-chip"
+      data-reveal={reveal === 'row' ? 'row' : undefined}
+      className={chipChromeClass(copyable, cn(reveal === 'row' && ROW_REVEAL_CLASS, className))}
+    >
       <span className="truncate">{text}</span>
       {copyable ? (
         <CopyButton
