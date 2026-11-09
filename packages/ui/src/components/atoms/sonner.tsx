@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { buttonVariants } from "@vendure-io/ui/components/atoms/button"
 import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 import { cn } from "@vendure-io/ui/lib/utils"
 
@@ -12,6 +13,13 @@ const InfoIcon = toneIcons.info
 const WarningIcon = toneIcons.warning
 const ErrorIcon = toneIcons.critical
 const LoadingIcon = toneIcons.progress
+
+// What an extra-small Button sets that Sonner's own button rule overrides.
+const toastButton = cn(
+  "h-6! rounded-lg! px-2! text-xs! font-medium!",
+  "focus-visible:outline-solid! focus-visible:outline-2! focus-visible:outline-ring! focus-visible:shadow-none!",
+  "[transition:background-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)]!",
+)
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system", forcedTheme } = useTheme()
@@ -110,6 +118,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
             // An icon passed to a plain toast is the foreground at 60%. The
             // tone icons above set their own colour.
             icon: "text-foreground/60",
+            // The action and cancel buttons are extra-small Buttons: the
+            // action the default variant, the cancel ghost. Sonner styles its
+            // buttons unlayered (radius, size, colours, outline, transition),
+            // so each of those properties needs ! to win.
+            actionButton: cn(
+              buttonVariants({ size: "xs" }),
+              toastButton,
+              "bg-primary! text-primary-foreground! hover:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)]!",
+            ),
+            cancelButton: cn(
+              buttonVariants({ variant: "ghost", size: "xs" }),
+              toastButton,
+              "bg-transparent! text-foreground-secondary! hover:bg-muted! hover:text-foreground!",
+            ),
           },
         }}
         {...props}
