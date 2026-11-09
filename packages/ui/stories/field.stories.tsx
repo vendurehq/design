@@ -10,7 +10,12 @@ import {
   FieldContent,
 } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '../src/components/atoms/input-group.tsx';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+} from '../src/components/atoms/input-group.tsx';
 import { NativeSelect, NativeSelectOption } from '../src/components/atoms/native-select.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../src/components/atoms/select.tsx';
 import { Textarea } from '../src/components/atoms/textarea.tsx';
@@ -237,6 +242,12 @@ export const FieldLook: Story = {
       </InputGroup>
       <DatePicker aria-label="Ship date" />
       <Textarea aria-label="Note" placeholder="Note" />
+      <InputGroup>
+        <InputGroupInput aria-label="Coupon" aria-invalid defaultValue="SAVE" />
+      </InputGroup>
+      <InputGroup>
+        <InputGroupTextarea aria-label="Reason" aria-invalid placeholder="Reason" />
+      </InputGroup>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -272,6 +283,16 @@ export const FieldLook: Story = {
       canvas.getByText('Pick a date'),
     ]) {
       await expect(getComputedStyle(placeholder).color).toBe(faint);
+    }
+
+    // An invalid control in an InputGroup turns the group's hairline red and
+    // draws no edge of its own, so the field shows one red edge.
+    probe.className = 'shadow-[inset_0_0_0_1px_var(--destructive)]';
+    for (const control of [canvas.getByRole('textbox', { name: 'Coupon' }), canvas.getByRole('textbox', { name: 'Reason' })]) {
+      const group = control.closest<HTMLElement>('[data-slot="input-group"]') as HTMLElement;
+      await expect(getComputedStyle(group).boxShadow).toBe(getComputedStyle(probe).boxShadow);
+      // Tailwind composes shadow-none from zero-size layers: no length may be above 0.
+      await expect(getComputedStyle(control).boxShadow).not.toMatch(/(^|\s)(0?\.\d*[1-9]|[1-9][\d.]*)px/);
     }
     probe.remove();
 
