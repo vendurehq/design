@@ -27,7 +27,7 @@ import type * as React from 'react';
 const LIFT_CONTROLS =
   '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10';
 
-// A row the user just added (`data-new`) enters once: its height opens from 0
+// A row the user just added (`enter="new"`) enters once: its height opens from 0
 // so the rows below glide down, then its content fades in from a 3px blur.
 // @starting-style runs it on mount only, so a list never animates on page
 // load unless the caller marks rows. `interpolate-size` lets the height run to
@@ -37,26 +37,31 @@ const LIFT_CONTROLS =
 // `soft` and unblurs on `out`, both a `fast` beat later. Reduced motion keeps
 // the fade only.
 const ENTER_NEW =
-  'data-new:overflow-clip data-new:[interpolate-size:allow-keywords] motion-safe:data-new:[transition:height_var(--transition-duration-row-enter)_var(--ease-height),min-height_var(--transition-duration-row-enter)_var(--ease-height),opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast),filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast),background-color_var(--transition-duration-fast)_var(--ease-default)] motion-safe:data-new:starting:h-0 motion-safe:data-new:starting:min-h-0 motion-safe:data-new:starting:blur-[3px] data-new:starting:opacity-0 motion-reduce:data-new:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
+  'data-[enter=new]:overflow-clip data-[enter=new]:[interpolate-size:allow-keywords] motion-safe:data-[enter=new]:[transition:height_var(--transition-duration-row-enter)_var(--ease-height),min-height_var(--transition-duration-row-enter)_var(--ease-height),opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast),filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast),background-color_var(--transition-duration-fast)_var(--ease-default)] motion-safe:data-[enter=new]:starting:h-0 motion-safe:data-[enter=new]:starting:min-h-0 motion-safe:data-[enter=new]:starting:blur-[3px] data-[enter=new]:starting:opacity-0 motion-reduce:data-[enter=new]:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
 
-// Rows that a "Show older" action adds (`laterIndex`) enter once, 28ms after
+// Rows that a "Show older" action adds (`enter={{ stagger }}`) enter once, 28ms after
 // the row above: each fades in and rises 6px out of a 3px blur on the strong
 // ease-out. The delay stops growing after 12 rows, so a long page does not
 // keep its last rows waiting. Reduced motion keeps a plain fade, without the
 // stagger. The hover fill keeps its own timing, without the delay.
-const ENTER_LATER =
-  'motion-safe:data-later:[transition:opacity_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),translate_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),filter_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),background-color_var(--transition-duration-fast)_var(--ease-default)] data-later:starting:opacity-0 motion-safe:data-later:starting:translate-y-1.5 motion-safe:data-later:starting:blur-[3px] motion-reduce:data-later:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
+const ENTER_STAGGER =
+  'motion-safe:data-[enter=stagger]:[transition:opacity_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-stagger-delay),translate_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-stagger-delay),filter_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-stagger-delay),background-color_var(--transition-duration-fast)_var(--ease-default)] data-[enter=stagger]:starting:opacity-0 motion-safe:data-[enter=stagger]:starting:translate-y-1.5 motion-safe:data-[enter=stagger]:starting:blur-[3px] motion-reduce:data-[enter=stagger]:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
 
-const LATER_STAGGER_MS = 28;
-const LATER_STAGGER_ROWS = 12;
+const STAGGER_MS = 28;
+const STAGGER_ROWS = 12;
 
 interface ListRowProps extends React.ComponentProps<'div'> {
   /**
-   * Set on a row that a "Show older" action adds: its position among the
-   * added rows (0, 1, 2…). The row fades up 28ms after the row above it.
-   * Leave it unset on rows of the first render.
+   * How a row added while the page is open enters. Leave it unset on rows of
+   * the first render, so the list does not animate on page load.
+   *
+   * - `'new'`: a row the user just added (a new backup, a new push). Its
+   *   height opens, then its content fades in.
+   * - `{ stagger: n }`: a row that a "Show older" action adds, `n` being its
+   *   position among the added rows (0, 1, 2…). It fades up 28ms after the
+   *   row above it.
    */
-  laterIndex?: number;
+  enter?: 'new' | { stagger: number };
 }
 
 /**
@@ -65,21 +70,18 @@ interface ListRowProps extends React.ComponentProps<'div'> {
  * ListRowLink inside, the whole row opens the link and takes a `muted` hover
  * fill; keyboard focus on the link draws an inset ring around the row.
  *
- * Set `data-new` on a row the user just added (a new backup, a new push) and
- * it enters once: the height opens, then the content fades in. Mark only rows
- * added while the page is open, never rows of the first render. Rows that a
- * "Show older" action adds take `laterIndex` instead.
+ * A row added while the page is open takes `enter` and enters once.
  */
-function ListRow({ className, laterIndex, style, ...props }: ListRowProps) {
-  const later = laterIndex !== undefined;
+function ListRow({ className, enter, style, ...props }: ListRowProps) {
+  const stagger = typeof enter === 'object' ? enter.stagger : undefined;
   return (
     <div
       data-slot="list-row"
-      data-later={later ? '' : undefined}
+      data-enter={enter === 'new' ? 'new' : enter ? 'stagger' : undefined}
       style={
-        later
+        stagger !== undefined
           ? ({
-              '--list-row-later-delay': `${Math.min(Math.max(laterIndex, 0), LATER_STAGGER_ROWS) * LATER_STAGGER_MS}ms`,
+              '--list-row-stagger-delay': `${Math.min(Math.max(stagger, 0), STAGGER_ROWS) * STAGGER_MS}ms`,
               ...style,
             } as React.CSSProperties)
           : style
@@ -93,7 +95,7 @@ function ListRow({ className, laterIndex, style, ...props }: ListRowProps) {
         'has-[[data-slot=list-row-link]:focus-visible]:outline-solid has-[[data-slot=list-row-link]:focus-visible]:outline-2 has-[[data-slot=list-row-link]:focus-visible]:-outline-offset-2 has-[[data-slot=list-row-link]:focus-visible]:outline-ring',
         LIFT_CONTROLS,
         ENTER_NEW,
-        ENTER_LATER,
+        ENTER_STAGGER,
         className,
       )}
       {...props}
