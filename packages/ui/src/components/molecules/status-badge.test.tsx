@@ -174,6 +174,27 @@ describe('StatusBadge', () => {
     expect(markup).not.toContain('[&amp;_svg]:size-3.25');
   });
 
+  test('the chip label sits on a line as tall as its text, in both sizes', () => {
+    const sizes = { default: ['h-6', 'text-xs/none'], lg: ['h-7', 'text-sm/none'] } as const;
+
+    for (const [size, [height, text]] of Object.entries(sizes)) {
+      const classes =
+        html(
+          <StatusBadge tone="success" size={size as keyof typeof sizes}>
+            Active
+          </StatusBadge>,
+        )
+          .match(/^<span[^>]*class="([^"]*)"/)?.[1]
+          ?.split(' ') ?? [];
+
+      expect(classes).toContain(height);
+      // The size carries its line height. A separate `leading-none` before
+      // `text-xs` is dropped by `cn`, which reads a text size as a line height too.
+      expect(classes).toContain(text);
+      expect(classes.filter((c) => /^(text-(xs|sm)|leading-)/.test(c))).toEqual([text]);
+    }
+  });
+
   test('appearance="text" renders the word in the tone text colour', () => {
     const markup = html(
       <StatusBadge tone="critical" appearance="text">
@@ -222,7 +243,7 @@ describe('StatusBadge appearance="bare"', () => {
     expect(markup).toContain('lucide-circle-check');
     expect(cls).toContain('[--status-tone:var(--success-text)]');
     expect(cls).toContain('var(--foreground-secondary)');
-    expect(cls).toContain('text-xs');
+    expect(cls.split(' ')).toContain('text-xs/none');
     expect(cls).toContain('gap-1.5');
     expect(cls).not.toMatch(/(^|\s)(bg-|inset-ring|h-6|px-|rounded)/);
   });
@@ -235,7 +256,7 @@ describe('StatusBadge appearance="bare"', () => {
     );
 
     expect(markup).toContain('lucide-loader');
-    expect(markup).toContain('text-sm');
+    expect(markup).toContain('text-sm/none');
     expect(markup).toContain('[&amp;_svg]:size-3.5');
   });
 });
