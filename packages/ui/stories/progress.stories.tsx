@@ -66,8 +66,8 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * The track uses the control-border slot, so the unfilled part stays visible on
- * every surface. Pinned to the light page theme.
+ * Every bar sits on a 4px track in the accent tint. The fill grows from 0 when
+ * it first shows. Pinned to the light page theme.
  */
 export const States: Story = {
   globals: { theme: 'light' },
@@ -87,8 +87,7 @@ export const States: Story = {
 /**
  * Tone follows consequence: a usage meter turns warning near a limit the user
  * must act on and critical at or over it. A task progress bar stays default.
- * Toned bars sit on the tone's subtle track with a fill that reaches 3:1 on
- * the track and the page in both modes.
+ * Each tone fills with its text slot on the same accent track.
  */
 export const Tones: Story = {
   globals: { theme: 'light' },
@@ -112,6 +111,12 @@ export const Tones: Story = {
             <ProgressLabel>Critical · storage full</ProgressLabel>
             <ProgressValue />
           </Progress>
+          <Progress tone="info" value={null}>
+            <ProgressLabel>Info · build running</ProgressLabel>
+          </Progress>
+          <Progress tone="neutral" value={100}>
+            <ProgressLabel>Neutral · roll-out cancelled</ProgressLabel>
+          </Progress>
         </div>
       )}
     </LightAndDark>
@@ -120,8 +125,8 @@ export const Tones: Story = {
 
 /**
  * `value={null}` makes the bar indeterminate, for work whose length is unknown:
- * a soft band of the fill sweeps across the track. With reduced motion the bar
- * stays still at a partial fill.
+ * a 40% fill with a band that sweeps across at a constant speed. With reduced
+ * motion the 40% fill stays and the band is gone.
  */
 export const Indeterminate: Story = {
   render: () => (
@@ -130,6 +135,36 @@ export const Indeterminate: Story = {
         <ProgressLabel>Building image</ProgressLabel>
       </Progress>
       <Progress value={null} aria-label="Deploying" />
+    </div>
+  ),
+};
+
+const steps = [
+  { label: 'Queued', detail: '1 min', tone: 'success', value: 100 },
+  { label: 'Build', detail: '2 min so far', tone: 'info', value: null },
+  { label: 'Roll out', detail: '—', tone: 'default', value: 0 },
+  { label: 'Live', detail: '—', tone: 'default', value: 0 },
+] as const;
+
+/**
+ * The step bars of a deployment: one bar per step. A done step fills green,
+ * the running step sweeps in info blue, and a step that has not started shows
+ * the empty track. A failed step would be `critical` at 100, and a stopped
+ * one `neutral` at 100.
+ */
+export const Steps: Story = {
+  render: () => (
+    <div className="grid w-[640px] grid-flow-col auto-cols-fr gap-1.5">
+      {steps.map((step) => (
+        <Progress key={step.label} tone={step.tone} value={step.value} aria-label={step.label}>
+          <div className="order-last flex flex-col gap-0.5">
+            <span className={step.value === 0 ? 'text-muted-foreground text-sm font-semibold' : 'text-sm font-semibold'}>
+              {step.label}
+            </span>
+            <span className="text-muted-foreground text-xs tabular-nums">{step.detail}</span>
+          </div>
+        </Progress>
+      ))}
     </div>
   ),
 };

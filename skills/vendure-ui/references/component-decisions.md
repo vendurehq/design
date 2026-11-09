@@ -289,13 +289,16 @@ Show task completion or usage against a limit, toned only when the level has a c
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
 - **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
 - **Indeterminate when the length is unknown:** Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.
+- **One bar per step of a pipeline:** A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.
 
 **Choose:**
 
 - `default`: Task progress, or a meter with no limit the user must act on.
-- `success`: A meter whose filled level is the healthy outcome.
+- `info`: The running step of a pipeline.
+- `success`: A meter whose filled level is the healthy outcome, or a done step.
 - `warning`: Near a limit the user must act on.
-- `critical`: At or over the limit.
+- `critical`: At or over the limit, or a failed step.
+- `neutral`: A step that stopped and needs nothing from the user, such as a cancelled one.
 
 Related decisions: `status-badge`, `stat-card`.
 ## SecretValue
