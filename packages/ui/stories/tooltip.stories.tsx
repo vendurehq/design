@@ -82,14 +82,26 @@ export const FromTriggerToTrigger: Story = {
     });
     await userEvent.unhover(canvas.getByRole('button', { name: 'First' }));
     await userEvent.hover(canvas.getByRole('button', { name: 'Second' }));
-    const popup = (await body.findByText('Second tooltip')).closest(
-      '[data-slot=tooltip-content]',
-    ) as HTMLElement;
     // Base UI marks this open as instant ("delay"); it still transitions.
-    await expect(popup.getAttribute('data-instant')).toBe('delay');
-    const style = getComputedStyle(popup);
-    await expect(style.transitionProperty).toContain('opacity');
-    await expect(style.transitionDuration).not.toBe('0s');
+    // `data-instant` changes again when the group's instant phase ends, so the
+    // attribute and the transition it selects are read in the same tick, and
+    // the read is retried until the popup is open.
+    await waitFor(() => {
+      const popup = body
+        .getByText('Second tooltip')
+        .closest<HTMLElement>('[data-slot=tooltip-content]');
+      const instant = popup?.getAttribute('data-instant');
+      const style = popup ? getComputedStyle(popup) : undefined;
+      expect({
+        instant,
+        transitionProperty: style?.transitionProperty,
+        transitionDuration: style?.transitionDuration,
+      }).toEqual({
+        instant: 'delay',
+        transitionProperty: expect.stringContaining('opacity'),
+        transitionDuration: expect.not.stringMatching(/^0s(, 0s)*$/),
+      });
+    });
     await userEvent.unhover(canvas.getByRole('button', { name: 'Second' }));
     await waitFor(() => expect(body.queryByText('Second tooltip')).toBeNull());
   },
