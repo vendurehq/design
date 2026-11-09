@@ -52,7 +52,7 @@ describe('CommandItem highlight', () => {
     const item = classTokens(render(), 'command-item');
     expect(item).toEqual(
       expect.arrayContaining([
-        'not-in-data-command-palette:data-[selected=true]:bg-accent',
+        'data-[selected=true]:bg-muted',
         'not-in-data-command-palette:data-[selected=true]:text-accent-foreground',
       ]),
     );
@@ -75,7 +75,7 @@ describe('CommandItem highlight', () => {
     const html = render();
     expect(html).not.toContain('in-data-[slot=dialog-content]');
     const item = classTokens(html, 'command-item');
-    expect(item).toContain('in-data-command-palette:data-[selected=true]:bg-muted');
+    expect(item).toContain('in-data-command-palette:data-[selected=true]:text-foreground');
     expect(item.filter((token) => token.endsWith('!') && token.includes(':text-'))).toEqual([]);
   });
 
@@ -188,8 +188,7 @@ describe('CommandList', () => {
       expect.arrayContaining([
         'data-ready:transition-opacity',
         'will-change-transform',
-        'bg-accent',
-        'in-data-command-palette:bg-muted',
+        'bg-muted',
         'forced-colors:outline-[Highlight]',
       ]),
     );

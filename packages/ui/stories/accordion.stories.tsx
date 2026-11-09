@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   Accordion,
   AccordionItem,
@@ -15,7 +16,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/**
+ * A closed trigger fills on hover. Opening an item turns its chevron over and
+ * eases the panel's height and opacity on one timing. A second click mid-way
+ * reverses the panel from where it is.
+ */
 export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: 'Is it animated?' });
+    await userEvent.click(trigger);
+    await userEvent.click(trigger);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(canvas.queryByText(/The panel eases open and shut/)).toBeNull());
+  },
   render: () => (
     <Accordion className="w-full max-w-md">
       <AccordionItem value="item-1">
@@ -33,7 +47,7 @@ export const Default: Story = {
       <AccordionItem value="item-3">
         <AccordionTrigger>Is it animated?</AccordionTrigger>
         <AccordionContent>
-          Yes. It is animated by default, but you can disable it if you prefer.
+          Yes. The panel eases open and shut, and the chevron turns over. With reduced motion, the panel only fades.
         </AccordionContent>
       </AccordionItem>
     </Accordion>

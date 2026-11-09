@@ -55,6 +55,40 @@ describe('v3 overlay look', () => {
     expect(source('tooltip.tsx')).not.toContain('TooltipPrimitive.Arrow');
   });
 
+  // One highlight for every menu-like list, so the same list looks the same
+  // whichever component opens it. Destructive items keep their own fill.
+  test('every menu highlights items and open submenu triggers with the muted fill', () => {
+    const highlight = {
+      'dropdown-menu.tsx': 'focus:bg-muted',
+      'context-menu.tsx': 'focus:bg-muted',
+      'menubar.tsx': 'focus:bg-muted',
+      'select.tsx': 'focus:bg-muted',
+      'combobox.tsx': 'data-highlighted:bg-muted',
+      'command.tsx': 'data-[selected=true]:bg-muted',
+    };
+    for (const [file, token] of Object.entries(highlight)) {
+      const code = source(file);
+      expect(code).toContain(token);
+      expect(code).not.toMatch(/(?:focus|data-highlighted|data-open|data-popup-open|data-\[selected=true\]):bg-accent\b/);
+      expect(code).not.toMatch(/"bg-accent /);
+    }
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
+      expect(source(file)).toContain('data-popup-open:bg-muted');
+    }
+  });
+
+  test('a dropdown menu is at least 240px wide', () => {
+    expect(source('dropdown-menu.tsx')).toContain('min-w-60');
+  });
+
+  test('destructive menu items hover with a 10% destructive tint in both themes', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
+      const code = source(file);
+      expect(code).toContain('data-[variant=destructive]:focus:bg-destructive/10');
+      expect(code).not.toContain('dark:data-[variant=destructive]:focus:bg-destructive/20');
+    }
+  });
+
   test('destructive menu items read in destructive-text', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
@@ -77,6 +111,29 @@ describe('v3 overlay look', () => {
     expect(code).toContain('position="bottom-right"');
     expect(code).toContain('var(--radius-2xl)');
     expect(code).toContain('shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!');
+  });
+
+  test('the toast has one edge: no border between the shadow ring and the hairline', () => {
+    const code = source('sonner.tsx');
+    expect(code).toContain('"border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!"');
+    expect(code).not.toContain('"--normal-border"');
+  });
+
+  test('the icon sits 14px in and 10px from the text, 20px from the corner', () => {
+    const code = source('sonner.tsx');
+    for (const name of ['icon-margin-start', 'icon-margin-end', 'svg-margin-start', 'svg-margin-end']) {
+      expect(code).toContain(`"--toast-${name}": "0px"`);
+    }
+    expect(code).toContain('offset={20}');
+    expect(code).toContain('icon: "text-foreground/60"');
+  });
+
+  test("the tone icons take the tokens, not Sonner's colours of the same name", () => {
+    const code = source('sonner.tsx');
+    for (const tone of ['success', 'warning', 'info']) {
+      expect(code).toContain(`"--toaster-${tone}-text": "var(--${tone}-text)"`);
+      expect(code).toContain(`"--${tone}-text": "var(--toaster-${tone}-text)"`);
+    }
   });
 
   test('a toast is 44px, 10px 14px, 13px medium, 320px wide on the card surface', () => {
