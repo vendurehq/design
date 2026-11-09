@@ -86,7 +86,10 @@ const statusBadgeVariants = cva(
         ],
       } satisfies Record<StatusBadgeSize, string[]>,
       reveal: {
-        always: 'transition-[box-shadow,background-color,color] duration-slow',
+        // A tone change eases the outline and label over 300ms; the hover
+        // fill of a tooltip trigger answers in 120ms.
+        always:
+          '[transition:box-shadow_var(--transition-duration-slow),color_var(--transition-duration-slow),background-color_var(--transition-duration-quick)]',
         row: rowRevealClass,
       } satisfies Record<StatusBadgeReveal, string | string[]>,
     },
@@ -157,6 +160,12 @@ const toneWord: Record<Tone, string> = {
   critical: 'text-destructive-text',
   progress: 'text-info-text',
 };
+
+// The focus ring of a badge that opens a tooltip: the system's 2px ring, 2px
+// out, on the badge's radius (4px for a word or a bare badge). At rest a chip
+// keeps its transparent forced-colours outline.
+const triggerFocus =
+  'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 
 // One revolution per 1.6s: slower than the default spin, so a status that
 // stays in progress for minutes does not read as urgent. Under reduced motion
@@ -273,11 +282,29 @@ function StatusBadge({
     );
   }
 
+  // As a TooltipTrigger render target, the badge explains its state on hover
+  // and on focus, so it is a tab stop with the focus ring. A chip also takes
+  // the hover fill in place of its tone wash. A lone dot stays out of the tab
+  // order: it is too small to be a target.
+  const isTrigger =
+    (props as { 'data-slot'?: string })['data-slot'] === 'tooltip-trigger' &&
+    appearance !== 'dot';
+
   return useRender({
     defaultTagName: 'span',
-    props: mergeProps<'span'>({ className: cn(classes, className) }, props, {
-      children: content,
-    }),
+    props: mergeProps<'span'>(
+      {
+        className: cn(
+          classes,
+          isTrigger && triggerFocus,
+          isTrigger && (appearance === 'chip' ? 'hover:bg-accent' : 'rounded-md'),
+          className,
+        ),
+        tabIndex: isTrigger ? 0 : undefined,
+      },
+      props,
+      { children: content },
+    ),
     render,
     state: {
       slot: 'status-badge',
