@@ -4,7 +4,7 @@ import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
+import { fieldSurface, fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import {
@@ -259,7 +259,8 @@ function ComboboxChips({
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
       className={cn(
-        "bg-muted shadow-[inset_0_0_0_1px_var(--border)] forced-colors:border focus-within:outline-solid focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-ring has-aria-invalid:focus-within:outline-destructive has-aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)] flex min-h-8.5 flex-wrap items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-shadow duration-120 ease-[ease] has-data-[slot=combobox-chip]:px-1.5",
+        fieldSurfaceWithin,
+        "flex min-h-8.5 flex-wrap items-center gap-1.5 px-2.5 py-1.5 text-sm has-data-[slot=combobox-chip]:px-1.5",
         className
       )}
       {...props}
@@ -271,9 +272,12 @@ function ComboboxChip({
   className,
   children,
   showRemove = true,
+  removeLabel = "Remove",
   ...props
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean
+  /** Accessible name of the icon-only remove button. */
+  removeLabel?: string
 }) {
   return (
     <ComboboxPrimitive.Chip
@@ -290,6 +294,7 @@ function ComboboxChip({
           render={<Button variant="ghost" size="icon-xs" />}
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
+          aria-label={removeLabel}
         >
           <XIcon className="pointer-events-none" />
         </ComboboxPrimitive.ChipRemove>
