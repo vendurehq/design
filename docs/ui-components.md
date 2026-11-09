@@ -331,6 +331,11 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 </Dialog>
 ```
 
+The dialog has no ✕ by default. Cancel, Escape and a click on the backdrop
+close it. Pass `showCloseButton` to `DialogContent` when the dialog has no
+Cancel button. `DialogTitle` takes an `icon`, drawn at 18px before the title in
+the foreground at 60%, and a `tone` to colour it for a state.
+
 ```tsx
 import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialog";
 

@@ -106,6 +106,20 @@ describe('v3 overlay look', () => {
     }
   });
 
+  test('a dialog is 440px, has no close button by default, and a 10px header gap', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('showCloseButton = false,');
+    expect(code).toContain('sm:max-w-110');
+    expect(code).toContain('"flex flex-col gap-2.5"');
+  });
+
+  test('a dialog title takes an 18px icon, neutral at 60% or in its tone', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('size-4.5');
+    expect(code).toContain('neutral: "text-foreground/60"');
+    expect(code).toContain('critical: "text-destructive-text"');
+  });
+
   test('the toaster defaults to bottom right on the 2xl radius, overlay shadow and a hairline', () => {
     const code = source('sonner.tsx');
     expect(code).toContain('position="bottom-right"');
