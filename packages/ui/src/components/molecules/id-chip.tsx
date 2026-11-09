@@ -39,11 +39,18 @@ function chipChromeClass(copyable: boolean, className?: string): string {
  * The button is exactly the 13px icon, so the chip's 6px end padding is the
  * visible inset, and its focus ring moves to the chip (see `chipChromeClass`). The copy icon takes the chip's text colour at 55%, quieter
  * than the value beside it; the check keeps its full `success-text`.
+ *
+ * The button never scales on press (the chip does). Any `scale` other than
+ * `none` makes the button the containing block of its `::after`, which then
+ * shrinks to the 13px icon between mousedown and mouseup. A mouseup over the
+ * value text then lands outside the button, and the click goes to the chip
+ * instead of the button, so nothing is copied.
  */
 const chipCopyButtonProps = {
   'data-chip-copy': '',
   className: cn(
     "size-3.25 [&_svg:not([class*='size-'])]:size-3.25 after:absolute after:inset-0 focus-visible:outline-none",
+    'active:scale-none motion-reduce:active:scale-none',
     'text-inherit hover:text-inherit hover:bg-transparent dark:hover:bg-transparent',
     '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55',
   ),

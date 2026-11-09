@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 
 const meta = {
@@ -68,28 +68,26 @@ export const CustomCopyLabel: Story = {
  * The whole chip is the copy target. A click on the value (not only on the
  * icon) copies; the tooltip changes from "Copy" to "Copied" and the icon turns
  * into a check-mark. The play function stubs the clipboard, so the run does
- * not depend on browser clipboard permissions.
+ * not depend on browser clipboard permissions. The test runner then presses
+ * the value text with a real mouse (see `pressText` in the test runner).
  */
 export const WholeChipCopies: Story = {
   args: { value: '9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9f0e', copyLabel: 'Copy commit SHA' },
+  parameters: { pressText: { text: '9f2c4e1a…9f0e', expectButton: 'Copied' } },
   play: async ({ canvasElement }) => {
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText: async () => {} },
-    });
+    stubClipboard();
     const canvas = within(canvasElement);
     // The point over the value text hits the copy button (its stretched
     // ::after), which is what makes the whole chip the click target.
     const text = canvas.getByText('9f2c4e1a…9f0e').getBoundingClientRect();
     const hit = document.elementFromPoint(text.left + 4, text.top + text.height / 2);
-    const button = canvas.getByRole('button', { name: 'Copy commit SHA' });
-    await expect(hit).toBe(button);
-    await userEvent.click(button);
-    await waitFor(() =>
-      expect(canvas.getByRole('button', { name: 'Copied' })).toBeInTheDocument(),
-    );
-    await waitFor(() =>
-      expect(within(document.body).getByText('Copied', { selector: 'span' })).toBeVisible(),
-    );
+    await expect(hit).toBe(canvas.getByRole('button', { name: 'Copy commit SHA' }));
   },
 };
+
+function stubClipboard() {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async () => {} },
+  });
+}
