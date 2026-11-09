@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import {
   Combobox,
   ComboboxContent,
@@ -47,6 +47,12 @@ export const Default: Story = {
       </Combobox>
     );
   },
+  // Records console errors from the first render on, so the play can check
+  // that Base UI logs no warning about the icon button.
+  beforeEach: () => {
+    const spy = spyOn(console, 'error');
+    return () => spy.mockRestore();
+  },
   // Opens the list from the icon button. The a11y scan then runs with the list
   // open, while Base UI hides everything outside the input and the list.
   play: async ({ canvasElement }) => {
@@ -59,6 +65,8 @@ export const Default: Story = {
     await userEvent.hover(option);
     // The menu item radius, as in DropdownMenu.
     await expect(getComputedStyle(option).borderTopLeftRadius).toBe('6px');
+    // The icon button is a native <button>, and Base UI is told so.
+    await expect(console.error).not.toHaveBeenCalledWith(expect.stringContaining('nativeButton'));
   },
 };
 

@@ -91,7 +91,10 @@ function ComboboxInput({
           // the list with the arrow keys. While the list is open, Base UI
           // hides everything but the input and the list from assistive
           // technology, and a hidden element must not be tabbable.
+          // ComboboxPrimitive.Trigger renders a native <button>, so Base UI is
+          // told so: Button turns nativeButton off when `render` is set.
           <InputGroupButton
+            nativeButton
             tabIndex={-1}
             size="icon-xs"
             variant="ghost"
