@@ -143,8 +143,8 @@ function Dashboard() {
   );
 }
 
-// The recessed shell: canvas rail, surface pane, raised cards. Toggle the theme
-// toolbar to see depth carried by lightness (dark) vs border + shadow (light).
+// The flat page: one background, a sidebar split off by a 1px border, and
+// content that is not inset. Cards are the one step up from the page.
 export const Default: Story = {
   render: () => (
     <div className="p-6">
@@ -164,7 +164,7 @@ export const Default: Story = {
   ),
 };
 
-// Same layout, with each tier labelled so the three steps of the ramp are legible.
+// Same layout, with each surface labelled.
 export const Anatomy: Story = {
   render: () => (
     <div className="p-6">
@@ -172,12 +172,12 @@ export const Anatomy: Story = {
         <div className="relative">
           <Nav />
           <span className="text-muted-foreground pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] tracking-wide">
-            shell · --background
+            sidebar · --sidebar
           </span>
         </div>
         <AppShellContent className="relative">
           <span className="text-muted-foreground pointer-events-none absolute right-4 top-3 z-10 font-mono text-[10px] tracking-wide">
-            pane · --surface
+            content · --background
           </span>
           <AppShellHeader>
             <span className="text-muted-foreground text-sm">Marketing / Orders</span>
@@ -191,10 +191,10 @@ export const Anatomy: Story = {
   ),
 };
 
-// How a real app wires the same three tiers, using the production Sidebar atom
-// (collapsible to a 60px icon rail, keyboard toggle, mobile sheet) with
-// variant="inset" and the sliding active pill. The wrapper paints the canvas,
-// SidebarInset is the --surface pane, cards are --surface-raised.
+// How a real app wires the same flat page, using the production Sidebar atom
+// (collapsible to a 60px icon rail, keyboard toggle, mobile sheet) in its
+// default variant, with the sliding active pill. The sidebar has a 1px right
+// border, SidebarInset fills the rest on --background, cards are --surface-raised.
 export const WithSidebarAtom: Story = {
   name: 'With the Sidebar atom (production shell)',
   render: function Render() {
@@ -204,7 +204,7 @@ export const WithSidebarAtom: Story = {
       <SkipLink />
       <AppShell className="h-[620px] min-h-0 overflow-hidden">
         <SidebarProvider className="min-h-0">
-          <Sidebar variant="inset" collapsible="icon">
+          <Sidebar collapsible="icon">
             <SidebarHeader>
               <div className="flex items-center gap-2 px-2 py-1.5">
                 <div className="bg-brand size-6 rounded-md" />
@@ -250,7 +250,7 @@ export const WithSidebarAtom: Story = {
 
 // The header sticks to the top of the element that scrolls. With
 // scrollOwner="container" the page scrolls under it: the header is opaque in
-// the pane's colour, so nothing shows through. Scroll the pane to see it.
+// the page's colour, so nothing shows through. Scroll the pane to see it.
 export const StickyHeader: Story = {
   name: 'Sticky header over scrolling content',
   render: () => (
