@@ -271,7 +271,7 @@ function StatusBadge({
       <>
         {children}
         {tone === 'progress' ? (
-          <LoaderIcon aria-hidden className={cn('size-3 shrink-0', spinnerClass)} />
+          <LoaderIcon aria-hidden className={cn('size-3 shrink-0 stroke-2', spinnerClass)} />
         ) : null}
       </>
     );
@@ -317,9 +317,12 @@ function StatusBadgeMarker({
 }) {
   // 13px icons in the 12px chip, 14px in the 13px chip, at stroke 2. The
   // marker eases to a new tone with the outline, when a status changes in place.
+  // Size and stroke are `!important`: a Button sizes every icon inside it to
+  // 16px at stroke 1.75, with a selector that outranks this one, and a badge
+  // inside a Button keeps its own icon.
   const iconClasses = cn(
-    'inline-flex shrink-0 transition-colors duration-slow [&_svg]:shrink-0 [&_svg]:stroke-2',
-    size === 'lg' ? '[&_svg]:size-3.5' : '[&_svg]:size-3.25',
+    'inline-flex shrink-0 transition-colors duration-slow [&_svg]:shrink-0 [&_svg]:stroke-2!',
+    size === 'lg' ? '[&_svg]:size-3.5!' : '[&_svg]:size-3.25!',
     toneText[tone],
   );
 
