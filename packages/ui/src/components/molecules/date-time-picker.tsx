@@ -6,7 +6,7 @@ import { Input } from '@vendure-io/ui/components/atoms/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@vendure-io/ui/components/atoms/popover';
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { formatDateLabel, parseInstant } from '@vendure-io/ui/lib/date-value';
-import { fieldSurface } from '@vendure-io/ui/lib/field-surface';
+import { fieldButton } from '@vendure-io/ui/lib/field-surface';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarClockIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
@@ -86,10 +86,7 @@ function DateTimePicker({
               disabled={disabled}
               aria-invalid={invalid || undefined}
               // Pickers sit in forms next to Inputs, so they take the field look.
-              className={cn(
-                fieldSurface,
-                'min-w-0 flex-1 justify-start font-normal text-foreground hover:text-foreground aria-expanded:text-foreground active:scale-none aria-invalid:border-transparent aria-invalid:ring-0',
-              )}
+              className={fieldButton}
             />
           }
         >

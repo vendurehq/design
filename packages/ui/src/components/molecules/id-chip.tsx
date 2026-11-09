@@ -40,15 +40,29 @@ function chipChromeClass(copyable: boolean, className?: string): string {
 }
 
 /**
+ * The look of an icon button inside an identifier chip: exactly the 13px
+ * icon, in the chip's text colour, with no fill on hover. The icon shows at
+ * 55%, quieter than the value beside it; a spinner (`role=status`) and the
+ * copied check keep full strength. The chip's 6px end padding is the visible
+ * inset. `IdChip`, `AnonymizedToken` and `SecretValue` all build on it, so
+ * their buttons cannot drift apart.
+ */
+const chipIconButtonClass = cn(
+  "size-3.25 [&_svg:not([class*='size-'])]:size-3.25",
+  'text-inherit hover:bg-transparent dark:hover:bg-transparent',
+  '[&>svg:not([role=status])]:opacity-55',
+  '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55',
+);
+
+/**
  * Props for a `CopyButton` that turns its whole chip into the copy target. Its
  * `::after` stretches over the chip (the chip is `relative`), so a click
  * anywhere on the chip copies, while the button stays the only tab stop and
  * keeps its accessible name. The value text stays plain, readable text.
  *
- * The button is exactly the 13px icon, so the chip's 6px end padding is the
- * visible inset, and its focus ring moves to the chip (see `chipChromeClass`).
- * The copy icon takes the chip's text colour at 55%, quieter than the value
- * beside it; the check keeps its full `success-text`.
+ * It has the `chipIconButtonClass` look. Its focus ring moves to the chip
+ * (see `chipChromeClass`), and it keeps the chip's text colour on hover: the
+ * whole chip brightens instead.
  *
  * The button never scales on press (the chip does). Any `scale` other than
  * `none` makes the button the containing block of its `::after`, which then
@@ -59,10 +73,9 @@ function chipChromeClass(copyable: boolean, className?: string): string {
 const chipCopyButtonProps = {
   'data-chip-copy': '',
   className: cn(
-    "size-3.25 [&_svg:not([class*='size-'])]:size-3.25 after:absolute after:inset-0 focus-visible:outline-none",
+    chipIconButtonClass,
+    'after:absolute after:inset-0 focus-visible:outline-none hover:text-inherit',
     'active:scale-none motion-reduce:active:scale-none',
-    'text-inherit hover:text-inherit hover:bg-transparent dark:hover:bg-transparent',
-    '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55',
   ),
 } as const;
 
@@ -224,5 +237,5 @@ function IdChip({
   );
 }
 
-export { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps, IdChip };
+export { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps, chipIconButtonClass, IdChip };
 export type { IdChipProps };

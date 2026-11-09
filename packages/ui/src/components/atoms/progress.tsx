@@ -19,10 +19,13 @@ const progressTrackVariants = cva(
 // A known value is a full-width fill scaled to the value (--progress-scale,
 // set by Progress), so the bar grows with a transform: from 0 when it first
 // shows, and to each new value. With `value={null}` the bar is indeterminate:
-// a 40% fill with a band that sweeps across at a constant speed. Under reduced
-// motion the fill shows at once and the band is gone.
+// a 40% fill with a band that sweeps across at a constant speed. Both run from
+// the start side: in a right-to-left layout the fill grows from the right and
+// the band plays its sweep in reverse. The reverse class repeats the sweep's
+// variants so it sorts after the `animation` shorthand that would reset it.
+// Under reduced motion the fill shows at once and the band is gone.
 const progressIndicatorVariants = cva(
-  "relative h-full origin-left overflow-hidden bg-(--progress-fill) scale-x-(--progress-scale,1) motion-safe:transition-[scale] motion-safe:duration-(--transition-duration-progress-fill) motion-safe:ease-(--ease-out) motion-safe:not-data-indeterminate:starting:scale-x-0 data-indeterminate:w-full data-indeterminate:bg-(--progress-fill)/40 motion-safe:data-indeterminate:after:absolute motion-safe:data-indeterminate:after:inset-y-0 motion-safe:data-indeterminate:after:left-0 motion-safe:data-indeterminate:after:w-2/5 motion-safe:data-indeterminate:after:bg-linear-to-r motion-safe:data-indeterminate:after:from-transparent motion-safe:data-indeterminate:after:via-(--progress-fill) motion-safe:data-indeterminate:after:to-transparent motion-safe:data-indeterminate:after:animate-progress-sweep",
+  "relative h-full origin-left rtl:origin-right overflow-hidden bg-(--progress-fill) scale-x-(--progress-scale,1) motion-safe:transition-[scale] motion-safe:duration-(--transition-duration-progress-fill) motion-safe:ease-(--ease-out) motion-safe:not-data-indeterminate:starting:scale-x-0 data-indeterminate:w-full data-indeterminate:bg-(--progress-fill)/40 motion-safe:data-indeterminate:after:absolute motion-safe:data-indeterminate:after:inset-y-0 motion-safe:data-indeterminate:after:left-0 motion-safe:data-indeterminate:after:w-2/5 motion-safe:data-indeterminate:after:bg-linear-to-r motion-safe:data-indeterminate:after:from-transparent motion-safe:data-indeterminate:after:via-(--progress-fill) motion-safe:data-indeterminate:after:to-transparent motion-safe:data-indeterminate:after:animate-progress-sweep motion-safe:data-indeterminate:rtl:after:[animation-direction:reverse]",
   {
     variants: {
       tone: {
@@ -122,7 +125,7 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
       className={cn(
-        "text-muted-foreground ml-auto text-sm tabular-nums",
+        "text-muted-foreground ms-auto text-sm tabular-nums",
         className
       )}
       data-slot="progress-value"
