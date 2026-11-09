@@ -23,8 +23,11 @@ import { cn } from "@vendure-io/ui/lib/utils"
 const tonedAlert =
   "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_22%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
 
+// An alert enters once when it mounts: it fades in and moves 4px down into
+// place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
+// keeps the fade. Content padding is 12px inline, 10px block.
 const alertVariants = cva(
-  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-4 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
+  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-3 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert transition-[opacity,translate] duration-[240ms] ease-(--ease-out) starting:opacity-0 motion-safe:starting:-translate-y-1",
   {
     variants: {
       variant: {

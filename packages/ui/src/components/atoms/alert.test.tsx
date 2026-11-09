@@ -49,3 +49,24 @@ describe('toned Alert', () => {
     expect(tokens).not.toContain('border-(color:--alert-border)');
   });
 });
+
+// The v3 look: 12px inline padding, and one entrance on mount. The move is
+// motion-safe, so reduced motion keeps only the fade.
+describe('Alert entrance', () => {
+  const tokens = () =>
+    (renderToStaticMarkup(<Alert variant="info">Deploying</Alert>).match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  test('pads 12px inline and 10px block', () => {
+    expect(tokens()).toContain('px-3');
+    expect(tokens()).toContain('py-2.5');
+  });
+
+  test('fades in from 4px above, and only fades with reduced motion', () => {
+    const t = tokens();
+    expect(t).toContain('starting:opacity-0');
+    expect(t).toContain('motion-safe:starting:-translate-y-1');
+    expect(t.filter((token) => token.startsWith('starting:') && token.includes('translate'))).toEqual([]);
+    expect(t).toContain('duration-[240ms]');
+    expect(t).toContain('ease-(--ease-out)');
+  });
+});
