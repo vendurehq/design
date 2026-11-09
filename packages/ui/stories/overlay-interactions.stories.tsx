@@ -274,6 +274,9 @@ export const ComboboxLook: Story = {
     popup.parentElement?.append(probe);
     await expect(getComputedStyle(popup).boxShadow).toBe(getComputedStyle(probe).boxShadow);
     probe.remove();
+    // Items are 34px, as in Select and DropdownMenu.
+    const option = await body().findByRole('option', { name: 'France' });
+    await expect(option.offsetHeight).toBe(34);
   },
 };
 

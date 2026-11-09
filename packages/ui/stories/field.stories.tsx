@@ -275,6 +275,12 @@ export const FieldLook: Story = {
       if (field.dataset.slot !== 'input-group') await expect(style.paddingLeft).toBe('10px');
     }
 
+    // Select and NativeSelect put the chevron 10px from the edge, like the text.
+    for (const select of [fields[1], fields[2]] as HTMLElement[]) {
+      const chevron = (select.querySelector('svg') ?? select.parentElement?.querySelector('svg')) as SVGElement;
+      await expect(Math.round(select.getBoundingClientRect().right - chevron.getBoundingClientRect().right)).toBe(10);
+    }
+
     // A placeholder shown as text is as faint as a native one.
     probe.className = 'text-faint-foreground';
     const faint = getComputedStyle(probe).color;
