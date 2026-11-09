@@ -842,6 +842,10 @@ export const uiGuidance = [
         title: 'The chip brings its own icon',
         body: 'Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
       },
+      {
+        title: 'Quiet normal, loud abnormal in a list column',
+        body: 'When most rows of a list column share one normal state (Enabled, Public), pass reveal="row" for that state only: its badge shows while its group/row row is hovered or focused, and the other states always show. The consumer decides which state is normal.',
+      },
     ],
     choices: [
       { choice: 'neutral', when: 'Inert, terminal without failure, or waiting on system/time.' },
