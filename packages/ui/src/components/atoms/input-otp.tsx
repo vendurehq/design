@@ -4,6 +4,7 @@ import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
 import { MinusIcon } from "lucide-react"
 
 function InputOTP({
@@ -31,10 +32,9 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="input-otp-group"
-      className={cn(
-        "has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 has-aria-invalid:border-destructive flex items-center rounded-md has-aria-invalid:ring-3",
-        className
-      )}
+      // The group draws the field. The OTP input sits outside the group, so
+      // its focus-within ring never shows: the active slot carries the ring.
+      className={cn(fieldSurfaceWithin, "flex items-center", className)}
       {...props}
     />
   )
@@ -55,7 +55,7 @@ function InputOTPSlot({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        "bg-muted border-border data-[active=true]:outline-solid data-[active=true]:outline-2 data-[active=true]:-outline-offset-2 data-[active=true]:outline-ring data-[active=true]:aria-invalid:outline-destructive aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive relative flex size-8.5 items-center justify-center border-y border-r text-sm transition-all outline-none first:rounded-l-lg first:border-l last:rounded-r-lg data-[active=true]:z-10",
+        "border-border data-[active=true]:outline-solid data-[active=true]:outline-2 data-[active=true]:-outline-offset-2 data-[active=true]:outline-ring data-[active=true]:aria-invalid:outline-destructive relative flex size-8.5 items-center justify-center border-l text-sm transition-all outline-none first:rounded-l-lg first:border-l-0 last:rounded-r-lg data-[active=true]:z-10",
         className
       )}
       {...props}

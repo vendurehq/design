@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import {
   Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
@@ -10,6 +13,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
   ComboboxValue,
+  useComboboxAnchor,
 } from '../src/components/atoms/combobox.tsx';
 
 const meta = {
@@ -128,6 +132,53 @@ export const FieldTrigger: Story = {
         </ComboboxContent>
       </Combobox>
     );
+  },
+};
+
+/**
+ * Several values as chips inside the field. The chips field takes the field
+ * look; its focus sits on the input inside, so it rings on focus-within.
+ */
+export const Chips: Story = {
+  render: function ComboboxChipsStory() {
+    const chipsAnchor = useComboboxAnchor();
+    return (
+      <Combobox items={countries} multiple defaultValue={['Austria', 'France']}>
+        <ComboboxChips ref={chipsAnchor} className="w-80">
+          <ComboboxValue>
+            {(values: string[]) =>
+              values.map((value) => <ComboboxChip key={value}>{value}</ComboboxChip>)
+            }
+          </ComboboxValue>
+          <ComboboxChipsInput aria-label="Countries" placeholder="Add a country" />
+        </ComboboxChips>
+        <ComboboxContent anchor={chipsAnchor}>
+          <ComboboxList>
+            {(country: string) => (
+              <ComboboxItem key={country} value={country}>
+                {country}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const chips = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chips"]') as HTMLElement;
+    const probe = document.createElement('div');
+    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--border)]';
+    canvasElement.append(probe);
+    const style = getComputedStyle(chips);
+    await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
+    await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
+    await expect(style.borderTopLeftRadius).toBe('6px');
+    probe.remove();
+    // Focus on the input inside rings the whole field, 2px inside.
+    within(canvasElement).getByRole('combobox', { name: 'Countries' }).focus();
+    await waitFor(() => expect(style.outlineWidth).toBe('2px'));
+    await expect(style.outlineOffset).toBe('-2px');
+    (document.activeElement as HTMLElement).blur();
   },
 };
 
