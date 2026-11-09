@@ -2,16 +2,19 @@
 
 import type * as React from "react"
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
-import { cva, type VariantProps } from "class-variance-authority"
+import { cva } from "class-variance-authority"
 
+import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { cn } from "@vendure-io/ui/lib/utils"
 
-// Tone names follow the state dictionary; `critical` renders with the
-// `destructive` slots. Every tone sits on one 4px track in the `accent` tint
-// and fills with the tone's text slot, so a done step reads green and a failed
-// one red. `neutral` is a stopped step that needs nothing from the user: a
-// muted fill at 55% opacity. Each tone sets the fill as --progress-fill, so the
-// solid bar and the indeterminate band share one colour.
+// Progress takes the glossary tones (`Tone`) plus `default`, the primary fill
+// of a task bar. Every tone sits on one 4px track in the `accent` tint and
+// fills with the tone's text slot, so a done step reads green and a failed one
+// red. As everywhere, `critical` renders with the `destructive` slots and
+// `progress`, the running step, with the `info` slots. `neutral` is a stopped
+// step that needs nothing from the user: a muted fill at 55% opacity. Each
+// tone sets the fill as --progress-fill, so the solid bar and the
+// indeterminate band share one colour.
 const progressTrackVariants = cva(
   "relative flex h-1 w-full items-center overflow-hidden rounded-full bg-accent"
 )
@@ -31,6 +34,7 @@ const progressIndicatorVariants = cva(
       tone: {
         default: "[--progress-fill:var(--primary)]",
         info: "[--progress-fill:var(--info-text)]",
+        progress: "[--progress-fill:var(--info-text)]",
         success: "[--progress-fill:var(--success-text)]",
         warning: "[--progress-fill:var(--warning-text)]",
         critical: "[--progress-fill:var(--destructive-text)]",
@@ -43,9 +47,7 @@ const progressIndicatorVariants = cva(
   }
 )
 
-type ProgressTone = NonNullable<
-  VariantProps<typeof progressIndicatorVariants>["tone"]
->
+type ProgressTone = Tone | "default"
 
 function Progress({
   className,
