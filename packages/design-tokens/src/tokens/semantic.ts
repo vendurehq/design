@@ -88,8 +88,14 @@ export const lightTheme = {
   // warning Alert tint, a highlight. `warning-text` is dark enough for text,
   // so mixed into an outline or fill it reads beige. Not text, and never the
   // only cue: on a light surface it is about 2:1, below the 3:1 non-text bar.
-  // Not for a standalone status dot.
+  // A standalone status dot uses it too, as in the v3 look; its label stays
+  // in the DOM as screen-reader text.
   'warning-indicator': 'oklch(0.767 0.157 72)',
+  // The neutral tone of a state (Stopped, Asleep): the StatusBadge outline,
+  // fill and label mix, its icon and its dot. The same grey as
+  // `muted-foreground` in light mode; dark mode lifts it, so a neutral chip
+  // does not read dim beside the other tones.
+  'neutral-text': 'var(--muted-foreground)',
   // Code annotation slots (Shiki notation: line/word highlight, diff add/remove).
   // Backgrounds are 10% alpha mixes so they read on any surface tier and keep
   // the syntax-highlighted text legible; accents draw the solid gutter bar.
@@ -196,6 +202,9 @@ export const darkTheme = {
   'info-text': 'oklch(0.8 0.125 231)',
   // Dark `warning-text` is already bright enough for a mark, and holds 3:1.
   'warning-indicator': 'var(--warning-text)',
+  // Brighter than dark `muted-foreground` (0.715), so a neutral chip sits
+  // level with the other tones. Holds 4.5:1 on every surface tier.
+  'neutral-text': 'oklch(0.745 0.013 231)',
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,

@@ -263,6 +263,26 @@ describe('StatusBadge', () => {
   });
 });
 
+describe('StatusBadge neutral tone', () => {
+  test('the chip and its icon take neutral-text', () => {
+    const markup = html(<StatusBadge tone="neutral">Asleep</StatusBadge>);
+
+    expect(markup).toContain('[--status-tone:var(--neutral-text)]');
+    expect(markup).toContain('text-neutral-text');
+    expect(markup).not.toContain('--muted-foreground');
+  });
+
+  test('the neutral word stays muted', () => {
+    const markup = html(
+      <StatusBadge tone="neutral" appearance="text">
+        Stopped
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('text-muted-foreground');
+  });
+});
+
 describe('StatusBadge appearance="bare"', () => {
   test('keeps the icon and the tinted label, without fill, outline or padding', () => {
     const markup = html(

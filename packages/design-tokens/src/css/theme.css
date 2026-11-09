@@ -131,6 +131,7 @@
   --color-destructive-text: var(--destructive-text);
   --color-info-text: var(--info-text);
   --color-warning-indicator: var(--warning-indicator);
+  --color-neutral-text: var(--neutral-text);
   --color-code-highlight: var(--code-highlight);
   --color-code-highlight-accent: var(--code-highlight-accent);
   --color-code-diff-add: var(--code-diff-add);

@@ -33,7 +33,8 @@ type StatusBadgeReveal = 'always' | 'row';
 // Slot = tone, with two aliases: `critical` uses the `destructive` slots (the
 // token keeps its shadcn-compatible name) and `progress` uses the `info`
 // slots, so a chip in motion is blue before it lands on its outcome.
-// `neutral` takes the muted text colour as its tone. `warning` draws its
+// `neutral` takes `neutral-text`: the muted grey in light mode, lifted in
+// dark mode so a neutral chip does not read dim. `warning` draws its
 // fill and outline in `warning-indicator`: mixed from `warning-text`, they
 // read beige. Its label mixes 70% of `warning-text` instead. Class strings
 // are static per tone so Tailwind's scanner picks them up.
@@ -44,7 +45,7 @@ type StatusBadgeReveal = 'always' | 'row';
 // lines up with the column header. `bare` has no padding, so only the marker
 // counts.
 const toneVars = {
-  neutral: '[--status-tone:var(--muted-foreground)]',
+  neutral: '[--status-tone:var(--neutral-text)]',
   info: '[--status-tone:var(--info-text)]',
   success: '[--status-tone:var(--success-text)]',
   warning:
@@ -146,10 +147,9 @@ const toneIcon: Record<Exclude<Tone, 'progress'>, LucideIcon> = {
   critical: CircleXIcon,
 };
 
-// The marker colour of each tone: the icon or spinner stroke. `neutral` has
-// no tone slot, so it uses the muted text colour.
+// The marker colour of each tone: the icon or spinner stroke.
 const toneText: Record<Tone, string> = {
-  neutral: 'text-muted-foreground',
+  neutral: 'text-neutral-text',
   info: 'text-info-text',
   success: 'text-success-text',
   warning: 'text-warning-text',
