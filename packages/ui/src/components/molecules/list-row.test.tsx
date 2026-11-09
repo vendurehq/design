@@ -104,7 +104,7 @@ describe('ListRow', () => {
     const actions = slotTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
     expect(actions).toContain('duration-(--transition-duration-quick)');
     expect(actions).toContain('ease-(--ease-soft)');
-    const row = slotTag(renderToStaticMarkup(<ListRow data-new="" />), 'list-row');
+    const row = slotTag(renderToStaticMarkup(<ListRow enter="new" />), 'list-row');
     // The content fades in on `ease` after the height has started to open.
     expect(row).toContain(
       'opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)',
@@ -138,23 +138,23 @@ describe('ListRow', () => {
 
   test('a row that "Show older" adds fades up after the one above it', () => {
     const later = (index: number) =>
-      slotTag(renderToStaticMarkup(<ListRow laterIndex={index} />), 'list-row');
-    expect(later(0)).toContain('data-later=""');
-    expect(later(0)).toContain('--list-row-later-delay:0ms');
-    expect(later(2)).toContain('--list-row-later-delay:56ms');
+      slotTag(renderToStaticMarkup(<ListRow enter={{ stagger: index }} />), 'list-row');
+    expect(later(0)).toContain('data-enter="stagger"');
+    expect(later(0)).toContain('--list-row-stagger-delay:0ms');
+    expect(later(2)).toContain('--list-row-stagger-delay:56ms');
     // A long page does not keep the last rows waiting.
-    expect(later(40)).toContain('--list-row-later-delay:336ms');
+    expect(later(40)).toContain('--list-row-stagger-delay:336ms');
     const row = later(1);
-    expect(row).toContain('data-later:starting:opacity-0');
-    expect(row).toContain('motion-safe:data-later:starting:translate-y-1.5');
-    expect(row).toContain('motion-safe:data-later:starting:blur-[3px]');
+    expect(row).toContain('data-[enter=stagger]:starting:opacity-0');
+    expect(row).toContain('motion-safe:data-[enter=stagger]:starting:translate-y-1.5');
+    expect(row).toContain('motion-safe:data-[enter=stagger]:starting:blur-[3px]');
     // Reduced motion keeps the fade only, without the stagger.
     expect(row).toContain(
-      'motion-reduce:data-later:[transition:opacity_var(--transition-duration-normal)_var(--ease-default)',
+      'motion-reduce:data-[enter=stagger]:[transition:opacity_var(--transition-duration-normal)_var(--ease-default)',
     );
     // Rows of the first render take none of it.
     const first = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
-    expect(first).not.toContain('data-later=');
+    expect(first).not.toContain('data-enter=');
     expect(first).not.toContain('style=');
   });
 });

@@ -614,7 +614,7 @@ export const uiGuidance = [
       },
       {
         title: 'Only rows added later animate',
-        body: 'Set data-new on a row the user just created, and laterIndex (0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take neither, so the list does not animate on page load.',
+        body: 'Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.',
       },
     ],
     related: ['collapsible-section', 'data-table', 'id-chip', 'status-badge'],
