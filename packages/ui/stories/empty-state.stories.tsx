@@ -80,9 +80,8 @@ export const NoOrders: Story = {
   },
 };
 
-// `icon` is the pre-illustration API: a small icon in the muted chip. Passing
-// it (without `illustration`) keeps working exactly as it did before
-// illustrations existed — no migration required.
+// An `icon` (without `illustration`) is drawn bare, as in the v3 look: 28px,
+// a light stroke and 40% opacity, 20px above a 16px title. No box.
 export const WithIcon: Story = {
   args: {
     icon: <InboxIcon />,
@@ -103,11 +102,10 @@ export const WithoutIllustration: Story = {
   },
 };
 
-// Inside a table body the table owns the perimeter: `bordered={false}` drops the
-// dashed box so the empty state sits flush in the table frame.
+// Inside a table body the table owns the perimeter. The state draws no box,
+// so it sits flush in the table frame.
 export const InTableBody: Story = {
   args: {
-    bordered: false,
     illustration: null,
     icon: <InboxIcon />,
     title: 'No invoices yet',
@@ -136,8 +134,8 @@ export const InTableBody: Story = {
 
 /**
  * `size="compact"` for a small panel or side column: no illustration, tighter
- * spacing, title, description and at most one action. `bordered={false}` sits
- * flush inside the card.
+ * spacing, title, description and at most one action. It sits flush inside
+ * the card.
  */
 export const CompactInPanel: Story = {
   render: () => (
@@ -148,7 +146,6 @@ export const CompactInPanel: Story = {
       <CardContent>
         <EmptyState
           size="compact"
-          bordered={false}
           title="No custom domains"
           description="Point a domain at this environment to serve the storefront."
         >
@@ -177,7 +174,6 @@ export const CompactWithIcon: Story = {
       <CardRows>
         <EmptyState
           size="compact"
-          bordered={false}
           className="border-t border-solid"
           icon={<GlobeIcon />}
           title="No custom domains"
@@ -190,4 +186,18 @@ export const CompactWithIcon: Story = {
       </CardRows>
     </Card>
   ),
+};
+
+/**
+ * `bordered` opts in to a dashed box, for a drop zone or a slot that needs a
+ * visible outline. The default draws none.
+ */
+export const Bordered: Story = {
+  args: {
+    bordered: true,
+    illustration: null,
+    icon: <InboxIcon />,
+    title: 'Drop files here',
+    description: 'Or choose them from your computer.',
+  },
 };

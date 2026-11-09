@@ -370,7 +370,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -547,7 +547,11 @@ export const uiGuidance = [
       },
       {
         title: 'A lookup key in a list column reveals on row hover',
-        body: 'When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).',
+        body: 'When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. DataTable and ListRow rows keep a copy chip above their stretched row link, so it copies and does not open the row.',
+      },
+      {
+        title: 'A lookup key that names the row is still a chip',
+        body: 'When the lookup key is also the row\'s name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.',
       },
     ],
     related: ['anonymized-token', 'copyable-text'],
@@ -803,11 +807,11 @@ export const uiGuidance = [
       },
       {
         title: 'Tables own their perimeter',
-        body: 'When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.',
+        body: 'When EmptyState replaces a table body, it renders flush within the table container: EmptyState draws no box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.',
       },
       {
         title: 'Compact for small panels',
-        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}. An icon is optional and renders bare, without the chip.',
+        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush. An icon is optional and renders bare, as in the full state.',
       },
       {
         title: 'Errors own the failure',

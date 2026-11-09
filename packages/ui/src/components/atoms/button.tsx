@@ -1,8 +1,10 @@
 "use client"
 
+import type * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { useActiveLabelWidth } from "@vendure-io/ui/hooks/use-active-label-width"
 import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
 import { cn } from "@vendure-io/ui/lib/utils"
 
@@ -108,4 +110,53 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+/**
+ * A button label that changes in place, such as "Select" → "Selected". The
+ * labels share one grid cell and `active` picks the one that shows; the others
+ * are hidden from the accessible name. A label before it leaves 4px upward, a
+ * label after it waits 4px below, both faded out with a 2px blur, and the
+ * button eases to the width of the active label, clipping the wider one as it
+ * goes. With reduced motion the labels only crossfade and the width changes at
+ * once. A label may hold an icon; it keeps full strength (only a direct svg
+ * child of the button is dimmed).
+ */
+function ButtonLabelSwap({
+  labels,
+  active,
+  className,
+  style,
+  ...props
+}: Omit<React.ComponentProps<"span">, "children"> & {
+  labels: readonly React.ReactNode[]
+  active: number
+}) {
+  const { refs, width } = useActiveLabelWidth(active, labels)
+  return (
+    <span
+      data-slot="button-label-swap"
+      className={cn(
+        "grid grid-cols-[100%] justify-items-center gap-[inherit] overflow-x-clip whitespace-nowrap motion-safe:transition-[width] motion-safe:duration-(--transition-duration-normal) motion-safe:ease-drawer",
+        className
+      )}
+      style={width === undefined ? style : { ...style, width }}
+      {...props}
+    >
+      {labels.map((label, index) => (
+        <span
+          // The labels are positions in a fixed list, so the index is their identity.
+          key={index}
+          ref={(element) => {
+            refs.current[index] = element
+          }}
+          data-swap={index === active ? "in" : index < active ? "before" : "after"}
+          aria-hidden={index === active ? undefined : true}
+          className="col-start-1 row-start-1 inline-flex items-center gap-[inherit] [transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out),filter_var(--transition-duration-moderate)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-1 motion-safe:data-[swap=before]:-translate-y-1 motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]"
+        >
+          {label}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+export { Button, ButtonLabelSwap, buttonVariants }
