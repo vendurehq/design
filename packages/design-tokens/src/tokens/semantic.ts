@@ -9,11 +9,11 @@ export const lightTheme = {
   'foreground-secondary': 'oklch(0.38 0.014 231)',
   // Surface ramp. Light mode holds an even near-white ramp (canvas to surface
   // to pure white) so nested tiers stay distinct: a light-gray canvas, an
-  // off-white content pane, and white raised cards. Overlays are white too
-  // and separate by the overlay shadow, not lightness.
+  // off-white content pane, and white raised cards. Overlays share the
+  // raised fill and separate by the overlay shadow, not lightness.
   surface: 'oklch(0.986 0.002 231)',
   'surface-raised': 'oklch(1 0 0)',
-  overlay: 'oklch(1 0 0)',
+  overlay: 'var(--surface-raised)',
   inset: 'color-mix(in oklab, black 5%, transparent)',
   // Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer).
   scrim: 'color-mix(in oklab, black 45%, transparent)',
@@ -141,12 +141,12 @@ export const darkTheme = {
   foreground: 'oklch(0.956 0.005 231)',
   'foreground-secondary': 'oklch(0.838 0.01 231)',
   // Dark mode expresses the page tiers through lightness. `surface` sits
-  // halfway between the canvas and the raised tier. `overlay` matches
+  // halfway between the canvas and the raised tier. `overlay` points at
   // `surface-raised`, as in the v3 look: the overlay shadow's 1px ring and
   // drop separate floating content, not a lighter fill.
   surface: 'oklch(0.222 0.012 231)',
   'surface-raised': 'oklch(0.238 0.013 231)',
-  overlay: 'oklch(0.238 0.013 231)',
+  overlay: 'var(--surface-raised)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   scrim: 'color-mix(in oklab, black 45%, transparent)',
   'scrim-subtle': 'color-mix(in oklab, black 42%, transparent)',

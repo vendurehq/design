@@ -73,7 +73,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Overlay is for floating content',
-        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs. Buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface.',
+        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.',
       },
       {
         title: 'Inset reads below its host',
@@ -81,7 +81,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Neutral intensity has an order',
-        body: 'Use muted for the lowest emphasis, secondary for supporting filled surfaces, and accent for hover or selected emphasis.',
+        body: 'Use muted for the lowest emphasis and for hover and selected fills on rows, items and ghost controls. Use secondary for supporting filled surfaces. Use accent as the hover step for a control that already rests on muted.',
       },
     ],
   },

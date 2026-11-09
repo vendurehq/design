@@ -50,8 +50,8 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('border-input');
   });
 
-  test('primary, outline and destructive sit on shadow-control; disabled drops it', () => {
-    for (const variant of ['default', 'outline', 'destructive'] as const) {
+  test('primary, brand, outline and destructive sit on shadow-control; disabled drops it', () => {
+    for (const variant of ['default', 'brand', 'outline', 'destructive'] as const) {
       expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
     }
     for (const variant of ['ghost', 'link', 'secondary'] as const) {

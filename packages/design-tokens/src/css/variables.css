@@ -88,7 +88,7 @@
   --foreground-secondary: oklch(0.38 0.014 231);
   --surface: oklch(0.986 0.002 231);
   --surface-raised: oklch(1 0 0);
-  --overlay: oklch(1 0 0);
+  --overlay: var(--surface-raised);
   --inset: color-mix(in oklab, black 5%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
   --scrim-subtle: color-mix(in oklab, black 18%, transparent);
@@ -174,7 +174,7 @@
   --foreground-secondary: oklch(0.838 0.01 231);
   --surface: oklch(0.222 0.012 231);
   --surface-raised: oklch(0.238 0.013 231);
-  --overlay: oklch(0.238 0.013 231);
+  --overlay: var(--surface-raised);
   --inset: color-mix(in oklab, black 40%, transparent);
   --scrim: color-mix(in oklab, black 45%, transparent);
   --scrim-subtle: color-mix(in oklab, black 42%, transparent);

@@ -44,7 +44,7 @@ const buttonVariants = cva(
         // Identity/marketing CTA only ("Start free trial", "Upgrade to Cloud"):
         // a deliberate brand moment, not a louder `default` primary. Brand is a
         // signature, not a wallpaper; see Button guidance before reaching for it.
-        brand: "bg-brand text-brand-foreground hover:bg-brand/80",
+        brand: "bg-brand text-brand-foreground shadow-control hover:bg-brand/80",
         outline:
           "border-input bg-card text-foreground shadow-control [&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)] hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
         secondary:
