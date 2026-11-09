@@ -61,8 +61,13 @@ describe('ListRow', () => {
 
   test('controls inside the row are lifted above the stretched link, the link itself is not', () => {
     const row = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
-    expect(row).toContain(':not([data-slot=list-row-link])]:relative');
-    expect(row).toContain(':not([data-slot=list-row-link])]:z-10');
+    // The copy chips are lifted whole; their inner copy button stays static,
+    // or its stretched ::after shrinks to the icon.
+    const notLifted =
+      ':not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]';
+    expect(row).toContain(`${notLifted}:relative`);
+    expect(row).toContain(`${notLifted}:z-10`);
+    expect(row).toContain('[data-slot=anonymized-token],[data-slot=copyable-text]');
     const actions = openTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
     expect(actions).toContain('z-10');
   });

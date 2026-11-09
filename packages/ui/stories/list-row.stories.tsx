@@ -10,6 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
+import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
+import { CopyableText } from '../src/components/molecules/copyable-text.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import {
   ListRow,
@@ -22,6 +24,7 @@ import {
   ListRowTitle,
   ListRowTrailing,
 } from '../src/components/molecules/list-row.tsx';
+import { SecretValue } from '../src/components/molecules/secret-value.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 
@@ -268,6 +271,91 @@ export const OpensFromAnyPoint: Story = {
     await expect(link).toHaveFocus();
     await userEvent.tab();
     await expect(control).toHaveFocus();
+  },
+};
+
+/**
+ * The copy chips keep their own click above the row link. A click on any point
+ * of an IdChip or an AnonymizedToken copies, the tooltip says "Copied", and
+ * the row does not open. A click on CopyableText or SecretValue text does
+ * nothing: only their buttons act. The play function stubs the clipboard; the
+ * test runner then presses the chip text with a real mouse (`pressText`).
+ */
+export const ChipsInRow: Story = {
+  parameters: {
+    pressText: [
+      { text: '5c1f8b7e…2043', expectButton: 'Order ID copied' },
+      { text: 'vc_pat_7...5dE7', expectButton: 'Token copied' },
+    ],
+  },
+  render: () => (
+    <RowCard>
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink render={<a href="#order" />}>Order SB-2043</ListRowLink>
+        </ListRowContent>
+        <ListRowTrailing>
+          <IdChip
+            value="5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d2043"
+            copyLabel="Copy order ID"
+            copiedLabel="Order ID copied"
+          />
+        </ListRowTrailing>
+        <ListRowChevron />
+      </ListRow>
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink render={<a href="#token" />}>Deploy token</ListRowLink>
+        </ListRowContent>
+        <ListRowTrailing>
+          <AnonymizedToken value="vc_pat_7JjK9mN2pQ4rS6tU8vW0xY1zA3bC5dE7" />
+        </ListRowTrailing>
+        <ListRowChevron />
+      </ListRow>
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink render={<a href="#webhook" />}>Order webhook</ListRowLink>
+        </ListRowContent>
+        <ListRowTrailing>
+          <CopyableText value="https://shop.example.com/hooks/orders" copyLabel="Copy webhook URL" />
+        </ListRowTrailing>
+        <ListRowChevron />
+      </ListRow>
+      <ListRow>
+        <ListRowContent>
+          <ListRowLink render={<a href="#secret" />}>Signing secret</ListRowLink>
+        </ListRowContent>
+        <ListRowTrailing>
+          <SecretValue loadValue={async () => 'whsec_4f7a1349'} />
+        </ListRowTrailing>
+        <ListRowChevron />
+      </ListRow>
+    </RowCard>
+  ),
+  play: async ({ canvasElement }) => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => {} },
+    });
+    const canvas = within(canvasElement);
+    // What the pointer hits 4px into a piece of text, where the runner presses.
+    const hitAt = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      return canvasElement.ownerDocument.elementFromPoint(rect.left + 4, rect.top + rect.height / 2);
+    };
+
+    // The copy chips: the value text lies under the copy button's stretched ::after.
+    await expect(hitAt(canvas.getByText('5c1f8b7e…2043'))).toBe(
+      canvas.getByRole('button', { name: 'Copy order ID' }),
+    );
+    await expect(hitAt(canvas.getByText('vc_pat_7...5dE7'))).toBe(
+      canvas.getByRole('button', { name: 'Copy token' }),
+    );
+    // CopyableText and SecretValue: the text stays above the row link.
+    const url = canvas.getByText('https://shop.example.com/hooks/orders');
+    await expect(hitAt(url)).toBe(url);
+    const mask = canvas.getByText('••••••••');
+    await expect(mask.closest('[data-slot=secret-value]')?.contains(hitAt(mask))).toBe(true);
   },
 };
 
