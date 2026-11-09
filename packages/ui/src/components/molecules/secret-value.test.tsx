@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-
+import { slotTokens } from '../../test/slot-tokens.ts';
 import { IdChip } from './id-chip.tsx';
 import { SecretValue } from './secret-value.tsx';
 
@@ -53,22 +53,13 @@ describe('SecretValue', () => {
   });
 
   test('its buttons look like the IdChip copy button: 13px icon at 55%, 6px end', () => {
-    const classes = (markup: string, slot: string) =>
-      markup
-        .match(new RegExp(`<[a-z]+[^>]*data-slot="${slot}"[^>]*>`))?.[0]
-        .match(/class="([^"]*)"/)?.[1]
-
-        ?.replace(/&amp;/g, '&')
-        .replace(/&gt;/g, '>')
-        .replace(/&#x27;/g, "'")
-        .split(' ') ?? [];
-    const idChipCopy = classes(html(<IdChip value="9f2c4e1a" />), 'copy-button');
+    const idChipCopy = slotTokens(html(<IdChip value="9f2c4e1a" />), 'copy-button');
     for (const markup of [
       html(<SecretValue loadValue={loadValue} />),
       html(<SecretValue loadValue={loadValue} copyable={false} />),
     ]) {
-      expect(classes(markup, 'secret-value')).toContain('pr-1.5');
-      const reveal = classes(markup, 'secret-value-reveal');
+      expect(slotTokens(markup, 'secret-value')).toContain('pr-1.5');
+      const reveal = slotTokens(markup, 'secret-value-reveal');
       for (const token of [
         'size-3.25',
         "[&_svg:not([class*='size-'])]:size-3.25",
@@ -79,7 +70,7 @@ describe('SecretValue', () => {
       }
       expect(reveal).toContain('[&>svg:not([role=status])]:opacity-55');
     }
-    const copy = classes(html(<SecretValue loadValue={loadValue} />), 'copy-button');
+    const copy = slotTokens(html(<SecretValue loadValue={loadValue} />), 'copy-button');
     expect(copy).toContain('size-3.25');
     expect(copy).toContain(
       '[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-55',

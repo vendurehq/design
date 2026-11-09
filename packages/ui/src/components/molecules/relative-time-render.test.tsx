@@ -1,14 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-
+import { slotTag } from '../../test/slot-tokens.ts';
 import { IdChip } from './id-chip.tsx';
 import { RelativeTime } from './relative-time.tsx';
 
 const WHEN = new Date('2026-10-01T12:00:00Z');
-
-function tag(html: string, slot: string): string {
-  return html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-}
 
 describe('RelativeTime', () => {
   const render = (node: React.ReactElement) => renderToStaticMarkup(node);
@@ -21,7 +17,7 @@ describe('RelativeTime', () => {
     ]) {
       expect(html.startsWith('<time')).toBe(true);
       expect(html.endsWith('</time>')).toBe(true);
-      const id = tag(html, 'relative-time').match(/aria-describedby="([^"]+)"/)?.[1];
+      const id = slotTag(html, 'relative-time').match(/aria-describedby="([^"]+)"/)?.[1];
       expect(id).toBeTruthy();
       const description = html.match(new RegExp(`<span id="${id}" hidden="">([^<]*)</span>`));
       expect(description?.[1]).toContain('2026');
@@ -39,19 +35,19 @@ describe('RelativeTime', () => {
   });
 
   test('is a tooltip trigger by default, with no tab stop', () => {
-    const time = tag(render(<RelativeTime value={WHEN} />), 'relative-time');
+    const time = slotTag(render(<RelativeTime value={WHEN} />), 'relative-time');
     expect(time).toContain('data-base-ui-tooltip-trigger');
     expect(time).not.toContain('tabindex');
   });
 
   test('tooltip={false} renders a plain <time>', () => {
-    const time = tag(render(<RelativeTime value={WHEN} tooltip={false} />), 'relative-time');
+    const time = slotTag(render(<RelativeTime value={WHEN} tooltip={false} />), 'relative-time');
     expect(time).not.toContain('data-base-ui-tooltip-trigger');
     expect(time).not.toContain('tabindex');
   });
 
   test('focusable adds the tab stop and the focus ring', () => {
-    const time = tag(render(<RelativeTime value={WHEN} focusable />), 'relative-time');
+    const time = slotTag(render(<RelativeTime value={WHEN} focusable />), 'relative-time');
     expect(time).toContain('tabindex="0"');
     expect(time).toContain('focus-visible:outline-2');
     expect(time).toContain('focus-visible:outline-offset-2');
@@ -59,7 +55,7 @@ describe('RelativeTime', () => {
   });
 
   test('keeps a consumer aria-describedby alongside its own', () => {
-    const time = tag(
+    const time = slotTag(
       render(<RelativeTime value={WHEN} aria-describedby="note" />),
       'relative-time',
     );
@@ -69,7 +65,7 @@ describe('RelativeTime', () => {
 
 describe('IdChip full value', () => {
   test('a shortened chip has no native title and adds no tab stop', () => {
-    const chip = tag(
+    const chip = slotTag(
       renderToStaticMarkup(<IdChip value="5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d4e3f" />),
       'id-chip',
     );

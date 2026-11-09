@@ -14,21 +14,11 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from './command.tsx';
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 // cmdk 1.1.1 writes data-selected="true" or data-selected="false" on every item. A bare
 // data-selected: variant compiles to [data-selected] and matches both, so every item looked
 // highlighted. The highlight must key on the "true" value.
-
-/** Class tokens of the first element that carries the given data-slot, entity-decoded. */
-function classTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-  return (tag.match(/class="([^"]*)"/)?.[1] ?? '')
-    .replace(/&amp;/g, '&')
-    .replace(/&gt;/g, '>')
-    .replace(/&#x27;/g, "'")
-    .split(/\s+/)
-    .filter(Boolean);
-}
 
 function render() {
   return renderToStaticMarkup(
@@ -49,7 +39,7 @@ describe('CommandItem highlight', () => {
   });
 
   test('the highlight only applies to data-selected="true"', () => {
-    const item = classTokens(render(), 'command-item');
+    const item = slotTokens(render(), 'command-item');
     expect(item).toEqual(
       expect.arrayContaining([
         'data-[selected=true]:bg-muted',
@@ -60,7 +50,7 @@ describe('CommandItem highlight', () => {
   });
 
   test('the highlight is a Highlight outline in forced colors', () => {
-    const item = classTokens(render(), 'command-item');
+    const item = slotTokens(render(), 'command-item');
     expect(item).toEqual(
       expect.arrayContaining([
         'not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid',
@@ -74,13 +64,13 @@ describe('CommandItem highlight', () => {
   test('palette styles key on the palette, not on any dialog', () => {
     const html = render();
     expect(html).not.toContain('in-data-[slot=dialog-content]');
-    const item = classTokens(html, 'command-item');
+    const item = slotTokens(html, 'command-item');
     expect(item).toContain('in-data-command-palette:data-[selected=true]:text-foreground');
     expect(item.filter((token) => token.endsWith('!') && token.includes(':text-'))).toEqual([]);
   });
 
   test('palette items are quiet at rest and turn foreground with a brand icon on the highlight', () => {
-    const item = classTokens(render(), 'command-item');
+    const item = slotTokens(render(), 'command-item');
     expect(item).toEqual(
       expect.arrayContaining([
         'in-data-command-palette:text-foreground-secondary',
@@ -101,12 +91,12 @@ describe('CommandItem highlight', () => {
         </CommandList>
       </Command>,
     );
-    expect(classTokens(html, 'command-item-label')).toContain('in-data-command-palette:font-medium');
-    expect(classTokens(html, 'command-item').filter((token) => token.includes('font-'))).toEqual([]);
+    expect(slotTokens(html, 'command-item-label')).toContain('in-data-command-palette:font-medium');
+    expect(slotTokens(html, 'command-item').filter((token) => token.includes('font-'))).toEqual([]);
   });
 
   test('the shortcut only brightens on the highlighted item', () => {
-    const shortcut = classTokens(render(), 'command-shortcut');
+    const shortcut = slotTokens(render(), 'command-shortcut');
     expect(shortcut).toContain('group-data-[selected=true]/command-item:text-foreground');
     expect(shortcut).not.toContain('group-data-selected/command-item:text-foreground');
   });
@@ -144,8 +134,8 @@ describe('CommandInput', () => {
     expect(html).toContain('data-slot="command-input-wrapper"');
     expect(html).toContain('data-slot="input-group"');
     expect(html).toContain('data-slot="input-group-addon"');
-    expect(classTokens(html, 'command-input-wrapper')).toContain('border-b');
-    expect(classTokens(html, 'input-group')).toEqual(
+    expect(slotTokens(html, 'command-input-wrapper')).toContain('border-b');
+    expect(slotTokens(html, 'input-group')).toEqual(
       expect.arrayContaining(['border-0!', 'bg-transparent!', 'ring-0!', 'in-data-command-palette:h-13.5!']),
     );
   });
@@ -153,7 +143,7 @@ describe('CommandInput', () => {
 
 describe('CommandList', () => {
   test('eases to the height cmdk measures, and not under reduced motion', () => {
-    const list = classTokens(render(), 'command-list');
+    const list = slotTokens(render(), 'command-list');
     expect(list).toEqual(
       expect.arrayContaining([
         'h-(--cmdk-list-height)',
@@ -184,7 +174,7 @@ describe('CommandList', () => {
     const highlight = html.match(/<div[^>]*data-slot="command-highlight"[^>]*>/)?.[0] ?? '';
     expect(highlight).toContain('aria-hidden="true"');
     expect(highlight).toContain('role="none"');
-    expect(classTokens(html, 'command-highlight')).toEqual(
+    expect(slotTokens(html, 'command-highlight')).toEqual(
       expect.arrayContaining([
         'data-ready:transition-opacity',
         'will-change-transform',
@@ -193,8 +183,8 @@ describe('CommandList', () => {
       ]),
     );
     // The follower moves it from script, not through a CSS transition.
-    expect(classTokens(html, 'command-highlight').some((token) => token.includes('transition-[transform'))).toBe(false);
-    expect(classTokens(html, 'command-item')).toContain('in-data-[highlight=slide]:data-[selected=true]:bg-transparent!');
+    expect(slotTokens(html, 'command-highlight').some((token) => token.includes('transition-[transform'))).toBe(false);
+    expect(slotTokens(html, 'command-item')).toContain('in-data-[highlight=slide]:data-[selected=true]:bg-transparent!');
   });
 });
 
@@ -209,7 +199,7 @@ describe('CommandFooter', () => {
     );
     expect(html).toContain('data-slot="command-footer"');
     expect(html).toContain('data-slot="kbd"');
-    expect(classTokens(html, 'command-footer')).toContain('border-t');
+    expect(slotTokens(html, 'command-footer')).toContain('border-t');
   });
 });
 
@@ -221,13 +211,13 @@ describe('CommandList results crossfade', () => {
     expect(ghost).toContain('aria-hidden="true"');
     expect(ghost).toContain('role="none"');
     expect(ghost).toContain('inert');
-    expect(classTokens(html, 'command-results-ghost')).toEqual(
+    expect(slotTokens(html, 'command-results-ghost')).toEqual(
       expect.arrayContaining(['data-leaving:*:opacity-0', 'data-leaving:*:blur-[3px]']),
     );
   });
 
   test('new results fade in from a blur, rows that stay and the ghost do not', () => {
-    const entering = classTokens(render(), 'command-list').filter((token) => token.includes('[data-results-ready]'));
+    const entering = slotTokens(render(), 'command-list').filter((token) => token.includes('[data-results-ready]'));
     expect(entering.length).toBeGreaterThan(0);
     for (const token of entering) {
       expect(token).toContain(':not([data-result-seen],[data-slot=command-results-ghost]_*)');
@@ -252,7 +242,7 @@ describe('CommandItemDetail', () => {
   );
 
   test('shows on the highlighted item only', () => {
-    expect(classTokens(html, 'command-item-detail')).toEqual(
+    expect(slotTokens(html, 'command-item-detail')).toEqual(
       expect.arrayContaining([
         'opacity-0',
         'group-data-[selected=true]/command-item:opacity-100',

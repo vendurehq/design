@@ -2,18 +2,11 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Alert, AlertDescription, AlertTitle } from './alert.tsx';
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 // A toned Alert is a faint tint of its tone (fill and border mixed from one
 // tone colour) with its icon in the tone's text slot; title and description
 // keep the neutral text slots.
-
-/** Class tokens of the element carrying the given data-slot, entity-decoded. */
-function slotTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0];
-  if (!tag) throw new Error(`No ${slot} rendered`);
-  const classAttr = tag.match(/class="([^"]*)"/)?.[1] ?? '';
-  return classAttr.replace(/&amp;/g, '&').replace(/&#x27;/g, "'").split(/\s+/).filter(Boolean);
-}
 
 describe('Alert tone variants', () => {
   const slots = { destructive: 'destructive', warning: 'warning', info: 'info' } as const;

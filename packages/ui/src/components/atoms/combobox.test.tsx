@@ -2,12 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Combobox, ComboboxInput, ComboboxTrigger, ComboboxValue } from './combobox.tsx';
-
-/** Class tokens of the first element that carries the given data-slot. */
-function classTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-  return (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
-}
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 describe('ComboboxTrigger field styling', () => {
   test('a standalone trigger looks like a form field', () => {
@@ -18,7 +13,7 @@ describe('ComboboxTrigger field styling', () => {
         </ComboboxTrigger>
       </Combobox>,
     );
-    const classes = classTokens(html, 'combobox-trigger');
+    const classes = slotTokens(html, 'combobox-trigger');
     for (const token of [
       'bg-muted',
       'shadow-[inset_0_0_0_1px_var(--border)]',
@@ -42,7 +37,7 @@ describe('ComboboxTrigger field styling', () => {
       </Combobox>,
     );
     expect(combobox).toContain('data-size="sm"');
-    expect(classTokens(combobox, 'combobox-trigger')).toContain('data-[size=sm]:h-8');
+    expect(slotTokens(combobox, 'combobox-trigger')).toContain('data-[size=sm]:h-8');
   });
 
   test('the inline trigger button of ComboboxInput stays a ghost icon button', () => {

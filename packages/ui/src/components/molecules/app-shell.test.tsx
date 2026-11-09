@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { slotTokens } from '../../test/slot-tokens.ts';
 import { SidebarInset } from '../atoms/sidebar.tsx';
 import {
   AppShell,
@@ -101,12 +102,6 @@ test('AppShellHeader keeps a hairline in forced-colors mode without a border on 
   );
   expect(tokens.filter((token) => /^(forced-colors:)?border-b$/.test(token))).toEqual([]);
 });
-
-/** Class tokens of the first element carrying the given data-slot. */
-function slotTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-  return (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
-}
 
 test('the page is flat: the content is not inset, and the sidebar has a 1px right border', () => {
   const html = renderToStaticMarkup(

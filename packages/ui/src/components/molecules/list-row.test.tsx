@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { slotTag } from '../../test/slot-tokens.ts';
 import {
   ListRow,
   ListRowActions,
@@ -12,9 +13,6 @@ import {
   ListRowTrailing,
 } from './list-row.tsx';
 
-const openTag = (html: string, slot: string) =>
-  html.match(new RegExp(`<[a-z]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-
 describe('ListRow', () => {
   test('the row link is a button by default and stretches over the row', () => {
     const html = renderToStaticMarkup(
@@ -24,12 +22,12 @@ describe('ListRow', () => {
         </ListRowContent>
       </ListRow>,
     );
-    const link = openTag(html, 'list-row-link');
+    const link = slotTag(html, 'list-row-link');
     expect(link.startsWith('<button')).toBe(true);
     expect(link).toContain('type="button"');
     expect(link).toContain('after:absolute');
     expect(link).toContain('after:inset-0');
-    expect(openTag(html, 'list-row')).toContain('relative');
+    expect(slotTag(html, 'list-row')).toContain('relative');
   });
 
   test('the row link renders as an anchor through render, without a button type', () => {
@@ -41,7 +39,7 @@ describe('ListRow', () => {
         </ListRowContent>
       </ListRow>,
     );
-    const link = openTag(html, 'list-row-link');
+    const link = slotTag(html, 'list-row-link');
     expect(link.startsWith('<a')).toBe(true);
     expect(link).toContain('href="/orders/SB-2043"');
     expect(link).not.toContain('type=');
@@ -61,7 +59,7 @@ describe('ListRow', () => {
   });
 
   test('controls inside the row are lifted above the stretched link, the link itself is not', () => {
-    const row = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    const row = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     // The copy chips are lifted whole; their inner copy button stays static,
     // or its stretched ::after shrinks to the icon.
     const notLifted =
@@ -69,12 +67,12 @@ describe('ListRow', () => {
     expect(row).toContain(`${notLifted}:relative`);
     expect(row).toContain(`${notLifted}:z-10`);
     expect(row).toContain('[data-slot=anonymized-token],[data-slot=copyable-text]');
-    const actions = openTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
+    const actions = slotTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
     expect(actions).toContain('z-10');
   });
 
   test('hover fill and pointer only apply to a row with a link', () => {
-    const row = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    const row = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     expect(row).toContain('has-data-[slot=list-row-link]:hover:bg-muted');
     expect(row).toContain('has-data-[slot=list-row-link]:cursor-pointer');
     expect(row).not.toMatch(/(^|\s)hover:bg-muted/);
@@ -103,10 +101,10 @@ describe('ListRow', () => {
   });
 
   test('row actions and a new row run on the v3-look timings', () => {
-    const actions = openTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
+    const actions = slotTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
     expect(actions).toContain('duration-(--transition-duration-quick)');
     expect(actions).toContain('ease-(--ease-soft)');
-    const row = openTag(renderToStaticMarkup(<ListRow data-new="" />), 'list-row');
+    const row = slotTag(renderToStaticMarkup(<ListRow data-new="" />), 'list-row');
     // The content fades in on `ease` after the height has started to open.
     expect(row).toContain(
       'opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)',
@@ -122,7 +120,7 @@ describe('ListRow', () => {
       // biome-ignore lint/a11y/useHeadingContent: ListRowGroupHeading injects the text via render
       <ListRowGroupHeading render={<h3 />}>Today</ListRowGroupHeading>,
     );
-    const heading = openTag(html, 'list-row-group-heading');
+    const heading = slotTag(html, 'list-row-group-heading');
     expect(heading.startsWith('<h3')).toBe(true);
     for (const token of [
       'border-t',
@@ -134,13 +132,13 @@ describe('ListRow', () => {
     ]) {
       expect(heading).toContain(token);
     }
-    const row = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    const row = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     expect(row).toContain('[[data-slot=list-row-group-heading]+&amp;]:border-t-0');
   });
 
   test('a row that "Show older" adds fades up after the one above it', () => {
     const later = (index: number) =>
-      openTag(renderToStaticMarkup(<ListRow laterIndex={index} />), 'list-row');
+      slotTag(renderToStaticMarkup(<ListRow laterIndex={index} />), 'list-row');
     expect(later(0)).toContain('data-later=""');
     expect(later(0)).toContain('--list-row-later-delay:0ms');
     expect(later(2)).toContain('--list-row-later-delay:56ms');
@@ -155,7 +153,7 @@ describe('ListRow', () => {
       'motion-reduce:data-later:[transition:opacity_var(--transition-duration-normal)_var(--ease-default)',
     );
     // Rows of the first render take none of it.
-    const first = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    const first = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     expect(first).not.toContain('data-later=');
     expect(first).not.toContain('style=');
   });

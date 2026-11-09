@@ -3,14 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Button, ButtonLabelSwap } from './button.tsx';
 import { ButtonGroup } from './button-group.tsx';
-
-/** Class tokens of the element carrying the given data-slot, entity-decoded. */
-function slotTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0];
-  if (!tag) throw new Error(`No ${slot} rendered`);
-  const classAttr = tag.match(/class="([^"]*)"/)?.[1] ?? '';
-  return classAttr.replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&#x27;/g, "'").split(/\s+/).filter(Boolean);
-}
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 const buttonTokens = (element: React.ReactElement) => slotTokens(renderToStaticMarkup(element), 'button');
 

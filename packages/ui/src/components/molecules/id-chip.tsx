@@ -46,8 +46,9 @@ function chipChromeClass(copyable: boolean, className?: string): string {
  * keeps its accessible name. The value text stays plain, readable text.
  *
  * The button is exactly the 13px icon, so the chip's 6px end padding is the
- * visible inset, and its focus ring moves to the chip (see `chipChromeClass`). The copy icon takes the chip's text colour at 55%, quieter
- * than the value beside it; the check keeps its full `success-text`.
+ * visible inset, and its focus ring moves to the chip (see `chipChromeClass`).
+ * The copy icon takes the chip's text colour at 55%, quieter than the value
+ * beside it; the check keeps its full `success-text`.
  *
  * The button never scales on press (the chip does). Any `scale` other than
  * `none` makes the button the containing block of its `::after`, which then

@@ -3,13 +3,7 @@ import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Card, CardAction, CardCount, CardHeader, CardRow, CardRows, CardTitle } from './card.tsx';
-
-/** Class tokens of the first element carrying the given data-slot. */
-function slotTokens(html: string, slot: string): string[] {
-  const tag = html.match(new RegExp(`<[^>]*data-slot="${slot}"[^>]*>`))?.[0];
-  if (!tag) throw new Error(`No ${slot} rendered`);
-  return (tag.match(/class="([^"]*)"/)?.[1] ?? '').replace(/&gt;/g, '>').replace(/&amp;/g, '&').split(/\s+/).filter(Boolean);
-}
+import { slotTokens } from '../../test/slot-tokens.ts';
 
 describe('Card', () => {
   test('is a 2xl panel with a full hairline border on the shadow-control shadow', () => {
