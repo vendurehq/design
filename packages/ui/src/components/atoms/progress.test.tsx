@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Progress } from './progress.tsx';
+import type { Tone } from '../../lib/state-dictionary.ts';
+import { Progress, type ProgressTone, ProgressValue } from './progress.tsx';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 
 describe('Progress', () => {
@@ -24,6 +25,14 @@ describe('Progress', () => {
     expect(fill).toContain('motion-safe:ease-(--ease-out)');
   });
 
+  test('right to left: the fill grows from the right, the band sweeps in reverse, the value sits at the end', () => {
+    const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress value={null} />), 'progress-indicator'));
+    expect(fill).toEqual(expect.arrayContaining(['origin-left', 'rtl:origin-right', 'motion-safe:data-indeterminate:rtl:after:[animation-direction:reverse]']));
+    const value = tagTokens(slotTag(renderToStaticMarkup(<Progress value={40}><ProgressValue /></Progress>), 'progress-value'));
+    expect(value).toContain('ms-auto');
+    expect(value).not.toContain('ml-auto');
+  });
+
   test('a value outside min and max clamps the scale', () => {
     expect(slotTag(renderToStaticMarkup(<Progress value={150} />), 'progress-track')).toContain('--progress-scale:1');
     expect(slotTag(renderToStaticMarkup(<Progress value={5} min={10} max={20} />), 'progress-track')).toContain(
@@ -38,6 +47,16 @@ describe('Progress', () => {
     expect(fill('critical')).toContain('[--progress-fill:var(--destructive-text)]');
     expect(fill('info')).toContain('[--progress-fill:var(--info-text)]');
     expect(fill('neutral')).toEqual(expect.arrayContaining(['[--progress-fill:var(--muted-foreground)]', 'opacity-55']));
+  });
+
+  test('takes every glossary tone; progress, the running step, fills in the info colour', () => {
+    const tones: ProgressTone[] = ['default', ...(['neutral', 'info', 'success', 'warning', 'critical', 'progress'] satisfies Tone[])];
+    for (const tone of tones) {
+      const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress tone={tone} value={null} />), 'progress-indicator'));
+      expect(fill.some((c) => c.startsWith('[--progress-fill:'))).toBe(true);
+    }
+    const fill = tagTokens(slotTag(renderToStaticMarkup(<Progress tone="progress" value={null} />), 'progress-indicator'));
+    expect(fill).toContain('[--progress-fill:var(--info-text)]');
   });
 
   test('the root and the track say the tone', () => {

@@ -8,7 +8,7 @@ import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBack,
-  PageHeaderBackLink,
+  PageHeaderBackRow,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
@@ -79,7 +79,7 @@ function Example({
 
 const REGIONS: { region: string; holds: string; rule: string }[] = [
   {
-    region: 'BackLink',
+    region: 'Back row',
     holds: 'One link, one level up.',
     rule: 'A single parent link, not a breadcrumb trail: PageHeaderBack, with a chevron. Optional; omit at the top of a section.',
   },
@@ -225,9 +225,9 @@ export const TitleNamesTheEntity: Story = {
             caption="The title names the product; the orienting facts drop to the description and the back link handles the level up."
           >
             <div className="flex flex-col gap-2">
-              <PageHeaderBackLink>
+              <PageHeaderBackRow>
                 <PageHeaderBack href="#products">Products</PageHeaderBack>
-              </PageHeaderBackLink>
+              </PageHeaderBackRow>
               <PageHeader>
                 <PageHeaderContent>
                   <PageHeaderTitle>Denim Jacket</PageHeaderTitle>

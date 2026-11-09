@@ -7,7 +7,7 @@ import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBack,
-  PageHeaderBackLink,
+  PageHeaderBackRow,
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderFact,
@@ -75,16 +75,16 @@ export const WithBadgeAndId: Story = {
 };
 
 /**
- * The back-link row sits above the header as a sibling. PageHeaderBack draws
+ * PageHeaderBackRow sits above the header as a sibling. PageHeaderBack draws
  * the chevron: on hover the text reaches full foreground and the chevron moves
  * 2px back. Pass `render` for a router link.
  */
 export const WithBackLink: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
-      <PageHeaderBackLink>
+      <PageHeaderBackRow>
         <PageHeaderBack href="#products">Products</PageHeaderBack>
-      </PageHeaderBackLink>
+      </PageHeaderBackRow>
       <PageHeader>
         <PageHeaderContent>
           <PageHeaderTitle>Denim Jacket</PageHeaderTitle>
@@ -149,9 +149,9 @@ export const NarrowViewport: Story = {
 export const WithFacts: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
-      <PageHeaderBackLink>
+      <PageHeaderBackRow>
         <PageHeaderBack href="#environments">Environments</PageHeaderBack>
-      </PageHeaderBackLink>
+      </PageHeaderBackRow>
       <PageHeader>
         <PageHeaderContent className="gap-2">
           <PageHeaderTitle>Production</PageHeaderTitle>

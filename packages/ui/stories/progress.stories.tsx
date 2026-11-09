@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, waitFor, within } from 'storybook/test';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import {
   Progress,
   ProgressLabel,
@@ -111,8 +113,8 @@ export const Tones: Story = {
             <ProgressLabel>Critical · storage full</ProgressLabel>
             <ProgressValue />
           </Progress>
-          <Progress tone="info" value={null}>
-            <ProgressLabel>Info · build running</ProgressLabel>
+          <Progress tone="progress" value={null}>
+            <ProgressLabel>Progress · build running</ProgressLabel>
           </Progress>
           <Progress tone="neutral" value={100}>
             <ProgressLabel>Neutral · roll-out cancelled</ProgressLabel>
@@ -141,14 +143,14 @@ export const Indeterminate: Story = {
 
 const steps = [
   { label: 'Queued', detail: '1 min', tone: 'success', value: 100 },
-  { label: 'Build', detail: '2 min so far', tone: 'info', value: null },
+  { label: 'Build', detail: '2 min so far', tone: 'progress', value: null },
   { label: 'Roll out', detail: '—', tone: 'default', value: 0 },
   { label: 'Live', detail: '—', tone: 'default', value: 0 },
 ] as const;
 
 /**
  * The step bars of a deployment: one bar per step. A done step fills green,
- * the running step sweeps in info blue, and a step that has not started shows
+ * the running step (`progress`) sweeps in the info colour, and a step that has not started shows
  * the empty track. A failed step would be `critical` at 100, and a stopped
  * one `neutral` at 100.
  */
@@ -167,4 +169,59 @@ export const Steps: Story = {
       ))}
     </div>
   ),
+};
+
+/** The sweep's translateX in px at a point in its loop, or null when there is no sweep. */
+function sweepOffset(indicator: Element, progress: number) {
+  const sweep = indicator
+    .getAnimations({ subtree: true })
+    .find((a) => (a.effect as KeyframeEffect | null)?.pseudoElement === '::after');
+  if (!sweep) return null;
+  const duration = Number(sweep.effect?.getComputedTiming().duration);
+  sweep.pause();
+  sweep.currentTime = duration * progress;
+  return new DOMMatrix(getComputedStyle(indicator, '::after').transform).m41;
+}
+
+/**
+ * In a right-to-left layout the fill grows from the right and the band of an
+ * indeterminate bar sweeps from right to left. The test runner checks both.
+ */
+export const RightToLeft: Story = {
+  render: () => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl" className="flex w-[400px] flex-col gap-4">
+        <Progress value={25}>
+          <ProgressLabel>رفع الملفات</ProgressLabel>
+          <ProgressValue />
+        </Progress>
+        <Progress tone="progress" value={null}>
+          <ProgressLabel>بناء الصورة</ProgressLabel>
+        </Progress>
+      </div>
+    </DirectionProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const known = canvas.getByRole('progressbar', { name: 'رفع الملفات' });
+    const running = canvas.getByRole('progressbar', { name: 'بناء الصورة' });
+    const track = known.querySelector('[data-slot="progress-track"]') as HTMLElement;
+    const fill = known.querySelector('[data-slot="progress-indicator"]') as HTMLElement;
+    await waitFor(() => {
+      const t = track.getBoundingClientRect();
+      const f = fill.getBoundingClientRect();
+      expect(Math.abs(f.right - t.right)).toBeLessThan(1);
+      expect(Math.abs(f.width - t.width / 4)).toBeLessThan(1);
+    });
+
+    const value = known.querySelector('[data-slot="progress-value"]') as HTMLElement;
+    const label = known.querySelector('[data-slot="progress-label"]') as HTMLElement;
+    await expect(value.getBoundingClientRect().left).toBeLessThan(label.getBoundingClientRect().left);
+    await expect(Math.abs(value.getBoundingClientRect().left - track.getBoundingClientRect().left)).toBeLessThan(1);
+
+    const band = running.querySelector('[data-slot="progress-indicator"]') as HTMLElement;
+    const early = sweepOffset(band, 0.25);
+    const late = sweepOffset(band, 0.75);
+    if (early !== null && late !== null) await expect(late).toBeLessThan(early);
+  },
 };

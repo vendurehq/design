@@ -81,7 +81,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Inset reads below its host',
-        body: 'Use inset for wells, tracks, skeleton regions, or controls that should appear recessed.',
+        body: 'Use inset for wells, skeleton regions, or controls that should appear recessed. A Progress track is not inset: it uses the accent tint.',
       },
       {
         title: 'Neutral intensity has an order',
@@ -123,7 +123,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only, the tooltip-* durations to the tooltip only, row-enter to a new ListRow only.',
+        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only, the tooltip-* durations to the tooltip only, row-enter to a new ListRow only, progress-fill to the Progress fill only.',
       },
       {
         title: 'Match duration to distance and consequence',

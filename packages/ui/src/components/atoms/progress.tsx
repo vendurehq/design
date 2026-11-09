@@ -2,16 +2,19 @@
 
 import type * as React from "react"
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
-import { cva, type VariantProps } from "class-variance-authority"
+import { cva } from "class-variance-authority"
 
+import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { cn } from "@vendure-io/ui/lib/utils"
 
-// Tone names follow the state dictionary; `critical` renders with the
-// `destructive` slots. Every tone sits on one 4px track in the `accent` tint
-// and fills with the tone's text slot, so a done step reads green and a failed
-// one red. `neutral` is a stopped step that needs nothing from the user: a
-// muted fill at 55% opacity. Each tone sets the fill as --progress-fill, so the
-// solid bar and the indeterminate band share one colour.
+// Progress takes the glossary tones (`Tone`) plus `default`, the primary fill
+// of a task bar. Every tone sits on one 4px track in the `accent` tint and
+// fills with the tone's text slot, so a done step reads green and a failed one
+// red. As everywhere, `critical` renders with the `destructive` slots and
+// `progress`, the running step, with the `info` slots. `neutral` is a stopped
+// step that needs nothing from the user: a muted fill at 55% opacity. Each
+// tone sets the fill as --progress-fill, so the solid bar and the
+// indeterminate band share one colour.
 const progressTrackVariants = cva(
   "relative flex h-1 w-full items-center overflow-hidden rounded-full bg-accent"
 )
@@ -19,15 +22,19 @@ const progressTrackVariants = cva(
 // A known value is a full-width fill scaled to the value (--progress-scale,
 // set by Progress), so the bar grows with a transform: from 0 when it first
 // shows, and to each new value. With `value={null}` the bar is indeterminate:
-// a 40% fill with a band that sweeps across at a constant speed. Under reduced
-// motion the fill shows at once and the band is gone.
+// a 40% fill with a band that sweeps across at a constant speed. Both run from
+// the start side: in a right-to-left layout the fill grows from the right and
+// the band plays its sweep in reverse. The reverse class repeats the sweep's
+// variants so it sorts after the `animation` shorthand that would reset it.
+// Under reduced motion the fill shows at once and the band is gone.
 const progressIndicatorVariants = cva(
-  "relative h-full origin-left overflow-hidden bg-(--progress-fill) scale-x-(--progress-scale,1) motion-safe:transition-[scale] motion-safe:duration-(--transition-duration-progress-fill) motion-safe:ease-(--ease-out) motion-safe:not-data-indeterminate:starting:scale-x-0 data-indeterminate:w-full data-indeterminate:bg-(--progress-fill)/40 motion-safe:data-indeterminate:after:absolute motion-safe:data-indeterminate:after:inset-y-0 motion-safe:data-indeterminate:after:left-0 motion-safe:data-indeterminate:after:w-2/5 motion-safe:data-indeterminate:after:bg-linear-to-r motion-safe:data-indeterminate:after:from-transparent motion-safe:data-indeterminate:after:via-(--progress-fill) motion-safe:data-indeterminate:after:to-transparent motion-safe:data-indeterminate:after:animate-progress-sweep",
+  "relative h-full origin-left rtl:origin-right overflow-hidden bg-(--progress-fill) scale-x-(--progress-scale,1) motion-safe:transition-[scale] motion-safe:duration-(--transition-duration-progress-fill) motion-safe:ease-(--ease-out) motion-safe:not-data-indeterminate:starting:scale-x-0 data-indeterminate:w-full data-indeterminate:bg-(--progress-fill)/40 motion-safe:data-indeterminate:after:absolute motion-safe:data-indeterminate:after:inset-y-0 motion-safe:data-indeterminate:after:left-0 motion-safe:data-indeterminate:after:w-2/5 motion-safe:data-indeterminate:after:bg-linear-to-r motion-safe:data-indeterminate:after:from-transparent motion-safe:data-indeterminate:after:via-(--progress-fill) motion-safe:data-indeterminate:after:to-transparent motion-safe:data-indeterminate:after:animate-progress-sweep motion-safe:data-indeterminate:rtl:after:[animation-direction:reverse]",
   {
     variants: {
       tone: {
         default: "[--progress-fill:var(--primary)]",
         info: "[--progress-fill:var(--info-text)]",
+        progress: "[--progress-fill:var(--info-text)]",
         success: "[--progress-fill:var(--success-text)]",
         warning: "[--progress-fill:var(--warning-text)]",
         critical: "[--progress-fill:var(--destructive-text)]",
@@ -40,9 +47,7 @@ const progressIndicatorVariants = cva(
   }
 )
 
-type ProgressTone = NonNullable<
-  VariantProps<typeof progressIndicatorVariants>["tone"]
->
+type ProgressTone = Tone | "default"
 
 function Progress({
   className,
@@ -122,7 +127,7 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
       className={cn(
-        "text-muted-foreground ml-auto text-sm tabular-nums",
+        "text-muted-foreground ms-auto text-sm tabular-nums",
         className
       )}
       data-slot="progress-value"

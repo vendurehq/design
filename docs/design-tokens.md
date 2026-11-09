@@ -141,7 +141,9 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 - **Duration**: `--transition-duration-instant` (0ms), `-fast` (100ms), `-quick` (120ms, colour changes on controls), `-moderate` (150ms), `-normal` (200ms), `-slow` (300ms), `-slower` (500ms) — Tailwind `duration-*` utilities (`duration-fast`, `duration-moderate`, …)
 - **Palette durations**: `--transition-duration-palette-*` — the command palette's own timings (`palette-enter` 160ms, `palette-move` 180ms, `palette-exit` 110ms, `palette-tint` 120ms, and the result and detail steps). Only `CommandDialog` and its parts use them; use the scale above everywhere else
 - **Tooltip duration**: `--transition-duration-tooltip-enter` (125ms) — the tooltip's entrance, on `ease-soft`. Only `TooltipContent` uses it; it leaves in `fast`. `tooltip-label-fade` (180ms), `tooltip-label-move` (260ms) and `tooltip-resize` (320ms) time `TooltipLabelSwap`, a label that changes in place
-- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner)
+- **Progress fill duration**: `--transition-duration-progress-fill` (240ms) — a Progress fill that grows from 0 or eases to a new value, on `ease-out`. Only `Progress` uses it
+- **Row entrance duration**: `--transition-duration-row-enter` (340ms) — a new `ListRow` that opens its height, on `ease-height`. Only `ListRow` uses it
+- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner); `--animate-progress-sweep` — the `animate-progress-sweep` utility, a 2.2s linear band across an indeterminate `Progress` bar
 
 ## Dark Mode
 
