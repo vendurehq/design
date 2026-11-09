@@ -98,10 +98,11 @@ describe('v3 reduced motion', () => {
     expect(code).not.toContain('motion-reduce:transition-none');
   });
 
-  test('the accordion panel swaps its height animation for a fade', () => {
+  test('the accordion panel swaps its height transition for a fade in place', () => {
     const code = source('atoms/accordion.tsx');
-    expect(code).toContain('motion-safe:data-open:animate-accordion-down');
-    expect(code).toContain('motion-reduce:data-open:fade-in-0');
+    expect(code).toContain('motion-safe:transition-[height,opacity]');
+    expect(code).toContain('motion-reduce:transition-opacity');
+    expect(code).toContain('motion-reduce:data-ending-style:h-(--accordion-panel-height)');
   });
 
   test('the sidebar group label collapses its height with the rail; reduced motion keeps the fade', () => {

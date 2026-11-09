@@ -3,7 +3,7 @@
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 
 function Accordion({ className, ...props }: AccordionPrimitive.Root.Props) {
   return (
@@ -25,6 +25,12 @@ function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
   )
 }
 
+/**
+ * The header of an item: one full-width button with the title and a down
+ * chevron. A closed trigger fills on hover. The chevron turns over on the
+ * panel's height timing, so both settle together; its colour follows the
+ * hover on the fill's timing.
+ */
 function AccordionTrigger({
   className,
   children,
@@ -35,19 +41,27 @@ function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 items-start justify-between rounded-md border border-transparent py-4 text-left text-sm font-medium transition-all outline-none hover:underline aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4",
+          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 cursor-pointer items-start justify-between rounded-md border border-transparent px-3 py-4 text-left text-sm font-medium outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-aria-expanded:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4",
           className
         )}
         {...props}
       >
         {children}
-        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden" />
-        <ChevronUpIcon data-slot="accordion-trigger-icon" className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline" />
+        <ChevronDownIcon
+          data-slot="accordion-trigger-icon"
+          aria-hidden="true"
+          className="pointer-events-none shrink-0 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-fast)_var(--ease-default)] group-hover/accordion-trigger:text-foreground group-aria-expanded/accordion-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default)]"
+        />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
 }
 
+/**
+ * The panel eases its height and opacity with CSS transitions, so a second
+ * click mid-way reverses from where the panel is. Under reduced motion the
+ * height snaps and only a short fade remains.
+ */
 function AccordionContent({
   className,
   children,
@@ -56,12 +70,12 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="motion-safe:data-open:animate-accordion-down motion-safe:data-closed:animate-accordion-up motion-reduce:data-open:animate-in motion-reduce:data-open:fade-in-0 motion-reduce:data-closed:animate-out motion-reduce:data-closed:fade-out-0 overflow-hidden text-sm"
+      className="h-(--accordion-panel-height) overflow-hidden text-sm data-starting-style:h-0 data-starting-style:opacity-0 data-ending-style:h-0 data-ending-style:opacity-0 motion-safe:transition-[height,opacity] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-drawer) motion-reduce:transition-opacity motion-reduce:data-ending-style:h-(--accordion-panel-height) motion-reduce:duration-(--transition-duration-fast) motion-reduce:ease-(--ease-default)"
       {...props}
     >
       <div
         className={cn(
-          "[&_a]:hover:text-foreground h-(--accordion-panel-height) pt-0 pb-4 data-ending-style:h-0 data-starting-style:h-0 [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
+          "[&_a]:hover:text-foreground px-3 pt-0 pb-4 [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
           className
         )}
       >
