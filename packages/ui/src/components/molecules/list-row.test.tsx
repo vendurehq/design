@@ -107,8 +107,12 @@ describe('ListRow', () => {
     expect(actions).toContain('ease-(--ease-soft)');
     const row = openTag(renderToStaticMarkup(<ListRow data-new="" />), 'list-row');
     // The content fades in on `ease` after the height has started to open.
-    expect(row).toContain('opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)');
+    expect(row).toContain(
+      'opacity_var(--transition-duration-slow)_var(--ease-soft)_var(--transition-duration-fast)',
+    );
     expect(row).toContain('height_var(--transition-duration-slow)_var(--ease-drawer)');
-    expect(row).toContain('filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast)');
+    expect(row).toContain(
+      'filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast)',
+    );
   });
 });
