@@ -257,7 +257,11 @@ export const FieldLook: Story = {
       await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
       await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
       await expect(style.borderTopLeftRadius).toBe('6px');
+      // No border: the fill reaches the edge, under the hairline.
+      await expect(style.borderTopWidth).toBe('0px');
       if (field.tagName !== 'TEXTAREA') await expect(field.offsetHeight).toBe(34);
+      // The text starts 10px in, as in an Input. An InputGroup starts with its addon.
+      if (field.dataset.slot !== 'input-group') await expect(style.paddingLeft).toBe('10px');
     }
 
     // A placeholder shown as text is as faint as a native one.
