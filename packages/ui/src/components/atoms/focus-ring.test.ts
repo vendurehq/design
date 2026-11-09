@@ -120,6 +120,20 @@ describe('v3 focus ring', () => {
     }
   });
 
+  test('the theme gives every other focusable element the 2px ring at a 2px offset', () => {
+    const theme = readFileSync(join(import.meta.dir, '../../../../design-tokens/src/css/theme.css'), 'utf8');
+    const rule = theme.match(/:focus-visible\s*\{([^}]*)\}/)?.[1] ?? '';
+    expect(rule).toContain('outline: 2px solid var(--ring)');
+    expect(rule).toContain('outline-offset: 2px');
+  });
+
+  test('CodeBlock rings its scrolling code inside, where the card would clip an outside ring', () => {
+    const code = source('molecules/code-block.tsx');
+    expect(code).toContain('[&_pre:focus-visible]:outline-2');
+    expect(code).toContain('[&_pre:focus-visible]:-outline-offset-2');
+    expect(code).toContain('[&_pre:focus-visible]:outline-ring');
+  });
+
   test('no part keeps the retired halo ring', () => {
     const files = [...new Set([...outset, ...inset, 'atoms/sidebar.tsx', 'atoms/calendar.tsx', 'molecules/file-dropzone.tsx'])];
     for (const file of files) {

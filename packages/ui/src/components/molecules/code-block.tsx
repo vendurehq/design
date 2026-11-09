@@ -403,6 +403,9 @@ const codeBlockContentClassName = cn(
   'bg-transparent text-sm',
   '[&_pre]:py-4',
   '[&_.shiki]:!bg-transparent',
+  // Shiki's <pre> takes keyboard focus. The card clips anything outside it,
+  // so the ring sits 2px inside the code area.
+  '[&_pre:focus-visible]:outline-solid [&_pre:focus-visible]:outline-2 [&_pre:focus-visible]:-outline-offset-2 [&_pre:focus-visible]:outline-ring',
   // The code sizes to its longest line, so the ScrollArea viewport scrolls it.
   // A scrolling <code> inside the viewport could not take keyboard focus.
   '[&_code]:w-max',
