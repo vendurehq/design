@@ -14,77 +14,106 @@ const ErrorIcon = toneIcons.critical
 const LoadingIcon = toneIcons.progress
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const { theme = "system", forcedTheme } = useTheme()
 
   return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      position="bottom-right"
-      className="toaster group"
-      // The v3 look keeps the stack open: the newest toast at the bottom and
-      // each older one 52px higher (a 44px toast and an 8px gap), 3% smaller
-      // and 20% fainter. Pass expand={false} for Sonner's collapsed stack.
-      expand
-      gap={8}
-      // Each icon carries its tone: the toast surface stays neutral. Info
-      // draws the info icon in the brand colour, not the info tone colour.
-      icons={{
-        success: (
-          <SuccessIcon className="text-success-text size-4 stroke-2" />
-        ),
-        info: (
-          <InfoIcon className="text-brand-indicator size-4 stroke-2" />
-        ),
-        warning: (
-          <WarningIcon className="text-warning-text size-4 stroke-2" />
-        ),
-        error: (
-          <ErrorIcon className="text-destructive-text size-4 stroke-2" />
-        ),
-        loading: (
-          <LoadingIcon className="text-muted-foreground size-4 animate-spin stroke-2 motion-reduce:animate-none" />
-        ),
-      }}
+    // Sonner declares its own --success-text, --warning-text and --info-text
+    // on the toaster, and they shadow the tokens of the same name. This
+    // wrapper reads the tokens outside the toaster; the toaster's style
+    // points Sonner's names back at them.
+    <div
+      className="contents"
       style={
         {
-          // A toast sits on the raised surface, not the overlay tier.
-          "--normal-bg": "var(--card)",
-          "--normal-text": "var(--card-foreground)",
-          // The shadow draws the edges, so the border stays invisible.
-          "--normal-border": "transparent",
-          "--border-radius": "var(--radius-2xl)",
-          "--width": "320px",
+          "--toaster-success-text": "var(--success-text)",
+          "--toaster-warning-text": "var(--warning-text)",
+          "--toaster-info-text": "var(--info-text)",
         } as React.CSSProperties
       }
-      toastOptions={{
-        classNames: {
-          // Sonner's own stylesheet is unlayered, so the overlay shadow and
-          // the type need ! to win over it.
-          // 44px high, 10px 14px padding, 13px medium text, a 10px gap. The
-          // overlay shadow plus a hairline. A new toast fades in from 12px
-          // below; a leaving one drops 6px at 0.97. The entry has no scale:
-          // Sonner measures the toast's height on mount, and a scaled toast
-          // would shorten every step of the stack. Positions move in 320ms on
-          // ease-drawer, opacity in 220ms. Reduced motion keeps the fades only.
-          toast: cn(
-            "cn-toast font-sans! min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!",
-            "shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!",
-            "[transition:transform_320ms_var(--ease-drawer),opacity_220ms_ease,height_320ms_var(--ease-drawer)]!",
-            "data-[mounted=false]:[--y:translateY(calc(var(--lift)*-12px))]!",
-            "data-[mounted=true]:data-[expanded=true]:[--y:translateY(calc(var(--lift)*var(--offset)))_scale(calc(1-var(--index)*0.03))]!",
-            "data-[mounted=true]:data-[visible=true]:data-[removed=false]:opacity-[calc(1-var(--index)*0.2)]!",
-            "data-[removed=true]:data-[swipe-out=false]:[--y:translateY(calc(var(--lift)*var(--offset)-var(--lift)*6px))_scale(0.97)]!",
-            "data-[removed=true]:[transition:transform_180ms_ease,opacity_160ms_ease]!",
-            "motion-reduce:[transition:opacity_220ms_ease]!",
+    >
+      <Sonner
+        theme={(forcedTheme ?? theme) as ToasterProps["theme"]}
+        position="bottom-right"
+        className="toaster group"
+        // The v3 look keeps the stack open: the newest toast at the bottom and
+        // each older one 52px higher (a 44px toast and an 8px gap), 3% smaller
+        // and 20% fainter. Pass expand={false} for Sonner's collapsed stack.
+        expand
+        gap={8}
+        // 20px from the corner of the viewport.
+        offset={20}
+        // Each icon carries its tone: the toast surface stays neutral. Info
+        // draws the info icon in the brand colour, not the info tone colour.
+        icons={{
+          success: (
+            <SuccessIcon className="text-success-text size-4 stroke-2" />
           ),
-          // Override Sonner's hardcoded #3f3f3f description colour
-          // with our semantic muted-foreground token for consistent contrast.
-          // See: https://github.com/vendurehq/design/issues/5
-          description: "!text-muted-foreground",
-        },
-      }}
-      {...props}
-    />
+          info: (
+            <InfoIcon className="text-brand-indicator size-4 stroke-2" />
+          ),
+          warning: (
+            <WarningIcon className="text-warning-text size-4 stroke-2" />
+          ),
+          error: (
+            <ErrorIcon className="text-destructive-text size-4 stroke-2" />
+          ),
+          loading: (
+            <LoadingIcon className="text-muted-foreground size-4 animate-spin stroke-2 motion-reduce:animate-none" />
+          ),
+        }}
+        style={
+          {
+            // A toast sits on the raised surface, not the overlay tier.
+            "--normal-bg": "var(--card)",
+            "--normal-text": "var(--card-foreground)",
+            "--success-text": "var(--toaster-success-text)",
+            "--warning-text": "var(--toaster-warning-text)",
+            "--info-text": "var(--toaster-info-text)",
+            "--border-radius": "var(--radius-2xl)",
+            "--width": "320px",
+            // Sonner pulls the icon 3px out and adds 4px after it. The toast's
+            // own 10px gap is the only space between the icon and the text.
+            "--toast-icon-margin-start": "0px",
+            "--toast-icon-margin-end": "0px",
+            "--toast-svg-margin-start": "0px",
+            "--toast-svg-margin-end": "0px",
+          } as React.CSSProperties
+        }
+        toastOptions={{
+          classNames: {
+            // Sonner's own stylesheet is unlayered, so the overlay shadow and
+            // the type need ! to win over it.
+            // 44px high, 10px 14px padding, 13px medium text, a 10px gap. The
+            // overlay shadow plus a hairline. The toast has no border: Sonner's
+            // 1px border sits between the shadow's outer ring and the inset
+            // hairline, and its gap made the edge read as two lines. A new toast fades in from 12px
+            // below; a leaving one drops 6px at 0.97. The entry has no scale:
+            // Sonner measures the toast's height on mount, and a scaled toast
+            // would shorten every step of the stack. Positions move in 320ms on
+            // ease-drawer, opacity in 220ms. Reduced motion keeps the fades only.
+            toast: cn(
+              "cn-toast font-sans! min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!",
+              "border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!",
+              "[transition:transform_320ms_var(--ease-drawer),opacity_220ms_ease,height_320ms_var(--ease-drawer)]!",
+              "data-[mounted=false]:[--y:translateY(calc(var(--lift)*-12px))]!",
+              "data-[mounted=true]:data-[expanded=true]:[--y:translateY(calc(var(--lift)*var(--offset)))_scale(calc(1-var(--index)*0.03))]!",
+              "data-[mounted=true]:data-[visible=true]:data-[removed=false]:opacity-[calc(1-var(--index)*0.2)]!",
+              "data-[removed=true]:data-[swipe-out=false]:[--y:translateY(calc(var(--lift)*var(--offset)-var(--lift)*6px))_scale(0.97)]!",
+              "data-[removed=true]:[transition:transform_180ms_ease,opacity_160ms_ease]!",
+              "motion-reduce:[transition:opacity_220ms_ease]!",
+            ),
+            // Override Sonner's hardcoded #3f3f3f description colour
+            // with our semantic muted-foreground token for consistent contrast.
+            // See: https://github.com/vendurehq/design/issues/5
+            description: "!text-muted-foreground",
+            // An icon passed to a plain toast is the foreground at 60%. The
+            // tone icons above set their own colour.
+            icon: "text-foreground/60",
+          },
+        }}
+        {...props}
+      />
+    </div>
   )
 }
 

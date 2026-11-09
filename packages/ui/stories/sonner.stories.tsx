@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ThemeProvider } from 'next-themes';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { DownloadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Toaster } from '../src/components/atoms/sonner.tsx';
@@ -10,8 +11,10 @@ const meta = {
   component: Toaster,
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
-      <ThemeProvider attribute="class" defaultTheme="light">
+    // Follow the Storybook theme, so html carries one theme class and the
+    // toaster runs Sonner's matching theme.
+    (Story, context) => (
+      <ThemeProvider attribute="class" forcedTheme={context.globals.theme === 'dark' ? 'dark' : 'light'}>
         <Story />
       </ThemeProvider>
     ),
@@ -133,6 +136,55 @@ export const ToneIcons: Story = {
     await expect(await iconOf('Exporting orders…')).toMatch(/lucide-loader(\s|$)/);
     // The stack fades each older toast; clear it, so the a11y scan reads the
     // page and not a toast mid-fade.
+    toast.dismiss();
+    await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull());
+  },
+};
+
+/**
+ * One edge: the overlay shadow's outer ring and a 1px inset hairline, with no
+ * border between them. The icon sits 14px in and 10px from the text. A plain
+ * toast draws the icon you pass in the foreground colour at 60%.
+ */
+export const Edge: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <Toaster duration={Infinity} />
+      <Button
+        variant="outline"
+        onClick={() => toast('Log downloaded', { icon: <DownloadIcon className="size-4 stroke-2" /> })}
+      >
+        Plain
+      </Button>
+      <Button variant="outline" onClick={() => toast.success('Order shipped')}>
+        Success
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: 'Plain' }));
+    const title = await within(document.body).findByText('Log downloaded');
+    const toastEl = title.closest<HTMLElement>('[data-sonner-toast]');
+    if (!toastEl) throw new Error('no toast');
+    const style = getComputedStyle(toastEl);
+    await expect(style.borderTopWidth).toBe('0px');
+    await expect(style.borderRadius).toBe('12px');
+    const box = toastEl.getBoundingClientRect();
+    const icon = toastEl.querySelector('svg')!.getBoundingClientRect();
+    await expect(icon.left - box.left).toBeCloseTo(14, 0);
+    await expect(title.getBoundingClientRect().left - icon.right).toBeCloseTo(10, 0);
+    await expect(getComputedStyle(toastEl.querySelector('[data-icon]')!).color).toContain('/ 0.6');
+    // Sonner's own --success-text must not reach the icon: it takes the token.
+    await userEvent.click(canvas.getByRole('button', { name: 'Success' }));
+    const success = await within(document.body).findByText('Order shipped');
+    const probe = document.createElement('span');
+    probe.className = 'text-success-text';
+    document.body.append(probe);
+    const token = getComputedStyle(probe).color;
+    probe.remove();
+    const successIcon = success.closest('[data-sonner-toast]')!.querySelector('svg')!;
+    await expect(getComputedStyle(successIcon).color).toBe(token);
     toast.dismiss();
     await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull());
   },
