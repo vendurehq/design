@@ -47,7 +47,7 @@ describe('IdChip', () => {
   // The real press is tested in the WholeChipCopies story.
   test('the copy button never scales on press, with or without reduced motion', () => {
     const markup = html(<IdChip value="a1b2c3d4e5f6a7b8c9d0" />);
-    const buttonClass = markup.match(/<button[^>]*class="([^"]*)"/)?.[1].split(' ') ?? [];
+    const buttonClass = markup.match(/<button[^>]*class="([^"]*)"/)?.[1]?.split(' ') ?? [];
 
     expect(buttonClass).toContain('active:scale-none');
     expect(buttonClass).toContain('motion-reduce:active:scale-none');
