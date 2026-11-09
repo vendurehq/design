@@ -102,7 +102,10 @@ function DateRangePicker({
           }
         >
           <CalendarRangeIcon />
-          <span data-placeholder={hasValue ? undefined : ''} className={cn('truncate', !hasValue && 'text-faint-foreground')}>
+          <span
+            data-placeholder={hasValue ? undefined : ''}
+            className={cn('truncate', !hasValue && 'text-faint-foreground')}
+          >
             {selected.from ? formatDateRangeLabel(selected.from, selected.to, locale) : placeholder}
           </span>
         </PopoverTrigger>

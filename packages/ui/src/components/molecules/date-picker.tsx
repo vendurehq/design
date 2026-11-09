@@ -85,7 +85,10 @@ function DatePicker({
           }
         >
           <CalendarIcon />
-          <span data-placeholder={selected ? undefined : ''} className={cn('truncate', !selected && 'text-faint-foreground')}>
+          <span
+            data-placeholder={selected ? undefined : ''}
+            className={cn('truncate', !selected && 'text-faint-foreground')}
+          >
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
