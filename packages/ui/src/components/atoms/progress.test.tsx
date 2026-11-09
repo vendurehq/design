@@ -1,15 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Progress } from './progress.tsx';
-
-const slotTag = (html: string, slot: string) =>
-  html.match(new RegExp(`<[a-z0-9]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-const classesOf = (tag: string) => tag.match(/class="([^"]*)"/)?.[1]?.split(' ') ?? [];
+import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 
 describe('Progress', () => {
   test('the track is 4px high in the accent tint for every tone', () => {
     for (const tone of ['default', 'success', 'critical'] as const) {
-      const track = classesOf(slotTag(renderToStaticMarkup(<Progress tone={tone} value={40} />), 'progress-track'));
+      const track = tagTokens(slotTag(renderToStaticMarkup(<Progress tone={tone} value={40} />), 'progress-track'));
       expect(track).toContain('h-1');
       expect(track).toContain('bg-accent');
     }
@@ -18,7 +15,7 @@ describe('Progress', () => {
   test('a known value scales a full-width fill, so it grows with a transform', () => {
     const html = renderToStaticMarkup(<Progress value={40} />);
     expect(slotTag(html, 'progress-track')).toContain('--progress-scale:0.4');
-    const fill = classesOf(slotTag(html, 'progress-indicator'));
+    const fill = tagTokens(slotTag(html, 'progress-indicator'));
     expect(fill).toContain('w-full!');
     expect(fill).toContain('scale-x-(--progress-scale,1)');
     expect(fill).toContain('motion-safe:transition-[scale]');
@@ -36,7 +33,7 @@ describe('Progress', () => {
 
   test('tones fill with their text slot; neutral is a muted fill at 55%', () => {
     const fill = (tone: Parameters<typeof Progress>[0]['tone']) =>
-      classesOf(slotTag(renderToStaticMarkup(<Progress tone={tone} value={100} />), 'progress-indicator'));
+      tagTokens(slotTag(renderToStaticMarkup(<Progress tone={tone} value={100} />), 'progress-indicator'));
     expect(fill('success')).toContain('[--progress-fill:var(--success-text)]');
     expect(fill('critical')).toContain('[--progress-fill:var(--destructive-text)]');
     expect(fill('info')).toContain('[--progress-fill:var(--info-text)]');
@@ -58,7 +55,7 @@ describe('Progress', () => {
   test('indeterminate: a 40% fill and a band that sweeps only with motion', () => {
     const tag = slotTag(renderToStaticMarkup(<Progress value={null} />), 'progress-indicator');
     expect(tag).toContain('data-indeterminate=""');
-    const fill = classesOf(tag);
+    const fill = tagTokens(tag);
     expect(fill).toContain('data-indeterminate:bg-(--progress-fill)/40');
     expect(fill.filter((c) => c.includes('animate-') && !c.startsWith('motion-safe:'))).toEqual([]);
     expect(fill).toContain('motion-safe:data-indeterminate:after:w-2/5');

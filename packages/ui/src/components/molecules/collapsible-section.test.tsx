@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { slotTag } from '../../test/slot-tokens.ts';
 import { Collapsible } from '../atoms/collapsible.tsx';
 import { CollapsibleSection } from './collapsible-section.tsx';
-
-const openTag = (html: string, slot: string) =>
-  html.match(new RegExp(`<[a-z0-9]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
 
 describe('CollapsibleSection', () => {
   test('closed: the header is a collapsed button in a heading and shows the count', () => {
@@ -14,9 +12,9 @@ describe('CollapsibleSection', () => {
         <p>row</p>
       </CollapsibleSection>,
     );
-    expect(openTag(html, 'collapsible-section-heading').startsWith('<h2')).toBe(true);
-    expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
-    expect(openTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
+    expect(slotTag(html, 'collapsible-section-heading').startsWith('<h2')).toBe(true);
+    expect(slotTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
+    expect(slotTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
     expect(html).toContain('>4</span>');
     expect(html).not.toContain('<p>row</p>');
   });
@@ -27,8 +25,8 @@ describe('CollapsibleSection', () => {
         <p>row</p>
       </CollapsibleSection>,
     );
-    expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="true"');
-    expect(openTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
+    expect(slotTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="true"');
+    expect(slotTag(html, 'collapsible-section-count')).not.toContain('aria-hidden');
     expect(html).toContain('>4</span>');
     expect(html).toContain('<p>row</p>');
   });
@@ -39,7 +37,7 @@ describe('CollapsibleSection', () => {
         <p>row</p>
       </CollapsibleSection>,
     );
-    expect(openTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
+    expect(slotTag(html, 'collapsible-section-trigger')).toContain('aria-expanded="false"');
   });
 
   test('open and onOpenChange reach the Collapsible', () => {
@@ -56,13 +54,13 @@ describe('CollapsibleSection', () => {
 
   test('the count is a CardCount: plain text, not a pill, and it does not wrap or shrink', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" count={4} />);
-    const count = openTag(html, 'collapsible-section-count');
+    const count = slotTag(html, 'collapsible-section-count');
     expect(count).toContain('text-muted-foreground');
     expect(count).toContain('text-xs font-semibold tabular-nums');
     expect(count).toContain('shrink-0');
     expect(count).toContain('whitespace-nowrap');
     expect(count).not.toMatch(/\b(border|bg-|rounded)/);
-    expect(openTag(html, 'collapsible-section-title')).toContain('min-w-0');
+    expect(slotTag(html, 'collapsible-section-title')).toContain('min-w-0');
   });
 
   test('a detail follows the count after a dot that screen readers skip', () => {
@@ -83,16 +81,16 @@ describe('CollapsibleSection', () => {
         tone="critical"
       />,
     );
-    expect(openTag(html, 'collapsible-section-count-detail')).toContain('text-destructive-text');
-    expect(openTag(html, 'collapsible-section-count')).toContain('text-muted-foreground');
-    expect(openTag(html, 'collapsible-section-count')).not.toContain('text-destructive-text');
+    expect(slotTag(html, 'collapsible-section-count-detail')).toContain('text-destructive-text');
+    expect(slotTag(html, 'collapsible-section-count')).toContain('text-muted-foreground');
+    expect(slotTag(html, 'collapsible-section-count')).not.toContain('text-destructive-text');
   });
 
   test('without a detail, the tone colours the whole count', () => {
     const html = renderToStaticMarkup(
       <CollapsibleSection title="Failed payment captures" count={2} tone="critical" />,
     );
-    const count = openTag(html, 'collapsible-section-count');
+    const count = slotTag(html, 'collapsible-section-count');
     expect(count).toContain('text-destructive-text');
     expect(count).not.toContain('text-muted-foreground');
     expect(html).not.toContain('collapsible-section-count-detail');
@@ -105,12 +103,12 @@ describe('CollapsibleSection', () => {
 
   test('headingLevel sets the heading element', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" headingLevel={3} />);
-    expect(openTag(html, 'collapsible-section-heading').startsWith('<h3')).toBe(true);
+    expect(slotTag(html, 'collapsible-section-heading').startsWith('<h3')).toBe(true);
   });
 
   test('reduced motion keeps the fades and drops the height', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
-    expect(openTag(html, 'collapsible-section-panel')).toContain('motion-safe:transition-[height]');
+    expect(slotTag(html, 'collapsible-section-panel')).toContain('motion-safe:transition-[height]');
   });
   test('a disabled header shows no hover fill', () => {
     const html = renderToStaticMarkup(
@@ -118,7 +116,7 @@ describe('CollapsibleSection', () => {
         <p>row</p>
       </CollapsibleSection>,
     );
-    const trigger = openTag(html, 'collapsible-section-trigger');
+    const trigger = slotTag(html, 'collapsible-section-trigger');
     expect(trigger).toContain('data-disabled');
     const classes = trigger.match(/class="([^"]*)"/)?.[1]?.split(' ') ?? [];
     expect(classes).toContain('not-data-disabled:hover:bg-muted');
@@ -127,7 +125,7 @@ describe('CollapsibleSection', () => {
 
   test('the header fill and the chevron hover share one duration and ease', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" />);
-    const trigger = openTag(html, 'collapsible-section-trigger');
+    const trigger = slotTag(html, 'collapsible-section-trigger');
     const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
     expect(trigger).toContain('duration-(--transition-duration-fast) ease-(--ease-default)');
     expect(chevron).toContain(
@@ -143,7 +141,7 @@ describe('CollapsibleSection', () => {
     );
     const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
     expect(chevron).toContain('rotate_var(--transition-duration-slow)_var(--ease-height)');
-    expect(openTag(html, 'collapsible-section-panel')).toContain(
+    expect(slotTag(html, 'collapsible-section-panel')).toContain(
       'motion-safe:ease-(--ease-height)',
     );
   });

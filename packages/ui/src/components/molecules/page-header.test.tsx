@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 import {
   PageHeader,
   PageHeaderActions,
@@ -9,15 +10,6 @@ import {
   PageHeaderFacts,
   PageHeaderTitle,
 } from './page-header.tsx';
-
-const slotTag = (html: string, slot: string) =>
-  html.match(new RegExp(`<[a-z0-9]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-const classesOf = (tag: string) =>
-  tag
-    .match(/class="([^"]*)"/)?.[1]
-    ?.replace(/&amp;/g, '&')
-    .replace(/&gt;/g, '>')
-    .split(' ') ?? [];
 
 test('PageHeader wraps the actions below the title when the row is too narrow', () => {
   const html = renderToStaticMarkup(
@@ -45,11 +37,11 @@ test('PageHeaderBack is a link with a leading chevron, not an arrow', () => {
 
 test('PageHeaderBack: muted 13px text that reaches foreground; the chevron moves 2px back', () => {
   const html = renderToStaticMarkup(<PageHeaderBack href="/">Deployments</PageHeaderBack>);
-  const link = classesOf(html.match(/<a[^>]*>/)?.[0] ?? '');
+  const link = tagTokens(html.match(/<a[^>]*>/)?.[0] ?? '');
   expect(link).toEqual(
     expect.arrayContaining(['text-style-body', 'text-muted-foreground', 'hover:text-foreground']),
   );
-  const chevron = classesOf(slotTag(html, 'page-header-back-chevron'));
+  const chevron = tagTokens(slotTag(html, 'page-header-back-chevron'));
   expect(chevron).toEqual(
     expect.arrayContaining([
       'size-3.75',
@@ -77,7 +69,7 @@ test('PageHeaderFacts: 13px secondary text, 18px between facts, icons at 45%', (
       </PageHeaderFact>
     </PageHeaderFacts>,
   );
-  expect(classesOf(slotTag(html, 'page-header-facts'))).toEqual(
+  expect(tagTokens(slotTag(html, 'page-header-facts'))).toEqual(
     expect.arrayContaining([
       'flex-wrap',
       'gap-x-4.5',
@@ -85,7 +77,7 @@ test('PageHeaderFacts: 13px secondary text, 18px between facts, icons at 45%', (
       'text-foreground-secondary',
     ]),
   );
-  expect(classesOf(slotTag(html, 'page-header-fact'))).toEqual(
+  expect(tagTokens(slotTag(html, 'page-header-fact'))).toEqual(
     expect.arrayContaining(['gap-1.75', '[&>svg]:opacity-45', '[&>svg]:size-4']),
   );
 });
