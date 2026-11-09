@@ -19,7 +19,8 @@ describe('Button press feedback', () => {
   test('scales on :active, with a reduced-motion fallback', () => {
     const tokens = buttonTokens(<Button>Save</Button>);
     expect(tokens).toContain('active:scale-[0.97]');
-    expect(tokens).toContain('motion-reduce:active:scale-100');
+    expect(tokens).toContain('motion-reduce:active:scale-none');
+    expect(tokens).not.toContain('motion-reduce:active:scale-100');
     expect(tokens).toContain(
       '[transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)]',
     );
