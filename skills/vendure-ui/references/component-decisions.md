@@ -47,7 +47,7 @@ Link to a page with more of what the user is looking at, at the end of the regio
 
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
-- **Not inside running text:** A link inside a sentence or a form is `Button variant="link"` or a plain anchor; an arrow there breaks the sentence.
+- **Not inside running text:** A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; an arrow there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.
 
 Related decisions: `button`.
 ## Badge
