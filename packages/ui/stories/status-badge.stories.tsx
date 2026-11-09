@@ -1,8 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
-import { expect, waitFor } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../src/components/atoms/tooltip.tsx';
 import { type ColumnDef, DataTable } from '../src/components/molecules/data-table/data-table.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
@@ -208,6 +214,48 @@ export const InsideAButton: Story = {
     for (const icon of icons) {
       await expect(getComputedStyle(icon).strokeWidth).toBe('2px');
     }
+  },
+};
+
+// A badge that explains its state in a tooltip is a control: a tab stop with
+// the focus ring. A chip also takes the hover fill, in place of its tone
+// wash. A badge that opens nothing stays a plain label.
+export const WithTooltip: Story = {
+  render: () => (
+    <TooltipProvider>
+      <div className="flex items-center gap-4 p-8">
+        <Tooltip>
+          <TooltipTrigger render={<StatusBadge tone="warning">Degraded</StatusBadge>} />
+          <TooltipContent>Worker restarting since 09:12</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <StatusBadge tone="critical" appearance="text">
+                Failed
+              </StatusBadge>
+            }
+          />
+          <TooltipContent>Build failed at install</TooltipContent>
+        </Tooltip>
+        <StatusBadge tone="success">Live</StatusBadge>
+      </div>
+    </TooltipProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const chip = canvas.getByText('Degraded');
+    // The hover fill needs a real pointer (CSS :hover); the unit tests cover
+    // its class. Keyboard focus is checked here.
+    await userEvent.tab();
+    await expect(chip).toHaveFocus();
+    await expect(getComputedStyle(chip).outlineWidth).toBe('2px');
+    await waitFor(() =>
+      expect(within(document.body).getByText('Worker restarting since 09:12')).toBeVisible(),
+    );
+    await userEvent.tab();
+    await expect(canvas.getByText('Failed')).toHaveFocus();
+    await expect(canvas.getByText('Live')).not.toHaveAttribute('tabindex');
   },
 };
 
