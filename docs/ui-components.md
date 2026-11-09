@@ -421,7 +421,7 @@ A card or row that opens the same page drives the link's hover and takes its cli
 </Card>
 ```
 
-- The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its arrow.
+- The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its chevron.
 - Keep the link itself unpositioned: a `relative` link becomes the containing block of its `::after`, which then shrinks to the link.
 - Keyboard focus shows the same emphasis as hover, with the focus ring 2px outside the link.
 

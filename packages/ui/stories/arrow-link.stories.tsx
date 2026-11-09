@@ -21,7 +21,7 @@ export const Default: Story = {
   },
 };
 
-/** A panel head with its link at the end. The link carries the hover for the arrow. */
+/** A panel head with its link at the end. The link carries the hover for the chevron. */
 export const InAPanelHead: Story = {
   render: () => (
     <Card className="max-w-xl">
@@ -38,7 +38,7 @@ export const InAPanelHead: Story = {
  * A card that opens the same page as its link: the card takes
  * `group/arrow-link relative` and the link `after:absolute after:inset-0`.
  * The link's ::after covers the card, so a click anywhere on it follows the
- * link, and pointing anywhere on it brightens the link and moves its arrow.
+ * link, and pointing anywhere on it brightens the link and moves its chevron.
  * The test runner presses the card text with a real mouse and expects the
  * link to open.
  */
@@ -65,7 +65,7 @@ export const ParentDrivesHover: Story = {
   },
 };
 
-/** In a right-to-left layout the arrow points and moves left. */
+/** In a right-to-left layout the chevron points and moves left. */
 export const RightToLeft: Story = {
   render: () => (
     <div dir="rtl">

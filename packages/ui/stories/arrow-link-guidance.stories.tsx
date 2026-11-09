@@ -73,7 +73,7 @@ const CHOICES: { tool: string; use: string }[] = [
   },
   {
     tool: 'Button variant="link" size={null}',
-    use: 'A link inside running text or a form, where an arrow would break the sentence. `size={null}` drops the button height and padding, so it sits on the line of the text.',
+    use: 'A link inside running text or a form, where a chevron would break the sentence. `size={null}` drops the button height and padding, so it sits on the line of the text.',
   },
 ];
 
@@ -84,8 +84,8 @@ export const ChoosingTheTool: Story = {
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="An arrow means: more of this, on another page"
-        intro="ArrowLink is navigation, never an action. The arrow tells the user the link leaves the current view to show more of the same subject."
+        title="A chevron means: more of this, on another page"
+        intro="ArrowLink is navigation, never an action. The chevron tells the user the link leaves the current view to show more of the same subject."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -132,7 +132,7 @@ export const Placement: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="An arrow on an action. A refund changes data, so it is a Button."
+            caption="A chevron on an action. A refund changes data, so it is a Button."
           >
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
