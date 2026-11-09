@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ThemeProvider } from 'next-themes';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { toast } from 'sonner';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Toaster } from '../src/components/atoms/sonner.tsx';
@@ -94,4 +95,45 @@ export const TopCenter: Story = {
       <Button onClick={() => toast.success('Order shipped')}>Show Toast</Button>
     </div>
   ),
+};
+
+/**
+ * Each toast type shows the icon of its StatusBadge tone, from the shared
+ * `toneIcons` map: success, warning, error (`critical`), info and loading
+ * (`progress`).
+ */
+export const ToneIcons: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <Toaster visibleToasts={5} />
+      <Button
+        variant="outline"
+        onClick={() => {
+          toast.success('Order shipped');
+          toast.warning('Stock is running low');
+          toast.error('Payment failed');
+          toast.info('Price list updated');
+          toast.loading('Exporting orders…');
+        }}
+      >
+        Show every tone
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show every tone' }));
+    const iconOf = async (title: string) => {
+      const text = await within(document.body).findByText(title);
+      return text.closest('[data-sonner-toast]')?.querySelector('svg')?.getAttribute('class') ?? '';
+    };
+    await expect(await iconOf('Order shipped')).toContain('lucide-circle-check');
+    await expect(await iconOf('Stock is running low')).toContain('lucide-triangle-alert');
+    await expect(await iconOf('Payment failed')).toContain('lucide-circle-x');
+    await expect(await iconOf('Price list updated')).toContain('lucide-circle-dot');
+    await expect(await iconOf('Exporting orders…')).toMatch(/lucide-loader(\s|$)/);
+    // The stack fades each older toast; clear it, so the a11y scan reads the
+    // page and not a toast mid-fade.
+    toast.dismiss();
+    await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull());
+  },
 };
