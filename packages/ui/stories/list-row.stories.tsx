@@ -369,7 +369,7 @@ export const ChipsInRow: Story = {
   },
 };
 
-// A row the user just added takes `data-new`: its space opens first, so the rows
+// A row the user just added takes `enter="new"`: its space opens first, so the rows
 // below glide down, then its content fades in from a light blur. Rows of the
 // first render never take it, so the list does not animate on page load.
 function NewRowDemo() {
@@ -389,7 +389,7 @@ function NewRowDemo() {
       </Button>
       <Card className="w-full gap-0 py-0">
         {backups.map((backup) => (
-          <ListRow key={backup.id} data-new={backup.isNew ? '' : undefined}>
+          <ListRow key={backup.id} enter={backup.isNew ? 'new' : undefined}>
             <ListRowContent>
               <ListRowLink onClick={() => {}}>{backup.label}</ListRowLink>
             </ListRowContent>
@@ -425,7 +425,7 @@ const PAGE = 5;
 // A ListRowGroupHeading starts each day; it takes the rule above, so the first
 // row under it has none. Headings and rows are siblings: do not wrap a group
 // in its own element. "Show older" adds a page: the added rows take
-// `laterIndex` and fade up one after another. The first page does not animate.
+// `enter={{ stagger }}` and fade up one after another. The first page does not animate.
 function GroupedDemo() {
   const [shown, setShown] = useState(PAGE);
   const visible = DEPLOYMENTS.slice(0, shown);
@@ -440,7 +440,7 @@ function GroupedDemo() {
             .map((d) => {
               const index = DEPLOYMENTS.indexOf(d);
               return (
-                <ListRow key={d.id} laterIndex={index >= PAGE ? index % PAGE : undefined}>
+                <ListRow key={d.id} enter={index >= PAGE ? { stagger: index % PAGE } : undefined}>
                   <ListRowContent>
                     <ListRowLink onClick={() => {}}>{d.message}</ListRowLink>
                     <ListRowMeta>{d.meta}</ListRowMeta>
@@ -476,7 +476,7 @@ export const GroupedByDay: Story = {
     const rows = () => [...canvasElement.querySelectorAll<HTMLElement>('[data-slot=list-row]')];
     // The first page does not animate.
     await expect(rows()).toHaveLength(PAGE);
-    await expect(rows().some((row) => row.hasAttribute('data-later'))).toBe(false);
+    await expect(rows().some((row) => row.dataset.enter === 'stagger')).toBe(false);
     // The row under a heading drops its rule; the next row keeps it, and so
     // does the next heading.
     const [first, second] = rows();
@@ -488,8 +488,8 @@ export const GroupedByDay: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Show older' }));
     const added = rows().slice(PAGE);
     await expect(added).toHaveLength(PAGE);
-    await expect(added.every((row) => row.hasAttribute('data-later'))).toBe(true);
-    await expect(added.map((row) => row.style.getPropertyValue('--list-row-later-delay'))).toEqual([
+    await expect(added.every((row) => row.dataset.enter === 'stagger')).toBe(true);
+    await expect(added.map((row) => row.style.getPropertyValue('--list-row-stagger-delay'))).toEqual([
       '0ms',
       '28ms',
       '56ms',

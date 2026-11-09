@@ -19,7 +19,7 @@ The Vendure blue (hue 231) — an identity signature, not a general-purpose colo
 _Avoid_: accent, Vendure blue, primary (when meaning the color rather than the slot)
 
 **Tone**:
-The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`. Two tones have no slots of their own: `critical` renders with the `destructive-*` slots, and `progress` renders with the `info` slots plus a spinner.
+The semantic meaning a color expresses about state: `neutral`, `info`, `success`, `warning`, `critical`, `progress`. Two tones have no slots of their own: `critical` renders with the `destructive-*` slots, and `progress` renders with the `info` slots plus a sign of work: a spinner on a StatusBadge, the sweep on an indeterminate Progress bar.
 _Avoid_: intent, status color, semantic color, variant (when meaning color)
 
 **Subtle**:

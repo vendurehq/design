@@ -251,7 +251,7 @@ Render a short list of entities where each row opens one detail page from any po
 - **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.
 - **Hidden actions are never the only way:** ListRowActions appears on hover or focus. Every action in it is also available on the detail page.
 - **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
-- **Only rows added later animate:** Set data-new on a row the user just created, and laterIndex (0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take neither, so the list does not animate on page load.
+- **Only rows added later animate:** Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.
 
 Related decisions: `collapsible-section`, `data-table`, `id-chip`, `status-badge`.
 ## Money
@@ -292,12 +292,13 @@ Show task completion or usage against a limit, toned only when the level has a c
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
 - **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
 - **Indeterminate when the length is unknown:** Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.
-- **One bar per step of a pipeline:** A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.
+- **One bar per step of a pipeline:** A done step is `success` at 100, a failed step `critical` at 100, the running step `progress` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.
 
 **Choose:**
 
 - `default`: Task progress, or a meter with no limit the user must act on.
-- `info`: The running step of a pipeline.
+- `progress`: The running step of a pipeline. It fills in the info colour.
+- `info`: A level worth noting that is neither good nor bad. Running work is `progress`.
 - `success`: A meter whose filled level is the healthy outcome, or a done step.
 - `warning`: Near a limit the user must act on.
 - `critical`: At or over the limit, or a failed step.
