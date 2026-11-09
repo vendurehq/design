@@ -112,4 +112,26 @@ describe('CollapsibleSection', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
     expect(openTag(html, 'collapsible-section-panel')).toContain('motion-safe:transition-[height]');
   });
+  test('a disabled header shows no hover fill', () => {
+    const html = renderToStaticMarkup(
+      <CollapsibleSection title="Pending refunds" disabled>
+        <p>row</p>
+      </CollapsibleSection>,
+    );
+    const trigger = openTag(html, 'collapsible-section-trigger');
+    expect(trigger).toContain('data-disabled');
+    const classes = trigger.match(/class="([^"]*)"/)?.[1]?.split(' ') ?? [];
+    expect(classes).toContain('not-data-disabled:hover:bg-muted');
+    expect(classes).not.toContain('hover:bg-muted');
+  });
+
+  test('the header fill and the chevron hover share one duration and ease', () => {
+    const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" />);
+    const trigger = openTag(html, 'collapsible-section-trigger');
+    const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
+    expect(trigger).toContain('duration-(--transition-duration-fast) ease-(--ease-default)');
+    expect(chevron).toContain(
+      'color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)',
+    );
+  });
 });

@@ -55,7 +55,7 @@ type CollapsibleSectionProps = Omit<
 /**
  * A card-surface section whose header opens and closes its rows. The header
  * is one full-width button, filled on hover like a row: title, count, and a
- * down chevron that turns over when open.
+ * down chevron that turns over when open. A disabled section shows no hover.
  */
 function CollapsibleSection({
   title,
@@ -79,7 +79,7 @@ function CollapsibleSection({
       <Heading data-slot="collapsible-section-heading" className="m-0">
         <CollapsibleTrigger
           data-slot="collapsible-section-trigger"
-          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 ps-4.5 pe-4 text-left outline-none transition-colors duration-fast hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 ps-4.5 pe-4 text-left outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-data-disabled:hover:bg-muted data-disabled:cursor-default focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           {/* The title is quieter than the rows it labels. */}
           <span
@@ -112,11 +112,12 @@ function CollapsibleSection({
             </CardCount>
           ) : null}
           {/* The chevron turns on the panel's height timing, so both settle
-              together; its colour and opacity follow the hover faster. */}
+              together; its colour and opacity follow the hover on the fill's
+              timing. A disabled header shows no hover. */}
           <ChevronDown
             aria-hidden="true"
             strokeWidth={1.75}
-            className="ml-auto size-3.75 shrink-0 text-muted-foreground opacity-70 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-moderate),opacity_var(--transition-duration-moderate)] group-hover/collapsible-section-trigger:text-foreground group-hover/collapsible-section-trigger:opacity-100 group-data-panel-open/collapsible-section-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-moderate),opacity_var(--transition-duration-moderate)]"
+            className="ml-auto size-3.75 shrink-0 text-muted-foreground opacity-70 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)] group-[:hover:not([data-disabled])]/collapsible-section-trigger:text-foreground group-[:hover:not([data-disabled])]/collapsible-section-trigger:opacity-100 group-data-panel-open/collapsible-section-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]"
           />
         </CollapsibleTrigger>
       </Heading>
