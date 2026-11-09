@@ -87,8 +87,10 @@ function TooltipContent({
  * labels share one grid cell and `active` picks the one that shows. A label
  * before it leaves 6px upward, a label after it waits 6px below, both faded
  * out with a 2px blur. The part eases to the width of the active label, so
- * the bubble never snaps. With reduced motion the labels only crossfade; the
- * width still eases, so the wider label never crowds the bubble edge.
+ * the bubble never snaps. A label wider than the bubble wraps inside it, and
+ * the part eases to the active label's height too. With reduced motion the
+ * labels only crossfade; the size still eases, so the wider label never
+ * crowds the bubble edge.
  */
 function TooltipLabelSwap({
   labels,
@@ -100,15 +102,15 @@ function TooltipLabelSwap({
   labels: readonly React.ReactNode[]
   active: number
 }) {
-  const { refs, width } = useActiveLabelWidth(active, labels)
+  const { refs, width, height } = useActiveLabelWidth(active, labels)
   return (
     <span
       data-slot="tooltip-label-swap"
       className={cn(
-        "grid grid-cols-[100%] justify-items-center whitespace-nowrap transition-[width] duration-tooltip-resize ease-drawer",
+        "grid grid-cols-[100%] items-start justify-items-center transition-[width,height] duration-tooltip-resize ease-drawer",
         className
       )}
-      style={width === undefined ? style : { ...style, width }}
+      style={width === undefined ? style : { ...style, width, height }}
       {...props}
     >
       {labels.map((label, index) => (
@@ -120,7 +122,10 @@ function TooltipLabelSwap({
           }}
           data-swap={index === active ? "in" : index < active ? "before" : "after"}
           aria-hidden={index === active ? undefined : true}
-          className="col-start-1 row-start-1 [transition:opacity_var(--transition-duration-tooltip-label-fade)_var(--ease-soft),translate_var(--transition-duration-tooltip-label-move)_var(--ease-out),filter_var(--transition-duration-tooltip-label-fade)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-1.5 motion-safe:data-[swap=before]:-translate-y-1.5 motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]"
+          // Each label is as wide as its text, up to the bubble's content box
+          // (max-w-xs less px-2.5 on each side), where it wraps. So its size
+          // does not depend on the size of the label that showed before.
+          className="col-start-1 row-start-1 w-max max-w-[calc(20rem-1.25rem)] [transition:opacity_var(--transition-duration-tooltip-label-fade)_var(--ease-soft),translate_var(--transition-duration-tooltip-label-move)_var(--ease-out),filter_var(--transition-duration-tooltip-label-fade)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-1.5 motion-safe:data-[swap=before]:-translate-y-1.5 motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]"
         >
           {label}
         </span>
