@@ -77,7 +77,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `brand-indicator` — Vendure blue as a non-text mark: the active navigation icon, the selected-item marker, a link underline (`text-brand-indicator` on an icon, `bg-brand-indicator`). It holds 3:1 on every surface tier. Do not use it for body text or as a fill behind text
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
-- `faint-foreground` — Placeholder text in a field (`placeholder:text-faint-foreground`). It is fainter than `muted-foreground` and below 4.5:1, so use it only for a native `::placeholder`, never for text a user must read
+- `faint-foreground` — Placeholder text in a field: a native `::placeholder` (`placeholder:text-faint-foreground`), and the placeholder that Select, Combobox and the date pickers show as text. It is fainter than `muted-foreground` and below 4.5:1, so never use it for text a user must read. Mark placeholder text with `data-placeholder`; the Storybook a11y scan skips it for contrast
 - `accent`, `accent-foreground` — The hover step for a control that already rests on `muted`, such as an IdChip
 - `destructive`, `destructive-foreground` — Destructive/error states
 - `success`, `success-foreground` — Success states

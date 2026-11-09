@@ -42,8 +42,7 @@ export const lightTheme = {
   // hover fill (menu and list rows), and holds 4.5:1 there.
   'muted-foreground': 'oklch(0.505 0.013 231)',
   // Placeholder text: fainter than `muted-foreground`, a hint and not content.
-  // Below 4.5:1, so only for a native `::placeholder`, never for text a user
-  // must read.
+  // Below 4.5:1, so never for text a user must read.
   'faint-foreground': 'oklch(0.707 0.012 231)',
   accent: 'color-mix(in oklab, var(--foreground) 8%, transparent)',
   'accent-foreground': neutral[900],
