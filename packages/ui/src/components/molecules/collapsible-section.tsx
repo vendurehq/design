@@ -117,15 +117,15 @@ function CollapsibleSection({
           <ChevronDown
             aria-hidden="true"
             strokeWidth={1.75}
-            className="ml-auto size-3.75 shrink-0 text-muted-foreground opacity-70 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)] group-[:hover:not([data-disabled])]/collapsible-section-trigger:text-foreground group-[:hover:not([data-disabled])]/collapsible-section-trigger:opacity-100 group-data-panel-open/collapsible-section-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]"
+            className="ml-auto size-3.75 shrink-0 text-muted-foreground opacity-70 [transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)] group-[:hover:not([data-disabled])]/collapsible-section-trigger:text-foreground group-[:hover:not([data-disabled])]/collapsible-section-trigger:opacity-100 group-data-panel-open/collapsible-section-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]"
           />
         </CollapsibleTrigger>
       </Heading>
-      {/* Height runs on the drawer curve; under reduced motion it snaps and
+      {/* Height runs on the height curve; under reduced motion it snaps and
           only the rows fade. */}
       <CollapsibleContent
         data-slot="collapsible-section-panel"
-        className="group/collapsible-section-panel h-(--collapsible-panel-height) overflow-hidden border-t border-border data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-drawer)"
+        className="group/collapsible-section-panel h-(--collapsible-panel-height) overflow-hidden border-t border-border data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-height)"
       >
         {/* Opening, the rows fade in over the second half of the height;
             closing, they leave at once so the height settles on nothing. */}

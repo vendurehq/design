@@ -51,7 +51,7 @@ function AccordionTrigger({
         <ChevronDownIcon
           data-slot="accordion-trigger-icon"
           aria-hidden="true"
-          className="pointer-events-none shrink-0 [transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-fast)_var(--ease-default)] group-hover/accordion-trigger:text-foreground group-aria-expanded/accordion-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default)]"
+          className="pointer-events-none shrink-0 [transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default)] group-hover/accordion-trigger:text-foreground group-aria-expanded/accordion-trigger:rotate-180 motion-reduce:[transition:color_var(--transition-duration-fast)_var(--ease-default)]"
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -71,7 +71,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="h-(--accordion-panel-height) overflow-hidden text-sm data-starting-style:h-0 data-starting-style:opacity-0 data-ending-style:h-0 data-ending-style:opacity-0 motion-safe:transition-[height,opacity] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-drawer) motion-reduce:transition-opacity motion-reduce:data-ending-style:h-(--accordion-panel-height) motion-reduce:duration-(--transition-duration-fast) motion-reduce:ease-(--ease-default)"
+      className="h-(--accordion-panel-height) overflow-hidden text-sm data-starting-style:h-0 data-starting-style:opacity-0 data-ending-style:h-0 data-ending-style:opacity-0 motion-safe:transition-[height,opacity] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-height) motion-reduce:transition-opacity motion-reduce:data-ending-style:h-(--accordion-panel-height) motion-reduce:duration-(--transition-duration-fast) motion-reduce:ease-(--ease-default)"
       {...props}
     >
       <div

@@ -33,10 +33,10 @@ describe('Accordion', () => {
     expect(trigger).toContain('duration-(--transition-duration-fast)');
     expect(trigger).toContain('ease-(--ease-default)');
     expect(chevron).toContain(
-      '[transition:rotate_var(--transition-duration-slow)_var(--ease-drawer),color_var(--transition-duration-fast)_var(--ease-default)]',
+      '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default)]',
     );
     expect(panel).toContain('motion-safe:duration-(--transition-duration-slow)');
-    expect(panel).toContain('motion-safe:ease-(--ease-drawer)');
+    expect(panel).toContain('motion-safe:ease-(--ease-height)');
   });
 
   test('the chevron sits 2px down, centred on the first 20px line of the title', () => {

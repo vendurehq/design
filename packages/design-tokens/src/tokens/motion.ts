@@ -8,6 +8,10 @@ export const easing = {
   spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   // Drawers and sheets that slide in from an edge.
   drawer: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  // A height that opens or closes: an accordion panel, a collapsible
+  // section, a new list row. A quick start with a soft settle, so the
+  // content below glides instead of jumping.
+  height: 'cubic-bezier(0.25, 1, 0.5, 1)',
   // A gentle ease-out for the press scale of a control. Softer than `out`,
   // so a quick tap does not snap to its end value.
   press: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
@@ -49,6 +53,9 @@ export const duration = {
   // A Progress fill grows from 0 when it first shows, and eases to a new
   // value, in this time with the `out` curve. Only Progress uses it.
   progressFill: '240ms',
+  // A list row the user just added opens its height in this time with the
+  // `height` curve. Only ListRow uses it.
+  rowEnter: '340ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a

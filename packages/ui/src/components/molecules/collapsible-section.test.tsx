@@ -134,4 +134,17 @@ describe('CollapsibleSection', () => {
       'color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)',
     );
   });
+
+  test('the panel height and the chevron turn run on the height curve', () => {
+    const html = renderToStaticMarkup(
+      <CollapsibleSection title="Pending refunds" defaultOpen>
+        <p>row</p>
+      </CollapsibleSection>,
+    );
+    const chevron = html.match(/<svg[^>]*>/)?.[0] ?? '';
+    expect(chevron).toContain('rotate_var(--transition-duration-slow)_var(--ease-height)');
+    expect(openTag(html, 'collapsible-section-panel')).toContain(
+      'motion-safe:ease-(--ease-height)',
+    );
+  });
 });
