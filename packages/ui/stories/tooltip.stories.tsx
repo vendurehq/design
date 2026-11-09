@@ -1,6 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
+import * as React from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipLabelSwap,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../src/components/atoms/tooltip.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
 const meta = {
@@ -111,5 +118,54 @@ export const WithoutProvider: Story = {
     await expect(
       await body.findByText('Copy the order code', {}, { timeout: 300 }),
     ).toBeInTheDocument();
+  },
+};
+
+/**
+ * A label that changes in place and is wider than the bubble wraps inside
+ * it. When the label changes, the bubble eases to the new label's width and
+ * height, so a one-line "Copied" does not keep the height of two lines.
+ */
+export const LongLabelSwap: Story = {
+  render: function Render() {
+    const [active, setActive] = React.useState(0);
+    return (
+      <div className="flex justify-center p-24 pt-28">
+        <Tooltip open>
+          <TooltipTrigger
+            render={<Button variant="outline" onClick={() => setActive((index) => 1 - index)} />}
+          >
+            Swap label
+          </TooltipTrigger>
+          <TooltipContent>
+            <TooltipLabelSwap
+              labels={['Copy commit 3f9a2c7e1b4d8f6a0c5e9b2d7f1a4c8e6b3d0f9a', 'Copied']}
+              active={active}
+            />
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(document.body);
+    const long = await body.findByText(/^Copy commit/);
+    const popup = long.closest('[data-slot=tooltip-content]') as HTMLElement;
+    const swap = long.closest('[data-slot=tooltip-label-swap]') as HTMLElement;
+    const padding = Number.parseFloat(getComputedStyle(popup).paddingRight);
+    // The whole label shows: it ends inside the bubble's padding.
+    await waitFor(() =>
+      expect(long.getBoundingClientRect().right).toBeLessThanOrEqual(
+        popup.getBoundingClientRect().right - padding + 0.5,
+      ),
+    );
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Swap label' }));
+    const copied = body.getByText('Copied');
+    // The bubble ends at the height of the one-line label.
+    await waitFor(() =>
+      expect(
+        Math.abs(swap.getBoundingClientRect().height - copied.getBoundingClientRect().height),
+      ).toBeLessThan(1),
+    );
   },
 };
