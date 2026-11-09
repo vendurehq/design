@@ -98,7 +98,7 @@ export const WholeChipCopies: Story = {
  * When the copy succeeds, the tooltip label changes in one motion. "Copy"
  * leaves 6px upward with a 2px blur, "Copied" enters from 6px below, and the
  * bubble eases to the new width. With reduced motion the labels only
- * crossfade; the width still eases.
+ * crossfade, and the width changes at once.
  */
 export const CopiedLabelSwaps: Story = {
   args: { value: 'L2201516', truncate: 'none', copyLabel: 'Copy SKU' },

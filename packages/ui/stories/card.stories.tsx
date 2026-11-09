@@ -198,7 +198,7 @@ export const Accent: Story = {
 };
 
 /**
- * A count that needs action takes a tone: `critical` for failures, `attention`
+ * A count that needs action takes a tone: `critical` for failures, `warning`
  * for rows that wait on the user. The count sits 10px after the title. The
  * card stays neutral; only the count is coloured.
  */
@@ -219,7 +219,7 @@ export const CountTone: Story = {
       <Card>
         <CardHeader>
           <CardTitle>
-            Payments to review <CardCount tone="attention">1</CardCount>
+            Payments to review <CardCount tone="warning">1</CardCount>
           </CardTitle>
         </CardHeader>
         <CardRows role="list">
@@ -229,9 +229,9 @@ export const CountTone: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const [critical, attention] = canvasElement.querySelectorAll<HTMLElement>('[data-slot=card-count]');
+    const [critical, warning] = canvasElement.querySelectorAll<HTMLElement>('[data-slot=card-count]');
     const title = canvasElement.querySelector<HTMLElement>('[data-slot=card-title]');
-    expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(attention!).color);
+    expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(warning!).color);
     expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(title!).color);
     expect(getComputedStyle(critical!).marginInlineStart).toBe('10px');
   },
