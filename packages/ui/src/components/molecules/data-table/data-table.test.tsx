@@ -138,7 +138,7 @@ describe('DataTableRowLink', () => {
   test('the row chevron moves like the ListRow chevron', () => {
     const classOf = (markup: string, slot: string) => {
       const tag = markup.match(new RegExp(`<svg[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
-      return new Set(tag.match(/class="([^"]*)"/)?.[1].split(' '));
+      return new Set(tag.match(/class="([^"]*)"/)?.[1]?.split(' '));
     };
     const table = classOf(
       html(<DataTable rows={rows} columns={linkedColumns} />),
