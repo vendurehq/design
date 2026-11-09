@@ -177,7 +177,8 @@ export const WithCloseButtonLongTitle: Story = {
     await expect(title.right).toBeLessThanOrEqual(close.left);
     const firstLineCentre = title.top + lineHeight / 2;
     const closeCentre = close.top + close.height / 2;
-    await expect(Math.abs(closeCentre - firstLineCentre)).toBeLessThanOrEqual(0.5);
+    // Within a pixel: the centred popup lands on half pixels.
+    await expect(Math.abs(closeCentre - firstLineCentre)).toBeLessThanOrEqual(1);
     await userEvent.keyboard('{Escape}');
   },
 };
