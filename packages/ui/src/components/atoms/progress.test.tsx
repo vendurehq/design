@@ -43,9 +43,24 @@ describe('Progress', () => {
     expect(fill('neutral')).toEqual(expect.arrayContaining(['[--progress-fill:var(--muted-foreground)]', 'opacity-55']));
   });
 
+  test('the root and the track say the tone', () => {
+    const html = renderToStaticMarkup(<Progress tone="success" value={90} />);
+    expect(slotTag(html, 'progress')).toContain('data-tone="success"');
+    expect(slotTag(html, 'progress-track')).toContain('data-tone="success"');
+  });
+
+  test('a known value is not indeterminate', () => {
+    expect(slotTag(renderToStaticMarkup(<Progress value={40} />), 'progress-indicator')).not.toContain(
+      'data-indeterminate=""',
+    );
+  });
+
   test('indeterminate: a 40% fill and a band that sweeps only with motion', () => {
-    const fill = classesOf(slotTag(renderToStaticMarkup(<Progress value={null} />), 'progress-indicator'));
+    const tag = slotTag(renderToStaticMarkup(<Progress value={null} />), 'progress-indicator');
+    expect(tag).toContain('data-indeterminate=""');
+    const fill = classesOf(tag);
     expect(fill).toContain('data-indeterminate:bg-(--progress-fill)/40');
+    expect(fill.filter((c) => c.includes('animate-') && !c.startsWith('motion-safe:'))).toEqual([]);
     expect(fill).toContain('motion-safe:data-indeterminate:after:w-2/5');
     expect(fill).toContain('motion-safe:data-indeterminate:after:animate-progress-sweep');
     expect(fill.some((c) => c.includes('shimmer'))).toBe(false);

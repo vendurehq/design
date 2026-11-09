@@ -714,10 +714,16 @@ export const uiGuidance = [
     choices: [
       { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
       { choice: 'info', when: 'The running step of a pipeline.' },
-      { choice: 'success', when: 'A meter whose filled level is the healthy outcome, or a done step.' },
+      {
+        choice: 'success',
+        when: 'A meter whose filled level is the healthy outcome, or a done step.',
+      },
       { choice: 'warning', when: 'Near a limit the user must act on.' },
       { choice: 'critical', when: 'At or over the limit, or a failed step.' },
-      { choice: 'neutral', when: 'A step that stopped and needs nothing from the user, such as a cancelled one.' },
+      {
+        choice: 'neutral',
+        when: 'A step that stopped and needs nothing from the user, such as a cancelled one.',
+      },
     ],
     related: ['status-badge', 'stat-card'],
   },
