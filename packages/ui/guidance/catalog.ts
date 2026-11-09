@@ -726,7 +726,10 @@ export const uiGuidance = [
     choices: [
       { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
       { choice: 'progress', when: 'The running step of a pipeline. It fills in the info colour.' },
-      { choice: 'info', when: 'A level worth noting that is neither good nor bad. Running work is `progress`.' },
+      {
+        choice: 'info',
+        when: 'A level worth noting that is neither good nor bad. Running work is `progress`.',
+      },
       {
         choice: 'success',
         when: 'A meter whose filled level is the healthy outcome, or a done step.',
