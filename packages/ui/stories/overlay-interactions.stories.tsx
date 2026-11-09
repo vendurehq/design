@@ -245,6 +245,66 @@ export const SelectLook: Story = {
   },
 };
 
+/**
+ * A Select with a value opens over its trigger when there is room. Near the
+ * edge of the viewport Base UI places the list below the trigger instead, and
+ * then it fades in like the other popups.
+ */
+export const SelectFallbackLook: Story = {
+  render: () => (
+    <Select
+      defaultValue="usd"
+      items={[
+        { value: 'eur', label: 'Euro' },
+        { value: 'usd', label: 'US dollar' },
+      ]}
+    >
+      <SelectTrigger aria-label="Currency">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="eur">Euro</SelectItem>
+        <SelectItem value="usd">US dollar</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
+    const popup = await findSlot('select-content');
+    await waitFor(() => expect(popup.dataset.side).toBe('bottom'));
+    await expectPopupMotion(popup);
+  },
+};
+
+/** With room around the trigger, the list sits over it and opens at once. */
+export const SelectAlignedLook: Story = {
+  render: () => (
+    <div className="pt-60">
+      <Select
+        defaultValue="usd"
+        items={[
+          { value: 'eur', label: 'Euro' },
+          { value: 'usd', label: 'US dollar' },
+        ]}
+      >
+        <SelectTrigger aria-label="Currency">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="eur">Euro</SelectItem>
+          <SelectItem value="usd">US dollar</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
+    const popup = await findSlot('select-content');
+    await waitFor(() => expect(popup.dataset.side).toBe('none'));
+    await expect(getComputedStyle(popup).transitionProperty).toBe('none');
+  },
+};
+
 export const ComboboxLook: Story = {
   render: () => (
     <Combobox items={['Austria', 'France', 'Germany']}>

@@ -107,7 +107,7 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
-          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "data-[align-trigger=true]:transition-none", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "data-[side=none]:transition-none", className )}
           {...props}
         >
           <SelectScrollUpButton />
