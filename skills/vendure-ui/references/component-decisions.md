@@ -114,7 +114,7 @@ Keep one secondary list of rows behind a header that still says how many rows it
 - **Collapse what can wait:** Use CollapsibleSection for a secondary list on its own card. Rows that are the reason the user came to the page stay open on a plain card.
 - **Do not collapse a single row:** A closed section with one row costs a click to save one line. Show the row on a plain card.
 - **Open by default when a row needs the user:** Start closed when the rows are routine. When a row has failed or waits on the user, pass `defaultOpen` so the problem is in view.
-- **Tone means action, not volume:** `tone="attention"` colours the count in the warning tone, for rows that wait on the user. `tone="critical"` colours it in the destructive tone, for rows that have failed. Never use a tone because the count is high.
+- **Tone means action, not volume:** `tone="warning"` colours the count for rows that wait on the user. `tone="critical"` colours it for rows that have failed. Never use a tone because the count is high.
 - **Name the rows that matter in the detail:** When some rows have failed, pass `detail` ("1 failed") with `tone="critical"`. The tone then colours the detail only and the count stays muted: "2 · 1 failed".
 
 **Choose:**

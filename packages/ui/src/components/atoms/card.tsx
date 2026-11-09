@@ -1,5 +1,6 @@
 import * as React from "react"
 
+import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // The size variant publishes the card's spacing contract as CSS variables
@@ -92,12 +93,15 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
 
 // A count beside the title, such as the number of rows in the card. Place it
 // inside CardTitle so it sits on the title line, 10px after the title. The
-// count is muted; `tone` colours a count that needs action, such as failed
-// pushes (critical) or rows waiting on the user (attention). The card itself
-// stays neutral.
-const cardCountTone = {
+// count is muted; `tone` colours a count that needs action, such as rows
+// waiting on the user (warning) or failed pushes (critical). The tones are
+// glossary tones; `critical` renders with the `destructive` slots. The card
+// itself stays neutral.
+type CardCountTone = Extract<Tone, "neutral" | "warning" | "critical">
+
+const cardCountTone: Record<CardCountTone, string> = {
   neutral: "text-muted-foreground",
-  attention: "text-warning-text",
+  warning: "text-warning-text",
   critical: "text-destructive-text",
 }
 
@@ -105,7 +109,7 @@ function CardCount({
   className,
   tone = "neutral",
   ...props
-}: React.ComponentProps<"span"> & { tone?: keyof typeof cardCountTone }) {
+}: React.ComponentProps<"span"> & { tone?: CardCountTone }) {
   return (
     <span
       data-slot="card-count"
@@ -241,4 +245,5 @@ export {
   CardTable,
   CardRows,
   CardRow,
+  type CardCountTone,
 }
