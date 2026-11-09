@@ -82,14 +82,15 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 }
 
 // data-state="selected" is the DataTable (TanStack) row-selection marker, not a
-// Radix attribute, so the selector is live. Selected rows use the accent fill
-// plus a primary bar on the leading edge, so they stay distinct from hover.
+// Radix attribute, so the selector is live. Selected rows use the muted fill,
+// as in the v3 look, plus a primary bar on the leading edge, so they stay
+// distinct from the lighter muted/50 hover.
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-accent data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)] border-b border-border/50 transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-muted data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)] border-b border-border/50 transition-colors",
         className
       )}
       {...props}

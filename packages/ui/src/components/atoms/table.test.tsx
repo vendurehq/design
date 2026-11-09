@@ -6,7 +6,7 @@ import { Table, TableRow } from './table.tsx';
 // DataTable marks selected rows with data-state="selected" (TanStack), so the
 // selector is live. Selected must stay distinct from the bg-muted/50 hover.
 describe('TableRow selected state', () => {
-  test('uses the accent fill and a primary leading bar', () => {
+  test('uses the muted fill and a primary leading bar', () => {
     const html = renderToStaticMarkup(
       <table>
         <tbody>
@@ -18,11 +18,11 @@ describe('TableRow selected state', () => {
     expect(tokens).toEqual(
       expect.arrayContaining([
         'hover:bg-muted/50',
-        'data-[state=selected]:bg-accent',
+        'data-[state=selected]:bg-muted',
         'data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)]',
       ]),
     );
-    expect(tokens).not.toContain('data-[state=selected]:bg-muted');
+    expect(tokens).not.toContain('data-[state=selected]:bg-accent');
   });
 });
 
