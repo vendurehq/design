@@ -1,8 +1,7 @@
-import { mergeProps } from '@base-ui/react/merge-props';
-import { useRender } from '@base-ui/react/use-render';
+import type { useRender } from '@base-ui/react/use-render';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { ChevronLeft } from 'lucide-react';
 import type * as React from 'react';
+import { DirectionLink } from './direction-link.tsx';
 
 // Compound-only, by decision: there is no simple-props sugar and
 // no dual-mode root. Callers assemble the parts, which keeps one way to build a
@@ -99,62 +98,32 @@ function PageHeaderFact({ className, ...props }: React.ComponentProps<'span'>) {
 }
 
 /** Optional row rendered above the header: holds a PageHeaderBack. */
-function PageHeaderBackLink({ className, ...props }: React.ComponentProps<'div'>) {
+function PageHeaderBackRow({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      data-slot="page-header-back-link"
+      data-slot="page-header-back-row"
       className={cn('flex items-center text-style-body text-muted-foreground', className)}
       {...props}
     />
   );
 }
 
-// The v3 look: 13px medium text in `muted-foreground` after a 15px left
-// chevron at 45%. On hover or keyboard focus the text reaches full foreground
-// and the chevron full strength, and the chevron moves 2px back, the way the
-// link goes. Colour eases in `quick` on `soft`; the chevron fades in `moderate`
-// on `soft` and moves in `normal` on the strong ease-out. With reduced motion
-// only the colour and opacity change. In a right-to-left layout the chevron
-// points and moves right.
-
 /**
  * The link up one level, above the title: "Deployments", "All profiles".
- * Renders an `<a>` with a leading chevron; pass `render` to use a router link.
+ * Renders an `<a>` with a leading chevron in `muted-foreground`; the look,
+ * motion and right-to-left handling are ArrowLink's, pointing back. Pass
+ * `render` to use a router link.
  */
-function PageHeaderBack({ className, render, children, ...props }: useRender.ComponentProps<'a'>) {
-  return useRender({
-    defaultTagName: 'a',
-    render,
-    props: mergeProps<'a'>(
-      {
-        className: cn(
-          'group/page-header-back inline-flex cursor-pointer items-center gap-1.5 text-style-body font-medium text-muted-foreground',
-          'transition-colors duration-(--transition-duration-quick) ease-(--ease-soft)',
-          'hover:text-foreground focus-visible:text-foreground',
-          'rounded-md outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-          className,
-        ),
-        children: (
-          <>
-            <ChevronLeft
-              aria-hidden="true"
-              data-slot="page-header-back-chevron"
-              className={cn(
-                'size-3.75 shrink-0 opacity-45 rtl:-scale-x-100',
-                '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
-                'group-hover/page-header-back:opacity-100 group-hover/page-header-back:-translate-x-0.5 rtl:group-hover/page-header-back:translate-x-0.5',
-                'group-focus-visible/page-header-back:opacity-100 group-focus-visible/page-header-back:-translate-x-0.5 rtl:group-focus-visible/page-header-back:translate-x-0.5',
-                'motion-reduce:translate-none!',
-              )}
-            />
-            {children}
-          </>
-        ),
-      },
-      props,
-    ),
-    state: { slot: 'page-header-back' },
-  });
+function PageHeaderBack({ className, ...props }: useRender.ComponentProps<'a'>) {
+  return (
+    <DirectionLink
+      direction="back"
+      slot="page-header-back"
+      iconSlot="page-header-back-chevron"
+      className={cn('text-muted-foreground', className)}
+      {...props}
+    />
+  );
 }
 
 export {
@@ -163,7 +132,7 @@ export {
   PageHeaderTitle,
   PageHeaderDescription,
   PageHeaderActions,
-  PageHeaderBackLink,
+  PageHeaderBackRow,
   PageHeaderBack,
   PageHeaderFacts,
   PageHeaderFact,
