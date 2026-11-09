@@ -1,18 +1,20 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Internal: ArrowLink (forward) and PageHeaderBack (back) render this. The
 // package exports map this file to null.
 //
-// The v3 look: 13px medium text, and a 15px icon at 45%: a trailing arrow
-// forward, a leading chevron back. On hover or keyboard focus the text reaches
-// full foreground and the icon full strength, and the icon moves 2px the way
-// the link goes. Colour eases in `quick` (120ms) on `soft`; the icon fades in
-// `moderate` on `soft` and moves in `normal` on the strong ease-out. With
-// reduced motion only the colour and opacity change. In a right-to-left
-// layout the icon points and moves the other way.
+// The v3 look: 13px medium text, and a 15px chevron at 45%: trailing forward,
+// leading back. A straight direction takes a chevron; an arrow is for a
+// diagonal only, such as a link that leaves the app. On hover or keyboard
+// focus the text reaches full foreground and the chevron full strength, and
+// the chevron moves 2px the way the link goes. Colour eases in `quick`
+// (120ms) on `soft`; the chevron fades in `moderate` on `soft` and moves in
+// `normal` on the strong ease-out. With reduced motion only the colour and
+// opacity change. In a right-to-left layout the chevron points and moves the
+// other way.
 //
 // Both directions use the `group/arrow-link` group, the public hook for a card
 // or row that opens the same page (see ArrowLink).
@@ -42,7 +44,7 @@ function DirectionLink({
   children,
   ...props
 }: DirectionLinkProps) {
-  const Icon = direction === 'forward' ? ArrowRight : ChevronLeft;
+  const Icon = direction === 'forward' ? ChevronRight : ChevronLeft;
   const icon = (
     <Icon
       aria-hidden="true"

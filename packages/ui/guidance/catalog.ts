@@ -104,7 +104,7 @@ export const uiGuidance = [
       },
       {
         title: 'Not inside running text',
-        body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; an arrow there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
+        body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
       },
     ],
     related: ['button'],

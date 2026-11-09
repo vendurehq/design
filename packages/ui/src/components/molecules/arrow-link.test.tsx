@@ -9,7 +9,7 @@ function RouterLink(props: React.ComponentProps<'a'>) {
 }
 
 describe('ArrowLink', () => {
-  test('renders an anchor with the label, then a decorative arrow', () => {
+  test('renders an anchor with the label, then a decorative right chevron, not an arrow', () => {
     const html = renderToStaticMarkup(<ArrowLink href="/deployments">All deployments</ArrowLink>);
     expect(html).toStartWith('<a');
     expect(html).toContain('href="/deployments"');
@@ -18,6 +18,9 @@ describe('ArrowLink', () => {
       html.indexOf('data-slot="arrow-link-arrow"'),
     );
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
+    // Chevrons for straight directions, arrows only for diagonals.
+    expect(html).toContain('lucide-chevron-right');
+    expect(html).not.toContain('lucide-arrow');
   });
 
   test('render swaps the element for a router link and keeps the look', () => {
@@ -46,7 +49,7 @@ describe('ArrowLink', () => {
     );
   });
 
-  test('the arrow is 15px at 45%, and on hover goes full and moves 2px out', () => {
+  test('the chevron is 15px at 45%, and on hover goes full and moves 2px out', () => {
     const tokens = slotTokens(
       renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>),
       'arrow-link-arrow',
