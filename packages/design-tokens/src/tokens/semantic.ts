@@ -237,11 +237,13 @@ export const darkTheme = {
   'chart-4': viz[4],
   'chart-5': viz[5],
   sidebar: 'var(--background)',
-  'sidebar-foreground': 'oklch(0.85 0.004 231)',
+  // The same aliases as light: items rest on the secondary text and the
+  // active one takes the full foreground.
+  'sidebar-foreground': 'var(--foreground-secondary)',
   'sidebar-primary': neutral[100],
   'sidebar-primary-foreground': neutral[900],
   'sidebar-accent': 'oklch(0.27 0.014 231)',
-  'sidebar-accent-foreground': 'oklch(0.95 0.004 231)',
+  'sidebar-accent-foreground': 'var(--foreground)',
   'sidebar-border': 'var(--border)',
   'sidebar-ring': brand[500],
 } as const;
