@@ -189,3 +189,53 @@ export const Edge: Story = {
     await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull());
   },
 };
+
+/**
+ * A toast with an action and a cancel button. Both look like an extra-small
+ * Button: the action as the default variant, the cancel as ghost.
+ */
+export const WithAction: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      <Toaster duration={Infinity} />
+      <Button
+        variant="outline"
+        onClick={() =>
+          toast('Variant deleted', {
+            action: { label: 'Undo', onClick: () => {} },
+            cancel: { label: 'Dismiss', onClick: () => {} },
+          })
+        }
+      >
+        Delete variant
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Delete variant' }));
+    const title = await within(document.body).findByText('Variant deleted');
+    const toastEl = title.closest<HTMLElement>('[data-sonner-toast]');
+    if (!toastEl) throw new Error('no toast');
+    // The extra-small primary Button's box and colours, read from a probe.
+    const probe = document.createElement('span');
+    probe.className = 'block h-6 rounded-lg px-2 text-xs font-medium bg-primary text-primary-foreground';
+    document.body.append(probe);
+    const { borderRadius, height, paddingLeft, fontSize, fontWeight, backgroundColor, color } =
+      getComputedStyle(probe);
+    const reference = { borderRadius, height, paddingLeft, fontSize, fontWeight, backgroundColor, color };
+    probe.remove();
+    for (const name of ['Undo', 'Dismiss']) {
+      const style = getComputedStyle(within(toastEl).getByRole('button', { name }));
+      await expect(style.borderRadius).toBe(reference.borderRadius);
+      await expect(style.height).toBe(reference.height);
+      await expect(style.paddingLeft).toBe(reference.paddingLeft);
+      await expect(style.fontSize).toBe(reference.fontSize);
+      await expect(style.fontWeight).toBe(reference.fontWeight);
+    }
+    const undo = getComputedStyle(within(toastEl).getByRole('button', { name: 'Undo' }));
+    await expect(undo.backgroundColor).toBe(reference.backgroundColor);
+    await expect(undo.color).toBe(reference.color);
+    toast.dismiss();
+    await waitFor(() => expect(document.querySelector('[data-sonner-toast]')).toBeNull());
+  },
+};
