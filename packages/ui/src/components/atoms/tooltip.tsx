@@ -69,8 +69,8 @@ function TooltipContent({
  * labels share one grid cell and `active` picks the one that shows. A label
  * before it leaves 6px upward, a label after it waits 6px below, both faded
  * out with a 2px blur. The part eases to the width of the active label, so
- * the bubble never snaps. With reduced motion the labels only crossfade and
- * the width changes at once.
+ * the bubble never snaps. With reduced motion the labels only crossfade; the
+ * width still eases, so the wider label never crowds the bubble edge.
  */
 function TooltipLabelSwap({
   labels,
@@ -93,7 +93,7 @@ function TooltipLabelSwap({
     <span
       data-slot="tooltip-label-swap"
       className={cn(
-        "grid grid-cols-[100%] justify-items-center whitespace-nowrap motion-safe:transition-[width] motion-safe:duration-tooltip-resize motion-safe:ease-drawer",
+        "grid grid-cols-[100%] justify-items-center whitespace-nowrap transition-[width] duration-tooltip-resize ease-drawer",
         className
       )}
       style={width === undefined ? style : { ...style, width }}
