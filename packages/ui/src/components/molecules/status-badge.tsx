@@ -73,7 +73,7 @@ const chipLabel =
 
 const statusBadgeVariants = cva(
   [
-    'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium leading-none',
+    'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium',
     'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
     chipLabel,
     'outline-1 outline-transparent -outline-offset-1',
@@ -84,11 +84,11 @@ const statusBadgeVariants = cva(
       tone: toneVars,
       size: {
         default: [
-          'h-6 gap-1.5 px-2.5 text-xs has-data-[slot=status-badge-marker]:pl-2',
+          'h-6 gap-1.5 px-2.5 text-xs/none has-data-[slot=status-badge-marker]:pl-2',
           '[--content-inset:calc(var(--spacing)*2.5)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*6.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5)]',
         ],
         lg: [
-          'h-7 gap-1.5 px-3 text-sm has-data-[slot=status-badge-marker]:pl-2.5',
+          'h-7 gap-1.5 px-3 text-sm/none has-data-[slot=status-badge-marker]:pl-2.5',
           '[--content-inset:calc(var(--spacing)*3)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*7.5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5.5)]',
         ],
       } satisfies Record<StatusBadgeSize, string[]>,
@@ -110,7 +110,7 @@ const statusBadgeVariants = cva(
 // surface, where a chip would be a box inside a box.
 const bareVariants = cva(
   [
-    'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium leading-none',
+    'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium',
     chipLabel,
     contentInsetPull,
   ],
@@ -119,8 +119,8 @@ const bareVariants = cva(
       tone: toneVars,
       size: {
         default:
-          'text-xs has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*4.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
-        lg: 'text-sm has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
+          'text-xs/none has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*4.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
+        lg: 'text-sm/none has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
       } satisfies Record<StatusBadgeSize, string>,
       reveal: {
         always: 'transition-colors duration-slow',
