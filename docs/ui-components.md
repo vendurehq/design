@@ -449,7 +449,7 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
-- Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
+- Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.
 - Do not render it as a `Button`: a pressed button scales, which makes it the containing block of its `::after`, and the click misses the link.
 

@@ -105,15 +105,15 @@ function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'di
 
 // Interactive elements of a linked row stack above the stretched ::after, so
 // they keep their own click and their own tab stop: buttons and secondary
-// links, Tooltip triggers and the copy chips (IdChip, CopyableText: the whole
-// chip stays the copy target, so their inner button stays static). The select
-// checkbox is already positioned above it. Any other element that must stay
+// links, Tooltip triggers and the copy chips (IdChip, AnonymizedToken,
+// CopyableText: the whole chip stays the copy target, so their inner button
+// stays static). The select checkbox is already positioned above it. Any other element that must stay
 // clickable above the link takes `data-table-row-control`. The class names
 // stay literal so Tailwind can scan them.
 const LINKED_ROW_CLASS = cn(
   'has-data-[slot=data-table-row-link]:relative has-data-[slot=data-table-row-link]:cursor-pointer',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=copyable-text]_*)]:relative',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=copyable-text]_*)]:z-10',
+  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
+  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
   // Product, rendered by the same link component) is a plain link above it,
   // underlined on hover, without a chevron.
@@ -136,8 +136,8 @@ const ROW_CHEVRON_SLOT_CLASS =
  * router link. Do not render it as a Button.
  *
  * Its ::after stretches over the row. Buttons, links, inputs, Tooltip
- * triggers, the select checkbox and the copy chips (IdChip, CopyableText) in
- * the row sit above it and keep their own action; mark any other control
+ * triggers, the select checkbox and the copy chips (IdChip, AnonymizedToken,
+ * CopyableText) in the row sit above it and keep their own action; mark any other control
  * with `data-table-row-control`. Keyboard focus draws an inset ring around the
  * row. While the row is hovered or holds keyboard focus, a chevron appears at
  * the end of the row: it fades in and slides 3px toward the end (fade only

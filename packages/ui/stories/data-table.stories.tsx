@@ -32,6 +32,7 @@ import {
   type TableInstance,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
+import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
 import {
@@ -1113,6 +1114,68 @@ export const RowLink: Story = {
       await userEvent.keyboard('{Escape}');
       await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
     });
+  },
+};
+
+// Access tokens: every row opens its token. The token preview is an
+// AnonymizedToken, which copies from any point of the chip, as IdChip does.
+interface AccessToken {
+  id: string;
+  name: string;
+  token: string;
+}
+
+const accessTokens: AccessToken[] = [
+  { id: 'ci', name: 'CI deploys', token: 'vc_pat_7JjK9mN2pQ4rS6tU8vW0xY1zA3bC5dE7' },
+  { id: 'staging', name: 'Staging sync', token: 'vc_pat_2bH4kL6nP8rT0vX3zB5dF7hJ9mQ1sU4wY6' },
+];
+
+const accessTokenColumns: ColumnDef<AccessToken>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => (
+      <DataTableRowLink href={`#/tokens/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+    ),
+  },
+  {
+    accessorKey: 'token',
+    header: 'Token',
+    cell: ({ row }) => (
+      <AnonymizedToken
+        value={row.original.token}
+        copyLabel={`Copy ${row.original.name} token`}
+        copiedLabel="Token copied"
+      />
+    ),
+  },
+];
+
+/**
+ * An AnonymizedToken in a linked row copies from any point of the chip and
+ * does not open the row. The test runner presses the token text with a real
+ * mouse (`pressText`) and expects the copy and no navigation.
+ */
+export const RowLinkWithToken: Story = {
+  parameters: { pressText: { text: 'vc_pat_7...5dE7', expectButton: 'Token copied' } },
+  render: () => (
+    <DataTable<AccessToken>
+      rows={accessTokens}
+      columns={accessTokenColumns}
+      getRowId={(token) => token.id}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const row = within(
+      canvas.getByRole('link', { name: 'CI deploys' }).closest('tr') as HTMLTableRowElement,
+    );
+    clearHash();
+    const hit = hitAt(row.getByText('vc_pat_7...5dE7'));
+    await expect(hit).toBe(row.getByRole('button', { name: 'Copy CI deploys token' }));
+    await userEvent.click(hit);
+    await expect(location.hash).toBe('');
   },
 };
 
