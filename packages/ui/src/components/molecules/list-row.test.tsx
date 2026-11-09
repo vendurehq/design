@@ -5,6 +5,7 @@ import {
   ListRowActions,
   ListRowChevron,
   ListRowContent,
+  ListRowGroupHeading,
   ListRowLink,
   ListRowMeta,
   ListRowTitle,
@@ -99,5 +100,48 @@ describe('ListRow', () => {
     expect(html).toContain('data-slot="list-row-title"');
     expect(html).not.toContain('list-row-link"');
     expect(html).not.toContain('<button');
+  });
+
+  test('a group heading sits between rows with a rule above, and the row under it drops its own', () => {
+    const html = renderToStaticMarkup(
+      // biome-ignore lint/a11y/useHeadingContent: ListRowGroupHeading injects the text via render
+      <ListRowGroupHeading render={<h3 />}>Today</ListRowGroupHeading>,
+    );
+    const heading = openTag(html, 'list-row-group-heading');
+    expect(heading.startsWith('<h3')).toBe(true);
+    for (const token of [
+      'border-t',
+      'first:border-t-0',
+      'text-xs',
+      'font-semibold',
+      'text-muted-foreground',
+      'ps-4.5',
+    ]) {
+      expect(heading).toContain(token);
+    }
+    const row = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    expect(row).toContain('[[data-slot=list-row-group-heading]+&amp;]:border-t-0');
+  });
+
+  test('a row that "Show older" adds fades up after the one above it', () => {
+    const later = (index: number) =>
+      openTag(renderToStaticMarkup(<ListRow laterIndex={index} />), 'list-row');
+    expect(later(0)).toContain('data-later=""');
+    expect(later(0)).toContain('--list-row-later-delay:0ms');
+    expect(later(2)).toContain('--list-row-later-delay:56ms');
+    // A long page does not keep the last rows waiting.
+    expect(later(40)).toContain('--list-row-later-delay:336ms');
+    const row = later(1);
+    expect(row).toContain('data-later:starting:opacity-0');
+    expect(row).toContain('motion-safe:data-later:starting:translate-y-1.5');
+    expect(row).toContain('motion-safe:data-later:starting:blur-[3px]');
+    // Reduced motion keeps the fade only, without the stagger.
+    expect(row).toContain(
+      'motion-reduce:data-later:[transition:opacity_var(--transition-duration-normal)_var(--ease-default)',
+    );
+    // Rows of the first render take none of it.
+    const first = openTag(renderToStaticMarkup(<ListRow />), 'list-row');
+    expect(first).not.toContain('data-later=');
+    expect(first).not.toContain('style=');
   });
 });

@@ -608,6 +608,14 @@ export const uiGuidance = [
         title: 'Hidden actions are never the only way',
         body: 'ListRowActions appears on hover or focus. Every action in it is also available on the detail page.',
       },
+      {
+        title: 'Group rows under a heading, not in a wrapper',
+        body: 'To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.',
+      },
+      {
+        title: 'Only rows added later animate',
+        body: 'Set data-new on a row the user just created, and laterIndex (0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take neither, so the list does not animate on page load.',
+      },
     ],
     related: ['collapsible-section', 'data-table', 'id-chip', 'status-badge'],
   },

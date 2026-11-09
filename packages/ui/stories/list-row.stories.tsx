@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontal, Package, RotateCcw, Truck } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { Fragment, type ReactNode, useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card } from '../src/components/atoms/card.tsx';
@@ -18,6 +18,7 @@ import {
   ListRowActions,
   ListRowChevron,
   ListRowContent,
+  ListRowGroupHeading,
   ListRowLeading,
   ListRowLink,
   ListRowMeta,
@@ -396,4 +397,96 @@ function NewRowDemo() {
 
 export const NewRow: Story = {
   render: () => <NewRowDemo />,
+};
+
+const DEPLOYMENTS: { id: string; day: string; message: string; meta: string; hash: string; time: string }[] = [
+  { id: 'd1', day: 'Today', message: 'Merge pull request #412 from acme/feature/gift-cards', meta: 'Started by Tobias Okafor · stopped after 5 min', hash: 'b3d71e6', time: '09:52' },
+  { id: 'd2', day: 'Today', message: 'Add Klarna payment handler to checkout', meta: 'Deployed by Mara Lindqvist · took 5 min', hash: '9f3c2a1', time: '09:18' },
+  { id: 'd3', day: 'Yesterday', message: 'Bump @vendure/core to 3.6.2', meta: 'Pushed · took 5 min', hash: 'e27f9a3', time: '14:04' },
+  { id: 'd4', day: 'Yesterday', message: 'Index product variants by SKU for faster search', meta: 'Deployed by Mara Lindqvist · took 9 min', hash: '77ac1e0', time: '08:08' },
+  { id: 'd5', day: 'Monday', message: 'Translate order confirmation email into German', meta: 'Pushed · took 6 min', hash: '6a3e1d9', time: '09:05' },
+  { id: 'd6', day: 'Monday', message: 'Remove the legacy promotions plugin', meta: 'Pushed · stopped after 3 min', hash: '58f0c2a', time: '08:02' },
+  { id: 'd7', day: 'Sunday', message: 'Raise the worker job concurrency to 4', meta: 'Pushed · took 4 min', hash: 'e1907c4', time: '10:01' },
+  { id: 'd8', day: 'Sunday', message: 'Cache the shipping zones lookup', meta: 'Deployed by Tobias Okafor · took 7 min', hash: '3c88b10', time: '09:12' },
+  { id: 'd9', day: 'Sunday', message: 'Fix the tax rounding on multi-currency orders', meta: 'Pushed · took 6 min', hash: 'a04d7f2', time: '08:40' },
+  { id: 'd10', day: '2 November', message: 'Add the gift card product type', meta: 'Deployed by Mara Lindqvist · took 8 min', hash: '5be21c9', time: '16:22' },
+];
+const PAGE = 5;
+
+// A ListRowGroupHeading starts each day; it takes the rule above, so the first
+// row under it has none. Headings and rows are siblings: do not wrap a group
+// in its own element. "Show older" adds a page: the added rows take
+// `laterIndex` and fade up one after another. The first page does not animate.
+function GroupedDemo() {
+  const [shown, setShown] = useState(PAGE);
+  const visible = DEPLOYMENTS.slice(0, shown);
+  const days = [...new Set(visible.map((d) => d.day))];
+  return (
+    <Card className="max-w-3xl gap-0 py-0">
+      {days.map((day) => (
+        <Fragment key={day}>
+          <ListRowGroupHeading>{day}</ListRowGroupHeading>
+          {visible
+            .filter((d) => d.day === day)
+            .map((d) => {
+              const index = DEPLOYMENTS.indexOf(d);
+              return (
+                <ListRow key={d.id} laterIndex={index >= PAGE ? index % PAGE : undefined}>
+                  <ListRowContent>
+                    <ListRowLink onClick={() => {}}>{d.message}</ListRowLink>
+                    <ListRowMeta>{d.meta}</ListRowMeta>
+                  </ListRowContent>
+                  <ListRowTrailing>
+                    <IdChip value={d.hash} />
+                    <span className="w-12 text-end">{d.time}</span>
+                  </ListRowTrailing>
+                  <ListRowChevron />
+                </ListRow>
+              );
+            })}
+        </Fragment>
+      ))}
+      {shown < DEPLOYMENTS.length ? (
+        <div className="flex items-center gap-3 border-t border-border px-4.5 py-3">
+          <Button variant="outline" size="sm" onClick={() => setShown(shown + PAGE)}>
+            Show older
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            {shown} of {DEPLOYMENTS.length}
+          </span>
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+export const GroupedByDay: Story = {
+  render: () => <GroupedDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const rows = () => [...canvasElement.querySelectorAll<HTMLElement>('[data-slot=list-row]')];
+    // The first page does not animate.
+    await expect(rows()).toHaveLength(PAGE);
+    await expect(rows().some((row) => row.hasAttribute('data-later'))).toBe(false);
+    // The row under a heading drops its rule; the next row keeps it, and so
+    // does the next heading.
+    const [first, second] = rows();
+    await expect(getComputedStyle(first as HTMLElement).borderTopWidth).toBe('0px');
+    await expect(getComputedStyle(second as HTMLElement).borderTopWidth).toBe('1px');
+    const yesterday = canvas.getByText('Yesterday');
+    await expect(getComputedStyle(yesterday).borderTopWidth).toBe('1px');
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Show older' }));
+    const added = rows().slice(PAGE);
+    await expect(added).toHaveLength(PAGE);
+    await expect(added.every((row) => row.hasAttribute('data-later'))).toBe(true);
+    await expect(added.map((row) => row.style.getPropertyValue('--list-row-later-delay'))).toEqual([
+      '0ms',
+      '28ms',
+      '56ms',
+      '84ms',
+      '112ms',
+    ]);
+    await expect(canvas.queryByRole('button', { name: 'Show older' })).toBeNull();
+  },
 };

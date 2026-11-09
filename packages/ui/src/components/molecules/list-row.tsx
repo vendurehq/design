@@ -36,6 +36,26 @@ const LIFT_CONTROLS =
 const ENTER_NEW =
   'data-new:overflow-clip data-new:[interpolate-size:allow-keywords] motion-safe:data-new:[transition:height_var(--transition-duration-slow)_var(--ease-drawer),min-height_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-normal)_var(--ease-default)_var(--transition-duration-fast),filter_var(--transition-duration-slow)_var(--ease-out)_var(--transition-duration-fast),background-color_var(--transition-duration-fast)_var(--ease-default)] motion-safe:data-new:starting:h-0 motion-safe:data-new:starting:min-h-0 motion-safe:data-new:starting:blur-[3px] data-new:starting:opacity-0 motion-reduce:data-new:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
 
+// Rows that a "Show older" action adds (`laterIndex`) enter once, 28ms after
+// the row above: each fades in and rises 6px out of a 3px blur on the strong
+// ease-out. The delay stops growing after 12 rows, so a long page does not
+// keep its last rows waiting. Reduced motion keeps a plain fade, without the
+// stagger. The hover fill keeps its own timing, without the delay.
+const ENTER_LATER =
+  'motion-safe:data-later:[transition:opacity_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),translate_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),filter_var(--transition-duration-slow)_var(--ease-out)_var(--list-row-later-delay),background-color_var(--transition-duration-fast)_var(--ease-default)] data-later:starting:opacity-0 motion-safe:data-later:starting:translate-y-1.5 motion-safe:data-later:starting:blur-[3px] motion-reduce:data-later:[transition:opacity_var(--transition-duration-normal)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default)]';
+
+const LATER_STAGGER_MS = 28;
+const LATER_STAGGER_ROWS = 12;
+
+interface ListRowProps extends React.ComponentProps<'div'> {
+  /**
+   * Set on a row that a "Show older" action adds: its position among the
+   * added rows (0, 1, 2…). The row fades up 28ms after the row above it.
+   * Leave it unset on rows of the first render.
+   */
+  laterIndex?: number;
+}
+
 /**
  * One row of a list: 48px high, or taller with a ListRowMeta line. Content
  * starts 18px in and ends 16px from the edge, like a card header. With a
@@ -44,25 +64,60 @@ const ENTER_NEW =
  *
  * Set `data-new` on a row the user just added (a new backup, a new push) and
  * it enters once: the height opens, then the content fades in. Mark only rows
- * added while the page is open, never rows of the first render.
+ * added while the page is open, never rows of the first render. Rows that a
+ * "Show older" action adds take `laterIndex` instead.
  */
-function ListRow({ className, ...props }: React.ComponentProps<'div'>) {
+function ListRow({ className, laterIndex, style, ...props }: ListRowProps) {
+  const later = laterIndex !== undefined;
   return (
     <div
       data-slot="list-row"
+      data-later={later ? '' : undefined}
+      style={
+        later
+          ? ({
+              '--list-row-later-delay': `${Math.min(Math.max(laterIndex, 0), LATER_STAGGER_ROWS) * LATER_STAGGER_MS}ms`,
+              ...style,
+            } as React.CSSProperties)
+          : style
+      }
       className={cn(
         'group/list-row relative flex min-h-12 items-center gap-3 border-t border-border ps-4.5 pe-4 text-sm first:border-t-0',
+        '[[data-slot=list-row-group-heading]+&]:border-t-0',
         'has-data-[slot=list-row-meta]:py-2.5',
         'transition-colors duration-(--transition-duration-fast) ease-(--ease-default)',
         'has-data-[slot=list-row-link]:cursor-pointer has-data-[slot=list-row-link]:hover:bg-muted',
         'has-[[data-slot=list-row-link]:focus-visible]:outline-solid has-[[data-slot=list-row-link]:focus-visible]:outline-2 has-[[data-slot=list-row-link]:focus-visible]:-outline-offset-2 has-[[data-slot=list-row-link]:focus-visible]:outline-ring',
         LIFT_CONTROLS,
         ENTER_NEW,
+        ENTER_LATER,
         className,
       )}
       {...props}
     />
   );
+}
+
+/**
+ * The heading of a group of rows, such as a day ("Today", "Yesterday"). It
+ * takes the rule above, so the first row under it drops its own. Renders a
+ * `div`; pass `render={<h3 />}` when the groups belong in the page outline.
+ */
+function ListRowGroupHeading({ className, render, ...props }: useRender.ComponentProps<'div'>) {
+  return useRender({
+    defaultTagName: 'div',
+    render,
+    props: mergeProps<'div'>(
+      {
+        className: cn(
+          'border-t border-border pt-3.5 pb-1.5 ps-4.5 pe-4 text-xs leading-4.5 font-semibold text-muted-foreground first:border-t-0',
+          className,
+        ),
+      },
+      props,
+    ),
+    state: { slot: 'list-row-group-heading' },
+  });
 }
 
 /**
@@ -214,9 +269,11 @@ export {
   ListRowActions,
   ListRowChevron,
   ListRowContent,
+  ListRowGroupHeading,
   ListRowLeading,
   ListRowLink,
   ListRowMeta,
   ListRowTitle,
   ListRowTrailing,
 };
+export type { ListRowProps };
