@@ -1071,8 +1071,11 @@ export const RowLink: Story = {
     });
 
     await step('a click on a row-revealed status badge opens the item', async () => {
-      // At rest the badge is transparent, which gives it its own stacking context.
-      await expect(hitAt(rowCanvas.getByText('Enabled'))).toBe(link);
+      // Row 2 holds no focus, so its badge rests transparent, which gives it
+      // its own stacking context.
+      const secondLink = canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' });
+      const secondRow = within(secondLink.closest('tr') as HTMLTableRowElement);
+      await expect(hitAt(secondRow.getByText('Enabled'))).toBe(secondLink);
     });
 
     await step('the SKU chip copies and does not open the item', async () => {
