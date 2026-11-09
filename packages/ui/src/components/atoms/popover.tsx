@@ -4,6 +4,7 @@ import * as React from "react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
@@ -41,7 +42,8 @@ function PopoverContent({
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "bg-popover text-popover-foreground shadow-overlay z-50 flex w-72 flex-col gap-4 rounded-xl p-4 text-sm outline-hidden origin-(--transform-origin) transition-[opacity,scale] duration-(--transition-duration-moderate) ease-(--ease-out) data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-96 motion-safe:data-ending-style:scale-96",
+            "bg-popover text-popover-foreground shadow-overlay z-50 flex w-72 flex-col gap-4 rounded-xl p-4 text-sm outline-hidden",
+            popupMotion,
             className
           )}
           {...props}

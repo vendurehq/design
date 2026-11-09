@@ -86,7 +86,11 @@ describe('v3 reduced motion', () => {
     for (const file of ['atoms/combobox.tsx', 'atoms/navigation-menu.tsx']) {
       expect(source(file)).not.toContain('motion-reduce:animate-none');
     }
-    expect(source('atoms/combobox.tsx')).toContain('motion-safe:data-open:zoom-in-95');
+    // The shared popup recipe scales only with motion-safe; the fade is unconditional.
+    expect(source('atoms/combobox.tsx')).toContain('popupMotion');
+    const recipe = source('../lib/popup-motion.ts');
+    expect(recipe).toContain(' data-starting-style:opacity-0');
+    expect(recipe).toContain('motion-safe:data-starting-style:scale-96');
     expect(source('atoms/navigation-menu.tsx')).toContain('motion-reduce:transition-opacity');
   });
 
