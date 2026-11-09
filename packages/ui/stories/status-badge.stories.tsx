@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
 import { expect, waitFor } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { type ColumnDef, DataTable } from '../src/components/molecules/data-table/data-table.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
@@ -175,6 +176,38 @@ export const BareAppearance: Story = {
     await expect(style.paddingLeft).toBe('0px');
     await expect(style.boxShadow).toBe('none');
     await expect(badge?.querySelector('[data-slot=status-badge-marker]')).not.toBeNull();
+  },
+};
+
+// A StatusBadge inside a Button, for a status that opens its details. The
+// Button sizes every icon inside it to 16px; the marker keeps its own 13px
+// icon (14px in `lg`) and its stroke.
+export const InsideAButton: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="ghost">
+        <StatusBadge tone="warning">Degraded</StatusBadge>
+      </Button>
+      <Button variant="ghost">
+        <StatusBadge tone="neutral" icon={<MoonStarIcon />}>
+          Asleep
+        </StatusBadge>
+      </Button>
+      <Button variant="ghost" size="lg">
+        <StatusBadge tone="progress" size="lg">
+          Building
+        </StatusBadge>
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const icons = [...canvasElement.querySelectorAll('[data-slot=status-badge-marker] svg')];
+    await expect(icons.length).toBe(3);
+    const sizes = icons.map((icon) => getComputedStyle(icon).width);
+    await expect(sizes).toEqual(['13px', '13px', '14px']);
+    for (const icon of icons) {
+      await expect(getComputedStyle(icon).strokeWidth).toBe('2px');
+    }
   },
 };
 

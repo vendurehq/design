@@ -13,7 +13,7 @@ describe('StatusBadge', () => {
     expect(markup).toContain('h-6');
     expect(markup).toContain('data-slot="status-badge-marker"');
     expect(markup).toContain('lucide-circle-check');
-    expect(markup).toContain('[&amp;_svg]:size-3.25');
+    expect(markup).toContain('[&amp;_svg]:size-3.25!');
   });
 
   test('each tone has its own default icon', () => {
@@ -170,8 +170,8 @@ describe('StatusBadge', () => {
     const markup = html(<StatusBadge size="lg">Draft</StatusBadge>);
 
     expect(markup).toContain('h-7');
-    expect(markup).toContain('[&amp;_svg]:size-3.5');
-    expect(markup).not.toContain('[&amp;_svg]:size-3.25');
+    expect(markup).toContain('[&amp;_svg]:size-3.5!');
+    expect(markup).not.toContain('[&amp;_svg]:size-3.25!');
   });
 
   test('the chip label sits on a line as tall as its text, in both sizes', () => {
@@ -309,7 +309,7 @@ describe('StatusBadge appearance="bare"', () => {
 
     expect(markup).toContain('lucide-loader');
     expect(markup).toContain('text-sm/none');
-    expect(markup).toContain('[&amp;_svg]:size-3.5');
+    expect(markup).toContain('[&amp;_svg]:size-3.5!');
   });
 });
 
