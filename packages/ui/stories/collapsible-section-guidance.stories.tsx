@@ -15,7 +15,7 @@ import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 /**
  * Guidance, not props. When a list of rows should start closed behind a
  * CollapsibleSection, when it should start open, and when to tone its count:
- * `attention` for rows that wait on the user, `critical` for rows that failed.
+ * `warning` for rows that wait on the user, `critical` for rows that failed.
  * For the component API, see the CollapsibleSection stories.
  */
 const meta = {
@@ -204,14 +204,14 @@ export const OpenStateAndTone: Story = {
 
       <Section
         title="Tone means action, not volume"
-        intro="A tone colours the count, and nothing else: attention (warning) for rows that wait on the user, critical (destructive) for rows that failed. With a detail, the tone colours the detail only. A long list of routine rows stays neutral, however long it is (accent rationing)."
+        intro="A tone colours the count, and nothing else: warning for rows that wait on the user, critical for rows that failed. With a detail, the tone colours the detail only. A long list of routine rows stays neutral, however long it is (accent rationing)."
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <Example verdict="do" caption="Two payments wait for a review: attention on the count.">
+          <Example verdict="do" caption="Two payments wait for a review: warning on the count.">
             <CollapsibleSection
               title="Payments to review"
               count={2}
-              tone="attention"
+              tone="warning"
               headingLevel={3}
             />
           </Example>
@@ -222,7 +222,7 @@ export const OpenStateAndTone: Story = {
             <CollapsibleSection
               title="Archived drafts"
               count={48}
-              tone="attention"
+              tone="warning"
               headingLevel={3}
             />
           </Example>
