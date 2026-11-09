@@ -2,6 +2,8 @@ import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { Column } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { ListRowChevron } from '../list-row.tsx';
+
 import {
   type ColumnDef,
   DataTable,
@@ -131,6 +133,29 @@ describe('DataTableRowLink', () => {
     expect(markup).toContain('href="/countries/1"');
     expect(count(markup, /data-slot="data-table-row-chevron"/g)).toBe(2);
     expect(markup).toMatch(/<svg[^>]*data-slot="data-table-row-chevron"[^>]*aria-hidden="true"/);
+  });
+
+  test('the row chevron moves like the ListRow chevron', () => {
+    const classOf = (markup: string, slot: string) => {
+      const tag = markup.match(new RegExp(`<svg[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
+      return new Set(tag.match(/class="([^"]*)"/)?.[1].split(' '));
+    };
+    const table = classOf(
+      html(<DataTable rows={rows} columns={linkedColumns} />),
+      'data-table-row-chevron',
+    );
+    const listRow = classOf(html(<ListRowChevron />), 'list-row-chevron');
+    for (const motion of [
+      'transition-[opacity,translate]',
+      'duration-(--transition-duration-fast)',
+      'ease-(--ease-out)',
+      'motion-safe:-translate-x-0.75',
+      'group-hover/row:opacity-100',
+      'group-hover/list-row:opacity-100',
+    ]) {
+      expect(table.has(motion), motion).toBe(true);
+      expect(listRow.has(motion), motion).toBe(true);
+    }
   });
 
   test('renders through a router link element', () => {
