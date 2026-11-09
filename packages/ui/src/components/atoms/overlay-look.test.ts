@@ -121,6 +121,19 @@ describe('v3 overlay look', () => {
     }
   });
 
+  test('combobox items take the menu item radius', () => {
+    const code = source('combobox.tsx');
+    expect(code).toMatch(/data-highlighted:bg-muted[^"]*rounded-lg/);
+    expect(code).not.toMatch(/data-highlighted:bg-muted[^"]*rounded-sm/);
+  });
+
+  // Base UI marks an open submenu trigger with data-popup-open, never data-open.
+  test('submenu triggers style the open state on data-popup-open only', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx']) {
+      expect(source(file)).not.toMatch(/(?<![\w-])data-open:/);
+    }
+  });
+
   test('a dropdown menu is at least 240px wide', () => {
     expect(source('dropdown-menu.tsx')).toContain('min-w-60');
   });

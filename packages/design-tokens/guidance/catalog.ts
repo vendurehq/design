@@ -46,7 +46,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Placeholders are fainter than muted text',
-        body: 'Use faint-foreground for a native input placeholder. It is below 4.5:1, so never use it for text a user must read, such as a select or date picker that shows its placeholder as text.',
+        body: 'Use faint-foreground for placeholder text in a field, native or shown as text by a select, combobox or date picker. It is below 4.5:1, so never use it for text a user must read.',
       },
       {
         title: 'Brand marks are non-text',

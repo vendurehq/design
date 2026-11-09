@@ -1,13 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   Combobox,
   ComboboxContent,
   ComboboxEmpty,
-  ComboboxGroup,
   ComboboxInput,
   ComboboxItem,
-  ComboboxLabel,
   ComboboxList,
   ComboboxTrigger,
   ComboboxValue,
@@ -33,23 +32,33 @@ const frameworks = [
 export const Default: Story = {
   render: function ComboboxDefault() {
     return (
-      <Combobox>
+      <Combobox items={frameworks}>
         <ComboboxInput aria-label="Framework" placeholder="Search frameworks..." />
         <ComboboxContent>
+          <ComboboxEmpty>No framework found.</ComboboxEmpty>
           <ComboboxList>
-            <ComboboxEmpty>No framework found.</ComboboxEmpty>
-            <ComboboxGroup>
-              <ComboboxLabel>Frameworks</ComboboxLabel>
-              {frameworks.map((framework) => (
-                <ComboboxItem key={framework.value} value={framework.value}>
-                  {framework.label}
-                </ComboboxItem>
-              ))}
-            </ComboboxGroup>
+            {(framework: (typeof frameworks)[number]) => (
+              <ComboboxItem key={framework.value} value={framework}>
+                {framework.label}
+              </ComboboxItem>
+            )}
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
     );
+  },
+  // Opens the list from the icon button. The a11y scan then runs with the list
+  // open, while Base UI hides everything outside the input and the list.
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open options' }));
+    const body = within(document.body);
+    await waitFor(() => expect(body.getAllByRole('option')).toHaveLength(5));
+    // The empty message renders only when no item matches.
+    await expect(body.queryByText('No framework found.')).toBeNull();
+    const option = body.getByRole('option', { name: 'Remix' });
+    await userEvent.hover(option);
+    // The menu item radius, as in DropdownMenu.
+    await expect(getComputedStyle(option).borderTopLeftRadius).toBe('6px');
   },
 };
 
