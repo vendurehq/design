@@ -386,7 +386,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "no-scrollbar flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "no-scrollbar flex min-h-0 flex-1 flex-col gap-1 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       {...props}
@@ -399,7 +399,7 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-group"
       data-sidebar="group"
-      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      className={cn("relative flex w-full min-w-0 flex-col px-2.5 py-2", className)}
       {...props}
     />
   )
@@ -415,7 +415,7 @@ function SidebarGroupLabel({
     props: mergeProps<"div">(
       {
         className: cn(
-          "text-sidebar-foreground/70 h-8 overflow-hidden rounded-md px-3 text-xs font-medium whitespace-nowrap transition-[height,opacity] duration-(--transition-duration-slow) ease-drawer motion-reduce:transition-opacity group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:opacity-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:size-4 flex shrink-0 items-center outline-hidden [&>svg]:shrink-0",
+          "text-muted-foreground h-5.5 overflow-hidden rounded-md px-2.5 text-xs leading-4.5 font-medium whitespace-nowrap transition-[height,opacity] duration-(--transition-duration-slow) ease-drawer motion-reduce:transition-opacity group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:opacity-0 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:size-4 flex shrink-0 items-start outline-hidden [&>svg]:shrink-0",
           className
         ),
       },
@@ -560,7 +560,7 @@ function SidebarMenuIndicator() {
       aria-hidden="true"
       data-slot="sidebar-menu-indicator"
       data-sidebar="menu-indicator"
-      className="bg-surface-raised border-sidebar-border shadow-control pointer-events-none absolute inset-x-0 top-0 rounded-lg border opacity-0 data-shown:opacity-100 data-ready:transition-[transform,height,opacity] data-ready:duration-(--transition-duration-slow) data-ready:ease-drawer motion-reduce:data-ready:transition-opacity"
+      className="bg-surface-raised border-sidebar-border shadow-control pointer-events-none absolute inset-x-0 top-0 rounded-lg border opacity-0 data-shown:opacity-100 data-ready:[transition:transform_280ms_var(--ease-drawer),height_280ms_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)] motion-reduce:data-ready:transition-opacity"
     />
   )
 }
@@ -585,7 +585,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 // the icon stays where it is (centred in the rail) and the label fades out,
 // clipped by the narrowing rail, instead of the button shrinking to a square.
 const sidebarMenuButtonVariants = cva(
-  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-[width,height,padding] motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-(--transition-duration-moderate) group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-(--transition-duration-fast) [&_svg]:size-4 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-(--transition-duration-normal) hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
+  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-[width,height,padding] motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-(--transition-duration-moderate) group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-(--transition-duration-fast) [&_svg]:size-4 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-(--transition-duration-normal) hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
   {
     variants: {
       variant: {

@@ -4,6 +4,8 @@ import { ChevronRightIcon, HomeIcon } from 'lucide-react';
 
 import {
   Sidebar,
+  SidebarContent,
+  SidebarGroup,
   SidebarGroupLabel,
   SidebarInset,
   SidebarMenu,
@@ -177,13 +179,51 @@ describe('SidebarMenu sliding indicator', () => {
     const indicator = html.match(/<li[^>]*data-slot="sidebar-menu-indicator"[^>]*>/)?.[0] ?? '';
     expect(indicator).toContain('aria-hidden="true"');
     expect(classTokens(html, 'sidebar-menu-indicator')).toEqual(
-      expect.arrayContaining(['shadow-control', 'data-ready:ease-drawer', 'motion-reduce:data-ready:transition-opacity']),
+      expect.arrayContaining(['shadow-control', 'motion-reduce:data-ready:transition-opacity']),
     );
     expect(classTokens(html, 'sidebar-menu-button')).toEqual(
       expect.arrayContaining([
         'in-data-[active-indicator=pill]:before:hidden',
         'in-data-[active-indicator=pill]:data-active:bg-transparent!',
       ]),
+    );
+  });
+});
+
+describe('Sidebar spacing and labels, the v3 look', () => {
+  const html = renderToStaticMarkup(
+    <SidebarProvider>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Project</SidebarGroupLabel>
+          <SidebarMenu slidingIndicator>
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive>Source</SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+    </SidebarProvider>,
+  );
+
+  test('items and the group sit 10px in, so the icon stays 20px from the edge', () => {
+    expect(classTokens(html, 'sidebar-menu-button')).toContain('px-2.5');
+    expect(classTokens(html, 'sidebar-menu-button')).not.toContain('px-3');
+    expect(classTokens(html, 'sidebar-group')).toEqual(expect.arrayContaining(['px-2.5', 'py-2']));
+  });
+
+  test('a group label is 12px medium muted text, 20px below the group above and 4px above its items', () => {
+    const label = classTokens(html, 'sidebar-group-label');
+    expect(label).toEqual(
+      expect.arrayContaining(['text-muted-foreground', 'text-xs', 'font-medium', 'h-5.5', 'leading-4.5', 'items-start', 'px-2.5']),
+    );
+    expect(label).not.toContain('text-sidebar-foreground/70');
+    expect(classTokens(html, 'sidebar-content')).toContain('gap-1');
+  });
+
+  test('the pill slides in 280ms on the drawer curve and fades in 150ms', () => {
+    expect(classTokens(html, 'sidebar-menu-indicator')).toContain(
+      'data-ready:[transition:transform_280ms_var(--ease-drawer),height_280ms_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)]',
     );
   });
 });
