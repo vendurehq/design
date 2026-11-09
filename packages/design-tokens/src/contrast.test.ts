@@ -211,8 +211,8 @@ const surfaces = ['background', 'surface', 'surface-raised', 'overlay'] as const
 // input outline, not the only cue that identifies a control.
 // `warning-indicator` is exempt in light mode: it is about 2:1, so that a
 // mix of it reads amber instead of beige. It is never the only cue (the
-// StatusBadge label and icon carry the state), and it is not for a standalone
-// dot. Dark mode holds it to 3:1 below.
+// StatusBadge label and icon carry the state; a status dot keeps its label as
+// screen-reader text). Dark mode holds it to 3:1 below.
 const nonTextSlots = [
   'primary',
   'ring',
@@ -230,6 +230,7 @@ const surfaceTextSlots = [
   'warning-text',
   'destructive-text',
   'info-text',
+  'neutral-text',
 ] as const;
 const toneTextSlots = ['success-text', 'warning-text', 'destructive-text', 'info-text'] as const;
 // The StatusBadge chip recipe, copied from the `statusBadgeVariants` and
@@ -241,7 +242,7 @@ const chipTones: Record<
   string,
   { tone: string; label?: string; labelMix?: number; marker?: string }
 > = {
-  neutral: { tone: 'var(--muted-foreground)' },
+  neutral: { tone: 'var(--neutral-text)' },
   info: { tone: 'var(--info-text)' },
   success: { tone: 'var(--success-text)' },
   warning: {

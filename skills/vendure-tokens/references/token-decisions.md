@@ -15,7 +15,7 @@ Map raw color through semantic slots before any component or page consumes it.
 - **Tone text uses the text slots:** Set a status word, delta, or field error directly on a surface with the matching tone text slot, such as success-text or destructive-text. The solid tone slots are fills for their foreground text and are not safe as text.
 - **Text has three levels:** Use foreground for primary text, foreground-secondary for supporting text such as descriptions and table values, and muted-foreground for the lowest emphasis. secondary-foreground is only the text on a secondary fill.
 - **Brand marks are non-text:** Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It holds 3:1 for non-text contrast, not 4.5:1 for text. The focus ring is brand too.
-- **Warning marks are never the only cue:** Use warning-indicator for a warning mark beside a label, such as the StatusBadge outline and fill. In light mode it is about 2:1, below the 3:1 non-text bar, so a label or icon must carry the state. Do not use it for a standalone status dot or for text.
+- **Warning marks are never the only cue:** Use warning-indicator for a warning mark beside a label, such as the StatusBadge outline and fill. In light mode it is about 2:1, below the 3:1 non-text bar, so a label or icon must carry the state. The StatusBadge status dot fills with it too, and keeps its label as screen-reader text. Do not use it for text.
 - **Local color concepts remain semantic:** A standalone external app may add a namespaced semantic slot for a genuinely product-specific concept, mapped through theme values. Graduate it when a second consumer needs it.
 ## Surfaces and intensity
 
