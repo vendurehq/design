@@ -28,6 +28,23 @@ import {
 // see which one Enter presses.
 const focusRing = 'focus:outline-solid focus:outline-2 focus:outline-offset-2 focus:outline-ring';
 
+// The fields in `body` that can take focus when the dialog opens. Checkbox,
+// Switch and Select render a span or button with the role, plus a hidden form
+// input that `isTabbable` skips.
+const FIELD_SELECTOR =
+  'input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [contenteditable="true"], [role=checkbox], [role=switch], [role=combobox], [role=radio]';
+
+// A field the user can reach with Tab. A hidden input (a DatePicker `name`, a
+// form value) or a field inside an aria-hidden subtree would take focus
+// nowhere visible, so Enter would do nothing.
+function isTabbable(element: HTMLElement) {
+  if (element.tabIndex < 0) return false;
+  if (element instanceof HTMLInputElement && element.type === 'hidden') return false;
+  if (element.closest('[aria-hidden="true"]')) return false;
+  if (element.getAttribute('aria-disabled') === 'true') return false;
+  return element.checkVisibility?.() ?? true;
+}
+
 interface ConfirmDialogProps {
   title: ReactNode;
   /**
@@ -60,8 +77,9 @@ interface ConfirmDialogProps {
   /** Why confirm is disabled, shown beside the buttons while `confirmDisabled` is set. */
   confirmDisabledReason?: ReactNode;
   /**
-   * The element that takes focus when the dialog opens. By default a field in
-   * `body` takes it. Without one, Confirm takes it, so Enter confirms. A
+   * The element that takes focus when the dialog opens. By default the first
+   * field in `body` that a user can tab to takes it; hidden inputs never do.
+   * Without one, Confirm takes it, so Enter confirms. A
    * destructive dialog, or one whose Confirm is disabled, focuses Cancel, so
    * Enter never destroys by accident. The focused button shows its ring at
    * once, also when a mouse click opened the dialog.
@@ -103,9 +121,8 @@ function ConfirmDialog({
   const confirmRef = useRef<HTMLButtonElement>(null);
 
   const defaultInitialFocus = () => {
-    const field = bodyRef.current?.querySelector<HTMLElement>(
-      'input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [contenteditable="true"]',
-    );
+    const fields = bodyRef.current?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [];
+    const field = Array.from(fields).find(isTabbable);
     if (field) return field;
     if (variant === 'destructive' || confirmDisabled) return cancelRef.current ?? true;
     return confirmRef.current ?? true;
