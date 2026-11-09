@@ -46,6 +46,9 @@ export const duration = {
   tooltipLabelFade: '180ms',
   tooltipLabelMove: '260ms',
   tooltipResize: '320ms',
+  // A Progress fill grows from 0 when it first shows, and eases to a new
+  // value, in this time with the `out` curve. Only Progress uses it.
+  progressFill: '240ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a
@@ -55,6 +58,9 @@ export const animation = {
   // A calm rotation for small in-progress marks (the StatusBadge spinner).
   // Slower than Tailwind's 1s `animate-spin`.
   spinSlow: 'spin-slow 1.6s linear infinite',
+  // A band crossing an indeterminate Progress bar at a constant speed: the
+  // work runs, its length is unknown.
+  progressSweep: 'progress-sweep 2.2s linear infinite',
 } as const;
 
 // Keyframe steps for the animations above, generated as top-level
@@ -66,5 +72,11 @@ export const keyframes = {
   },
   spinSlow: {
     to: { transform: 'rotate(360deg)' },
+  },
+  // The band is 40% of the track: it starts just left of the track and
+  // ends just right of it.
+  progressSweep: {
+    from: { transform: 'translateX(-100%)' },
+    to: { transform: 'translateX(250%)' },
   },
 } as const;

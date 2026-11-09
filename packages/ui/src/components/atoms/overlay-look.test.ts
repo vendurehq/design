@@ -77,6 +77,18 @@ describe('v3 overlay look', () => {
     }
   });
 
+  test('a dropdown menu is at least 240px wide', () => {
+    expect(source('dropdown-menu.tsx')).toContain('min-w-60');
+  });
+
+  test('destructive menu items hover with a 10% destructive tint in both themes', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
+      const code = source(file);
+      expect(code).toContain('data-[variant=destructive]:focus:bg-destructive/10');
+      expect(code).not.toContain('dark:data-[variant=destructive]:focus:bg-destructive/20');
+    }
+  });
+
   test('destructive menu items read in destructive-text', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
@@ -92,6 +104,20 @@ describe('v3 overlay look', () => {
       expect(code).toContain('bg-scrim');
       expect(code).not.toContain('ease-[cubic-bezier(0.32,0.72,0,1)]');
     }
+  });
+
+  test('a dialog is 440px, has no close button by default, and a 10px header gap', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('showCloseButton = false,');
+    expect(code).toContain('sm:max-w-110');
+    expect(code).toContain('"flex flex-col gap-2.5"');
+  });
+
+  test('a dialog title takes an 18px icon, neutral at 60% or in its tone', () => {
+    const code = source('dialog.tsx');
+    expect(code).toContain('size-4.5');
+    expect(code).toContain('neutral: "text-foreground/60"');
+    expect(code).toContain('critical: "text-destructive-text"');
   });
 
   test('the toaster defaults to bottom right on the 2xl radius, overlay shadow and a hairline', () => {

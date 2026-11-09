@@ -163,7 +163,7 @@ Use the batteries-included collection engine while keeping URL, fetching, and pe
 - **The consumer owns state outside the table:** The consumer owns URL state, fetching, authorization, and persistence. DataTable owns one TanStack table instance and UI composition.
 - **Use composition seams before wrappers:** Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.
 - **Shape loading rows like loaded rows:** The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.
-- **A row that opens an item opens it from any point:** Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control.
+- **A row that opens an item opens it from any point:** Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.
 - **Cell text lines up with the header:** Badge, StatusBadge, Button and IdChip set --content-inset, the distance from their box to their first letter, and a DataTable cell pulls its first element back by it. Do not add per-column offsets. Mark a leading icon with data-icon="inline-start". Custom styled content sets --content-inset on the element that starts the cell.
 - **Do not use DataTable for static layout:** Use Table or DescriptionList when there is no interactive collection behavior to coordinate.
 
@@ -227,7 +227,8 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 - **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 - **The whole chip copies:** A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.
-- **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).
+- **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. DataTable and ListRow rows keep a copy chip above their stretched row link, so it copies and does not open the row.
+- **A lookup key that names the row is still a chip:** When the lookup key is also the row's name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader
@@ -291,13 +292,16 @@ Show task completion or usage against a limit, toned only when the level has a c
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
 - **One bar per measure:** Use Progress with a value for a meter. Do not draw segmented or hand-colored meters.
 - **Indeterminate when the length is unknown:** Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.
+- **One bar per step of a pipeline:** A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.
 
 **Choose:**
 
 - `default`: Task progress, or a meter with no limit the user must act on.
-- `success`: A meter whose filled level is the healthy outcome.
+- `info`: The running step of a pipeline.
+- `success`: A meter whose filled level is the healthy outcome, or a done step.
 - `warning`: Near a limit the user must act on.
-- `critical`: At or over the limit.
+- `critical`: At or over the limit, or a failed step.
+- `neutral`: A step that stopped and needs nothing from the user, such as a cancelled one.
 
 Related decisions: `status-badge`, `stat-card`.
 ## SecretValue

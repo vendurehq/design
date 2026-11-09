@@ -370,7 +370,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -547,7 +547,11 @@ export const uiGuidance = [
       },
       {
         title: 'A lookup key in a list column reveals on row hover',
-        body: 'When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).',
+        body: 'When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. DataTable and ListRow rows keep a copy chip above their stretched row link, so it copies and does not open the row.',
+      },
+      {
+        title: 'A lookup key that names the row is still a chip',
+        body: 'When the lookup key is also the row\'s name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.',
       },
     ],
     related: ['anonymized-token', 'copyable-text'],
@@ -714,12 +718,24 @@ export const uiGuidance = [
         title: 'Indeterminate when the length is unknown',
         body: 'Pass `value={null}` when the work has no measurable progress, such as a build. Do not invent a percentage or loop a fake value.',
       },
+      {
+        title: 'One bar per step of a pipeline',
+        body: 'A done step is `success` at 100, a failed step `critical` at 100, the running step `info` with `value={null}`, and a step that has not started `default` at 0. A step that stopped and needs nothing from the user is `neutral` at 100.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'Task progress, or a meter with no limit the user must act on.' },
-      { choice: 'success', when: 'A meter whose filled level is the healthy outcome.' },
+      { choice: 'info', when: 'The running step of a pipeline.' },
+      {
+        choice: 'success',
+        when: 'A meter whose filled level is the healthy outcome, or a done step.',
+      },
       { choice: 'warning', when: 'Near a limit the user must act on.' },
-      { choice: 'critical', when: 'At or over the limit.' },
+      { choice: 'critical', when: 'At or over the limit, or a failed step.' },
+      {
+        choice: 'neutral',
+        when: 'A step that stopped and needs nothing from the user, such as a cancelled one.',
+      },
     ],
     related: ['status-badge', 'stat-card'],
   },
