@@ -425,7 +425,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-accent pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl in-data-command-palette:bg-muted data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-soft"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-soft"
     />
   )
 }
@@ -484,8 +484,8 @@ function CommandSeparator({
 // cmdk writes data-selected="true" or "false" on every item, so the highlight
 // matches the value; a bare data-selected: variant would match every item.
 // In a CommandList with slidingHighlight, the list's highlight replaces the
-// item's own fill. Outside the palette the highlight is the accent fill, as in
-// a combobox, select or menu. In forced colors, where fills drop, the
+// item's own fill. The highlight is the muted fill, as in every combobox,
+// select and menu. In forced colors, where fills drop, the
 // highlight is a Highlight outline. Palette items are 40px tall and quiet at
 // rest: foreground-secondary text, with the label (CommandItemLabel) in medium
 // weight. The highlighted row has the muted fill, turns its text to
@@ -499,7 +499,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none not-in-data-command-palette:data-[selected=true]:bg-accent not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-command-palette:data-[selected=true]:bg-muted in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
+        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[selected=true]:bg-muted not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
         className
       )}
       {...props}

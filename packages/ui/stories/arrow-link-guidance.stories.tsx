@@ -72,8 +72,8 @@ const CHOICES: { tool: string; use: string }[] = [
     use: 'Do something: save, deploy, retry, open a dialog. An action that changes state is a Button, even when it also navigates.',
   },
   {
-    tool: 'Button variant="link"',
-    use: 'A link inside running text or a form, where an arrow would break the sentence.',
+    tool: 'Button variant="link" size={null}',
+    use: 'A link inside running text or a form, where an arrow would break the sentence. `size={null}` drops the button height and padding, so it sits on the line of the text.',
   },
 ];
 
