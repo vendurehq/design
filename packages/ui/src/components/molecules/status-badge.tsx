@@ -2,17 +2,9 @@ import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
 import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
+import { toneIcons } from '@vendure-io/ui/lib/tone-icons';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
-import {
-  CircleCheckIcon,
-  CircleDashedIcon,
-  CircleDotIcon,
-  CircleXIcon,
-  LoaderIcon,
-  type LucideIcon,
-  TriangleAlertIcon,
-} from 'lucide-react';
 import type * as React from 'react';
 import { isValidElement } from 'react';
 
@@ -136,17 +128,6 @@ const bareVariants = cva(
   },
 );
 
-// The icon a chip shows when the caller passes none: the shape says the state
-// again, so a chip never depends on colour alone. `progress` always spins its
-// `Loader` (see StatusBadgeMarker).
-const toneIcon: Record<Exclude<Tone, 'progress'>, LucideIcon> = {
-  neutral: CircleDashedIcon,
-  info: CircleDotIcon,
-  success: CircleCheckIcon,
-  warning: TriangleAlertIcon,
-  critical: CircleXIcon,
-};
-
 // The marker colour of each tone: the icon or spinner stroke.
 const toneText: Record<Tone, string> = {
   neutral: 'text-neutral-text',
@@ -181,6 +162,10 @@ const toneWord: Record<Tone, string> = {
 // stays in progress for minutes does not read as urgent. Under reduced motion
 // the spinner stands still; the icon shape still says "in motion".
 const spinnerClass = 'animate-spin-slow motion-reduce:animate-none';
+
+// The icon a chip shows when the caller passes none comes from `toneIcons`,
+// the map the toast reads too. `progress` always spins its loader.
+const ProgressIcon = toneIcons.progress;
 
 interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /** Semantic tone. Defaults to `neutral`. */
@@ -271,7 +256,7 @@ function StatusBadge({
       <>
         {children}
         {tone === 'progress' ? (
-          <LoaderIcon aria-hidden className={cn('size-3 shrink-0 stroke-2', spinnerClass)} />
+          <ProgressIcon aria-hidden className={cn('size-3 shrink-0 stroke-2', spinnerClass)} />
         ) : null}
       </>
     );
@@ -339,7 +324,7 @@ function StatusBadgeMarker({
   if (tone === 'progress') {
     return (
       <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
-        <LoaderIcon className={spinnerClass} />
+        <ProgressIcon className={spinnerClass} />
       </span>
     );
   }
@@ -348,7 +333,7 @@ function StatusBadgeMarker({
     // `false`, `null` and any other value that is not an element (`''`, `0`)
     // mean no icon. Only a left-out `icon` gets the tone's own.
     if (icon !== undefined) return null;
-    const ToneIcon = toneIcon[tone];
+    const ToneIcon = toneIcons[tone];
     return (
       <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
         <ToneIcon />

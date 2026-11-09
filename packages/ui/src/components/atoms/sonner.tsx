@@ -2,8 +2,16 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 import { cn } from "@vendure-io/ui/lib/utils"
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+
+// A toast shows the same icon as a StatusBadge of its tone: error is
+// `critical`, loading is `progress`.
+const SuccessIcon = toneIcons.success
+const InfoIcon = toneIcons.info
+const WarningIcon = toneIcons.warning
+const ErrorIcon = toneIcons.critical
+const LoadingIcon = toneIcons.progress
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -18,23 +26,23 @@ const Toaster = ({ ...props }: ToasterProps) => {
       // and 20% fainter. Pass expand={false} for Sonner's collapsed stack.
       expand
       gap={8}
-      // Each icon carries its tone: the toast surface stays neutral. Info is
-      // the brand mark, not the info tone.
+      // Each icon carries its tone: the toast surface stays neutral. Info
+      // draws the info icon in the brand colour, not the info tone colour.
       icons={{
         success: (
-          <CircleCheckIcon className="text-success-text size-4 stroke-2" />
+          <SuccessIcon className="text-success-text size-4 stroke-2" />
         ),
         info: (
           <InfoIcon className="text-brand-indicator size-4 stroke-2" />
         ),
         warning: (
-          <TriangleAlertIcon className="text-warning-text size-4 stroke-2" />
+          <WarningIcon className="text-warning-text size-4 stroke-2" />
         ),
         error: (
-          <OctagonXIcon className="text-destructive-text size-4 stroke-2" />
+          <ErrorIcon className="text-destructive-text size-4 stroke-2" />
         ),
         loading: (
-          <Loader2Icon className="text-muted-foreground size-4 animate-spin stroke-2 motion-reduce:animate-none" />
+          <LoadingIcon className="text-muted-foreground size-4 animate-spin stroke-2 motion-reduce:animate-none" />
         ),
       }}
       style={
