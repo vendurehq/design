@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 
+import { useActiveLabelWidth } from "@vendure-io/ui/hooks/use-active-label-width"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 function TooltipProvider({
@@ -82,13 +83,7 @@ function TooltipLabelSwap({
   labels: readonly React.ReactNode[]
   active: number
 }) {
-  const refs = React.useRef<(HTMLSpanElement | null)[]>([])
-  const [width, setWidth] = React.useState<number>()
-  // offsetWidth ignores the popup's entrance scale, which getBoundingClientRect would include.
-  React.useLayoutEffect(() => {
-    const label = refs.current[active]
-    if (label) setWidth(label.offsetWidth)
-  }, [active, labels])
+  const { refs, width } = useActiveLabelWidth(active, labels)
   return (
     <span
       data-slot="tooltip-label-swap"
