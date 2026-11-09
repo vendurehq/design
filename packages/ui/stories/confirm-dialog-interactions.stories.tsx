@@ -3,7 +3,9 @@ import { Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { Label } from '../src/components/atoms/label.tsx';
 import { ConfirmDialog } from '../src/components/molecules/confirm-dialog.tsx';
 
 // Mounted interaction tests for ConfirmDialog. The test runner (CI step
@@ -228,6 +230,67 @@ export const DisabledConfirmFocusesCancel: Story = {
   ),
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
+    );
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/**
+ * A Checkbox in `body` takes focus. The hidden form input it renders beside
+ * it is out of the tab order and never does.
+ */
+export const BodyCheckboxTakesFocus: Story = {
+  render: () => (
+    <ConfirmDialog
+      title="Delete product?"
+      confirmLabel="Delete"
+      variant="destructive"
+      body={
+        <Label className="flex items-center gap-2">
+          <Checkbox name="deleteVariants" />
+          Also delete its variants
+        </Label>
+      }
+      onConfirm={() => {}}
+    >
+      <Button variant="destructive">Delete</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Delete' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    await waitFor(() =>
+      expect(within(dialog).getByRole('checkbox', { name: 'Also delete its variants' })).toHaveFocus(),
+    );
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/** A body with only a hidden input has no field to focus: a destructive dialog focuses Cancel. */
+export const BodyHiddenInputFocusesCancel: Story = {
+  render: () => (
+    <ConfirmDialog
+      title="Delete product?"
+      confirmLabel="Delete"
+      variant="destructive"
+      body={
+        <p className="text-muted-foreground text-sm">
+          <input type="hidden" name="productId" value="42" />
+          The product has 3 variants.
+        </p>
+      }
+      onConfirm={() => {}}
+    >
+      <Button variant="destructive">Delete</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Delete' }));
     const dialog = await within(document.body).findByRole('alertdialog');
     await waitFor(() =>
       expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
