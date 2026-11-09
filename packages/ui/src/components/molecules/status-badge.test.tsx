@@ -239,3 +239,28 @@ describe('StatusBadge appearance="bare"', () => {
     expect(markup).toContain('[&amp;_svg]:size-3.5');
   });
 });
+
+describe('StatusBadge content inset', () => {
+  // The distance from the box to the first letter, which a DataTable cell pulls
+  // the chip back by: padding, plus the marker and its gap.
+  test('the chip marks its marker, so the inset counts an icon or a dot', () => {
+    expect(html(<StatusBadge tone="success">Live</StatusBadge>)).toContain('data-marker="icon"');
+    expect(
+      html(
+        <StatusBadge tone="success" dot>
+          Live
+        </StatusBadge>,
+      ),
+    ).toContain('data-marker="dot"');
+    const markup = html(<StatusBadge tone="success">Live</StatusBadge>);
+    expect(markup).toContain('[--content-inset:calc(var(--spacing)*2.5)]');
+    expect(markup).toContain('has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*6.75)]');
+  });
+
+  test('text and dot appearances set no inset', () => {
+    expect(html(<StatusBadge appearance="text">Live</StatusBadge>)).not.toContain(
+      '--content-inset',
+    );
+    expect(html(<StatusBadge appearance="dot">Live</StatusBadge>)).not.toContain('--content-inset');
+  });
+});

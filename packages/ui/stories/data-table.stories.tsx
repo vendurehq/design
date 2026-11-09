@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MoreHorizontalIcon, SearchIcon } from 'lucide-react';
+import { MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { expect, within } from 'storybook/test';
+import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { ContextMenuItem, ContextMenuSeparator } from '../src/components/atoms/context-menu.tsx';
@@ -30,6 +31,7 @@ import {
   type TableInstance,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
+import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
 import {
   PageHeader,
@@ -749,4 +751,139 @@ export const PlainFrame: Story = {
       />
     </Card>
   ),
+};
+
+// Cell text lines up with its header text, also in styled cells. Each styled
+// atom (StatusBadge, Badge, Button, IdChip) sets `--content-inset`, the
+// distance from its box to its first letter, and the cell pulls it back by
+// that much. The Status chips' 27px inset reaches past the cell padding, so
+// that column indents its header and its plain "Draft" cell instead: no chip
+// leaves its cell, and in the first column no chip enters the card inset. The Hidden chip sits one wrapper deep, as in a tooltip
+// trigger. The Channel column mixes a Badge with an icon and plain text. The
+// play function measures every column, row by row.
+interface Product {
+  id: string;
+  name: string;
+  state: 'Live' | 'Hidden' | 'Draft';
+  channel: string | null;
+  sku: string;
+}
+
+const products: Product[] = [
+  { id: 'prod_8f2k1m9qz4', name: 'Laptop Stand', state: 'Live', channel: 'Default', sku: 'LS-001' },
+  { id: 'prod_3n7c0w2yx8', name: 'USB-C Hub', state: 'Hidden', channel: null, sku: 'HUB-07' },
+  { id: 'prod_5t9b4r6vd1', name: 'Desk Lamp', state: 'Draft', channel: 'Outlet', sku: 'DL-220' },
+];
+
+const alignmentColumns: ColumnDef<Product>[] = [
+  {
+    accessorKey: 'state',
+    header: 'Status',
+    cell: ({ row }) =>
+      row.original.state === 'Draft' ? (
+        <span className="text-muted-foreground">Draft</span>
+      ) : row.original.state === 'Hidden' ? (
+        // One wrapper deep, as inside a tooltip trigger: the chip still lines up.
+        <span className="inline-flex">
+          <StatusBadge tone="neutral">Hidden</StatusBadge>
+        </span>
+      ) : (
+        <StatusBadge tone="success">Live</StatusBadge>
+      ),
+  },
+  { accessorKey: 'name', header: 'Name' },
+  {
+    accessorKey: 'channel',
+    header: 'Channel',
+    cell: ({ row }) =>
+      row.original.channel ? (
+        <Badge>
+          <StoreIcon data-icon="inline-start" />
+          {row.original.channel}
+        </Badge>
+      ) : (
+        'None'
+      ),
+  },
+  {
+    accessorKey: 'sku',
+    header: 'SKU',
+    enableSorting: false,
+    cell: ({ row }) => <Badge variant="outline">{row.original.sku}</Badge>,
+  },
+  {
+    id: 'variants',
+    header: 'Variants',
+    enableSorting: false,
+    cell: () => (
+      <Button variant="outline" size="sm">
+        Edit variants
+      </Button>
+    ),
+  },
+  {
+    accessorKey: 'id',
+    header: 'ID',
+    enableSorting: false,
+    cell: ({ row }) => <IdChip value={row.original.id} />,
+  },
+];
+
+// The left edge of the first visible letter in an element. Screen-reader-only
+// and aria-hidden text does not count: nobody sees it.
+function textLeft(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() &&
+      !node.parentElement?.closest('.sr-only, [aria-hidden="true"]')
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT,
+  });
+  const node = walker.nextNode();
+  if (!node?.textContent) throw new Error(`No visible text in ${element.outerHTML}`);
+  const range = document.createRange();
+  const start = node.textContent.search(/\S/);
+  range.setStart(node, start);
+  range.setEnd(node, start + 1);
+  return range.getBoundingClientRect().left;
+}
+
+export const CellTextAlignment: Story = {
+  render: () => {
+    const [sorting, setSorting] = useState<SortingState>([]);
+    return (
+      <DataTable<Product>
+        rows={products}
+        columns={alignmentColumns}
+        getRowId={(product) => product.id}
+        sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const headers = [...canvasElement.querySelectorAll('thead th')];
+    await expect(headers).toHaveLength(alignmentColumns.length);
+    for (const row of canvasElement.querySelectorAll('tbody tr')) {
+      const cells = [...row.querySelectorAll('td')];
+      for (const [index, cell] of cells.entries()) {
+        const header = headers[index] as Element;
+        const offset = textLeft(cell) - textLeft(header);
+        await expect(Math.abs(offset), `${header.textContent}: ${cell.textContent}`).toBeLessThanOrEqual(0.5);
+        // Nothing leaves its cell: the content box (also one wrapper deep)
+        // starts inside the cell.
+        const first = cell.firstElementChild;
+        // In the first column the chip keeps the card inset clear, less one
+        // gutter (the cell's end padding).
+        const style = getComputedStyle(cell);
+        const indent = Number.parseFloat(cell.style.getPropertyValue('--column-indent')) || 0;
+        const padding = Number.parseFloat(style.paddingLeft) - indent;
+        const clear = padding - Math.min(padding, Number.parseFloat(style.paddingRight));
+        for (const content of [first, first?.firstElementChild]) {
+          if (!content) continue;
+          const offset = content.getBoundingClientRect().left - cell.getBoundingClientRect().left;
+          await expect(offset, `${header.textContent} box`).toBeGreaterThanOrEqual(clear - 0.5);
+        }
+      }
+    }
+  },
 };

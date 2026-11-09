@@ -1,5 +1,6 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
+import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
 import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
@@ -35,6 +36,12 @@ type StatusBadgeSize = 'default' | 'lg';
 // fill and outline in `warning-indicator`: mixed from `warning-text`, they
 // read beige. Its label mixes 70% of `warning-text` instead. Class strings
 // are static per tone so Tailwind's scanner picks them up.
+//
+// `--content-inset` is the distance from the box to the first letter: the
+// start padding, plus the marker (13px icon or 6px dot, 14px icon in `lg`)
+// and its 6px gap. A DataTable cell pulls the chip back by it, so the label
+// lines up with the column header. `bare` has no padding, so only the marker
+// counts.
 const toneVars = {
   neutral: '[--status-tone:var(--muted-foreground)]',
   info: '[--status-tone:var(--info-text)]',
@@ -57,14 +64,21 @@ const statusBadgeVariants = cva(
     chipLabel,
     'outline-1 outline-transparent -outline-offset-1',
     'transition-[box-shadow,background-color,color] duration-slow',
+    contentInsetPull,
   ],
   {
     variants: {
       tone: toneVars,
       size: {
-        default: 'h-6 gap-1.5 px-2.5 text-xs has-data-[slot=status-badge-marker]:pl-2',
-        lg: 'h-7 gap-1.5 px-3 text-sm has-data-[slot=status-badge-marker]:pl-2.5',
-      } satisfies Record<StatusBadgeSize, string>,
+        default: [
+          'h-6 gap-1.5 px-2.5 text-xs has-data-[slot=status-badge-marker]:pl-2',
+          '[--content-inset:calc(var(--spacing)*2.5)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*6.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5)]',
+        ],
+        lg: [
+          'h-7 gap-1.5 px-3 text-sm has-data-[slot=status-badge-marker]:pl-2.5',
+          '[--content-inset:calc(var(--spacing)*3)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*7.5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5.5)]',
+        ],
+      } satisfies Record<StatusBadgeSize, string[]>,
     },
     defaultVariants: {
       tone: 'neutral',
@@ -81,13 +95,15 @@ const bareVariants = cva(
     'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium leading-none',
     chipLabel,
     'transition-colors duration-slow',
+    contentInsetPull,
   ],
   {
     variants: {
       tone: toneVars,
       size: {
-        default: 'text-xs',
-        lg: 'text-sm',
+        default:
+          'text-xs has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*4.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
+        lg: 'text-sm has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*3)]',
       } satisfies Record<StatusBadgeSize, string>,
     },
     defaultVariants: {
@@ -263,7 +279,7 @@ function StatusBadgeMarker({
 
   if (isValidElement(icon)) {
     return (
-      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
+      <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
         {icon}
       </span>
     );
@@ -273,7 +289,7 @@ function StatusBadgeMarker({
   // its meaning, and without it the chip looks like `info`.
   if (tone === 'progress') {
     return (
-      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
+      <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
         <LoaderIcon className={spinnerClass} />
       </span>
     );
@@ -285,7 +301,7 @@ function StatusBadgeMarker({
     if (icon !== undefined) return null;
     const ToneIcon = toneIcon[tone];
     return (
-      <span aria-hidden data-slot="status-badge-marker" className={iconClasses}>
+      <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
         <ToneIcon />
       </span>
     );
@@ -294,6 +310,7 @@ function StatusBadgeMarker({
   return (
     <span
       aria-hidden
+      data-marker="dot"
       data-slot="status-badge-marker"
       className={cn('size-1.5 shrink-0 rounded-full bg-current', toneText[tone])}
     />

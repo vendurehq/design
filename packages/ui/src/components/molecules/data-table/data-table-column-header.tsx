@@ -41,7 +41,12 @@ function DataTableColumnHeader<TData, TValue>({
       // Tri-state cycle asc → desc → none is TanStack's default toggle (removal
       // enabled). We only wire the click; the engine owns the state machine.
       onClick={column.getToggleSortingHandler()}
-      className={cn('-ml-2.5 h-8 gap-1.5 data-[slot=data-table-column-header]:px-2.5', className)}
+      // Pulls back by the button's own `--content-inset` (its padding and its
+      // 1px border), so the label starts where a plain header label would.
+      className={cn(
+        '-ms-(--content-inset) h-8 gap-1.5 data-[slot=data-table-column-header]:px-2.5',
+        className,
+      )}
       {...props}
     >
       {children}

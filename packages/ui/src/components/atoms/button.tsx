@@ -3,6 +3,7 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // The v3 look: 34px default and 28px sm, the xl radius, 13px medium text.
@@ -28,8 +29,13 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // value makes the button the containing block of its ::after, so a stretched
 // ::after shrinks to the button mid-press and the click misses. A button that
 // stretches its ::after also takes `active:scale-none` at full motion.
+// Each text size sets `--content-inset`, the distance from the box to the
+// first letter: the padding and the 1px border, plus a leading
+// `data-icon="inline-start"` icon and the gap. A DataTable cell and the sort
+// header pull the button back by it, so the label lines up with the column.
+// Icon-only sizes have no text and set none.
 const buttonVariants = cva(
-  "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_220ms_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180",
+  [contentInsetPull, "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_220ms_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180"],
   {
     variants: {
       variant: {
@@ -54,10 +60,10 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8.5 gap-1.75 px-3.25 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        xs: "h-6 gap-1 rounded-lg px-2 text-xs [&_svg:not([class*='size-'])]:size-3 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        sm: "h-7 gap-1.75 px-2.5 text-xs [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        lg: "h-10 gap-2 px-4 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+          "h-8.5 gap-1.75 px-3.25 [--content-inset:calc(var(--spacing)*3.25+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*9+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        xs: "h-6 gap-1 rounded-lg px-2 text-xs [--content-inset:calc(var(--spacing)*2+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*6+1px)] [&_svg:not([class*='size-'])]:size-3 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        sm: "h-7 gap-1.75 px-2.5 text-xs [--content-inset:calc(var(--spacing)*2.5+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*8.25+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        lg: "h-10 gap-2 px-4 [--content-inset:calc(var(--spacing)*4+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*10+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         icon: "size-8.5",
         "icon-xs":
           "size-6 rounded-lg [&_svg:not([class*='size-'])]:size-3",
