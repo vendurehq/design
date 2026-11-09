@@ -233,8 +233,10 @@
   --transition-duration-tooltip-label-fade: 180ms;
   --transition-duration-tooltip-label-move: 260ms;
   --transition-duration-tooltip-resize: 320ms;
+  --transition-duration-progress-fill: 240ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
+  --animate-progress-sweep: progress-sweep 2.2s linear infinite;
 }
 
 @keyframes shimmer {
@@ -249,6 +251,15 @@
 @keyframes spin-slow {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
   }
 }
 
