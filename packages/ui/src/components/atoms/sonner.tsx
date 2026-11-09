@@ -90,11 +90,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
             // below; a leaving one drops 6px at 0.97. The entry has no scale:
             // Sonner measures the toast's height on mount, and a scaled toast
             // would shorten every step of the stack. Positions move in 320ms on
-            // ease-drawer, opacity in 220ms. Reduced motion keeps the fades only.
+            // ease-drawer and heights on ease-height, opacity in 220ms. Reduced
+            // motion keeps the fades only.
             toast: cn(
               "cn-toast font-sans! min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!",
               "border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!",
-              "[transition:transform_320ms_var(--ease-drawer),opacity_220ms_ease,height_320ms_var(--ease-drawer)]!",
+              "[transition:transform_320ms_var(--ease-drawer),opacity_220ms_ease,height_320ms_var(--ease-height)]!",
               "data-[mounted=false]:[--y:translateY(calc(var(--lift)*-12px))]!",
               "data-[mounted=true]:data-[expanded=true]:[--y:translateY(calc(var(--lift)*var(--offset)))_scale(calc(1-var(--index)*0.03))]!",
               "data-[mounted=true]:data-[visible=true]:data-[removed=false]:opacity-[calc(1-var(--index)*0.2)]!",

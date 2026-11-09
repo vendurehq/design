@@ -151,6 +151,17 @@ describe('Sidebar rail', () => {
     expect(label).toContain('group-data-[collapsible=icon]:opacity-0');
     expect(label).not.toContain('group-data-[collapsible=icon]:-mt-8');
   });
+
+  test('a group label closes its height on the height curve', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarGroupLabel>Shop</SidebarGroupLabel>
+      </SidebarProvider>,
+    );
+    const label = classTokens(html, 'sidebar-group-label');
+    expect(label).toEqual(expect.arrayContaining(['transition-[height,opacity]', 'ease-height']));
+    expect(label).not.toContain('ease-drawer');
+  });
 });
 
 describe('SidebarMenu sliding indicator', () => {

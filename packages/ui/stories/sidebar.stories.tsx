@@ -235,8 +235,8 @@ const navGroups = [
 /**
  * A navigation in labelled groups, like the Dashboard's, on the icon rail.
  * Press the trigger (or Ctrl/Cmd+B) to toggle. Collapsing folds each group
- * label's height on the drawer curve while it fades, so the rail has no empty
- * row where a label was and the icons glide up with the width change. Under
+ * label's height on the height curve while it fades, so the rail has no empty
+ * row where a label was and the icons glide up as the width changes. Under
  * reduced motion the label only fades. Inactive icons are dimmed; the active
  * icon is the brand indicator.
  */

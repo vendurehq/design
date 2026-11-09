@@ -158,7 +158,7 @@ describe('CommandList', () => {
       expect.arrayContaining([
         'h-(--cmdk-list-height)',
         'transition-[height]',
-        'ease-drawer',
+        'ease-height',
         'motion-reduce:transition-none',
       ]),
     );
