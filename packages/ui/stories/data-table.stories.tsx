@@ -1179,6 +1179,97 @@ export const RowLinkWithToken: Story = {
   },
 };
 
+// Orders: the order code is both the row's name and the key people look an
+// order up by. The visible code is an IdChip with `reveal="row"`; the
+// DataTableRowLink holds the code as screen-reader text only, so the row keeps
+// one link named by the code. A click on the chip copies; a click anywhere
+// else opens the order.
+interface OrderRow {
+  code: string;
+  customer: string;
+  state: OrderState;
+  total: number; // minor units (cents)
+}
+
+const orderRows: OrderRow[] = [
+  { code: 'YVWJLP9HGJHH7EVK', customer: 'Trevor Donnelly', state: 'PaymentSettled', total: 37000 },
+  { code: 'AX3KCVNM39QM6R1A', customer: 'Hilario Thompson', state: 'PaymentAuthorized', total: 3999 },
+  { code: '314NGLFNXPVUXEBN', customer: 'Eliezer Kulas', state: 'Shipped', total: 34600 },
+];
+
+const orderRowColumns: ColumnDef<OrderRow>[] = [
+  {
+    accessorKey: 'code',
+    header: 'Code',
+    cell: ({ row }) => (
+      <>
+        <DataTableRowLink href={`#/orders/${row.original.code}`}>
+          <span className="sr-only">{row.original.code}</span>
+        </DataTableRowLink>
+        <IdChip
+          value={row.original.code}
+          truncate="none"
+          reveal="row"
+          copyLabel={`Copy order code ${row.original.code}`}
+        />
+      </>
+    ),
+  },
+  { accessorKey: 'customer', header: 'Customer' },
+  {
+    accessorKey: 'state',
+    header: 'State',
+    cell: ({ row }) => (
+      <StatusBadge tone={STATE_TONE[row.original.state]}>{row.original.state}</StatusBadge>
+    ),
+  },
+  {
+    accessorKey: 'total',
+    header: 'Total',
+    cell: ({ row }) => <Money value={row.original.total} currency="USD" locale="en-US" />,
+  },
+];
+
+/**
+ * A lookup key that names the row. The order code is the item's name and the
+ * key people search by, so it shows as an IdChip with `reveal="row"`: plain
+ * text at rest, a copy chip on row hover or focus. The DataTableRowLink holds
+ * the code as `sr-only` text, so the row keeps one link named by the code and
+ * its end chevron. A click on the chip copies and the row does not open; a
+ * click anywhere else opens the order. The test runner presses the customer
+ * name with a real mouse and expects the order to open.
+ */
+export const LookupKeyNamesTheRow: Story = {
+  parameters: {
+    pressRowText: { text: 'Hilario Thompson', expectHash: '#/orders/AX3KCVNM39QM6R1A' },
+  },
+  render: () => (
+    <DataTable<OrderRow> rows={orderRows} columns={orderRowColumns} getRowId={(order) => order.code} />
+  ),
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const link = canvas.getByRole('link', { name: 'YVWJLP9HGJHH7EVK' });
+    const row = within(link.closest('tr') as HTMLTableRowElement);
+    clearHash();
+
+    await step('the row has one link, named by the code', async () => {
+      await expect(link.closest('tr')?.querySelectorAll('a')).toHaveLength(1);
+    });
+
+    await step('a click on the code copies and does not open the order', async () => {
+      const hit = hitAt(row.getByText('YVWJLP9HGJHH7EVK', { selector: 'code, span:not(.sr-only)' }));
+      await expect(hit).toBe(row.getByRole('button', { name: 'Copy order code YVWJLP9HGJHH7EVK' }));
+      await userEvent.click(hit);
+      await expect(location.hash).toBe('');
+    });
+
+    await step('a click anywhere else opens the order', async () => {
+      await expect(hitAt(row.getByText('Trevor Donnelly'))).toBe(link);
+    });
+  },
+};
+
 /**
  * Keyboard selection: Space toggles the focused checkbox and focus stays on
  * it, so a keyboard user selects several rows with Space and Tab. The
