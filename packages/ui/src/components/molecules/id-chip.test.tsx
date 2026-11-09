@@ -64,6 +64,23 @@ describe('IdChip', () => {
     expect(markup).toContain('group-has-[:focus-visible]/row:[&amp;_[data-chip-copy]]:opacity-100');
   });
 
+  test('reveal="row" fades in 150ms on one duration; the chip alone presses in 100ms', () => {
+    const chipClasses = (node: React.ReactElement) =>
+      html(node)
+        .match(/^<span[^>]*class="([^"]*)"/)?.[1]
+        ?.split(' ')
+        .filter((c) => c.startsWith('duration-') || c.startsWith('ease-')) ?? [];
+
+    expect(chipClasses(<IdChip value="L2201516" truncate="none" reveal="row" />)).toEqual([
+      'duration-moderate',
+      'ease-out',
+    ]);
+    expect(chipClasses(<IdChip value="L2201516" truncate="none" />)).toEqual([
+      'duration-fast',
+      'ease-out',
+    ]);
+  });
+
   test('a chip shows by default', () => {
     expect(html(<IdChip value="L2201516" />)).not.toContain('data-reveal');
   });
