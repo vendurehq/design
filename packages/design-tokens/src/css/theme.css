@@ -228,6 +228,7 @@
   --transition-duration-palette-move: 180ms;
   --transition-duration-palette-detail-move: 220ms;
   --transition-duration-palette-result-blur: 240ms;
+  --transition-duration-tooltip-enter: 125ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
 }

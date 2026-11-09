@@ -37,6 +37,9 @@ export const duration = {
   paletteMove: '180ms', // the palette drops into place; the detail fades in
   paletteDetailMove: '220ms', // the detail slides into place
   paletteResultBlur: '240ms', // new results come out of their blur
+  // The tooltip opens on its own beat, a touch quicker than `moderate`.
+  // It leaves in `fast`. Only TooltipContent uses it.
+  tooltipEnter: '125ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a
