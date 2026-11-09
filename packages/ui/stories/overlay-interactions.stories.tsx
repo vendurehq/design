@@ -279,13 +279,13 @@ export const ComboboxLook: Story = {
 
 export const HoverCardLook: Story = {
   render: () => (
-    <HoverCard>
+    // Open from the start: a hover waits out the open delay.
+    <HoverCard defaultOpen>
       <HoverCardTrigger render={<Button variant="link" />}>Acme Inc.</HoverCardTrigger>
       <HoverCardContent>Customer since 2021 · 48 orders</HoverCardContent>
     </HoverCard>
   ),
-  play: async ({ canvasElement }) => {
-    await userEvent.hover(within(canvasElement).getByRole('button', { name: 'Acme Inc.' }));
+  play: async () => {
     const card = await findSlot('hover-card-content');
     await expectOverlaySurface(card, '8px');
     await expectPopupMotion(card);

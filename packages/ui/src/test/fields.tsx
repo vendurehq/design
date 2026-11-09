@@ -1,5 +1,10 @@
 // Test helper, not shipped: the package `files` list leaves out src/test.
-import { Combobox, ComboboxInput, ComboboxTrigger, ComboboxValue } from '@vendure-io/ui/components/atoms/combobox';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxTrigger,
+  ComboboxValue,
+} from '@vendure-io/ui/components/atoms/combobox';
 import { Input } from '@vendure-io/ui/components/atoms/input';
 import { InputGroup, InputGroupInput } from '@vendure-io/ui/components/atoms/input-group';
 import { NativeSelect, NativeSelectOption } from '@vendure-io/ui/components/atoms/native-select';
