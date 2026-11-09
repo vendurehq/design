@@ -45,6 +45,47 @@ async function pressOneText(page: Page, press: TextPress) {
 }
 
 /**
+ * `parameters.hoverText` moves a real mouse onto each text in turn, in one
+ * stroke, without leaving the story in between. After each move, exactly one
+ * tooltip must be open, and it must contain `expectTooltip`. A tooltip from
+ * the last text that stays open over this one fails the check: the pointer
+ * then lands on that tooltip, not on the text.
+ */
+type TextHover = { text: string; expectTooltip: string };
+
+async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
+  const list = hovers ? [hovers].flat() : [];
+  if (list.length === 0) return;
+  const root = page.locator('#storybook-root');
+  for (const hover of list) {
+    const box = await root.getByText(hover.text, { exact: true }).boundingBox();
+    if (!box) throw new Error(`hoverText: "${hover.text}" is not visible`);
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+    await page
+      .waitForFunction(
+        (expected) => {
+          const open = [
+            ...document.querySelectorAll('[data-slot=tooltip-content]:not([data-ending-style])'),
+          ];
+          return open.length === 1 && open[0].textContent?.includes(expected);
+        },
+        hover.expectTooltip,
+        { timeout: 1000 },
+      )
+      .catch(async () => {
+        const open = await page
+          .locator('[data-slot=tooltip-content]:not([data-ending-style])')
+          .allTextContents();
+        throw new Error(
+          `hoverText: over "${hover.text}", expected one tooltip with "${hover.expectTooltip}", found ${JSON.stringify(open)}`,
+        );
+      });
+  }
+  await page.mouse.move(0, 0);
+  await page.locator('[data-slot=tooltip-content]').first().waitFor({ state: 'detached' });
+}
+
+/**
  * `parameters.pressRowText` presses a piece of plain text in a table row with
  * a real mouse, as `pressText` does, and expects the press to open the row's
  * link: the URL hash must become `expectHash`. A press scale on the link would
@@ -106,6 +147,7 @@ const config: TestRunnerConfig = {
   },
   async postVisit(page, context) {
     const storyContext = await getStoryContext(page, context);
+    await hoverText(page, storyContext.parameters?.hoverText);
     await pressText(page, storyContext.parameters?.pressText);
     await pressRowText(page, storyContext.parameters?.pressRowText);
     await pressOpen(page, storyContext.parameters?.pressOpen);

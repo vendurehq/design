@@ -281,9 +281,18 @@ export const OpensFromAnyPoint: Story = {
  * the row does not open. A click on CopyableText or SecretValue text does
  * nothing: only their buttons act. The play function stubs the clipboard; the
  * test runner then presses the chip text with a real mouse (`pressText`).
+ *
+ * A chip's tooltip closes as soon as the pointer leaves the chip. The first
+ * row's tooltip opens below and covers the next chip, so the test runner moves
+ * a real mouse from one chip to the next and expects only the next chip's
+ * tooltip (`hoverText`).
  */
 export const ChipsInRow: Story = {
   parameters: {
+    hoverText: [
+      { text: '5c1f8b7e…2043', expectTooltip: 'Copy order ID' },
+      { text: 'vc_pat_7...5dE7', expectTooltip: 'Copy token' },
+    ],
     pressText: [
       { text: '5c1f8b7e…2043', expectButton: 'Order ID copied' },
       { text: 'vc_pat_7...5dE7', expectButton: 'Token copied' },
