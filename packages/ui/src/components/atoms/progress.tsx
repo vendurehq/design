@@ -1,55 +1,42 @@
 "use client"
 
+import type * as React from "react"
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // Tone names follow the state dictionary; `critical` renders with the
-// `destructive` slots. A toned bar sits on the tone's subtle track. The solid
-// tone slots are too close to the neutral track in luminance (down to 1.1:1),
-// so the fill uses a fixed ramp step in light mode (600: at least 3.97:1 on the
-// track and 4.35:1 on the page) and the subtle foreground in dark mode (at
-// least 8.58:1 on the track), meeting 3:1 non-text contrast in both.
-// Each tone sets the fill as --progress-fill, so the solid bar and the
-// indeterminate sweep share one colour.
+// `destructive` slots. Every tone sits on one 4px track in the `accent` tint
+// and fills with the tone's text slot, so a done step reads green and a failed
+// one red. `neutral` is a stopped step that needs nothing from the user: a
+// muted fill at 55% opacity. Each tone sets the fill as --progress-fill, so the
+// solid bar and the indeterminate band share one colour.
 const progressTrackVariants = cva(
-  "relative flex h-1.5 w-full items-center overflow-x-hidden rounded-full",
+  "relative flex h-1 w-full items-center overflow-hidden rounded-full bg-accent"
+)
+
+// A known value is a full-width fill scaled to the value (--progress-scale,
+// set by Progress), so the bar grows with a transform: from 0 when it first
+// shows, and to each new value. With `value={null}` the bar is indeterminate:
+// a 40% fill with a band that sweeps across at a constant speed. Under reduced
+// motion the fill shows at once and the band is gone.
+const progressIndicatorVariants = cva(
+  "relative h-full origin-left overflow-hidden bg-(--progress-fill) scale-x-(--progress-scale,1) motion-safe:transition-[scale] motion-safe:duration-(--transition-duration-progress-fill) motion-safe:ease-(--ease-out) motion-safe:not-data-indeterminate:starting:scale-x-0 data-indeterminate:w-full data-indeterminate:bg-(--progress-fill)/40 motion-safe:data-indeterminate:after:absolute motion-safe:data-indeterminate:after:inset-y-0 motion-safe:data-indeterminate:after:left-0 motion-safe:data-indeterminate:after:w-2/5 motion-safe:data-indeterminate:after:bg-linear-to-r motion-safe:data-indeterminate:after:from-transparent motion-safe:data-indeterminate:after:via-(--progress-fill) motion-safe:data-indeterminate:after:to-transparent motion-safe:data-indeterminate:after:animate-progress-sweep",
   {
     variants: {
       tone: {
-        default: "bg-control-border",
-        success: "bg-success-subtle",
-        warning: "bg-warning-subtle",
-        critical: "bg-destructive-subtle",
+        default: "[--progress-fill:var(--primary)]",
+        info: "[--progress-fill:var(--info-text)]",
+        success: "[--progress-fill:var(--success-text)]",
+        warning: "[--progress-fill:var(--warning-text)]",
+        critical: "[--progress-fill:var(--destructive-text)]",
+        neutral: "opacity-55 [--progress-fill:var(--muted-foreground)]",
       },
     },
     defaultVariants: {
       tone: "default",
     },
-  }
-)
-
-// With `value={null}` the bar is indeterminate: a soft band of the fill
-// sweeps across the track. Under reduced motion it stays a static partial bar.
-// A known value animates its width with the drawer easing.
-const progressIndicatorVariants = cva(
-  "h-full bg-(color:--progress-fill) transition-[width] duration-moderate ease-drawer motion-reduce:transition-none data-indeterminate:w-2/5 motion-safe:data-indeterminate:w-full motion-safe:data-indeterminate:animate-shimmer motion-safe:data-indeterminate:bg-transparent motion-safe:data-indeterminate:bg-linear-to-r motion-safe:data-indeterminate:from-transparent motion-safe:data-indeterminate:from-30% motion-safe:data-indeterminate:via-(color:--progress-fill) motion-safe:data-indeterminate:via-50% motion-safe:data-indeterminate:to-transparent motion-safe:data-indeterminate:to-70% motion-safe:data-indeterminate:bg-size-[200%_100%]",
-  {
-  variants: {
-    tone: {
-      default: "[--progress-fill:var(--primary)]",
-      success:
-        "[--progress-fill:var(--success-600)] dark:[--progress-fill:var(--success-subtle-foreground)]",
-      warning:
-        "[--progress-fill:var(--warning-600)] dark:[--progress-fill:var(--warning-subtle-foreground)]",
-      critical:
-        "[--progress-fill:var(--destructive-600)] dark:[--progress-fill:var(--destructive-subtle-foreground)]",
-    },
-  },
-  defaultVariants: {
-    tone: "default",
-  },
   }
 )
 
@@ -61,23 +48,32 @@ function Progress({
   className,
   children,
   value,
+  min = 0,
+  max = 100,
   tone = "default",
   ...props
 }: ProgressPrimitive.Root.Props & {
   /** Indicator tone. Follows consequence: see the Progress guidance. */
   tone?: ProgressTone
 }) {
+  const scale =
+    value == null ? 1 : Math.min(1, Math.max(0, (value - min) / (max - min || 1)))
   return (
     <ProgressPrimitive.Root
       value={value}
+      min={min}
+      max={max}
       data-slot="progress"
       data-tone={tone}
       className={cn("flex flex-wrap gap-3", className)}
       {...props}
     >
       {children}
-      <ProgressTrack tone={tone}>
-        <ProgressIndicator tone={tone} />
+      <ProgressTrack
+        tone={tone}
+        style={{ "--progress-scale": scale } as React.CSSProperties}
+      >
+        <ProgressIndicator tone={tone} className="w-full!" />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )
@@ -90,8 +86,9 @@ function ProgressTrack({
 }: ProgressPrimitive.Track.Props & { tone?: ProgressTone }) {
   return (
     <ProgressPrimitive.Track
-      className={cn(progressTrackVariants({ tone }), className)}
+      className={cn(progressTrackVariants(), className)}
       data-slot="progress-track"
+      data-tone={tone}
       {...props}
     />
   )
