@@ -107,8 +107,24 @@ describe('compact state views', () => {
     expect(classes).not.toContain('border-dashed');
   });
 
-  test('ErrorState draws its box by default', () => {
-    expect(errorClasses(renderToStaticMarkup(<ErrorState />))).toContain('border');
+  test('ErrorState draws no box by default', () => {
+    const classes = errorClasses(renderToStaticMarkup(<ErrorState />));
+    expect(classes).not.toContain('border');
+    expect(classes).toContain('border-solid');
+  });
+
+  test('ErrorState bordered draws the box', () => {
+    expect(errorClasses(renderToStaticMarkup(<ErrorState bordered />))).toContain('border');
+  });
+
+  test('ErrorState icon renders bare in the destructive text tone, 20px above the title', () => {
+    const html = renderToStaticMarkup(
+      <ErrorState illustration={null} icon={<svg />} title="Access denied" />,
+    );
+    expect(html).toContain('data-variant="bare"');
+    expect(html).not.toContain('data-variant="icon"');
+    expect(html).toContain('text-destructive-text');
+    expect(html).toContain('mb-3');
   });
 });
 

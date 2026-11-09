@@ -815,7 +815,7 @@ export const uiGuidance = [
       },
       {
         title: 'Tables own their perimeter',
-        body: 'When EmptyState replaces a table body, it renders flush within the table container: EmptyState draws no box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.',
+        body: 'When EmptyState or ErrorState replaces a table body, it renders flush within the table container: neither draws a box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.',
       },
       {
         title: 'Compact for small panels',

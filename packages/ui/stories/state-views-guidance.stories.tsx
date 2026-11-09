@@ -374,7 +374,7 @@ export const IllustrationUsage: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="An illustration marks the whole view's moment, not a row"
-        intro="EmptyState and ErrorState default to an illustration from molecules/illustrations/*. Match it to the situation (see the Illustrations gallery for the full set and what each one is for), and use exactly one per region — it announces 'this is the moment', which stops being true the instant it repeats. Never drop an illustration into a table row, a list item, or a card inside an otherwise-populated view; those get the icon-chip fallback (`illustration={null}` with an `icon`), or no media at all."
+        intro="EmptyState and ErrorState default to an illustration from molecules/illustrations/*. Match it to the situation (see the Illustrations gallery for the full set and what each one is for), and use exactly one per region — it announces 'this is the moment', which stops being true the instant it repeats. Never drop an illustration into a table row, a list item, or a card inside an otherwise-populated view; those get the bare-icon fallback (`illustration={null}` with an `icon`), or no media at all."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -393,7 +393,7 @@ export const IllustrationUsage: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="An illustration crammed into a table cell reads as clutter, not identity — the icon-chip fallback (or plain text) is what belongs at row scale."
+            caption="An illustration crammed into a table cell reads as clutter, not identity — the bare-icon fallback (or plain text) is what belongs at row scale."
           >
             <div className="w-full overflow-hidden rounded-md border text-sm">
               <div className="text-muted-foreground border-b px-3 py-2 text-xs font-medium uppercase tracking-wide">

@@ -77,9 +77,8 @@ export const Offline: Story = {
   },
 };
 
-// `icon` is the pre-illustration API: a small destructive-tinted icon.
-// Passing it (without `illustration`) keeps working exactly as it did before
-// illustrations existed — no migration required.
+// `icon` is the pre-illustration API: a bare icon in the destructive text
+// tone. Passing it (without `illustration`) replaces the illustration.
 export const WithIcon: Story = {
   args: {
     icon: <ShieldAlertIcon />,
@@ -98,10 +97,18 @@ export const WithoutIllustration: Story = {
   },
 };
 
+/** `bordered` draws the dashed box, for a slot that needs a visible outline. */
+export const Bordered: Story = {
+  args: {
+    bordered: true,
+    onRetry: () => {},
+  },
+};
+
 /**
  * `size="compact"` for a small panel or side column: no illustration, tighter
- * spacing, title, description and at most one action. `bordered={false}` sits
- * flush inside the card.
+ * spacing, title, description and at most one action. It sits flush inside the
+ * card.
  */
 export const CompactInPanel: Story = {
   render: () => (
@@ -112,7 +119,6 @@ export const CompactInPanel: Story = {
       <CardContent>
         <ErrorState
           size="compact"
-          bordered={false}
           title="Couldn't load usage"
           description="This is on us. Try again in a moment."
           onRetry={() => {}}
@@ -122,7 +128,7 @@ export const CompactInPanel: Story = {
   ),
 };
 
-/** `bordered={false}` when the error replaces a table body: the table owns its perimeter. */
+/** The error replaces a table body and sits flush: the table owns its perimeter. */
 export const InTableBody: Story = {
   render: () => (
     <div className="overflow-hidden rounded-lg border">
@@ -137,7 +143,6 @@ export const InTableBody: Story = {
           <TableRow className="hover:bg-transparent">
             <TableCell colSpan={2} className="p-0">
               <ErrorState
-                bordered={false}
                 description="We couldn't load deployments. Try again in a moment."
                 onRetry={() => {}}
               />
