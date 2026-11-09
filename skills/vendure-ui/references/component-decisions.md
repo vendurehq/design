@@ -225,6 +225,7 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **Truncate visually, copy completely:** Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.
 - **Name what the button copies:** Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.
 - **The whole chip copies:** A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.
+- **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).
 
 Related decisions: `anonymized-token`, `copyable-text`.
 ## ListHeader
