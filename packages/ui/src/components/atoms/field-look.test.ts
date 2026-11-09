@@ -78,6 +78,20 @@ describe('v3 field look', () => {
     }
   });
 
+  test('a placeholder shown as text is as faint as a native one', () => {
+    for (const file of ['atoms/select.tsx', 'atoms/combobox.tsx']) {
+      const code = source(file);
+      expect(code).toContain('data-placeholder:text-faint-foreground');
+      expect(code).not.toContain('data-placeholder:text-muted-foreground');
+    }
+    // The pickers mark their placeholder, so the a11y scan can tell it apart.
+    for (const file of ['molecules/date-picker.tsx', 'molecules/date-range-picker.tsx', 'molecules/date-time-picker.tsx']) {
+      const code = source(file);
+      expect(code).toContain("'text-faint-foreground'");
+      expect(code).toContain('data-placeholder={');
+    }
+  });
+
   test('a label above its field is 12px muted, 6px above it; red while invalid', () => {
     const code = source('atoms/field.tsx');
     for (const token of [

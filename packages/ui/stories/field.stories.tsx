@@ -259,6 +259,16 @@ export const FieldLook: Story = {
       await expect(style.borderTopLeftRadius).toBe('6px');
       if (field.tagName !== 'TEXTAREA') await expect(field.offsetHeight).toBe(34);
     }
+
+    // A placeholder shown as text is as faint as a native one.
+    probe.className = 'text-faint-foreground';
+    const faint = getComputedStyle(probe).color;
+    for (const placeholder of [
+      canvas.getByText('Currency'),
+      canvas.getByText('Pick a date'),
+    ]) {
+      await expect(getComputedStyle(placeholder).color).toBe(faint);
+    }
     probe.remove();
 
     // Keyboard focus rings the field 2px inside, over the hairline.

@@ -28,7 +28,7 @@ describe('ComboboxTrigger field styling', () => {
       'focus-visible:-outline-offset-2',
       'focus-visible:outline-ring',
       'aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]',
-      'data-placeholder:text-muted-foreground',
+      'data-placeholder:text-faint-foreground',
     ]) {
       expect(classes).toContain(token);
     }
