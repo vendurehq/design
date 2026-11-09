@@ -1,5 +1,7 @@
 'use client';
 
+import { mergeProps } from '@base-ui/react/merge-props';
+import { useRender } from '@base-ui/react/use-render';
 import {
   type Column,
   type ColumnDef,
@@ -56,6 +58,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { cn } from '@vendure-io/ui/lib/utils';
+import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
@@ -88,6 +91,90 @@ function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'di
       <Skeleton className="h-[0.8lh] w-full" />
     </div>
   );
+}
+
+// The row link is a stretched link, like ListRowLink: one real link per row,
+// whose ::after covers the row (the row is `relative`), so a click on any point
+// of the row opens it, while keyboard and screen reader users get one tab stop
+// and one accessible name (the item name). The link itself is never positioned
+// or transformed: a link with `position`, `transform` or `scale` (a pressed
+// Button) becomes the containing block of its ::after, which then shrinks to
+// the link text. The ::after takes z-index 1: cell content with its own
+// stacking context (opacity below 1, as a `reveal="row"` StatusBadge at rest
+// or mid-fade) would otherwise paint over it and swallow the click.
+
+// Interactive elements of a linked row stack above the stretched ::after, so
+// they keep their own click and their own tab stop: buttons and secondary
+// links, Tooltip triggers and the copy chips (IdChip, CopyableText: the whole
+// chip stays the copy target, so their inner button stays static). The select
+// checkbox is already positioned above it. Any other element that must stay
+// clickable above the link takes `data-table-row-control`. The class names
+// stay literal so Tailwind can scan them.
+const LINKED_ROW_CLASS = cn(
+  'has-data-[slot=data-table-row-link]:relative has-data-[slot=data-table-row-link]:cursor-pointer',
+  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=copyable-text]_*)]:relative',
+  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=copyable-text]_*)]:z-10',
+  // Only the first row link of a row stretches. A later one (a variant's
+  // Product, rendered by the same link component) is a plain link above it,
+  // underlined on hover, without a chevron.
+  '[&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:relative [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:z-10 [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:underline-offset-4 [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:hover:underline [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-chevron]]:hidden',
+);
+
+// A table with a row link keeps a slot for the row chevron after the last
+// cell of every row, header included, so the chevron never covers a cell and
+// a row without a link lines up with the others. The chevron is 15px and sits
+// one 12px gap after the last cell, like ListRowChevron. Important: CardTable
+// sets the edge padding with a descendant rule.
+const ROW_CHEVRON_SLOT_CLASS =
+  '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
+
+/**
+ * Opens the row's item from any point of the row. Render it in the cell that
+ * names the item, around the name: its children are the accessible name of
+ * the row. Only the first one of a row stretches; one in a later cell (the
+ * variant's Product) is a plain link above it. Pass `href`, or `render={<Link to="…" />}` for a
+ * router link. Do not render it as a Button.
+ *
+ * Its ::after stretches over the row. Buttons, links, inputs, Tooltip
+ * triggers, the select checkbox and the copy chips (IdChip, CopyableText) in
+ * the row sit above it and keep their own action; mark any other control
+ * with `data-table-row-control`. Keyboard focus draws an inset ring around the
+ * row. While the row is hovered or holds keyboard focus, a chevron appears at
+ * the end of the row: it fades in and slides 3px toward the end (fade only
+ * under reduced motion). It is decorative: the link carries the name.
+ */
+function DataTableRowLink({ className, render, children, ...props }: useRender.ComponentProps<'a'>) {
+  return useRender({
+    defaultTagName: 'a',
+    render,
+    props: mergeProps<'a'>(
+      {
+        className: cn(
+          'cursor-pointer font-medium text-foreground outline-none',
+          'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
+          className,
+        ),
+        children: (
+          <>
+            {children}
+            <ChevronRight
+              data-slot="data-table-row-chevron"
+              aria-hidden="true"
+              strokeWidth={1.75}
+              className={cn(
+                'pointer-events-none absolute end-(--card-px) top-1/2 size-3.75 -translate-y-1/2 text-muted-foreground opacity-0 rtl:-scale-x-100',
+                'transition-[opacity,translate] duration-(--transition-duration-fast) ease-(--ease-out)',
+                'motion-safe:-translate-x-0.75 motion-safe:rtl:translate-x-0.75',
+                'group-hover/row:translate-x-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:translate-x-0 group-has-[:focus-visible]/row:opacity-100',
+              )}
+            />
+          </>
+        ),
+      },
+      props,
+    ),
+    state: { slot: 'data-table-row-link' },
+  });
 }
 
 // The composition root. Owns the single `useReactTable` instance and the
@@ -538,7 +625,7 @@ function DataTable<TData>({
       )}
 
       <CardTable>
-        <Table ref={tableRef}>
+        <Table ref={tableRef} className={ROW_CHEVRON_SLOT_CLASS}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="group/header-row">
@@ -606,7 +693,7 @@ function DataTable<TData>({
                 {bodyRows.map((row) => {
                   const rowNode = (
                     <TableRow
-                      className="group/row"
+                      className={cn('group/row', LINKED_ROW_CLASS)}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -699,7 +786,7 @@ function DataTable<TData>({
   );
 }
 
-export { DataTable, DataTableSkeletonLine };
+export { DataTable, DataTableRowLink, DataTableSkeletonLine };
 
 // Re-export the consumer-facing TanStack types so columns can be authored from
 // the same import as `DataTable` — no direct `@tanstack/react-table` dependency

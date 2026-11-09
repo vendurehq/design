@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
@@ -25,6 +25,7 @@ import {
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
+  DataTableRowLink,
   DataTableSkeletonLine,
   type RowSelectionState,
   type SortingState,
@@ -885,5 +886,229 @@ export const CellTextAlignment: Story = {
         }
       }
     }
+  },
+};
+
+// Product variants: every row opens its variant. The name is a DataTableRowLink,
+// whose link covers the row; the SKU copy chip, the select checkbox, the
+// Product link and the actions menu sit above it and keep their own action.
+interface Variant {
+  id: string;
+  name: string;
+  sku: string;
+  enabled: boolean;
+  price: number; // minor units (cents)
+  product: { id: string; name: string };
+}
+
+const variants: Variant[] = [
+  {
+    id: '1',
+    name: 'Laptop 13 inch 8GB',
+    sku: 'L2201308',
+    enabled: true,
+    price: 155880,
+    product: { id: 'laptop', name: 'Laptop' },
+  },
+  {
+    id: '2',
+    name: 'Laptop 15 inch 8GB',
+    sku: 'L2201508',
+    enabled: true,
+    price: 167880,
+    product: { id: 'laptop', name: 'Laptop' },
+  },
+  {
+    id: '3',
+    name: 'Tablet 32GB',
+    sku: 'TBL200032',
+    enabled: false,
+    price: 39480,
+    product: { id: 'tablet', name: 'Tablet' },
+  },
+  {
+    id: '4',
+    name: 'Wireless Optical Mouse',
+    sku: '834444',
+    enabled: true,
+    price: 2279,
+    product: { id: 'mouse', name: 'Wireless Optical Mouse' },
+  },
+];
+
+const variantColumns: ColumnDef<Variant>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => (
+      <DataTableRowLink href={`#/variants/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+    ),
+  },
+  {
+    accessorKey: 'sku',
+    header: 'SKU',
+    cell: ({ row }) => (
+      <IdChip
+        value={row.original.sku}
+        truncate="none"
+        reveal="row"
+        copyLabel={`Copy SKU of ${row.original.name}`}
+      />
+    ),
+  },
+  {
+    accessorKey: 'enabled',
+    header: 'Status',
+    cell: ({ row }) =>
+      row.original.enabled ? (
+        <StatusBadge tone="success" reveal="row">
+          Enabled
+        </StatusBadge>
+      ) : (
+        <StatusBadge tone="neutral">Disabled</StatusBadge>
+      ),
+  },
+  {
+    accessorKey: 'price',
+    header: 'Price',
+    cell: ({ row }) => <Money value={row.original.price} currency="USD" locale="en-US" />,
+  },
+  {
+    id: 'product',
+    header: 'Product',
+    cell: ({ row }) => (
+      <a
+        href={`#/products/${row.original.product.id}`}
+        className="underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+      >
+        {row.original.product.name}
+      </a>
+    ),
+  },
+];
+
+function stubClipboard() {
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async () => {} },
+  });
+}
+
+// The topmost element at the centre of `element`, as a real pointer hits it.
+function hitAt(element: Element): Element {
+  const box = element.getBoundingClientRect();
+  const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+  if (!hit) throw new Error(`Nothing at the centre of ${element.outerHTML}`);
+  return hit;
+}
+
+function clearHash() {
+  history.replaceState(null, '', `${location.pathname}${location.search}`);
+}
+
+/**
+ * The whole row opens the item. Render a `DataTableRowLink` around the name:
+ * a click on any point of the row opens it, and the row has one tab stop. A
+ * chevron appears at the end of a hovered or focused row. The SKU chip copies,
+ * the checkbox selects, the Product link opens the product and the `...` menu
+ * opens; none of them opens the variant. The test runner also presses the
+ * price text with a real mouse and expects the variant to open.
+ */
+export const RowLink: Story = {
+  parameters: { pressRowText: { text: '$1,678.80', expectHash: '#/variants/2' } },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        rowActions={(variant) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreHorizontalIcon />
+                  <span className="sr-only">Open menu for {variant.name}</span>
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Duplicate</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">Delete variant</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const link = canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' });
+    const row = link.closest('tr') as HTMLTableRowElement;
+    const rowCanvas = within(row);
+    clearHash();
+
+    await step('one link per row, named by the item name', async () => {
+      for (const tableRow of canvasElement.querySelectorAll('tbody tr')) {
+        await expect(tableRow.querySelectorAll('[data-slot=data-table-row-link]')).toHaveLength(1);
+      }
+      await expect(row.querySelector('[data-slot=data-table-row-chevron]')).toHaveAttribute(
+        'aria-hidden',
+        'true',
+      );
+    });
+
+    await step('a click on plain cell text opens the item', async () => {
+      const hit = hitAt(rowCanvas.getByText('$1,558.80'));
+      await expect(hit).toBe(link);
+      await userEvent.click(hit);
+      await expect(location.hash).toBe('#/variants/1');
+      clearHash();
+    });
+
+    await step('a click on a row-revealed status badge opens the item', async () => {
+      // At rest the badge is transparent, which gives it its own stacking context.
+      await expect(hitAt(rowCanvas.getByText('Enabled'))).toBe(link);
+    });
+
+    await step('the SKU chip copies and does not open the item', async () => {
+      const hit = hitAt(rowCanvas.getByText('L2201308'));
+      await expect(hit).toBe(rowCanvas.getByRole('button', { name: 'Copy SKU of Laptop 13 inch 8GB' }));
+      await userEvent.click(hit);
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the Product link opens the product', async () => {
+      const product = rowCanvas.getByRole('link', { name: 'Laptop' });
+      await expect(hitAt(product)).toBe(product);
+      await userEvent.click(product);
+      await expect(location.hash).toBe('#/products/laptop');
+      clearHash();
+    });
+
+    await step('the checkbox selects and does not open the item', async () => {
+      // The cell re-renders on selection, so query the checkbox each time.
+      const checkbox = () => canvas.getByRole('checkbox', { name: 'Select row 1' });
+      await expect(hitAt(checkbox()).closest('[data-slot=checkbox]')).toBe(checkbox());
+      await userEvent.click(checkbox());
+      await waitFor(() => expect(checkbox()).toHaveAttribute('aria-checked', 'true'));
+      await expect(location.hash).toBe('');
+      await userEvent.click(checkbox());
+      await waitFor(() => expect(checkbox()).toHaveAttribute('aria-checked', 'false'));
+    });
+
+    await step('the actions menu opens and does not open the item', async () => {
+      const trigger = canvas.getByRole('button', { name: 'Open menu for Laptop 13 inch 8GB' });
+      await expect(hitAt(trigger).closest('button')).toBe(trigger);
+      await userEvent.click(trigger);
+      await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'));
+      await expect(location.hash).toBe('');
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
+    });
   },
 };

@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import {
   type ColumnDef,
   DataTable,
+  DataTableRowLink,
   type TableInstance as Table,
   type TableOptions,
 } from './data-table.tsx';
@@ -107,6 +108,59 @@ describe('DataTable row rendering', () => {
     expect(markup).toContain('BR');
     // Two body rows.
     expect(count(markup, /data-slot="table-row"/g)).toBe(3); // 1 header + 2 body
+  });
+});
+
+describe('DataTableRowLink', () => {
+  const linkedColumns: ColumnDef<Country>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => (
+        <DataTableRowLink href={`/countries/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+      ),
+    },
+    { accessorKey: 'code', header: 'Code' },
+  ];
+
+  test('renders one real link per row with a decorative chevron', () => {
+    const markup = html(<DataTable rows={rows} columns={linkedColumns} />);
+    expect(count(markup, /<a [^>]*data-slot="data-table-row-link"/g)).toBe(2);
+    expect(markup).toContain('href="/countries/1"');
+    expect(count(markup, /data-slot="data-table-row-chevron"/g)).toBe(2);
+    expect(markup).toMatch(/<svg[^>]*data-slot="data-table-row-chevron"[^>]*aria-hidden="true"/);
+  });
+
+  test('renders through a router link element', () => {
+    const RouterLink = (props: React.ComponentProps<'a'> & { to: string }) => {
+      const { to, ...rest } = props;
+      return <a data-router-link="" href={to} {...rest} />;
+    };
+    const markup = html(
+      <DataTable
+        rows={[aland]}
+        columns={[
+          {
+            accessorKey: 'name',
+            header: 'Name',
+            cell: ({ row }) => (
+              <DataTableRowLink render={<RouterLink to={`/countries/${row.original.id}`} />}>
+                {row.original.name}
+              </DataTableRowLink>
+            ),
+          },
+        ]}
+      />,
+    );
+    expect(markup).toMatch(/<a data-router-link="" href="\/countries\/1"[^>]*data-slot="data-table-row-link"/);
+    expect(markup).toContain('Aland Islands');
+  });
+
+  test('the link stretches over the row, which stacks its controls above it', () => {
+    const markup = html(<DataTable rows={rows} columns={linkedColumns} />);
+    expect(markup).toContain('after:absolute after:inset-0');
+    expect(markup).toContain('has-data-[slot=data-table-row-link]:relative');
+    expect(markup).toContain('has-data-[slot=data-table-row-link]:[&amp;_:is(a,button');
   });
 });
 
