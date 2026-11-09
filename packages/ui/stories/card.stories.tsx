@@ -158,3 +158,41 @@ export const RowsWithFooter: Story = {
     </Card>
   ),
 };
+
+// variant="accent" marks the one card that holds the live subject of the page,
+// here the deployment that is building. The brand stays faint: a tinted border
+// and a wash that fades out down the card. State inside it is a bare badge,
+// not a chip, and every other card stays neutral.
+export const Accent: Story = {
+  render: () => (
+    <div className="flex w-[560px] flex-col gap-4">
+      <Card variant="accent">
+        <CardHeader>
+          <CardTitle>Current deployment</CardTitle>
+          <CardAction>
+            <StatusBadge tone="progress" appearance="bare">
+              Building
+            </StatusBadge>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <p className="text-foreground-secondary">Add the gift card checkout step · started 2 min ago</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Previous deployment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-foreground-secondary">Fix the tax zone fallback · yesterday</p>
+        </CardContent>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [accent, plain] = canvasElement.querySelectorAll<HTMLElement>('[data-slot=card]');
+    expect(getComputedStyle(accent!).backgroundImage).toContain('linear-gradient');
+    expect(getComputedStyle(accent!).borderTopColor).not.toBe(getComputedStyle(plain!).borderTopColor);
+    expect(getComputedStyle(plain!).backgroundImage).toBe('none');
+  },
+};
