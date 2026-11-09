@@ -13,13 +13,16 @@ const THEMES = ['light', 'dark'] as const;
  * a play function cannot make: `userEvent` dispatches events to an element, so
  * nothing is hit-tested and `:active` never applies. The press must end on a
  * button named `expectButton` and must not navigate. `reducedMotion: true`
- * presses with `prefers-reduced-motion: reduce` emulated.
+ * presses with `prefers-reduced-motion: reduce` emulated. Pass a list to press
+ * several texts in turn.
  */
-async function pressText(
-  page: Page,
-  press?: { text: string; expectButton: string; reducedMotion?: boolean },
-) {
-  if (!press) return;
+type TextPress = { text: string; expectButton: string; reducedMotion?: boolean };
+
+async function pressText(page: Page, presses?: TextPress | TextPress[]) {
+  for (const press of presses ? [presses].flat() : []) await pressOneText(page, press);
+}
+
+async function pressOneText(page: Page, press: TextPress) {
   const root = page.locator('#storybook-root');
   const box = await root.getByText(press.text, { exact: true }).boundingBox();
   if (!box) throw new Error(`pressText: "${press.text}" is not visible`);

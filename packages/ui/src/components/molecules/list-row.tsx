@@ -17,12 +17,15 @@ import type * as React from 'react';
 // no hover fill, no pointer cursor.
 
 // Every interactive descendant, every Tooltip trigger and the copy chips
-// (IdChip, CopyableText: their value shows on hover and stays selectable),
-// except the row link itself. Any other element that must stay hoverable above
+// (IdChip, AnonymizedToken, CopyableText), except the row link itself. A copy
+// chip is lifted as a whole and its inner button stays static, as in a
+// DataTable row: a positioned copy button becomes the containing block of its
+// own stretched ::after, which then shrinks to the icon, so a click on the
+// value would copy nothing. Any other element that must stay hoverable above
 // the link takes `data-list-row-control`. The class names stay literal so
 // Tailwind can scan them.
 const LIFT_CONTROLS =
-  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link])]:z-10';
+  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10';
 
 // A row the user just added (`data-new`) enters once: its height opens from 0
 // so the rows below glide down, then its content fades in from a 3px blur.
