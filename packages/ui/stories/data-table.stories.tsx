@@ -1115,3 +1115,77 @@ export const RowLink: Story = {
     });
   },
 };
+
+/**
+ * Keyboard selection: Space toggles the focused checkbox and focus stays on
+ * it, so a keyboard user selects several rows with Space and Tab. The
+ * selection and the row actions are passed inline, as most consumers do; the
+ * cells must not remount when the selection changes.
+ */
+export const KeyboardSelection: Story = {
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        rowActions={(variant) => (
+          <Button variant="ghost" size="icon" className="size-8">
+            <MoreHorizontalIcon />
+            <span className="sr-only">Open menu for {variant.name}</span>
+          </Button>
+        )}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    // Query live each time: a remounted checkbox is a new DOM node.
+    const checkbox = (name: string) => canvas.getByRole('checkbox', { name });
+    // Press Space on a checkbox, wait for the new state, and expect the same
+    // node to be in the document and focused.
+    const toggleWithSpace = async (name: string, checked: 'true' | 'false') => {
+      const before = checkbox(name);
+      before.focus();
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(checkbox(name)).toHaveAttribute('aria-checked', checked));
+      await expect(document.activeElement).toBe(checkbox(name));
+      await expect(checkbox(name)).toBe(before);
+    };
+    // Cells that must survive a selection change as the same DOM nodes.
+    const survivors = [
+      canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' }),
+      canvas.getByRole('button', { name: 'Copy SKU of Laptop 13 inch 8GB' }),
+      canvas.getAllByText('Enabled')[0] as HTMLElement,
+      canvas.getByRole('button', { name: 'Open menu for Laptop 13 inch 8GB' }),
+    ];
+
+    await step('Space toggles a row checkbox and keeps focus on it', async () => {
+      await toggleWithSpace('Select row 1', 'true');
+    });
+
+    await step('Tab moves on from the toggled checkbox to the next stop in its row', async () => {
+      await userEvent.tab();
+      await expect(document.activeElement).toBe(survivors[0]);
+    });
+
+    await step('a second row is added with Space', async () => {
+      await toggleWithSpace('Select row 2', 'true');
+      await expect(checkbox('Select row 1')).toHaveAttribute('aria-checked', 'true');
+    });
+
+    await step('Space on select all keeps focus on it', async () => {
+      await toggleWithSpace('Select all rows', 'true');
+      await toggleWithSpace('Select all rows', 'false');
+    });
+
+    await step('other cells do not remount on a selection change', async () => {
+      for (const node of survivors) await expect(node.isConnected).toBe(true);
+    });
+
+    // Leave the toggled checkbox focused and checked for the screenshot.
+    await toggleWithSpace('Select row 1', 'true');
+  },
+};
