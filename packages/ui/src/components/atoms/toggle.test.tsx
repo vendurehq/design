@@ -4,10 +4,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Toggle } from './toggle.tsx';
 import { ToggleGroup, ToggleGroupItem } from './toggle-group.tsx';
 
-// Regression pins for the pressed-state contrast fix: the pressed state used bg-muted, the same shade
-// as hover, and nearly vanished on dark overlays. The pressed state now uses the
-// primary pair; its text contrast is covered by the primary-foreground on
-// primary check in @vendure-io/design-tokens (src/contrast.test.ts).
+// Pins for the pressed state: the accent tint with foreground text, as in the
+// v3 look. Hover is the muted fill, so pressed and hovered stay apart, and the
+// outline border keeps its colour when pressed. The Storybook story
+// ToggleGroup/PressedTint checks the rendered colours in a browser.
 
 /** Class tokens of the element whose opening tag matches, entity-decoded. */
 function classTokens(tag: string): string[] {
@@ -22,19 +22,14 @@ function pressedButton(html: string): string {
 }
 
 const PRESSED_TOKENS = [
-  'aria-pressed:bg-primary',
-  'aria-pressed:text-primary-foreground',
-  'data-pressed:bg-primary',
-  'data-pressed:text-primary-foreground',
+  'aria-pressed:bg-accent',
+  'aria-pressed:text-foreground',
+  'data-pressed:bg-accent',
+  'data-pressed:text-foreground',
 ];
 
-// Pressed plus hover must stay on the primary pair, not fall back to the hover shade.
-const PRESSED_HOVER_TOKENS = [
-  'aria-pressed:hover:bg-primary/80',
-  'aria-pressed:hover:text-primary-foreground',
-  'data-pressed:hover:bg-primary/80',
-  'data-pressed:hover:text-primary-foreground',
-];
+// Pressed plus hover keeps the tint, not the muted hover fill.
+const PRESSED_HOVER_TOKENS = ['aria-pressed:hover:bg-accent', 'data-pressed:hover:bg-accent'];
 
 describe('Toggle pressed state', () => {
   test('Base UI emits both aria-pressed and data-pressed', () => {
@@ -42,26 +37,25 @@ describe('Toggle pressed state', () => {
     expect(tag).toContain('data-pressed=""');
   });
 
-  test('uses the primary pair, distinct from the bg-muted hover shade', () => {
+  test('uses the accent tint, distinct from the bg-muted hover shade', () => {
     const tokens = classTokens(pressedButton(renderToStaticMarkup(<Toggle defaultPressed>B</Toggle>)));
     expect(tokens).toEqual(expect.arrayContaining([...PRESSED_TOKENS, ...PRESSED_HOVER_TOKENS]));
     expect(tokens).toContain('hover:bg-muted');
     expect(tokens).not.toContain('aria-pressed:bg-muted');
   });
 
-  test('outline variant gives the pressed item a primary border', () => {
+  test('outline variant keeps the input border when pressed', () => {
     const tokens = classTokens(
       pressedButton(renderToStaticMarkup(<Toggle variant="outline" defaultPressed>B</Toggle>)),
     );
-    expect(tokens).toEqual(
-      expect.arrayContaining(['aria-pressed:border-primary', 'data-pressed:border-primary']),
-    );
+    expect(tokens).toContain('border-input');
+    expect(tokens.filter((token) => /pressed:border-/.test(token))).toEqual([]);
   });
 });
 
 describe('ToggleGroupItem pressed state', () => {
   for (const variant of ['default', 'outline'] as const) {
-    test(`${variant} variant uses the primary pair`, () => {
+    test(`${variant} variant uses the accent tint`, () => {
       const html = renderToStaticMarkup(
         <ToggleGroup variant={variant} defaultValue={['90']}>
           <ToggleGroupItem value="30">30 days</ToggleGroupItem>
