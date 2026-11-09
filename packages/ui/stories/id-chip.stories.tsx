@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   Table,
   TableBody,
@@ -91,6 +91,48 @@ export const WholeChipCopies: Story = {
     const text = canvas.getByText('9f2c4e1a…9f0e').getBoundingClientRect();
     const hit = document.elementFromPoint(text.left + 4, text.top + text.height / 2);
     await expect(hit).toBe(canvas.getByRole('button', { name: 'Copy commit SHA' }));
+  },
+};
+
+/**
+ * When the copy succeeds, the tooltip label changes in one motion. "Copy"
+ * leaves 6px upward with a 2px blur, "Copied" enters from 6px below, and the
+ * bubble eases to the new width. With reduced motion the labels only
+ * crossfade and the width changes at once.
+ */
+export const CopiedLabelSwaps: Story = {
+  args: { value: 'L2201516', truncate: 'none', copyLabel: 'Copy SKU' },
+  play: async ({ canvasElement }) => {
+    stubClipboard();
+    const button = within(canvasElement).getByRole('button', { name: 'Copy SKU' });
+    await userEvent.hover(button);
+    let swap: HTMLElement | null = null;
+    await waitFor(() => {
+      swap = document.querySelector<HTMLElement>('[data-slot="tooltip-label-swap"]');
+      expect(swap).not.toBeNull();
+    });
+    const stack = swap as unknown as HTMLElement;
+    const label = (text: string) =>
+      Array.from(stack.children).find((child) => child.textContent === text) as HTMLElement;
+    await expect(label('Copy SKU').dataset.swap).toBe('in');
+
+    await userEvent.click(button);
+    await waitFor(() => expect(label('Copied').dataset.swap).toBe('in'));
+    await expect(label('Copy SKU').dataset.swap).toBe('before');
+    await expect(label('Copy SKU').getAttribute('aria-hidden')).toBe('true');
+    // Read the end values once the transitions have run.
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    await waitFor(() => {
+      const old = getComputedStyle(label('Copy SKU'));
+      expect(old.opacity).toBe('0');
+      expect(old.translate).toBe(reduced ? 'none' : '0px -6px');
+      expect(old.filter).toBe(reduced ? 'none' : 'blur(2px)');
+      expect(getComputedStyle(label('Copied')).translate).toBe('none');
+      // The bubble ends at the width of the new label.
+      const gap = stack.getBoundingClientRect().width - label('Copied').getBoundingClientRect().width;
+      expect(Math.abs(gap)).toBeLessThan(1);
+    });
+    await expect(getComputedStyle(stack).transitionProperty).toContain(reduced ? 'none' : 'width');
   },
 };
 
