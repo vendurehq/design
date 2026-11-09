@@ -283,8 +283,7 @@ function DataTable<TData>({
     );
   }
 
-  // Resolve labels once per `labels` identity so the derived closures are stable
-  // deps for the display-column memo below.
+  // Resolve labels once per `labels` identity.
   const l = React.useMemo(
     () => ({
       empty: labels?.empty ?? 'No results',
@@ -318,11 +317,22 @@ function DataTable<TData>({
   );
   const selectColumnId = rowSelection?.selectColumnId ?? 'select';
 
+  // The display-column cells read labels and `rowActions` through this ref, so
+  // the column defs below depend only on which display columns exist. A new
+  // cell function is a new component type to React: it remounts the cell, and
+  // a checkbox toggled from the keyboard loses focus. Consumers pass
+  // `rowSelection`, `rowActions` and `labels` inline, so those identities
+  // change on every selection change.
+  const displayProps = React.useRef({ l, rowActions });
+  displayProps.current = { l, rowActions };
+  const hasRowSelection = rowSelection != null;
+  const hasRowActions = rowActions != null;
+
   // Inject the select/actions display columns around the data columns. `meta` on
   // the consumer's columns is never touched — it's the dashboard's field-info seam.
   const displayColumns = React.useMemo(() => {
     // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
-    const selectColumn: ColumnDef<TData, any> | undefined = rowSelection
+    const selectColumn: ColumnDef<TData, any> | undefined = hasRowSelection
       ? {
           id: selectColumnId,
           enableSorting: false,
@@ -338,7 +348,7 @@ function DataTable<TData>({
               checked={table.getIsAllPageRowsSelected()}
               indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
               onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
-              aria-label={l.selectAllRows}
+              aria-label={displayProps.current.l.selectAllRows}
               className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
             />
           ),
@@ -347,7 +357,7 @@ function DataTable<TData>({
               checked={row.getIsSelected()}
               disabled={!row.getCanSelect()}
               onCheckedChange={(checked) => row.toggleSelected(checked)}
-              aria-label={l.selectRow(row.index)}
+              aria-label={displayProps.current.l.selectRow(row.index)}
               className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
             />
           ),
@@ -355,26 +365,18 @@ function DataTable<TData>({
       : undefined;
 
     // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
-    const actionsColumn: ColumnDef<TData, any> | undefined = rowActions
+    const actionsColumn: ColumnDef<TData, any> | undefined = hasRowActions
       ? {
           id: ACTIONS_COLUMN_ID,
           enableSorting: false,
           enableHiding: false,
-          header: () => <span className="sr-only">{l.rowActions}</span>,
-          cell: ({ row, table }) => rowActions(row.original, { row, table }),
+          header: () => <span className="sr-only">{displayProps.current.l.rowActions}</span>,
+          cell: ({ row, table }) => displayProps.current.rowActions?.(row.original, { row, table }),
         }
       : undefined;
 
     return buildDisplayColumns(columns, { select: selectColumn, actions: actionsColumn });
-  }, [
-    columns,
-    rowSelection,
-    rowActions,
-    selectColumnId,
-    l.selectAllRows,
-    l.selectRow,
-    l.rowActions,
-  ]);
+  }, [columns, hasRowSelection, hasRowActions, selectColumnId]);
 
   const state: Partial<TableState> = {};
   if (sorting) state.sorting = sortingState;
