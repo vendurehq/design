@@ -103,9 +103,9 @@
   --brand-indicator: oklch(0.63 0.128 231);
   --secondary: color-mix(in oklab, var(--foreground) 7%, transparent);
   --secondary-foreground: oklch(0.2 0.007 231);
-  --muted: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --muted: color-mix(in oklab, var(--foreground) 5.5%, transparent);
   --muted-foreground: oklch(0.505 0.013 231);
-  --accent: color-mix(in oklab, var(--foreground) 8%, transparent);
+  --accent: color-mix(in oklab, var(--foreground) 8.5%, transparent);
   --accent-foreground: oklch(0.2 0.007 231);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0.01 25);
@@ -130,10 +130,10 @@
   --neutral-subtle: oklch(0.93 0.004 231);
   --neutral-subtle-foreground: oklch(0.2 0.007 231);
   --neutral-border: oklch(0.87 0.004 231);
-  --success-text: oklch(0.494 0.127 154);
-  --warning-text: oklch(0.522 0.146 49);
-  --destructive-text: oklch(0.533 0.193 24);
-  --info-text: oklch(0.504 0.112 236);
+  --success-text: oklch(0.491 0.127 154);
+  --warning-text: oklch(0.519 0.146 49);
+  --destructive-text: oklch(0.53 0.193 24);
+  --info-text: oklch(0.501 0.112 236);
   --warning-indicator: oklch(0.767 0.157 72);
   --neutral-text: var(--muted-foreground);
   --code-highlight: color-mix(in oklab, oklch(0.55 0.19 250) 10%, transparent);
@@ -191,7 +191,7 @@
   --secondary-foreground: oklch(0.95 0.004 231);
   --muted: color-mix(in oklab, var(--foreground) 6%, transparent);
   --muted-foreground: oklch(0.715 0.014 231);
-  --accent: color-mix(in oklab, var(--foreground) 9%, transparent);
+  --accent: color-mix(in oklab, var(--foreground) 9.5%, transparent);
   --accent-foreground: oklch(0.95 0.004 231);
   --destructive: oklch(0.575 0.2 25);
   --destructive-foreground: oklch(0.98 0.01 25);
