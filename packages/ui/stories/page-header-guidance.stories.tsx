@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ChevronLeftIcon, MoreHorizontalIcon, PlusIcon } from 'lucide-react';
+import { MoreHorizontalIcon, PlusIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -7,6 +7,7 @@ import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import {
   PageHeader,
   PageHeaderActions,
+  PageHeaderBack,
   PageHeaderBackLink,
   PageHeaderContent,
   PageHeaderDescription,
@@ -80,7 +81,7 @@ const REGIONS: { region: string; holds: string; rule: string }[] = [
   {
     region: 'BackLink',
     holds: 'One link, one level up.',
-    rule: 'A single parent link, not a breadcrumb trail. Optional; omit at the top of a section.',
+    rule: 'A single parent link, not a breadcrumb trail: PageHeaderBack, with a chevron. Optional; omit at the top of a section.',
   },
   {
     region: 'Title',
@@ -225,13 +226,7 @@ export const TitleNamesTheEntity: Story = {
           >
             <div className="flex flex-col gap-2">
               <PageHeaderBackLink>
-                <a
-                  href="#products"
-                  className="hover:text-foreground inline-flex items-center gap-1"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                  Back to products
-                </a>
+                <PageHeaderBack href="#products">Products</PageHeaderBack>
               </PageHeaderBackLink>
               <PageHeader>
                 <PageHeaderContent>
