@@ -70,6 +70,26 @@ describe('v3 field look', () => {
     }
   });
 
+  test('a native placeholder is fainter than muted text', () => {
+    for (const file of ['atoms/input.tsx', 'atoms/textarea.tsx']) {
+      const code = source(file);
+      expect(code).toContain('placeholder:text-faint-foreground');
+      expect(code).not.toContain('placeholder:text-muted-foreground');
+    }
+  });
+
+  test('a label above its field is 12px muted, 6px above it; red while invalid', () => {
+    const code = source('atoms/field.tsx');
+    for (const token of [
+      'vertical: "flex-col gap-1.5',
+      '*:data-[slot=field-label]:text-xs',
+      '*:data-[slot=field-label]:text-muted-foreground',
+      'data-[invalid=true]:*:data-[slot=field-label]:text-destructive-subtle-foreground',
+    ]) {
+      expect(code).toContain(token);
+    }
+  });
+
   test('InputOTP slots sit on the muted fill with a hairline border, 34px square', () => {
     const code = source('atoms/input-otp.tsx');
     for (const token of ['bg-muted', 'border-border', 'size-8.5', 'first:rounded-l-lg', 'last:rounded-r-lg']) {
