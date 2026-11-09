@@ -421,7 +421,7 @@ export const CompactForSmallPanels: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Compact inside a small panel; full state for a region"
-        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush with bordered={false}. An icon is optional and renders bare."
+        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush. An icon is optional and renders bare."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -435,7 +435,6 @@ export const CompactForSmallPanels: Story = {
               <CardContent>
                 <ErrorState
                   size="compact"
-                  bordered={false}
                   title="Couldn't load usage"
                   description="This is on us. Try again in a moment."
                   onRetry={() => {}}
@@ -454,7 +453,6 @@ export const CompactForSmallPanels: Story = {
               <CardContent>
                 <EmptyState
                   size="compact"
-                  bordered={false}
                   icon={<WebhookIcon />}
                   title="No webhooks"
                   description="Send order events to your own endpoint."
