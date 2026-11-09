@@ -202,7 +202,9 @@ export const RightToLeft: Story = {
     </DirectionProvider>
   ),
   play: async ({ canvasElement }) => {
-    const [known, running] = within(canvasElement).getAllByRole('progressbar');
+    const canvas = within(canvasElement);
+    const known = canvas.getByRole('progressbar', { name: 'رفع الملفات' });
+    const running = canvas.getByRole('progressbar', { name: 'بناء الصورة' });
     const track = known.querySelector('[data-slot="progress-track"]') as HTMLElement;
     const fill = known.querySelector('[data-slot="progress-indicator"]') as HTMLElement;
     await waitFor(() => {
