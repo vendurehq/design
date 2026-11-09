@@ -2,7 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Card, CardAction, CardCount, CardHeader, CardRow, CardRows, CardTitle } from './card.tsx';
+import type { Tone } from '../../lib/state-dictionary.ts';
+import { Card, CardAction, CardCount, type CardCountTone, CardHeader, CardRow, CardRows, CardTitle } from './card.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
 
 describe('Card', () => {
@@ -48,12 +49,14 @@ describe('Card', () => {
     expect(html).toMatch(/data-slot="card-title"[^>]*>Deployments <span[^>]*data-slot="card-count"/);
   });
 
-  test('CardCount takes an attention or critical tone, and stays muted by default', () => {
+  test('CardCount takes the warning or critical tone, and stays muted by default', () => {
     const tone = (node: ReactElement) => slotTokens(renderToStaticMarkup(node), 'card-count');
     expect(tone(<CardCount tone="critical">1 failed</CardCount>)).toContain('text-destructive-text');
     expect(tone(<CardCount tone="critical">1 failed</CardCount>)).not.toContain('text-muted-foreground');
-    expect(tone(<CardCount tone="attention">2</CardCount>)).toContain('text-warning-text');
+    expect(tone(<CardCount tone="warning">2</CardCount>)).toContain('text-warning-text');
     expect(tone(<CardCount>2</CardCount>)).toContain('text-muted-foreground');
+    const tones: CardCountTone[] = ['neutral', 'warning', 'critical'] satisfies Tone[];
+    expect(tones.map((t) => renderToStaticMarkup(<CardCount tone={t}>1</CardCount>))).toHaveLength(3);
   });
 
   test('CardRows runs its rows edge to edge, each row drawing its own top border', () => {

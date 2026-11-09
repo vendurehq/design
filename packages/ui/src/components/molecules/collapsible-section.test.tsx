@@ -86,6 +86,19 @@ describe('CollapsibleSection', () => {
     expect(slotTag(html, 'collapsible-section-count')).not.toContain('text-destructive-text');
   });
 
+  test('passes its tone to CardCount: one tone class on the count', () => {
+    const count = slotTokens(
+      renderToStaticMarkup(
+        <CollapsibleSection title="Payments to review" count={2} tone="warning" />,
+      ),
+      'collapsible-section-count',
+    );
+    expect(count).toContain('text-warning-text');
+    expect(
+      count.filter((c) => /^text-(muted-foreground|warning-text|destructive-text)$/.test(c)),
+    ).toEqual(['text-warning-text']);
+  });
+
   test('without a detail, the tone colours the whole count', () => {
     const html = renderToStaticMarkup(
       <CollapsibleSection title="Failed payment captures" count={2} tone="critical" />,

@@ -178,3 +178,34 @@ export const LongLabelSwap: Story = {
     );
   },
 };
+
+/**
+ * A tooltip widens with `--tooltip-max-w`. A changing label wraps at the same
+ * width as the bubble, so a label that fits the wider bubble stays on one line.
+ */
+export const WiderTooltipLabel: Story = {
+  render: () => (
+    <div className="flex justify-center p-24 pt-28">
+      <Tooltip open>
+        <TooltipTrigger render={<Button variant="outline" />}>Wide tooltip</TooltipTrigger>
+        <TooltipContent className="[--tooltip-max-w:28rem]">
+          <TooltipLabelSwap
+            labels={['Copy commit 3f9a2c7e1b4d8f6a0c5e9b2d7f1a4c8e6b3d0f9a', 'Copied']}
+            active={0}
+          />
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  ),
+  play: async () => {
+    const long = await within(document.body).findByText(/^Copy commit/);
+    const popup = long.closest('[data-slot=tooltip-content]') as HTMLElement;
+    const lineHeight = Number.parseFloat(getComputedStyle(long).lineHeight);
+    const padding = Number.parseFloat(getComputedStyle(popup).paddingRight);
+    // One line, and it ends inside the bubble's padding.
+    await waitFor(() => expect(long.getBoundingClientRect().height).toBeLessThan(lineHeight * 1.5));
+    await expect(long.getBoundingClientRect().right).toBeLessThanOrEqual(
+      popup.getBoundingClientRect().right - padding + 0.5,
+    );
+  },
+};
