@@ -56,7 +56,7 @@ export const Default: Story = {
   // Opens the list from the icon button. The a11y scan then runs with the list
   // open, while Base UI hides everything outside the input and the list.
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open options' }));
+    await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Open options' }));
     const body = within(document.body);
     await waitFor(() => expect(body.getAllByRole('option')).toHaveLength(5));
     // The empty message renders only when no item matches.
