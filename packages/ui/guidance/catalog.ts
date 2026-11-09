@@ -807,11 +807,11 @@ export const uiGuidance = [
       },
       {
         title: 'Tables own their perimeter',
-        body: 'When EmptyState replaces a table body, pass bordered={false} so it renders flush within the table container. Do not add an inset dashed outline.',
+        body: 'When EmptyState replaces a table body, it renders flush within the table container: EmptyState draws no box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.',
       },
       {
         title: 'Compact for small panels',
-        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush with bordered={false}. An icon is optional and renders bare, without the chip.',
+        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush. An icon is optional and renders bare, as in the full state.',
       },
       {
         title: 'Errors own the failure',
