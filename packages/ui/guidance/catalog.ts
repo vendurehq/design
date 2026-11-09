@@ -537,6 +537,10 @@ export const uiGuidance = [
         title: 'The whole chip copies',
         body: 'A click anywhere on a copyable chip copies the full value, and the tooltip changes from Copy to Copied. Do not put an IdChip inside a link or a clickable cell that does something else.',
       },
+      {
+        title: 'A lookup key in a list column reveals on row hover',
+        body: 'When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. Over a stretched row link, stack the chip above the link (for example z-10).',
+      },
     ],
     related: ['anonymized-token', 'copyable-text'],
   },
