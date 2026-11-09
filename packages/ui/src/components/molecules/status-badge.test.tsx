@@ -227,7 +227,39 @@ describe('StatusBadge', () => {
     );
 
     expect(markup).toContain('<span class="sr-only">Degraded</span>');
-    expect(markup).toContain('size-2');
+    expect(markup).toContain('size-1.75');
+  });
+
+  test('appearance="dot" fills warning with the warning indicator', () => {
+    const markup = html(
+      <StatusBadge tone="warning" appearance="dot">
+        Degraded
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('text-warning-indicator');
+    expect(markup).not.toContain('text-warning-text');
+  });
+
+  test('appearance="dot" stays still in progress', () => {
+    const markup = html(
+      <StatusBadge tone="progress" appearance="dot">
+        Building
+      </StatusBadge>,
+    );
+
+    expect(markup).not.toContain('animate-');
+  });
+
+  test('appearance="text" keeps the neutral word at the weight of the others', () => {
+    const markup = html(
+      <StatusBadge tone="neutral" appearance="text">
+        Stopped
+      </StatusBadge>,
+    );
+
+    expect(markup).toContain('font-medium');
+    expect(markup).not.toContain('font-normal');
   });
 });
 
