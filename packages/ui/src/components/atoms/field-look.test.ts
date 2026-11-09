@@ -46,7 +46,8 @@ describe('v3 field look', () => {
   for (const file of fields) {
     test(`${file} uses the field recipe`, () => {
       const code = source(file);
-      expect(code).toContain('fieldSurface');
+      // The pickers take it through fieldButton, the recipe for a Button drawn as a field.
+      expect(code).toMatch(/\bfield(Surface|Button)\b/);
       for (const token of retired) expect({ file, token, found: code.includes(token) }).toEqual({ file, token, found: false });
     });
   }
