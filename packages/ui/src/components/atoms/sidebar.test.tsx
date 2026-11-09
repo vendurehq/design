@@ -145,7 +145,7 @@ describe('Sidebar rail', () => {
         <SidebarGroupLabel>Shop</SidebarGroupLabel>
       </SidebarProvider>,
     );
-    const label = classTokens(html, 'sidebar-group-label');
+    const label = slotTokens(html, 'sidebar-group-label');
     expect(label).toEqual(expect.arrayContaining(['transition-[height,opacity]', 'ease-height']));
     expect(label).not.toContain('ease-drawer');
   });
