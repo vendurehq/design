@@ -20,14 +20,14 @@ describe('ComboboxTrigger field styling', () => {
     );
     const classes = classTokens(html, 'combobox-trigger');
     for (const token of [
-      'border',
-      'border-input',
-      'rounded-md',
-      'data-[size=default]:h-9',
+      'bg-muted',
+      'shadow-[inset_0_0_0_1px_var(--border)]',
+      'rounded-lg',
+      'data-[size=default]:h-8.5',
       'focus-visible:outline-2',
-      'focus-visible:outline-offset-2',
+      'focus-visible:-outline-offset-2',
       'focus-visible:outline-ring',
-      'aria-invalid:border-destructive',
+      'aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]',
       'data-placeholder:text-muted-foreground',
     ]) {
       expect(classes).toContain(token);
@@ -53,8 +53,8 @@ describe('ComboboxTrigger field styling', () => {
     );
     const button = html.match(/<button[^>]*>/)?.[0] ?? '';
     expect(button).not.toBe('');
-    expect(button).not.toContain('border-input');
-    expect(button).not.toContain('h-9');
+    expect(button).not.toContain('shadow-[inset_0_0_0_1px_var(--border)]');
+    expect(button).not.toContain('h-8.5');
   });
 });
 

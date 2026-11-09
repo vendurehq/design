@@ -8,7 +8,12 @@ import { join } from 'node:path';
 // boxes take it 2px inside, where an outside ring would be clipped. Several
 // parts render in a portal or need a browser, so these checks read the source.
 
-const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
+const fieldRecipe = readFileSync(join(import.meta.dir, '../../lib/field-surface.ts'), 'utf8');
+// A field that uses the shared field recipe is read together with it.
+const source = (file: string) => {
+  const code = readFileSync(join(import.meta.dir, '..', file), 'utf8');
+  return code.includes('fieldSurface') ? `${code}\n${fieldRecipe}` : code;
+};
 
 const OUTSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:outline-offset-2'];
 const INSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:-outline-offset-2'];
@@ -16,10 +21,6 @@ const INSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-
 const outset = [
   'atoms/button.tsx',
   'atoms/badge.tsx',
-  'atoms/textarea.tsx',
-  'atoms/native-select.tsx',
-  'atoms/select.tsx',
-  'atoms/combobox.tsx',
   'atoms/checkbox.tsx',
   'atoms/radio-group.tsx',
   'atoms/switch.tsx',
@@ -36,6 +37,9 @@ const outset = [
 const inset = [
   // The v3 field: the ring sits inside the tinted field, over its hairline.
   'atoms/input.tsx',
+  'atoms/textarea.tsx',
+  'atoms/native-select.tsx',
+  'atoms/combobox.tsx',
   'atoms/accordion.tsx',
   'atoms/tabs.tsx',
   'atoms/item.tsx',
@@ -97,21 +101,23 @@ describe('v3 focus ring', () => {
   test('InputGroup rings the group, not the bare control inside it', () => {
     const code = source('atoms/input-group.tsx');
     expect(code).toContain('has-[[data-slot=input-group-control]:focus-visible]:outline-2');
-    expect(code).toContain('has-[[data-slot=input-group-control]:focus-visible]:outline-offset-2');
+    expect(code).toContain('has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2');
     expect(code).toContain('focus-visible:outline-none');
   });
 
   test('invalid fields keep the destructive edge and turn the ring destructive', () => {
-    for (const file of ['atoms/textarea.tsx', 'atoms/select.tsx', 'atoms/checkbox.tsx', 'atoms/button.tsx']) {
+    for (const file of ['atoms/checkbox.tsx', 'atoms/button.tsx']) {
       const code = source(file);
       expect(code).toContain('aria-invalid:border-destructive');
       expect(code).toContain('aria-invalid:focus-visible:outline-destructive');
     }
-    // Input has no border: its hairline is an inset shadow, so invalid swaps
-    // the shadow colour.
-    const input = source('atoms/input.tsx');
-    expect(input).toContain('aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]');
-    expect(input).toContain('aria-invalid:focus-visible:outline-destructive');
+    // Fields have no border: their hairline is an inset shadow, so invalid
+    // swaps the shadow colour.
+    for (const file of ['atoms/input.tsx', 'atoms/textarea.tsx', 'atoms/select.tsx']) {
+      const code = source(file);
+      expect(code).toContain('aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]');
+      expect(code).toContain('aria-invalid:focus-visible:outline-destructive');
+    }
   });
 
   test('no part keeps the retired halo ring', () => {

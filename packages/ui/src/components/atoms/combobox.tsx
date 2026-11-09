@@ -4,6 +4,7 @@ import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "@vendure-io/ui/lib/popup-motion"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import {
@@ -37,7 +38,8 @@ function ComboboxTrigger({
       data-slot="combobox-trigger"
       data-size={size}
       className={cn(
-        "border-input data-placeholder:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex w-fit items-center justify-between gap-1.5 rounded-md border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 data-[size=default]:h-9 data-[size=sm]:h-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        fieldSurface,
+        "data-placeholder:text-muted-foreground flex w-fit items-center justify-between gap-1.5 py-2 pr-2 pl-2.5 text-sm whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-8.5 data-[size=sm]:h-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -130,7 +132,7 @@ function ComboboxContent({
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
           data-chips={!!anchor}
-          className={cn("bg-popover text-popover-foreground shadow-overlay *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
           {...props}
         />
       </ComboboxPrimitive.Positioner>
@@ -241,7 +243,7 @@ function ComboboxChips({
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
       className={cn(
-        "dark:bg-input/30 border-input focus-within:outline-solid focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring has-aria-invalid:focus-within:outline-destructive has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 has-aria-invalid:border-destructive flex min-h-9 flex-wrap items-center gap-1.5 rounded-md border bg-transparent bg-clip-padding px-2.5 py-1.5 text-sm transition-[color,box-shadow] has-aria-invalid:ring-3 has-data-[slot=combobox-chip]:px-1.5",
+        "bg-muted shadow-[inset_0_0_0_1px_var(--border)] forced-colors:border focus-within:outline-solid focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-ring has-aria-invalid:focus-within:outline-destructive has-aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)] flex min-h-8.5 flex-wrap items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-shadow duration-120 ease-[ease] has-data-[slot=combobox-chip]:px-1.5",
         className
       )}
       {...props}

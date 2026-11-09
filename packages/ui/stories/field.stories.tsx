@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { SearchIcon } from 'lucide-react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   Field,
   FieldLabel,
@@ -8,6 +10,11 @@ import {
   FieldContent,
 } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '../src/components/atoms/input-group.tsx';
+import { NativeSelect, NativeSelectOption } from '../src/components/atoms/native-select.tsx';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../src/components/atoms/select.tsx';
+import { Textarea } from '../src/components/atoms/textarea.tsx';
+import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 
 const meta = {
   title: 'Atoms/Forms/Field',
@@ -148,4 +155,64 @@ export const ValidAndInvalid: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+/**
+ * Every field in the v3 look, side by side: the muted fill, a 1px inset
+ * hairline, the 6px radius, 34px tall, and a 2px ring inside the field on
+ * keyboard focus. The play function reads the computed styles.
+ */
+export const FieldLook: Story = {
+  render: () => (
+    <div className="grid w-80 gap-4">
+      <Input aria-label="Name" placeholder="Name" />
+      <Select items={[{ value: 'eur', label: 'Euro' }]}>
+        <SelectTrigger aria-label="Currency" className="w-full">
+          <SelectValue placeholder="Currency" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="eur">Euro</SelectItem>
+        </SelectContent>
+      </Select>
+      <NativeSelect aria-label="Country" className="w-full">
+        <NativeSelectOption value="at">Austria</NativeSelectOption>
+      </NativeSelect>
+      <InputGroup>
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+        <InputGroupInput aria-label="Search" placeholder="Search" />
+      </InputGroup>
+      <DatePicker aria-label="Ship date" />
+      <Textarea aria-label="Note" placeholder="Note" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const probe = document.createElement('div');
+    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--border)]';
+    canvasElement.append(probe);
+    const fields = [
+      canvas.getByRole('textbox', { name: 'Name' }),
+      canvas.getByRole('combobox', { name: 'Currency' }),
+      canvas.getByRole('combobox', { name: 'Country' }),
+      canvasElement.querySelector<HTMLElement>('[data-slot="input-group"]') as HTMLElement,
+      canvas.getByRole('button', { name: /Pick a date/ }),
+      canvas.getByRole('textbox', { name: 'Note' }),
+    ];
+    for (const field of fields) {
+      const style = getComputedStyle(field);
+      await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
+      await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
+      await expect(style.borderTopLeftRadius).toBe('6px');
+      if (field.tagName !== 'TEXTAREA') await expect(field.offsetHeight).toBe(34);
+    }
+    probe.remove();
+
+    // Keyboard focus rings the field 2px inside, over the hairline.
+    const [name] = fields as [HTMLElement];
+    await userEvent.tab();
+    await waitFor(() => expect(getComputedStyle(name).outlineOffset).toBe('-2px'));
+    await expect(getComputedStyle(name).outlineWidth).toBe('2px');
+  },
 };
