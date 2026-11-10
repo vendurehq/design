@@ -100,7 +100,7 @@
   --primary-foreground: oklch(0.97 0.004 231);
   --brand: oklch(0.76 0.15 231);
   --brand-foreground: oklch(0.13 0.007 231);
-  --brand-indicator: oklch(0.63 0.128 231);
+  --brand-indicator: oklch(0.65 0.16 231);
   --secondary: color-mix(in oklab, var(--foreground) 7%, transparent);
   --secondary-foreground: oklch(0.2 0.007 231);
   --muted: color-mix(in oklab, var(--foreground) 5.5%, transparent);
@@ -187,7 +187,7 @@
   --primary-foreground: oklch(0.2 0.007 231);
   --brand: oklch(0.76 0.15 231);
   --brand-foreground: oklch(0.13 0.007 231);
-  --brand-indicator: oklch(0.8 0.13 231);
+  --brand-indicator: oklch(0.76 0.15 231);
   --secondary: color-mix(in oklab, var(--foreground) 7%, transparent);
   --secondary-foreground: oklch(0.95 0.004 231);
   --muted: color-mix(in oklab, var(--foreground) 6%, transparent);

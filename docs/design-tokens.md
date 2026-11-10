@@ -74,7 +74,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `popover`, `popover-foreground` — Popover/dropdown surfaces (alias of `overlay`)
 - `primary`, `primary-foreground` — Primary actions. Neutral, not Vendure blue
 - `brand`, `brand-foreground` — Vendure blue, for deliberate identity moments only (`bg-brand text-brand-foreground`). Components opt in; nothing uses it by default
-- `brand-indicator` — Vendure blue as a non-text mark: the active navigation icon, the selected-item marker, a link underline (`text-brand-indicator` on an icon, `bg-brand-indicator`). It holds 3:1 on every surface tier. Do not use it for body text or as a fill behind text
+- `brand-indicator` — Vendure blue as a non-text mark: the active navigation icon, the selected-item marker, a link underline (`text-brand-indicator` on an icon, `bg-brand-indicator`). It is a brand scale step: `brand-600` in light mode, `brand-500` in dark mode. In light mode it measures about 2.8:1 on `background` and 2.9:1 on `surface`, and 3:1 on the raised tiers. Do not use it for body text or as a fill behind text
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
 - `faint-foreground` — Placeholder text in a field: a native `::placeholder` (`placeholder:text-faint-foreground`), and the placeholder that Select, Combobox and the date pickers show as text. It is fainter than `muted-foreground` and below 4.5:1, so never use it for text a user must read. Mark placeholder text with `data-placeholder`; the Storybook a11y scan skips it for contrast
@@ -106,7 +106,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 
 - 4.5:1 for every foreground on its fill; for `foreground`, `foreground-secondary`, `muted-foreground`, `{tone}-text` and `{tone}-subtle-foreground` on every surface tier; for `muted-foreground` and `{tone}-text` on the `muted` and `secondary` fills and the `accent` hover fill over every surface tier; for the subtle tier over `surface`, `surface-raised` and `overlay`; for the StatusBadge label on its chip fill, for all six tones on every surface tier; and for the Alert title (`foreground`) and description (`foreground-secondary`) on the `destructive`, `warning` and `info` Alert tint over every surface tier. The StatusBadge and Alert recipes are copied into `contrast.test.ts`: change the component and the test together.
-- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier, and for the StatusBadge icon on its chip fill and the Alert icon on its tint. `border` and `input` are exempt. `warning-indicator` is exempt in light mode (about 2:1; never the only cue) and holds 3:1 in dark mode.
+- 3:1 (WCAG 1.4.11 non-text) for `primary`, `ring`, `sidebar-ring`, `destructive`, `control-border` and `brand-indicator` on every surface tier, except light `brand-indicator`, `ring` and `sidebar-ring` on `background` (2.8:1) and `surface` (2.91:1), where the test floor is the chosen brand step's measured ratio, and for the StatusBadge icon on its chip fill and the Alert icon on its tint. `border` and `input` are exempt. `warning-indicator` is exempt in light mode (about 2:1; never the only cue) and holds 3:1 in dark mode.
 
 ### Typography
 
