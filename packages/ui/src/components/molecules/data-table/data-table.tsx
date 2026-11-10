@@ -244,7 +244,18 @@ const bulkBandOpen = {
 // lifts above its stretched link, plus the select checkbox and menu items. The
 // row link itself is not one of them: a click on it selects too.
 const ROW_CONTROL_SELECTOR =
-  'a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+
+// The click area of a select checkbox is its whole cell: the full height of
+// the row, from the table's start edge to where the leading cell's content
+// starts (its gutter, `--spacing(8)` plus its indent). The select cell is
+// zero-width, so the area is floated over that gutter, under the checkbox and
+// above the row link's stretched ::after. It is not focusable: keyboard focus
+// and the focus ring stay on the checkbox. The checkbox's own enlarged hit
+// area is turned off here, since it reached past the gutter into the content.
+const SELECT_AREA_CLASS =
+  'absolute inset-y-0 left-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 
 /**
  * Toggles a row from a click on it or on its checkbox. With `extend` (Shift),
@@ -393,30 +404,60 @@ function DataTable<TData>({
           // floated absolutely over the (zero-width) select cell so an empty
           // selection reserves no gutter — no left gap to read as a bug.
           header: ({ table }) => (
-            <Checkbox
-              checked={table.getIsAllPageRowsSelected()}
-              indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-              onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
-              aria-label={displayProps.current.l.selectAllRows}
-              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
-            />
+            <>
+              <span
+                aria-hidden
+                data-slot="data-table-select-area"
+                className={SELECT_AREA_CLASS}
+                onClick={() => table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected())}
+              />
+              <Checkbox
+                checked={table.getIsAllPageRowsSelected()}
+                indeterminate={
+                  table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
+                }
+                onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
+                aria-label={displayProps.current.l.selectAllRows}
+                className={cn(
+                  'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
+                  SELECT_CHECKBOX_HIT_CLASS,
+                )}
+              />
+            </>
           ),
           cell: ({ row, table }) => (
-            <Checkbox
-              checked={row.getIsSelected()}
-              disabled={!row.getCanSelect()}
-              onCheckedChange={(checked, details) =>
-                selectFromClick(
-                  table,
-                  row,
-                  Boolean((details.event as MouseEvent | KeyboardEvent | undefined)?.shiftKey),
-                  selectionAnchor,
-                  checked,
-                )
-              }
-              aria-label={displayProps.current.l.selectRow(row.index)}
-              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
-            />
+            <>
+              {row.getCanSelect() && (
+                <span
+                  aria-hidden
+                  data-slot="data-table-select-area"
+                  className={SELECT_AREA_CLASS}
+                  onClick={(event) => selectFromClick(table, row, event.shiftKey, selectionAnchor)}
+                  // Shift+press would also extend the page's text selection.
+                  onMouseDown={(event) => {
+                    if (event.shiftKey) event.preventDefault();
+                  }}
+                />
+              )}
+              <Checkbox
+                checked={row.getIsSelected()}
+                disabled={!row.getCanSelect()}
+                onCheckedChange={(checked, details) =>
+                  selectFromClick(
+                    table,
+                    row,
+                    Boolean((details.event as MouseEvent | KeyboardEvent | undefined)?.shiftKey),
+                    selectionAnchor,
+                    checked,
+                  )
+                }
+                aria-label={displayProps.current.l.selectRow(row.index)}
+                className={cn(
+                  'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
+                  SELECT_CHECKBOX_HIT_CLASS,
+                )}
+              />
+            </>
           ),
         }
       : undefined;
@@ -564,10 +605,17 @@ function DataTable<TData>({
     const next = measureColumnIndents(tableRef.current);
     setColumnIndents((current) => (sameIndents(current, next) ? current : next));
   }, [bodyRows, visibleColumnKey, isLoading]);
-  const columnIndentStyle = (id: string): React.CSSProperties | undefined =>
-    columnIndents[id]
+  const columnIndentStyle = (columnId: string): React.CSSProperties | undefined => {
+    // The select cell's click area ends where the leading cell's content
+    // starts, so it takes the leading column's indent.
+    const id =
+      generatedColumn(columnId) === 'select' && leadingColumnId != null
+        ? leadingColumnId
+        : columnId;
+    return columnIndents[id]
       ? ({ '--column-indent': `${columnIndents[id]}px` } as React.CSSProperties)
       : undefined;
+  };
 
   // Loading cells follow the real column layout (same ids, same cell classes),
   // so a consumer's `skeletonCells` entry can match its loaded cell's height.
