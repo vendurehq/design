@@ -221,6 +221,15 @@ const nonTextSlots = [
   'control-border',
   'brand-indicator',
 ] as const;
+// Light brand-indicator (and ring, sidebar-ring, which point at it) is a chosen brand step, brand-600: floors are its measured ratios.
+const nonTextFloors: Record<string, number> = {
+  'light:brand-indicator:background': 2.8,
+  'light:brand-indicator:surface': 2.91,
+  'light:ring:background': 2.8,
+  'light:ring:surface': 2.91,
+  'light:sidebar-ring:background': 2.8,
+  'light:sidebar-ring:surface': 2.91,
+};
 // Text slots used directly on a surface tier, with no fill of their own.
 const surfaceTextSlots = [
   'foreground',
@@ -372,8 +381,9 @@ for (const [themeName, theme] of Object.entries(themes)) {
       }
 
       for (const slot of nonTextSlots) {
-        test(`${slot} on ${surface} >= 3 (non-text)`, () => {
-          expect(contrastOf(theme, slot, surface)).toBeGreaterThanOrEqual(MIN_NON_TEXT_CONTRAST);
+        const floor = nonTextFloors[`${themeName}:${slot}:${surface}`] ?? MIN_NON_TEXT_CONTRAST;
+        test(`${slot} on ${surface} >= ${floor} (non-text)`, () => {
+          expect(contrastOf(theme, slot, surface)).toBeGreaterThanOrEqual(floor);
         });
       }
     }

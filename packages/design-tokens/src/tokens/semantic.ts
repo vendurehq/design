@@ -29,9 +29,9 @@ export const lightTheme = {
   brand: brand[500],
   'brand-foreground': neutral[950],
   // Brand as a non-text accent: active navigation icons, the selected-item
-  // marker, link underlines. Holds 3:1 (WCAG 1.4.11) on every surface tier.
-  // Not for body text and not a fill for text.
-  'brand-indicator': 'oklch(0.63 0.128 231)',
+  // marker, link underlines. A chosen brand step: about 2.8:1 on the canvas
+  // and 3:1 on raised tiers. Not for body text and not a fill for text.
+  'brand-indicator': brand[600],
   // Intensity slots are foreground mixes so they hold on any ramp tier; the
   // percentages reproduce the previous absolute values on the default surface.
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
@@ -120,8 +120,8 @@ export const lightTheme = {
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
   'control-border': 'oklch(0.62 0.005 231)',
-  // Brand focus ring: the brand indicator blue, the v3 look's ring. It holds
-  // 3:1 on every light surface tier (the contrast test checks both slots).
+  // Brand focus ring: the brand indicator blue, the v3 look's ring. It follows
+  // `brand-indicator`, so it has the same ratios (the contrast test checks both slots).
   ring: 'var(--brand-indicator)',
   'chart-1': viz[1],
   'chart-2': viz[2],
@@ -164,7 +164,7 @@ export const darkTheme = {
   'primary-foreground': neutral[900],
   brand: brand[500],
   'brand-foreground': neutral[950],
-  'brand-indicator': brand[400],
+  'brand-indicator': brand[500],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
   // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.
