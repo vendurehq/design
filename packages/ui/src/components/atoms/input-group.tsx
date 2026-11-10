@@ -27,8 +27,11 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 // An inline addon starts 10px in, like the text of an Input. A button or kbd
 // in it keeps to its old spot nearer the edge: its own padding puts its
 // content about 10px in. Logical sides, so right-to-left mirrors it.
+// A kbd in an addon drops its own fill and uses the secondary text colour
+// and the input hairline, as the v3 look's search field does: its muted text
+// on its fill on the muted field fails the axe contrast check.
 const inputGroupAddonVariants = cva(
-  "text-muted-foreground h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4 flex cursor-text items-center justify-center select-none",
+  "text-muted-foreground **:data-[slot=kbd]:bg-transparent **:data-[slot=kbd]:text-foreground-secondary **:data-[slot=kbd]:inset-ring-input h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4 flex cursor-text items-center justify-center select-none",
   {
     variants: {
       align: {

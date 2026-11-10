@@ -7,6 +7,7 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from '../src/components/atoms/input-group.tsx';
+import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
 import { Search, Copy } from 'lucide-react';
 import { expect } from 'storybook/test';
 
@@ -46,6 +47,35 @@ export const WithButton: Story = {
   play: async ({ canvasElement }) => {
     await expect(insets(canvasElement, 'inline-end').end).toBe(4);
   },
+};
+
+/**
+ * A key hint in an addon has no fill of its own: its text and hairline sit
+ * straight on the field, so the text keeps its contrast in light and dark.
+ */
+export const WithKbd: Story = {
+  render: () => (
+    <div className="grid gap-4">
+      <InputGroup>
+        <InputGroupAddon align="inline-start">
+          <InputGroupText><Search /></InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput aria-label="Search" placeholder="Search..." />
+        <InputGroupAddon align="inline-end">
+          <Kbd>⌘K</Kbd>
+        </InputGroupAddon>
+      </InputGroup>
+      <InputGroup>
+        <InputGroupInput aria-label="Command" placeholder="Run a command..." />
+        <InputGroupAddon align="inline-end">
+          <KbdGroup>
+            <Kbd>Ctrl</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+        </InputGroupAddon>
+      </InputGroup>
+    </div>
+  ),
 };
 
 export const WithTextarea: Story = {
