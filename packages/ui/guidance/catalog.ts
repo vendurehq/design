@@ -378,11 +378,11 @@ export const uiGuidance = [
       },
       {
         title: 'The first column names the row',
-        body: 'Start the table with the column that names the row (title, name, key); a selection checkbox column may come before it. Put the status column directly after it, as appearance="text". Do not lead with a status, a badge or a count.',
+        body: 'Start the table with the column that names the row (title, name, key). Put the status column directly after it, as appearance="text". Do not lead with a status, a badge or a count.',
       },
       {
-        title: 'Nothing bordered at the edge of the table',
-        body: 'The first element in a row never has its own border: no chip, badge, bordered Button or bordered input against the table border. The selection checkbox is the one exception. Start with the name as plain text. This holds for a card or list inside a bordered container too.',
+        title: 'No chip or badge in the first or last column',
+        body: 'A chip or badge (Badge, StatusBadge chip, Chip) is never in the first or the last column of a table or list: it would sit against the edge of the list. Show the name as plain text first, and status as plain text after it. This holds for a card or list inside a bordered container too.',
       },
       {
         title: 'Do not use DataTable for static layout',
@@ -879,8 +879,8 @@ export const uiGuidance = [
         body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
       },
       {
-        title: 'Status comes after the name and never starts the row',
-        body: 'In a table or list the name comes first and the status directly after it. A chip, badge or other bordered element, except a selection checkbox, is never the first thing in a row of a bordered table, card or list: it would sit against the border of its container.',
+        title: 'Status comes after the name, never at an edge',
+        body: 'In a table or list the name comes first and the status directly after it, as plain text. A StatusBadge chip is never in the first or the last column: it would sit against the edge of the list.',
       },
       {
         title: 'The chip brings its own icon',
