@@ -207,8 +207,11 @@ export const NestedItemActive: Story = {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {nestedGroups.map((group) => (
-                <Collapsible key={group.title} defaultOpen={group.open} className="group/collapsible">
-                  <SidebarMenuItem>
+                <Collapsible
+                  key={group.title}
+                  defaultOpen={group.open}
+                  render={<SidebarMenuItem className="group/collapsible" />}
+                >
                     <CollapsibleTrigger
                       render={<SidebarMenuButton hasActiveChild={Boolean(group.activeChild)} />}
                     >
@@ -227,7 +230,6 @@ export const NestedItemActive: Story = {
                         ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  </SidebarMenuItem>
                 </Collapsible>
               ))}
             </SidebarMenu>
