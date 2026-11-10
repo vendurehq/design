@@ -214,6 +214,7 @@
   --ease-height: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-drawer-content: cubic-bezier(0.45, 1.005, 0, 1.005);
   --transition-duration-instant: 0ms;
   --transition-duration-fast: 100ms;
   --transition-duration-quick: 120ms;
@@ -246,6 +247,13 @@
   --transition-duration-toast-fade: 220ms;
   --transition-duration-toast-move: 320ms;
   --transition-duration-check-mark-delay: 15ms;
+  --transition-duration-dialog-scrim: 180ms;
+  --transition-duration-dialog-enter: 240ms;
+  --transition-duration-dialog-exit: 140ms;
+  --transition-duration-drawer-slide: 450ms;
+  --transition-duration-drawer-swipe: 400ms;
+  --transition-duration-alert-enter: 240ms;
+  --transition-duration-button-icon-turn: 220ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;
