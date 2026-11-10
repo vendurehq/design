@@ -277,7 +277,7 @@ export const Copying: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="Name what the chip copies when several chips share a surface: the tooltip and the button label both say Copy commit SHA."
+            caption="Name what the chip copies when several chips share a surface: the tooltip says Copy commit SHA, and the button name adds the shown value."
           >
             <IdChip value="9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9e0f" copyLabel="Copy commit SHA" />
             <IdChip value={ORDER_UUID} copyLabel="Copy order ID" />

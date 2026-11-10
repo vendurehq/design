@@ -535,11 +535,11 @@ export const uiGuidance = [
       },
       {
         title: 'Truncate visually, copy completely',
-        body: 'Choose truncation by identifier shape while keeping the full value available to copy. A shortened chip shows the full value in a DS Tooltip, never a native title.',
+        body: 'Choose truncation by identifier shape while keeping the full value available to copy. The tooltip of a copyable chip says only Copy, then Copied: the chip shows the start and end, and a click copies all of it. A shortened chip without copy shows the full value in a DS Tooltip, never a native title.',
       },
       {
         title: 'Name what the button copies',
-        body: 'Pass copyLabel (for example "Copy commit SHA") when several chips share a surface, and handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.',
+        body: 'Pass a short copyLabel (for example "Copy commit") when several chips share a surface. Leave the value out: the tooltip shows the label alone, and the copy button adds the shown text to its name. Handle a failed copy with onCopyError or a CopyFeedbackProvider. Do not rebuild the chip to change its label.',
       },
       {
         title: 'The whole chip copies',
