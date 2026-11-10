@@ -12,8 +12,10 @@ import { usePopupDir } from "../../lib/popup-direction.ts"
 const InTooltipProvider = React.createContext(false)
 
 /**
- * The `tooltip-delay` motion token, in ms. The ui source does not import the
- * tokens package at runtime; tooltip.test.ts keeps the two equal.
+ * The `tooltip-delay` motion token, in ms. A TooltipProvider and a
+ * TooltipTrigger without a provider both wait this long. The ui source does
+ * not import the tokens package at runtime; tooltip.test.ts keeps the two
+ * equal.
  */
 const TOOLTIP_DELAY = 600
 
@@ -44,15 +46,16 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
 
 /**
  * Inside a TooltipProvider it leaves `delay` unset, so the provider's delay
- * applies. Without a provider, Base UI would wait 600ms, so the trigger sets
- * `delay` to 0 itself and the tooltip opens at once.
+ * applies. Without a provider the delay is `tooltip-delay` (600ms) too, so a
+ * pointer that only passes over a trigger opens nothing. An explicit `delay`
+ * wins in both cases. A provider is what lets the next tooltips open at once.
  */
 function TooltipTrigger({ delay, ...props }: TooltipPrimitive.Trigger.Props) {
   const inProvider = React.useContext(InTooltipProvider)
   return (
     <TooltipPrimitive.Trigger
       data-slot="tooltip-trigger"
-      delay={delay ?? (inProvider ? undefined : 0)}
+      delay={delay ?? (inProvider ? undefined : TOOLTIP_DELAY)}
       {...props}
     />
   )
