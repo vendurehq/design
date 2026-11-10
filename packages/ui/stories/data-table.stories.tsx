@@ -760,7 +760,8 @@ export const PlainFrame: Story = {
 // distance from its box to its first letter, and the cell pulls it back by
 // that much. The Status chips' 27px inset reaches past the cell padding, so
 // that column indents its header and its plain "Draft" cell instead: no chip
-// leaves its cell, and in the first column no chip enters the card inset. The Hidden chip sits one wrapper deep, as in a tooltip
+// leaves its cell. The name comes first and the status directly after it, so
+// no chip sits against the card border. The Hidden chip sits one wrapper deep, as in a tooltip
 // trigger. The Channel column mixes a Badge with an icon and plain text. The
 // play function measures every column, row by row.
 interface Product {
@@ -778,6 +779,7 @@ const products: Product[] = [
 ];
 
 const alignmentColumns: ColumnDef<Product>[] = [
+  { accessorKey: 'name', header: 'Name' },
   {
     accessorKey: 'state',
     header: 'Status',
@@ -793,7 +795,6 @@ const alignmentColumns: ColumnDef<Product>[] = [
         <StatusBadge tone="success">Live</StatusBadge>
       ),
   },
-  { accessorKey: 'name', header: 'Name' },
   {
     accessorKey: 'channel',
     header: 'Channel',
