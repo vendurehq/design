@@ -14,10 +14,12 @@ import {
   getSortedRowModel,
   type OnChangeFn,
   type PaginationState,
+  type Row,
   type RowSelectionState,
   type SortingState,
   type TableOptions,
   type TableState,
+  type Table as TanStackTable,
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
@@ -112,6 +114,8 @@ function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'di
 // stay literal so Tailwind can scan them.
 const LINKED_ROW_CLASS = cn(
   'has-data-[slot=data-table-row-link]:relative has-data-[slot=data-table-row-link]:cursor-pointer',
+  // While rows are selected, a click selects: the row does not look like a link.
+  'in-data-selecting:cursor-default!',
   'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
   'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
@@ -155,7 +159,7 @@ function DataTableRowLink({
     props: mergeProps<'a'>(
       {
         className: cn(
-          'cursor-pointer font-medium text-foreground outline-none',
+          'cursor-pointer font-medium text-foreground outline-none in-data-selecting:cursor-default',
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
           className,
         ),
@@ -164,7 +168,7 @@ function DataTableRowLink({
             {children}
             <ListRowChevron
               data-slot="data-table-row-chevron"
-              className="pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2"
+              className="pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden"
             />
           </>
         ),
@@ -234,6 +238,46 @@ const bulkBandOpen = {
   exit: { height: 0 },
   transition: { duration: 0.2, ease: [0.25, 1, 0.5, 1] },
 } as const;
+
+// While rows are selected, a click on a row selects it instead of opening it.
+// These elements in a row keep their own click: the same list the linked row
+// lifts above its stretched link, plus the select checkbox and menu items. The
+// row link itself is not one of them: a click on it selects too.
+const ROW_CONTROL_SELECTOR =
+  'a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+
+/**
+ * Toggles a row from a click on it or on its checkbox. With `extend` (Shift),
+ * when the last clicked row is on this page, every row between the two takes
+ * the clicked row's new state. The clicked row becomes the next anchor.
+ */
+function selectFromClick<TData>(
+  table: TanStackTable<TData>,
+  row: Row<TData>,
+  extend: boolean,
+  anchor: React.MutableRefObject<string | null>,
+  value = !row.getIsSelected(),
+) {
+  const pageRows = table.getRowModel().rows;
+  const from =
+    extend && anchor.current != null ? pageRows.findIndex((r) => r.id === anchor.current) : -1;
+  const to = pageRows.findIndex((r) => r.id === row.id);
+  anchor.current = row.id;
+  if (from < 0 || to < 0) {
+    row.toggleSelected(value);
+    return;
+  }
+  const range = pageRows.slice(Math.min(from, to), Math.max(from, to) + 1);
+  table.setRowSelection((old) => {
+    const next = { ...old };
+    for (const r of range) {
+      if (!r.getCanSelect()) continue;
+      if (value) next[r.id] = true;
+      else delete next[r.id];
+    }
+    return next;
+  });
+}
 
 function ariaSort<TData>(
   hasSorting: boolean,
@@ -326,6 +370,8 @@ function DataTable<TData>({
   // a checkbox toggled from the keyboard loses focus. Consumers pass
   // `rowSelection`, `rowActions` and `labels` inline, so those identities
   // change on every selection change.
+  // The last row a click selected or deselected: the start of a Shift+click range.
+  const selectionAnchor = React.useRef<string | null>(null);
   const displayProps = React.useRef({ l, rowActions });
   displayProps.current = { l, rowActions };
   const hasRowSelection = rowSelection != null;
@@ -355,11 +401,19 @@ function DataTable<TData>({
               className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
             />
           ),
-          cell: ({ row }) => (
+          cell: ({ row, table }) => (
             <Checkbox
               checked={row.getIsSelected()}
               disabled={!row.getCanSelect()}
-              onCheckedChange={(checked) => row.toggleSelected(checked)}
+              onCheckedChange={(checked, details) =>
+                selectFromClick(
+                  table,
+                  row,
+                  Boolean((details.event as MouseEvent | KeyboardEvent | undefined)?.shiftKey),
+                  selectionAnchor,
+                  checked,
+                )
+              }
               aria-label={displayProps.current.l.selectRow(row.index)}
               className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
             />
@@ -568,10 +622,32 @@ function DataTable<TData>({
   // selectable table must not render an empty band. That band eases its
   // height open and closed (see `bulkBandOpen`), so the rows glide down and
   // back instead of jumping.
-  const showBulk =
-    rowSelection != null &&
-    bulkActions != null &&
-    getSelectedRowIds(table.getState().rowSelection).length > 0;
+  const selecting =
+    rowSelection != null && getSelectedRowIds(table.getState().rowSelection).length > 0;
+  const showBulk = selecting && bulkActions != null;
+
+  // While rows are selected, a plain click on a row (the stretched row link
+  // included) selects or deselects it and does not open the item: capture
+  // phase, so a router link never sees the click. Clicks that still open the
+  // item: the keyboard (Enter fires a click with detail 0), Cmd/Ctrl/Alt+click,
+  // and the middle button (auxclick). Row controls keep their own click, and a
+  // click inside a portal (an open row menu) is not the row's.
+  const onRowClickCapture = (row: Row<TData>) => (event: React.MouseEvent<HTMLElement>) => {
+    if (!selecting || !row.getCanSelect()) return;
+    if (event.button !== 0 || event.detail === 0) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target as Element;
+    if (!event.currentTarget.contains(target) || target.closest(ROW_CONTROL_SELECTOR)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectFromClick(table, row, event.shiftKey, selectionAnchor);
+  };
+  // Shift+press would also extend the page's text selection across the rows.
+  const onRowMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    if (selecting && event.shiftKey && !(event.target as Element).closest(ROW_CONTROL_SELECTOR)) {
+      event.preventDefault();
+    }
+  };
 
   const bulkOnlyBand = !showHeader && rowSelection != null && bulkActions != null;
 
@@ -668,7 +744,11 @@ function DataTable<TData>({
       )}
 
       <CardTable>
-        <Table ref={tableRef} className={ROW_CHEVRON_SLOT_CLASS}>
+        <Table
+          ref={tableRef}
+          className={ROW_CHEVRON_SLOT_CLASS}
+          data-selecting={selecting ? '' : undefined}
+        >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="group/header-row">
@@ -738,6 +818,8 @@ function DataTable<TData>({
                     <TableRow
                       className={cn('group/row', LINKED_ROW_CLASS)}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
+                      onClickCapture={onRowClickCapture(row)}
+                      onMouseDown={onRowMouseDown}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell

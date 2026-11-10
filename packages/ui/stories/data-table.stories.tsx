@@ -1415,3 +1415,138 @@ export const SelectionMotion: Story = {
     });
   },
 };
+
+/**
+ * While rows are selected, a click on a row selects it or deselects it and
+ * does not open the item, so many rows can be selected fast. Shift+click
+ * selects the range from the last clicked row. The name link still opens the
+ * item with the keyboard (Enter) and with Cmd/Ctrl+click or a middle click
+ * (new tab). Row controls keep their own action, and the row hides its
+ * chevron while rows are selected. With nothing selected, the row opens the
+ * item as before (the test runner checks that with a real mouse press).
+ */
+export const ClickSelectsWhileSelecting: Story = {
+  parameters: { pressRowText: { text: '$1,678.80', expectHash: '#/variants/2' } },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        rowActions={(variant) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreHorizontalIcon />
+                  <span className="sr-only">Open menu for {variant.name}</span>
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Duplicate</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    // One session, so a held Shift or Control applies to the next click.
+    const user = userEvent.setup();
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    // A plain cell of row n, hit-tested: the stretched link sits over it.
+    const cellHit = (n: number) => {
+      const cell = rowOf(n).querySelector('[data-column-id=price]') as Element;
+      return hitAt(cell);
+    };
+    clearHash();
+
+    await step('with nothing selected, a click on a row opens it', async () => {
+      await userEvent.click(cellHit(1));
+      await expect(location.hash).toBe('#/variants/1');
+      clearHash();
+    });
+
+    await step('while a row is selected, a click on another row selects it', async () => {
+      await userEvent.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      await userEvent.click(cellHit(2));
+      await waitFor(() => expect(checked(2)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('a second click on the row deselects it', async () => {
+      await userEvent.click(cellHit(2));
+      await waitFor(() => expect(checked(2)).toBe(false));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('Shift+click selects the range from the last clicked row', async () => {
+      await userEvent.click(cellHit(2));
+      await waitFor(() => expect(checked(2)).toBe(true));
+      await user.keyboard('{Shift>}');
+      await user.click(cellHit(4));
+      await user.keyboard('{/Shift}');
+      await waitFor(() => expect([checked(2), checked(3), checked(4)]).toEqual([true, true, true]));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the row hides its chevron while rows are selected', async () => {
+      const chevron = rowOf(1).querySelector('[data-slot=data-table-row-chevron]') as Element;
+      await expect(getComputedStyle(chevron).display).toBe('none');
+    });
+
+    await step('Cmd or Ctrl+click on the name still opens the link', async () => {
+      const link = rowOf(3).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+      let prevented: boolean | undefined;
+      // Read the outcome after React has handled the click, then stop the new tab.
+      const record = (event: MouseEvent) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      };
+      window.addEventListener('click', record, { once: true });
+      await user.keyboard('{Control>}');
+      await user.click(link);
+      await user.keyboard('{/Control}');
+      await expect(prevented).toBe(false);
+      await expect(checked(3)).toBe(true);
+    });
+
+    await step('Enter on the name still opens the item', async () => {
+      const link = rowOf(3).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+      link.focus();
+      await userEvent.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/variants/3');
+      await expect(checked(3)).toBe(true);
+      clearHash();
+    });
+
+    await step('row controls keep their own action', async () => {
+      const trigger = within(rowOf(1)).getByRole('button', { name: /^Open menu for/ });
+      await userEvent.click(trigger);
+      await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'));
+      await userEvent.click(await within(document.body).findByRole('menuitem', { name: 'Duplicate' }));
+      await expect(checked(1)).toBe(true);
+      await expect(location.hash).toBe('');
+    });
+
+    // Clear the selection, so the runner's real mouse press checks that a row
+    // opens again once nothing is selected.
+    await step('with the selection cleared, a click opens the row again', async () => {
+      // Every row is selected by now, so one click on "Select all" clears them.
+      const all = canvas.getByRole('checkbox', { name: 'Select all rows' });
+      await expect(all).toHaveAttribute('aria-checked', 'true');
+      await userEvent.click(all);
+      await waitFor(() => expect(all).toHaveAttribute('aria-checked', 'false'));
+      const chevron = rowOf(1).querySelector('[data-slot=data-table-row-chevron]') as Element;
+      await expect(getComputedStyle(chevron).display).not.toBe('none');
+    });
+  },
+};
