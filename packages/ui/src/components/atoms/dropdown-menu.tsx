@@ -19,23 +19,72 @@ function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
 }
 
+type MenuAlign = NonNullable<MenuPrimitive.Positioner.Props["align"]>
+
+/**
+ * The align that opens a menu toward the centre of the viewport: its edge
+ * lines up with the trigger's right edge for a trigger in the right half, and
+ * with its left edge in the left half. `start` and `end` are logical, and the
+ * positioner reads them in the popup's direction, so in a right-to-left page
+ * the two swap.
+ */
+function alignTowardCentre(trigger: Element, popup: Element): MenuAlign {
+  const box = trigger.getBoundingClientRect()
+  const inRightHalf = box.left + box.width / 2 > window.innerWidth / 2
+  const rtl = getComputedStyle(popup).direction === "rtl"
+  return inRightHalf !== rtl ? "end" : "start"
+}
+
+/** The trigger that opened this popup: it points at the popup with aria-controls. */
+function findTrigger(popup: HTMLElement): Element | null {
+  if (!popup.id) return null
+  const controls = `[aria-controls="${CSS.escape(popup.id)}"]`
+  return (
+    document.querySelector(`${controls}[data-popup-open]`) ??
+    document.querySelector(controls)
+  )
+}
+
+/**
+ * Without an `align`, the menu opens toward the centre of the viewport: a
+ * trigger in the right half lines the menu up with its right edge, so the menu
+ * grows to the left and stays on screen, and a trigger in the left half lines
+ * it up with its left edge. The side is picked each time the menu opens. A
+ * menu that opens to the left or right of its trigger keeps "start". An
+ * explicit `align` always wins.
+ */
 function DropdownMenuContent({
-  align = "start",
+  align,
   alignOffset = 0,
   side = "bottom",
   sideOffset = 6,
   className,
+  ref,
   ...props
 }: MenuPrimitive.Popup.Props &
   Pick<
     MenuPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
+  // Toward the centre is horizontal: a menu that opens to a side keeps "start".
+  const opensBelowOrAbove = side === "bottom" || side === "top"
+  const [autoAlign, setAutoAlign] = React.useState<MenuAlign>("start")
+  // Runs when the popup mounts, before the first paint, so the menu never
+  // shows on the wrong side first.
+  const popupRef = React.useCallback(
+    (popup: HTMLDivElement | null) => {
+      if (typeof ref === "function") ref(popup)
+      else if (ref) ref.current = popup
+      const trigger = !align && opensBelowOrAbove && popup && findTrigger(popup)
+      if (trigger) setAutoAlign(alignTowardCentre(trigger, popup))
+    },
+    [ref, align, opensBelowOrAbove]
+  )
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         className="isolate z-50 outline-none"
-        align={align}
+        align={align ?? (opensBelowOrAbove ? autoAlign : "start")}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
@@ -43,6 +92,7 @@ function DropdownMenuContent({
         {/* Opens with popupMotion, the motion every popup shares. */}
         {/* No w-(--anchor-width) here: pinning the popup to the trigger width makes wide items wrap — the popup sizes to its content, min-w-60 keeps the 240px floor of the v3 look */}
         <MenuPrimitive.Popup
+          ref={popupRef}
           data-slot="dropdown-menu-content"
           className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-60 overflow-x-hidden overflow-y-auto outline-none data-closed:overflow-hidden", popupMotion, className )}
           {...props}
