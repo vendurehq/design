@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
-import { duration } from "@vendure-io/design-tokens"
 
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
@@ -11,8 +10,11 @@ import { cn } from "@vendure-io/ui/lib/utils"
 /** True inside a TooltipProvider, whose delay then applies to each trigger. */
 const InTooltipProvider = React.createContext(false)
 
-/** The `tooltip-delay` token, in ms. */
-const TOOLTIP_DELAY = Number.parseFloat(duration.tooltipDelay)
+/**
+ * The `tooltip-delay` motion token, in ms. The ui source does not import the
+ * tokens package at runtime; tooltip.test.ts keeps the two equal.
+ */
+const TOOLTIP_DELAY = 600
 
 /**
  * Wrap the app in one TooltipProvider. The first tooltip then waits
