@@ -815,6 +815,12 @@ const alignmentColumns: ColumnDef<Product>[] = [
     cell: ({ row }) => <Badge variant="outline">{row.original.sku}</Badge>,
   },
   {
+    accessorKey: 'id',
+    header: 'ID',
+    enableSorting: false,
+    cell: ({ row }) => <IdChip value={row.original.id} />,
+  },
+  {
     id: 'variants',
     header: 'Variants',
     enableSorting: false,
@@ -823,12 +829,6 @@ const alignmentColumns: ColumnDef<Product>[] = [
         Edit variants
       </Button>
     ),
-  },
-  {
-    accessorKey: 'id',
-    header: 'ID',
-    enableSorting: false,
-    cell: ({ row }) => <IdChip value={row.original.id} />,
   },
 ];
 
@@ -1133,11 +1133,12 @@ interface AccessToken {
   id: string;
   name: string;
   token: string;
+  lastUsed: string;
 }
 
 const accessTokens: AccessToken[] = [
-  { id: 'ci', name: 'CI deploys', token: 'vc_pat_7JjK9mN2pQ4rS6tU8vW0xY1zA3bC5dE7' },
-  { id: 'staging', name: 'Staging sync', token: 'vc_pat_2bH4kL6nP8rT0vX3zB5dF7hJ9mQ1sU4wY6' },
+  { id: 'ci', name: 'CI deploys', token: 'vc_pat_7JjK9mN2pQ4rS6tU8vW0xY1zA3bC5dE7', lastUsed: 'Today' },
+  { id: 'staging', name: 'Staging sync', token: 'vc_pat_2bH4kL6nP8rT0vX3zB5dF7hJ9mQ1sU4wY6', lastUsed: 'Yesterday' },
 ];
 
 const accessTokenColumns: ColumnDef<AccessToken>[] = [
@@ -1159,6 +1160,7 @@ const accessTokenColumns: ColumnDef<AccessToken>[] = [
       />
     ),
   },
+  { accessorKey: 'lastUsed', header: 'Last used' },
 ];
 
 /**
