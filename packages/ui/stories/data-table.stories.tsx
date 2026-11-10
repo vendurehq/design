@@ -1391,7 +1391,7 @@ export const SelectionMotion: Story = {
       getComputedStyle(row, '::before').clipPath,
       getComputedStyle(row, '::after').clipPath,
     ];
-    const FULL = ['inset(0px 0px 50%)', 'inset(50% 0px 0px)'];
+    const FULL = ['inset(0px 0px calc(50% - 0.5px))', 'inset(calc(50% - 0.5px) 0px 0px)'];
 
     await step('selecting rows 2 and 4 opens the bulk band', async () => {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
@@ -1424,6 +1424,91 @@ export const SelectionMotion: Story = {
         // No selected neighbour: both halves start in the middle.
         expect(clips(alone as HTMLElement)).toEqual(['inset(50% 0px)', 'inset(50% 0px)']);
       });
+    });
+  },
+};
+
+// Body row heights for RowBarHeights: odd, even and fractional, as real rows
+// have (a thumbnail, a wrapped line, a zoomed page).
+const BAR_ROW_CONTENT_HEIGHTS = [24, 25, 23.5, 30, 24, 25, 24];
+
+// Resolves a computed clip-path inset edge (`50%`, `0px`, `calc(50% - 0.5px)`)
+// to pixels along a row of the given height.
+function insetEdgePx(edge: string, height: number) {
+  const calc = edge.match(/^calc\(([\d.]+)% ([+-]) ([\d.]+)px\)$/);
+  if (calc) {
+    const [, percent, sign, px] = calc;
+    return (height * Number(percent)) / 100 + (sign === '-' ? -1 : 1) * Number(px);
+  }
+  if (edge.endsWith('%')) return (height * Number.parseFloat(edge)) / 100;
+  return Number.parseFloat(edge);
+}
+
+/**
+ * The bar on a selected row is one unbroken line for every row height: odd,
+ * even and fractional, one row selected alone and several selected next to
+ * each other. The bar is drawn as two halves; where they meet they overlap
+ * by a pixel, so a row of an odd height has no lighter 1px notch in the
+ * middle. The test measures the overlap in pixels.
+ */
+export const RowBarHeights: Story = {
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({
+      '1': true,
+      '2': true,
+      '3': true,
+      '5': true,
+    });
+    const rows = orders.slice(0, BAR_ROW_CONTENT_HEIGHTS.length);
+    return (
+      <DataTable<Order>
+        rows={rows}
+        columns={[
+          { accessorKey: 'code', header: 'Order' },
+          {
+            accessorKey: 'customer',
+            header: 'Customer',
+            cell: ({ row }) => (
+              <div
+                className="flex items-center"
+                style={{ height: BAR_ROW_CONTENT_HEIGHTS[row.index] }}
+              >
+                {row.original.customer}
+              </div>
+            ),
+          },
+        ]}
+        getRowId={(order) => order.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const rows = [...canvasElement.querySelectorAll<HTMLElement>('tbody tr')];
+
+    await step('the rows have odd, even and fractional heights', async () => {
+      const heights = rows.map((row) => row.getBoundingClientRect().height);
+      await expect(heights.some((h) => Number.isInteger(h) && h % 2 === 1)).toBe(true);
+      await expect(heights.some((h) => Number.isInteger(h) && h % 2 === 0)).toBe(true);
+      await expect(heights.some((h) => !Number.isInteger(h))).toBe(true);
+    });
+
+    await step('on every selected row the two halves overlap by at least 1px', async () => {
+      for (const row of rows.filter((r) => r.dataset.state === 'selected')) {
+        const height = row.getBoundingClientRect().height;
+        const top = getComputedStyle(row, '::before').clipPath.match(/^inset\((.+)\)$/)?.[1];
+        const bottom = getComputedStyle(row, '::after').clipPath.match(/^inset\((.+)\)$/)?.[1];
+        // Computed form of `inset(a b c d)` drops repeated values: read the
+        // top edge of the bottom half and the bottom edge of the top half.
+        const edges = (inset: string) => {
+          const parts = inset.split(/ (?![^(]*\))/);
+          const [t = '0px', r = t, b = t] = parts;
+          return { top: t, bottom: b, right: r };
+        };
+        const topHalfEnd = height - insetEdgePx(edges(top ?? '').bottom, height);
+        const bottomHalfStart = insetEdgePx(edges(bottom ?? '').top, height);
+        await expect(topHalfEnd - bottomHalfStart).toBeGreaterThanOrEqual(1);
+      }
     });
   },
 };

@@ -99,8 +99,12 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 //   from the bottom, so they meet in the middle.
 // The selected clips are `!important` to beat the neighbour rules, whose
 // sibling selectors are more specific. A range selection grows all its bars
-// at once. Under reduced motion the bar is whole and only fades: the clip
-// jumps on select and waits for the fade on deselect.
+// at once. The selected halves overlap by 1px (each runs 0.5px past the middle):
+// on a row of an odd height the middle falls on a half pixel, and two edges
+// that each cover half of a pixel row blend to a lighter 1px notch. With the
+// overlap one half fully covers every pixel row, whatever the height. Under
+// reduced motion the bar is whole and only fades: the clip jumps on select and
+// waits for the fade on deselect.
 const selectedBar = [
   "before:pointer-events-none before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-brand-indicator",
   "after:pointer-events-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 after:bg-brand-indicator",
@@ -108,7 +112,7 @@ const selectedBar = [
   "[[data-state=selected]+&]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&]:after:[clip-path:inset(0_0_100%_0)]",
   "[&:has(+[data-state=selected])]:before:[clip-path:inset(100%_0_0_0)] [&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
   "[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
-  "data-[state=selected]:before:[clip-path:inset(0_0_50%_0)]! data-[state=selected]:after:[clip-path:inset(50%_0_0_0)]!",
+  "data-[state=selected]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]! data-[state=selected]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!",
   "before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)]",
   "motion-reduce:before:opacity-0 motion-reduce:after:opacity-0 motion-reduce:data-[state=selected]:before:opacity-100 motion-reduce:data-[state=selected]:after:opacity-100",
   "motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)] motion-reduce:after:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)]",

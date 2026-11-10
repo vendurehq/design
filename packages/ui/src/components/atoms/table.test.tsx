@@ -21,8 +21,8 @@ describe('TableRow selected state', () => {
         'data-[state=selected]:bg-muted',
         'before:bg-brand-indicator',
         'after:bg-brand-indicator',
-        'data-[state=selected]:before:[clip-path:inset(0_0_50%_0)]!',
-        'data-[state=selected]:after:[clip-path:inset(50%_0_0_0)]!',
+        'data-[state=selected]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]!',
+        'data-[state=selected]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!',
       ]),
     );
     // A box-shadow cannot grow from an edge; the bar is drawn by the pseudo-elements.
