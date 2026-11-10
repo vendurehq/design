@@ -5,6 +5,7 @@ import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
@@ -30,9 +31,11 @@ function PopoverContent({
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
+  const dir = usePopupDir()
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
+        dir={dir}
         align={align}
         alignOffset={alignOffset}
         side={side}

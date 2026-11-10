@@ -4,6 +4,7 @@ import { cva } from "class-variance-authority"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronDownIcon } from "lucide-react"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 function NavigationMenu({
   align = "start",
@@ -101,9 +102,11 @@ function NavigationMenuPositioner({
   alignOffset = 0,
   ...props
 }: NavigationMenuPrimitive.Positioner.Props) {
+  const dir = usePopupDir()
   return (
     <NavigationMenuPrimitive.Portal>
       <NavigationMenuPrimitive.Positioner
+        dir={dir}
         side={side}
         sideOffset={sideOffset}
         align={align}
