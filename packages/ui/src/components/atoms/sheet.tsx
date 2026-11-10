@@ -6,6 +6,7 @@ import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -46,10 +47,12 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  const dir = usePopupDir()
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Popup
+        dir={dir}
         data-slot="sheet-content"
         data-side={side}
         className={cn(
@@ -65,7 +68,7 @@ function SheetContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4"
+                className="absolute top-4 end-4"
                 size="icon-sm"
               />
             }
