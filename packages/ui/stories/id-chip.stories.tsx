@@ -74,7 +74,9 @@ export const CustomCopyLabel: Story = {
     copiedLabel: 'Commit SHA copied',
   },
   play: async ({ canvasElement }) => {
-    await userEvent.hover(within(canvasElement).getByRole('button', { name: 'Copy commit SHA 9f2c4e1' }));
+    // Focus opens the tooltip at once; a synthetic hover is not reliable in
+    // the production build.
+    within(canvasElement).getByRole('button', { name: 'Copy commit SHA 9f2c4e1' }).focus();
     let content: HTMLElement | null = null;
     await waitFor(() => {
       content = document.querySelector<HTMLElement>('[data-slot="tooltip-content"]');

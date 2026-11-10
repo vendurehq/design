@@ -21,9 +21,9 @@ describe('IdChip', () => {
       <IdChip value="a1b2c3d4e5f6a7b8c9d0" copyLabel="Copy commit SHA" onCopyError={() => {}} />,
     );
     expect(markup).toContain('aria-label="Copy commit SHA a1b2c3d4…c9d0"');
-    expect(html(<IdChip value="a1b2c3d4e5f6a7b8c9d0" display="a1b2c3d" copyLabel="Copy commit" />)).toContain(
-      'aria-label="Copy commit a1b2c3d"',
-    );
+    expect(
+      html(<IdChip value="a1b2c3d4e5f6a7b8c9d0" display="a1b2c3d" copyLabel="Copy commit" />),
+    ).toContain('aria-label="Copy commit a1b2c3d"');
   });
 
   test('copyable={false} renders no copy button', () => {
