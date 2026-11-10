@@ -1655,3 +1655,55 @@ export const ClickSelectsInAppShell: Story = {
     });
   },
 };
+
+/**
+ * The click area of a select checkbox is its whole cell: the full row height,
+ * from the table's start edge to where the next cell's content starts, for
+ * the row checkboxes and for select-all. The checkbox looks the same, and
+ * keyboard focus stays on it. Here the next cell is a thumbnail, as on a
+ * product list. The test runner presses each corner of the slot with a real
+ * mouse and expects each press to toggle the checkbox, never to open the row.
+ */
+export const SelectCellClickArea: Story = {
+  parameters: { pressSelectCell: { checkbox: 'Select row 2', header: 'Select all rows' } },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={productRowColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+    const area = (checkbox.closest('td') as HTMLElement).querySelector(
+      '[data-slot=data-table-select-area]',
+    ) as HTMLElement;
+
+    await step('the click area is not a tab stop', async () => {
+      await expect(area).toHaveAttribute('aria-hidden', 'true');
+      await expect(area.tabIndex).toBe(-1);
+    });
+
+    await step('a click on the area toggles the row, focus stays where it was', async () => {
+      await userEvent.click(area);
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+      await userEvent.click(area);
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('Space on the focused checkbox still toggles it', async () => {
+      checkbox.focus();
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
+      checkbox.blur();
+    });
+  },
+};

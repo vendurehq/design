@@ -143,6 +143,51 @@ async function pressSelectsRow(page: Page, press?: { text: string; expectChecked
 }
 
 /**
+ * `parameters.pressSelectCell` presses the four corners of a DataTable
+ * selection slot with a real mouse: the full row height, from the table's
+ * start edge to where the next cell's content starts. Each press must toggle
+ * the checkbox named `checkbox` and must not navigate. The slot of the header
+ * row is checked the same way when `header` names the select-all checkbox.
+ */
+async function pressSelectCell(page: Page, press?: { checkbox: string; header?: string }) {
+  if (!press) return;
+  const root = page.locator('#storybook-root');
+  for (const name of [press.checkbox, press.header].filter(Boolean) as string[]) {
+    const checkbox = root.getByRole('checkbox', { name, exact: true });
+    const slot = await checkbox.evaluate((box) => {
+      const cell = box.closest('td,th') as HTMLElement;
+      const next = cell.nextElementSibling as HTMLElement;
+      const row = cell.getBoundingClientRect();
+      const content = next.getBoundingClientRect().left + Number.parseFloat(getComputedStyle(next).paddingLeft);
+      const table = (cell.closest('table') as HTMLElement).getBoundingClientRect();
+      return { left: table.left, right: content, top: row.top, bottom: row.bottom };
+    });
+    const corners = [
+      [slot.left + 1, slot.top + 1],
+      [slot.right - 1, slot.top + 1],
+      [slot.right - 1, slot.bottom - 1],
+      [slot.left + 1, slot.bottom - 1],
+    ];
+    const url = page.url();
+    for (const [x, y] of corners) {
+      const before = await checkbox.getAttribute('aria-checked');
+      await page.mouse.click(x as number, y as number);
+      await page
+        .waitForFunction(
+          ([label, was]) =>
+            document.querySelector(`[role=checkbox][aria-label="${label}"]`)?.getAttribute('aria-checked') !== was,
+          [name, before] as const,
+          { timeout: 1000 },
+        )
+        .catch(() => {
+          throw new Error(`pressSelectCell: a press at (${Math.round(x as number)}, ${Math.round(y as number)}) did not toggle "${name}"`);
+        });
+      if (page.url() !== url) throw new Error(`pressSelectCell: the press navigated to ${page.url()}`);
+    }
+  }
+}
+
+/**
  * `parameters.pressOpen` presses a trigger's text with a real mouse, so the
  * browser counts the open as a pointer interaction. A play function's click
  * is synthetic and leaves `:focus-visible` matching. The opened overlay must
@@ -197,6 +242,7 @@ const config: TestRunnerConfig = {
     await pressText(page, storyContext.parameters?.pressText);
     await pressRowText(page, storyContext.parameters?.pressRowText);
     await pressSelectsRow(page, storyContext.parameters?.pressSelectsRow);
+    await pressSelectCell(page, storyContext.parameters?.pressSelectCell);
     await pressOpen(page, storyContext.parameters?.pressOpen);
 
     // Opt a story out via `parameters.a11y.skip` in its meta or story export.
