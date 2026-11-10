@@ -18,6 +18,9 @@ export const easing = {
   // The CSS `ease` curve: a light ease for small colour, opacity and blur
   // changes, and for quick exits.
   soft: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  // The content of a Drawer fading while a nested drawer opens over it: a
+  // near-linear start with a small overshoot at the end. Only Drawer uses it.
+  drawerContent: 'cubic-bezier(0.45, 1.005, 0, 1.005)',
 } as const;
 
 export const duration = {
@@ -80,6 +83,25 @@ export const duration = {
   // to grow, so the mark lands on a fill that is already there. Only
   // Checkbox uses it.
   checkMarkDelay: '15ms',
+  // Dialog and AlertDialog. The scrim fades in `dialogScrim`. The popup
+  // scales and moves in `dialogEnter` (its opacity uses `normal`). On exit,
+  // the scrim and the popup's scale and move take `dialogExit` (the popup's
+  // opacity uses `quick`). Only Dialog and AlertDialog use them.
+  dialogScrim: '180ms',
+  dialogEnter: '240ms',
+  dialogExit: '140ms',
+  // A Drawer slides, and its scrim fades, in `drawerSlide` with the
+  // `drawer` curve. `drawerSwipe` is the time a released swipe at full
+  // strength takes to finish: the Drawer scales it by the swipe strength.
+  // Only Drawer uses them.
+  drawerSlide: '450ms',
+  drawerSwipe: '400ms',
+  // An Alert that appears moves into place and fades in this time with the
+  // `out` curve. Only Alert uses it.
+  alertEnter: '240ms',
+  // The icon of a Button turns (a chevron on an expanded trigger) in this
+  // time with the `out` curve. Only Button uses it.
+  buttonIconTurn: '220ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a
