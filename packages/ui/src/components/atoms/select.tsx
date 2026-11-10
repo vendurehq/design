@@ -8,6 +8,7 @@ import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 const Select = SelectPrimitive.Root
 
@@ -94,9 +95,11 @@ function SelectContent({
     [children]
   )
 
+  const dir = usePopupDir()
   return (
     <SelectPrimitive.Portal key={childrenKey}>
       <SelectPrimitive.Positioner
+        dir={dir}
         side={side}
         sideOffset={sideOffset}
         align={align}

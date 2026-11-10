@@ -6,6 +6,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -80,9 +81,11 @@ function DropdownMenuContent({
     },
     [ref, align, opensBelowOrAbove]
   )
+  const dir = usePopupDir()
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
+        dir={dir}
         className="isolate z-50 outline-none"
         align={align ?? (opensBelowOrAbove ? autoAlign : "start")}
         alignOffset={alignOffset}

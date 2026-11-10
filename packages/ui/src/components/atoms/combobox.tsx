@@ -14,6 +14,7 @@ import {
   InputGroupInput,
 } from "@vendure-io/ui/components/atoms/input-group"
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 const Combobox = ComboboxPrimitive.Root
 
@@ -135,9 +136,11 @@ function ComboboxContent({
     ComboboxPrimitive.Positioner.Props,
     "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
   >) {
+  const dir = usePopupDir()
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
+        dir={dir}
         side={side}
         sideOffset={sideOffset}
         align={align}

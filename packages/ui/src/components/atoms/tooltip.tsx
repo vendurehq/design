@@ -6,6 +6,7 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
 import { cn } from "@vendure-io/ui/lib/utils"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 /** True inside a TooltipProvider, whose delay then applies to each trigger. */
 const InTooltipProvider = React.createContext(false)
@@ -70,9 +71,11 @@ function TooltipContent({
     TooltipPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
+  const dir = usePopupDir()
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner
+        dir={dir}
         align={align}
         alignOffset={alignOffset}
         side={side}

@@ -19,6 +19,7 @@
     "./components/molecules/data-table/data-table-helpers": null,
     "./components/molecules/direction-link": null,
     "./lib/*": "./src/lib/*.ts",
+    "./lib/popup-direction": null,
     "./lib/popup-motion": null,
     "./hooks/*": "./src/hooks/*.ts",
     "./hooks/use-active-label-size": null

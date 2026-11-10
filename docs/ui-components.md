@@ -38,6 +38,25 @@ import { cn } from "@vendure-io/ui/lib/utils";
 import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile";
 ```
 
+## Right-to-left
+
+Switch a page to right-to-left in two places:
+
+1. Set `dir="rtl"` on `<html>`, or on the element that wraps the right-to-left region. The page's own layout and the `rtl:` variants follow it.
+2. Wrap the same region in `DirectionProvider` from `@vendure-io/ui/components/atoms/direction`. Keyboard navigation, popup sides and `start`/`end` alignment follow it.
+
+```tsx
+import { DirectionProvider } from "@vendure-io/ui/components/atoms/direction";
+
+document.documentElement.setAttribute("dir", "rtl");
+
+<DirectionProvider direction="rtl">
+  <App />
+</DirectionProvider>;
+```
+
+Popups (menus, selects, popovers, tooltips, comboboxes, hover cards) render in a portal at the end of the body. Inside a `DirectionProvider` they take the provider's direction, also when the document has another one. Use this provider, not the one from `@base-ui/react`: only this one passes the direction to the portalled popups.
+
 ## Available Components
 
 Components are split by provenance: atoms track a shadcn upstream; molecules are
