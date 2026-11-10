@@ -142,8 +142,8 @@ export const ToneIcons: Story = {
 };
 
 /**
- * One edge: the overlay shadow's outer ring and a 1px inset hairline, with no
- * border between them. The icon sits 14px in and 10px from the text. A plain
+ * One edge: the overlay shadow's 1px edge, with no border and no inset
+ * hairline next to it. The icon sits 14px in and 10px from the text. A plain
  * toast draws the icon you pass in the foreground colour at 60%.
  */
 export const Edge: Story = {
