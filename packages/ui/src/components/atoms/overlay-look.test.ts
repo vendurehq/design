@@ -95,6 +95,15 @@ describe('v3 overlay look', () => {
     }
   });
 
+  test('a Select list over its trigger takes the popup motion, with no slide and the origin on the selected label', () => {
+    const code = source('select.tsx');
+    expect(code).not.toContain('transition-none');
+    // No side, so no 2px slide, only for side none.
+    expect(code).toContain('motion-safe:data-[side=none]:data-starting-style:translate-y-0');
+    expect(code).toContain('motion-safe:data-[side=none]:data-ending-style:translate-y-0');
+    expect(code).toContain('originOnSelectedLabel');
+  });
+
   test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
     for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx', 'navigation-menu.tsx']) {
       expect(source(file)).toContain('rounded-xl');
