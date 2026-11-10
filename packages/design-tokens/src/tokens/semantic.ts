@@ -21,9 +21,9 @@ export const lightTheme = {
   // such as the command palette.
   'scrim-subtle': 'color-mix(in oklab, black 18%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
-  'card-foreground': 'oklch(0.173 0.011 231)',
+  'card-foreground': 'var(--foreground)',
   popover: 'var(--overlay)',
-  'popover-foreground': 'oklch(0.173 0.011 231)',
+  'popover-foreground': 'var(--foreground)',
   primary: neutral[900],
   'primary-foreground': neutral[50],
   brand: brand[500],
@@ -48,7 +48,7 @@ export const lightTheme = {
   accent: 'color-mix(in oklab, var(--foreground) 8.5%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
-  'destructive-foreground': 'oklch(0.98 0.01 25)',
+  'destructive-foreground': destructive[50],
   // The subtle tier: `{tone}-subtle` fills, `{tone}-subtle-foreground` text
   // and `{tone}-border` outlines. Alert and StatusBadge are not subtle (they
   // mix their tone into the surface), so no ui component draws a status
@@ -59,7 +59,7 @@ export const lightTheme = {
   'destructive-subtle-foreground': destructive[900],
   'destructive-border': destructive[200],
   success: success[600],
-  'success-foreground': 'oklch(0.98 0.01 145)',
+  'success-foreground': success[50],
   'success-subtle': success[100],
   'success-subtle-foreground': success[900],
   'success-border': success[200],
@@ -69,7 +69,7 @@ export const lightTheme = {
   'warning-subtle-foreground': warning[900],
   'warning-border': warning[200],
   info: info[600],
-  'info-foreground': 'oklch(0.98 0.01 250)',
+  'info-foreground': info[50],
   'info-subtle': info[100],
   'info-subtle-foreground': info[900],
   'info-border': info[200],
@@ -114,8 +114,8 @@ export const lightTheme = {
   'code-inline-border': 'var(--border)',
   // Hairline divider between peers. `input` is the stronger edge of text
   // inputs and other controls that need a visible outline.
-  border: 'oklch(0.929 0.006 231)',
-  input: 'oklch(0.882 0.009 231)',
+  border: neutral[100],
+  input: neutral[200],
   // Boundary of controls that have no other visible edge: unchecked
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
@@ -134,7 +134,7 @@ export const lightTheme = {
   'sidebar-foreground': 'var(--foreground-secondary)',
   'sidebar-primary': neutral[900],
   'sidebar-primary-foreground': neutral[50],
-  'sidebar-accent': 'oklch(0.935 0.004 231)',
+  'sidebar-accent': neutral[100],
   'sidebar-accent-foreground': 'var(--foreground)',
   'sidebar-border': 'var(--border)',
   'sidebar-ring': 'var(--brand-indicator)',
@@ -143,7 +143,7 @@ export const lightTheme = {
 export const darkTheme = {
   // The canvas is lifted off black so the raised and overlay tiers can step
   // up in even increments above it.
-  background: 'oklch(0.205 0.01 231)',
+  background: neutral[900],
   foreground: 'oklch(0.956 0.005 231)',
   'foreground-secondary': 'oklch(0.838 0.01 231)',
   // Dark mode expresses the page tiers through lightness. `surface` sits
@@ -157,9 +157,9 @@ export const darkTheme = {
   scrim: 'color-mix(in oklab, black 45%, transparent)',
   'scrim-subtle': 'color-mix(in oklab, black 42%, transparent)',
   card: 'var(--surface-raised)', // raised tier: lifts cards off a --surface content pane
-  'card-foreground': 'oklch(0.956 0.005 231)',
+  'card-foreground': 'var(--foreground)',
   popover: 'var(--overlay)',
-  'popover-foreground': 'oklch(0.956 0.005 231)',
+  'popover-foreground': 'var(--foreground)',
   primary: neutral[100],
   'primary-foreground': neutral[900],
   brand: brand[500],
@@ -185,7 +185,7 @@ export const darkTheme = {
   'destructive-subtle-foreground': destructive[300],
   'destructive-border': destructive[800],
   success: success[600],
-  'success-foreground': 'oklch(0.98 0.01 145)',
+  'success-foreground': success[50],
   'success-subtle': `color-mix(in oklab, ${success[900]} 40%, transparent)`,
   'success-subtle-foreground': success[300],
   'success-border': success[800],
@@ -195,7 +195,7 @@ export const darkTheme = {
   'warning-subtle-foreground': warning[300],
   'warning-border': warning[800],
   info: info[600],
-  'info-foreground': 'oklch(0.98 0.01 250)',
+  'info-foreground': info[50],
   'info-subtle': `color-mix(in oklab, ${info[900]} 40%, transparent)`,
   'info-subtle-foreground': info[300],
   'info-border': info[800],
@@ -206,7 +206,7 @@ export const darkTheme = {
   'success-text': 'oklch(0.794 0.175 156)',
   'warning-text': 'oklch(0.845 0.147 79)',
   'destructive-text': 'oklch(0.713 0.181 20)',
-  'info-text': 'oklch(0.8 0.125 231)',
+  'info-text': brand[400],
   // Dark `warning-text` is already bright enough for a mark, and holds 3:1.
   'warning-indicator': 'var(--warning-text)',
   // Brighter than dark `muted-foreground` (0.715), so a neutral chip sits
@@ -242,7 +242,7 @@ export const darkTheme = {
   'sidebar-foreground': 'var(--foreground-secondary)',
   'sidebar-primary': neutral[100],
   'sidebar-primary-foreground': neutral[900],
-  'sidebar-accent': 'oklch(0.27 0.014 231)',
+  'sidebar-accent': neutral[800],
   'sidebar-accent-foreground': 'var(--foreground)',
   'sidebar-border': 'var(--border)',
   'sidebar-ring': brand[500],
