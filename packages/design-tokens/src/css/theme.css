@@ -244,6 +244,7 @@
   --transition-duration-toast-exit-move: 180ms;
   --transition-duration-toast-fade: 220ms;
   --transition-duration-toast-move: 320ms;
+  --transition-duration-check-mark-delay: 15ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;

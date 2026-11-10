@@ -49,6 +49,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'toast-exit-move',
             'toast-fade',
             'toast-move',
+            'check-mark-delay',
           ],
         },
       ],
