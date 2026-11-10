@@ -5,6 +5,7 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
@@ -45,10 +46,12 @@ function AlertDialogContent({
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm"
 }) {
+  const dir = usePopupDir()
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Popup
+        dir={dir}
         data-slot="alert-dialog-content"
         data-size={size}
         className={cn(

@@ -57,6 +57,8 @@ document.documentElement.setAttribute("dir", "rtl");
 
 Popups (menus, selects, popovers, tooltips, comboboxes, hover cards) render in a portal at the end of the body. Inside a `DirectionProvider` they take the provider's direction, also when the document has another one. Use this provider, not the one from `@base-ui/react`: only this one passes the direction to the portalled popups.
 
+Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet or Drawer keeps the side you give it (`side="right"`, `swipeDirection`): the sides are physical and do not mirror in right-to-left. Pick the side for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
+
 ## Available Components
 
 Components are split by provenance: atoms track a shadcn upstream; molecules are

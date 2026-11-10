@@ -1,12 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../src/components/atoms/alert-dialog.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from '../src/components/atoms/combobox.tsx';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
 import { DirectionProvider, useDirection } from '../src/components/atoms/direction.tsx';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../src/components/atoms/dialog.tsx';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../src/components/atoms/dropdown-menu.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/atoms/hover-card.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '../src/components/atoms/popover.tsx';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../src/components/atoms/select.tsx';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 
@@ -194,5 +198,80 @@ export const PopupsFollowTheProvider: Story = {
     await userEvent.click(centre);
     await expectRtl(await popupOf('dropdown-menu-content'), centre, 'left');
     await close('dropdown-menu-content');
+  },
+};
+
+/**
+ * Dialogs, sheets and drawers render in a portal at the end of the body, outside
+ * the provider's element. They still take the provider's direction, so their text
+ * reads right to left. This holds when the document itself is left to right, as
+ * on this page. A sheet and a drawer keep their `side`: it is physical.
+ */
+export const ModalsFollowTheProvider: Story = {
+  render: () => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl" className="flex flex-wrap gap-3">
+        <Dialog>
+          <DialogTrigger render={<Button variant="outline" />}>Dialog</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Dialog title</DialogTitle>
+              <DialogDescription>Dialog description</DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+        <AlertDialog>
+          <AlertDialogTrigger render={<Button variant="outline" />}>Alert dialog</AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Alert title</AlertDialogTitle>
+              <AlertDialogDescription>Alert description</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <Sheet>
+          <SheetTrigger render={<Button variant="outline" />}>Sheet</SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Sheet title</SheetTitle>
+              <SheetDescription>Sheet description</SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
+        <Drawer swipeDirection="right">
+          <DrawerTrigger render={<Button variant="outline" />}>Drawer</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Drawer title</DrawerTitle>
+              <DrawerDescription>Drawer description</DrawerDescription>
+            </DrawerHeader>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </DirectionProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(getComputedStyle(document.documentElement).direction).toBe('ltr');
+    const canvas = within(canvasElement);
+    const surfaces = [
+      { trigger: 'Dialog', slot: 'dialog-content' },
+      { trigger: 'Alert dialog', slot: 'alert-dialog-content' },
+      { trigger: 'Sheet', slot: 'sheet-content' },
+      { trigger: 'Drawer', slot: 'drawer-popup' },
+    ];
+    for (const { trigger, slot } of surfaces) {
+      await userEvent.click(canvas.getByRole('button', { name: trigger }));
+      const surface = await waitFor(() => {
+        const found = document.querySelector<HTMLElement>(`[data-slot="${slot}"][data-open]`);
+        expect(found).not.toBeNull();
+        return found as HTMLElement;
+      });
+      await expect(getComputedStyle(surface).direction).toBe('rtl');
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(document.querySelector(`[data-slot="${slot}"]`)).toBeNull());
+    }
   },
 };

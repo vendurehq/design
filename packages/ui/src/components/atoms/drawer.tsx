@@ -4,6 +4,7 @@ import * as React from "react"
 import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 
 // Follows the shadcn base-vega Base UI drawer (upstream replaced vaul, which
 // depends on Radix). Divergences: the scrim and surface use the scrim and
@@ -111,6 +112,7 @@ function DrawerContent({
   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer()
   const swipeAxis =
     swipeDirection === "down" || swipeDirection === "up" ? "y" : "x"
+  const dir = usePopupDir()
 
   return (
     <DrawerPortal data-slot="drawer-portal">
@@ -123,6 +125,7 @@ function DrawerContent({
         className="pointer-events-none fixed inset-0 z-50 select-none data-[modal=true]:pointer-events-auto"
       >
         <DrawerPrimitive.Popup
+          dir={dir}
           data-slot="drawer-popup"
           data-swipe-axis={swipeAxis}
           data-snap-points={hasSnapPoints ? "" : undefined}
