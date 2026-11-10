@@ -142,9 +142,7 @@ describe('CollapsibleSection', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Pending refunds" />);
     const trigger = slotTag(html, 'collapsible-section-trigger');
     const chevron = tagTokens(html.match(/<svg[^>]*>/)?.[0] ?? '');
-    expect(tagTokens(trigger)).toEqual(
-      expect.arrayContaining(['duration-fast', 'ease-default']),
-    );
+    expect(tagTokens(trigger)).toEqual(expect.arrayContaining(['duration-fast', 'ease-default']));
     // One transition list: the turn on the height curve, colour and opacity
     // on the fill's timing.
     expect(chevron).toContain(
@@ -162,8 +160,6 @@ describe('CollapsibleSection', () => {
     expect(chevron).toContain(
       '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
     );
-    expect(slotTokens(html, 'collapsible-section-panel')).toContain(
-      'motion-safe:ease-height',
-    );
+    expect(slotTokens(html, 'collapsible-section-panel')).toContain('motion-safe:ease-height');
   });
 });
