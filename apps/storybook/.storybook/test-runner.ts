@@ -25,9 +25,19 @@ async function pressText(page: Page, presses?: TextPress | TextPress[]) {
 
 async function pressOneText(page: Page, press: TextPress) {
   // A tooltip from the last press can cover this text. Move the pointer away
-  // first, as a user would, and wait for every tooltip to close.
+  // first, as a user would, and wait for every tooltip to close. A tooltip
+  // that a play function opened with a synthetic hover never closes: the real
+  // pointer never entered its trigger, so it cannot leave it.
   await page.mouse.move(0, 0);
-  await page.locator('[data-slot=tooltip-content]').first().waitFor({ state: 'detached' });
+  await page
+    .locator('[data-slot=tooltip-content]')
+    .first()
+    .waitFor({ state: 'detached', timeout: 2000 })
+    .catch(() => {
+      throw new Error(
+        `pressText: a tooltip is still open before pressing "${press.text}". If the play function clicks or hovers a tooltip trigger, end with userEvent.unhover on it.`,
+      );
+    });
   const root = page.locator('#storybook-root');
   const box = await root.getByText(press.text, { exact: true }).boundingBox();
   if (!box) throw new Error(`pressText: "${press.text}" is not visible`);
