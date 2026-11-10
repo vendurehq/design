@@ -1562,3 +1562,96 @@ export const ClickSelectsWhileSelecting: Story = {
     });
   },
 };
+
+// A square product thumbnail, as a list's featured asset cell shows it. Inline,
+// so the story loads no image.
+const THUMBNAIL =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Crect width='50' height='50' fill='%23d4d4d8'/%3E%3C/svg%3E";
+
+const productRowColumns: ColumnDef<Variant>[] = [
+  {
+    id: 'featuredAsset',
+    header: () => <span className="sr-only">Featured asset</span>,
+    cell: () => <img alt="" src={THUMBNAIL} width={50} height={50} className="rounded-sm" />,
+  },
+  variantColumns[0] as ColumnDef<Variant>,
+  variantColumns[1] as ColumnDef<Variant>,
+  variantColumns[2] as ColumnDef<Variant>,
+];
+
+/**
+ * A product list inside an app shell, built as the Vendure Dashboard builds
+ * it: a thumbnail cell, the name as the row link, a copy chip and a row menu,
+ * in a `<main tabindex="-1">` (the skip link target). While a row is selected,
+ * a click on the thumbnail, the name or a plain cell selects the row and does
+ * not open it; the copy chip and the row menu keep their own action. The test
+ * runner presses the name of row 2 with a real mouse and expects it selected.
+ */
+export const ClickSelectsInAppShell: Story = {
+  parameters: { pressSelectsRow: { text: 'Laptop 15 inch 8GB', expectChecked: 'Select row 2' } },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({ '1': true });
+    return (
+      <main tabIndex={-1} className="outline-none">
+        <DataTable<Variant>
+          rows={variants}
+          columns={productRowColumns}
+          getRowId={(variant) => variant.id}
+          rowSelection={{ value: selection, onChange: setSelection }}
+          rowActions={(variant) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <MoreHorizontalIcon />
+                    <span className="sr-only">Open menu for {variant.name}</span>
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Duplicate</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
+      </main>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    const cellHit = (n: number, column: string) =>
+      hitAt(rowOf(n).querySelector(`[data-column-id=${column}]`) as Element);
+    clearHash();
+    await expect(checked(1)).toBe(true);
+
+    for (const column of ['featuredAsset', 'name', 'enabled']) {
+      await step(`a click on the ${column} cell selects the row, a second click deselects it`, async () => {
+        await userEvent.click(cellHit(3, column));
+        await waitFor(() => expect(checked(3)).toBe(true));
+        await expect(location.hash).toBe('');
+        await userEvent.click(cellHit(3, column));
+        await waitFor(() => expect(checked(3)).toBe(false));
+        await expect(location.hash).toBe('');
+      });
+    }
+
+    await step('the copy chip copies and does not select', async () => {
+      await clickCopyChip(within(rowOf(4)).getByRole('button', { name: 'Copy SKU 834444' }));
+      await expect(checked(4)).toBe(false);
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the row menu opens and does not select', async () => {
+      const trigger = within(rowOf(4)).getByRole('button', { name: /^Open menu for/ });
+      await userEvent.click(trigger);
+      await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'));
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
+      await expect(checked(4)).toBe(false);
+    });
+  },
+};
