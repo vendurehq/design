@@ -92,9 +92,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
             // Sonner's own stylesheet is unlayered, so the overlay shadow and
             // the type need ! to win over it.
             // 44px high, 10px 14px padding, 13px medium text, a 10px gap. The
-            // overlay shadow plus a hairline. The toast has no border: Sonner's
-            // 1px border sits between the shadow's outer ring and the inset
-            // hairline, and its gap made the edge read as two lines. A new toast fades in from 12px
+            // overlay shadow gives the edge and the ring. The toast has no
+            // border and no inset hairline: either would sit next to the
+            // shadow's 1px edge and read as a second line. A new toast fades in from 12px
             // below; a leaving one drops 6px at 0.97. The entry has no scale:
             // Sonner measures the toast's height on mount, and a scaled toast
             // would shorten every step of the stack. Positions move in toast-move (320ms)
@@ -103,7 +103,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             // motion keeps the fades only.
             toast: cn(
               "cn-toast font-sans! min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!",
-              "border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!",
+              "border-0! shadow-overlay!",
               "[transition:transform_var(--transition-duration-toast-move)_var(--ease-drawer),opacity_var(--transition-duration-toast-fade)_var(--ease-soft),height_var(--transition-duration-toast-move)_var(--ease-height)]!",
               "data-[mounted=false]:[--y:translateY(calc(var(--lift)*-12px))]!",
               "data-[mounted=true]:data-[expanded=true]:[--y:translateY(calc(var(--lift)*var(--offset)))_scale(calc(1-var(--index)*0.03))]!",

@@ -163,8 +163,8 @@
   --sidebar-border: var(--border);
   --sidebar-ring: var(--brand-indicator);
   --shadow-overlay:
-    0 0 0 1px oklch(0.173 0.011 231 / 0.06), 0 12px 32px -8px oklch(0.173 0.011 231 / 0.18),
-    0 4px 8px -4px oklch(0.173 0.011 231 / 0.08);
+    0 0 0 1px oklch(0.173 0.011 231 / 0.12), 0 0 0 5px oklch(0.173 0.011 231 / 0.055),
+    0 12px 32px -8px oklch(0.173 0.011 231 / 0.18), 0 4px 8px -4px oklch(0.173 0.011 231 / 0.08);
   --shadow-control: 0 1px 0 oklch(0.173 0.011 231 / 0.04), 0 1px 2px oklch(0.173 0.011 231 / 0.04);
 }
 
@@ -249,6 +249,8 @@
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: oklch(0.76 0.15 231);
-  --shadow-overlay: 0 0 0 1px oklch(1 0 0 / 0.08), 0 16px 40px -8px oklch(0 0 0 / 0.6);
+  --shadow-overlay:
+    0 0 0 1px oklch(1 0 0 / 0.12), 0 0 0 5px oklch(1 0 0 / 0.04),
+    0 16px 40px -8px oklch(0 0 0 / 0.6);
   --shadow-control: 0 1px 0 oklch(0 0 0 / 0.2);
 }
