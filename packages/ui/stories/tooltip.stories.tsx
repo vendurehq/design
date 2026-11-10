@@ -54,10 +54,11 @@ export const Sides: Story = {
 };
 
 /**
- * Moving from one trigger to the next. The second tooltip opens while the
- * first is still showing, and it still fades and scales in from its trigger,
- * as every tooltip does. Only a dismissed tooltip (Escape, an outside press)
- * leaves at once.
+ * Moving from one trigger to the next, inside a TooltipProvider. The first
+ * tooltip waits `tooltip-delay` (400ms), so a pointer that only passes over a
+ * trigger opens nothing. Once a tooltip is open, the next one opens at once
+ * and shows in full in its first frame: Base UI marks it `data-instant`, and
+ * an instant tooltip does not animate.
  */
 export const FromTriggerToTrigger: Story = {
   render: () => (
@@ -75,33 +76,35 @@ export const FromTriggerToTrigger: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const body = within(document.body);
-    // A production build can run the play before the trigger listens; hover until it opens.
-    await waitFor(async () => {
-      await userEvent.hover(canvas.getByRole('button', { name: 'First' }));
-      await expect(body.getByText('First tooltip')).toBeInTheDocument();
-    });
-    await userEvent.unhover(canvas.getByRole('button', { name: 'First' }));
+    const first = canvas.getByRole('button', { name: 'First' });
+    // A production build can run the play before the trigger listens, so a
+    // hover that opens nothing is retried. Each try leaves the trigger first,
+    // which cancels a pending open.
+    let waited = 0;
+    await waitFor(
+      async () => {
+        await userEvent.unhover(first);
+        const start = performance.now();
+        await userEvent.hover(first);
+        await body.findByText('First tooltip', {}, { timeout: 1000 });
+        waited = performance.now() - start;
+      },
+      { timeout: 5000 },
+    );
+    // The first tooltip waits for the delay.
+    await expect(waited).toBeGreaterThanOrEqual(350);
+    await userEvent.unhover(first);
     await userEvent.hover(canvas.getByRole('button', { name: 'Second' }));
-    // Base UI marks this open as instant ("delay"); it still transitions.
-    // `data-instant` changes again when the group's instant phase ends, so the
-    // attribute and the transition it selects are read in the same tick, and
-    // the read is retried until the popup is open.
-    await waitFor(() => {
-      const popup = body
-        .getByText('Second tooltip')
-        .closest<HTMLElement>('[data-slot=tooltip-content]');
-      const instant = popup?.getAttribute('data-instant');
-      const style = popup ? getComputedStyle(popup) : undefined;
-      expect({
-        instant,
-        transitionProperty: style?.transitionProperty,
-        transitionDuration: style?.transitionDuration,
-      }).toEqual({
-        instant: 'delay',
-        transitionProperty: expect.stringContaining('opacity'),
-        transitionDuration: expect.not.stringMatching(/^0s(, 0s)*$/),
-      });
-    });
+    // The next one opens at once, marked instant ("delay"), with no
+    // transition: it is fully visible in its first frame.
+    const popup = (await body.findByText('Second tooltip', {}, { timeout: 200 })).closest<HTMLElement>(
+      '[data-slot=tooltip-content]',
+    ) as HTMLElement;
+    const style = getComputedStyle(popup);
+    await expect(popup.getAttribute('data-instant')).toBe('delay');
+    await expect(style.transitionDuration).toMatch(/^0s(, 0s)*$/);
+    await expect(style.opacity).toBe('1');
+    // Nothing lingers: it closes when the pointer leaves.
     await userEvent.unhover(canvas.getByRole('button', { name: 'Second' }));
     await waitFor(() => expect(body.queryByText('Second tooltip')).toBeNull());
   },

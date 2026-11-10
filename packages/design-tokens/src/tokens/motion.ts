@@ -44,6 +44,10 @@ export const duration = {
   // The tooltip opens on its own beat, a touch quicker than `moderate`.
   // It leaves in `fast`. Only TooltipContent uses it.
   tooltipEnter: '125ms',
+  // A TooltipProvider waits this long before it opens the first tooltip, so a
+  // pointer that only passes over a trigger opens nothing. Once a tooltip is
+  // open, the next one opens at once. Only TooltipProvider uses it.
+  tooltipDelay: '400ms',
   // A tooltip label that changes in place (Copy → Copied): the labels fade
   // and blur in `tooltipLabelFade`, slide in `tooltipLabelMove`, and the
   // bubble eases to the new width in `tooltipResize`.

@@ -378,5 +378,6 @@ Related decisions: `data-table`, `list-header`.
 A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.
 
 - **A short hint, at most 320px:** A tooltip is a short hint or a label, never wider than 320px. Nothing widens it: a max-w class on TooltipContent is dropped. It holds no values to read in full, no paragraphs and no controls, because nobody can select or click inside it. Put longer content on the page or in a Popover.
+- **One TooltipProvider for the app:** Wrap the app in one TooltipProvider. The first tooltip then waits 400ms, so a pointer passing over a trigger opens nothing, and once a tooltip is open the next ones open at once with no animation. Do not set a delay per tooltip. Without a provider a tooltip opens at once.
 
 Related decisions: `id-chip`, `status-badge`.

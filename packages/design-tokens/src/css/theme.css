@@ -232,6 +232,7 @@
   --transition-duration-palette-detail-move: 220ms;
   --transition-duration-palette-result-blur: 240ms;
   --transition-duration-tooltip-enter: 125ms;
+  --transition-duration-tooltip-delay: 400ms;
   --transition-duration-tooltip-label-fade: 180ms;
   --transition-duration-tooltip-label-move: 260ms;
   --transition-duration-tooltip-resize: 320ms;

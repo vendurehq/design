@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '../src/components/atoms/table.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
+import { TooltipProvider } from '../src/components/atoms/tooltip.tsx';
 
 const meta = {
   title: 'Molecules/IdChip',
@@ -148,6 +149,29 @@ export const CopiedLabelSwaps: Story = {
       expect(Math.abs(gap)).toBeLessThan(1);
     });
     await expect(getComputedStyle(stack).transitionProperty).toContain('width');
+  },
+};
+
+/**
+ * Inside a TooltipProvider the first tooltip waits 400ms. A click that comes
+ * sooner copies at once and still shows "Copied".
+ */
+export const CopiesBeforeTheDelay: Story = {
+  args: { value: 'L2201516', truncate: 'none', copyLabel: 'Copy SKU' },
+  decorators: [(Story) => <TooltipProvider><Story /></TooltipProvider>],
+  play: async ({ canvasElement }) => {
+    stubClipboard();
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Copy SKU L2201516' }));
+    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Copied' })).toBeInTheDocument());
+    await waitFor(
+      () => {
+        const copied = Array.from(
+          document.querySelectorAll<HTMLElement>('[data-slot="tooltip-label-swap"] > *'),
+        ).find((label) => label.textContent === 'Copied');
+        expect(copied?.dataset.swap).toBe('in');
+      },
+      { timeout: 1500 },
+    );
   },
 };
 
