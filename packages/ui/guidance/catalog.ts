@@ -915,6 +915,20 @@ export const uiGuidance = [
     ],
     related: ['data-table', 'list-header'],
   },
+  {
+    id: 'tooltip',
+    title: 'Tooltip',
+    summary:
+      'A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.',
+    sourceStory: 'tooltip-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'A short hint, at most 320px',
+        body: 'A tooltip is a short hint or a label, never wider than 320px. Nothing widens it: a max-w class on TooltipContent is dropped. It holds no values to read in full, no paragraphs and no controls, because nobody can select or click inside it. Put longer content on the page or in a Popover.',
+      },
+    ],
+    related: ['id-chip', 'status-badge'],
+  },
 ] as const satisfies readonly GuidanceEntry[];
 
 type GuidanceId = (typeof uiGuidance)[number]['id'];

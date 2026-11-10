@@ -192,15 +192,23 @@ export const LongLabelSwap: Story = {
 };
 
 /**
- * A tooltip widens with `--tooltip-max-w`. A changing label wraps at the same
- * width as the bubble, so a label that fits the wider bubble stays on one line.
+ * A tooltip is a short hint, at most 320px wide, and nothing widens it: a
+ * `max-w-*` class from the consumer is dropped. Longer text wraps inside the
+ * bubble, and a changing label wraps at the same width.
  */
-export const WiderTooltipLabel: Story = {
+export const NeverWiderThan320: Story = {
   render: () => (
-    <div className="flex justify-center p-24 pt-28">
+    <div className="flex justify-center gap-4 p-24 pt-36">
       <Tooltip open>
-        <TooltipTrigger render={<Button variant="outline" />}>Wide tooltip</TooltipTrigger>
-        <TooltipContent className="[--tooltip-max-w:28rem]">
+        <TooltipTrigger render={<Button variant="outline" />}>Hint</TooltipTrigger>
+        <TooltipContent className="max-w-sm" side="top">
+          The sync runs every night and copies the catalog from the main channel to every
+          storefront channel.
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip open>
+        <TooltipTrigger render={<Button variant="outline" />}>Label</TooltipTrigger>
+        <TooltipContent className="max-w-sm" side="bottom">
           <TooltipLabelSwap
             labels={['Copy commit 3f9a2c7e1b4d8f6a0c5e9b2d7f1a4c8e6b3d0f9a', 'Copied']}
             active={0}
@@ -210,14 +218,21 @@ export const WiderTooltipLabel: Story = {
     </div>
   ),
   play: async () => {
-    const long = await within(document.body).findByText(/^Copy commit/);
+    const body = within(document.body);
+    // The hint text sits right in the bubble, so this is the bubble itself.
+    const hint = await body.findByText(/^The sync runs/);
+    await expect(hint.dataset.slot).toBe('tooltip-content');
+    await expect(hint.getBoundingClientRect().width).toBeLessThanOrEqual(320);
+    await expect(getComputedStyle(hint).textWrap).toBe('pretty');
+    const long = await body.findByText(/^Copy commit/);
     const popup = long.closest('[data-slot=tooltip-content]') as HTMLElement;
-    const lineHeight = Number.parseFloat(getComputedStyle(long).lineHeight);
     const padding = Number.parseFloat(getComputedStyle(popup).paddingRight);
-    // One line, and it ends inside the bubble's padding.
-    await waitFor(() => expect(long.getBoundingClientRect().height).toBeLessThan(lineHeight * 1.5));
-    await expect(long.getBoundingClientRect().right).toBeLessThanOrEqual(
-      popup.getBoundingClientRect().right - padding + 0.5,
+    await expect(popup.getBoundingClientRect().width).toBeLessThanOrEqual(320);
+    // The label wraps inside the bubble's padding.
+    await waitFor(() =>
+      expect(long.getBoundingClientRect().right).toBeLessThanOrEqual(
+        popup.getBoundingClientRect().right - padding + 0.5,
+      ),
     );
   },
 };

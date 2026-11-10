@@ -373,3 +373,10 @@ Use the standalone collection footer only when DataTable is not coordinating pag
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## Tooltip
+
+A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.
+
+- **A short hint, at most 320px:** A tooltip is a short hint or a label, never wider than 320px. Nothing widens it: a max-w class on TooltipContent is dropped. It holds no values to read in full, no paragraphs and no controls, because nobody can select or click inside it. Put longer content on the page or in a Popover.
+
+Related decisions: `id-chip`, `status-badge`.

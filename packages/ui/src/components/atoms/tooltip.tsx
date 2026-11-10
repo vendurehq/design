@@ -67,12 +67,13 @@ function TooltipContent({
         sideOffset={sideOffset}
         className="isolate z-50"
       >
-        {/* No arrow: the popup scales in from the trigger side (--transform-origin) in 125ms (tooltip-enter) and leaves in 100ms (fast), both on ease-soft (the CSS `ease`). Every open and close transitions, also one that Base UI marks data-instant: a tooltip that opens while another is showing (delay) or on keyboard focus (focus) fades and scales in like any other, as in the v3 look. Only a dismissed tooltip (Escape, an outside press) leaves at once: the user asked it to go.  A TooltipLabelSwap inside clips to the bubble, so a wider label that leaves never shows past its edge. The bubble is at most `--tooltip-max-w` wide (20rem); widen it with `[--tooltip-max-w:<size>]`, not `max-w-*`, so a TooltipLabelSwap wraps at the same width. */}
+        {/* No arrow: the popup scales in from the trigger side (--transform-origin) in 125ms (tooltip-enter) and leaves in 100ms (fast), both on ease-soft (the CSS `ease`). Every open and close transitions, also one that Base UI marks data-instant: a tooltip that opens while another is showing (delay) or on keyboard focus (focus) fades and scales in like any other, as in the v3 look. Only a dismissed tooltip (Escape, an outside press) leaves at once: the user asked it to go.  A TooltipLabelSwap inside clips to the bubble, so a wider label that leaves never shows past its edge. The bubble is at most 320px wide and nothing widens it: a tooltip is a short hint, and longer content belongs on the page or in a Popover. Its max-w comes after `className`, so a consumer's max-w-* is dropped. */}
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "bg-foreground text-background z-50 w-fit max-w-[var(--tooltip-max-w,20rem)] origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-[instant=dismiss]:transition-none has-data-[slot=tooltip-label-swap]:overflow-hidden",
-            className
+            "bg-foreground text-background z-50 w-fit origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium text-pretty transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-[instant=dismiss]:transition-none has-data-[slot=tooltip-label-swap]:overflow-hidden",
+            className,
+            "max-w-80"
           )}
           {...props}
         >
@@ -105,9 +106,9 @@ function TooltipLabelSwap(
       {...props}
       className={cn("items-start", props.className)}
       // Each label is as wide as its text, up to the bubble's content box
-      // (--tooltip-max-w less px-2.5 on each side), where it wraps. So its
-      // size does not depend on the size of the label that showed before.
-      labelClassName="w-max max-w-[calc(var(--tooltip-max-w,20rem)-1.25rem)]"
+      // (320px less px-2.5 on each side), where it wraps. So its size does
+      // not depend on the size of the label that showed before.
+      labelClassName="w-max max-w-[calc(--spacing(80)-1.25rem)]"
     />
   )
 }
