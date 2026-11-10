@@ -66,7 +66,7 @@ describe('Alert entrance', () => {
     expect(t).toContain('starting:opacity-0');
     expect(t).toContain('motion-safe:starting:-translate-y-1');
     expect(t.filter((token) => token.startsWith('starting:') && token.includes('translate'))).toEqual([]);
-    expect(t).toContain('duration-[240ms]');
+    expect(t).toContain('duration-alert-enter');
     expect(t).toContain('ease-out');
   });
 });

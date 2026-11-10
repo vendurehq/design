@@ -112,7 +112,7 @@ describe('Button menu chevron', () => {
     const tokens = buttonTokens(<Button>Deploy</Button>);
     expect(tokens).toContain('aria-expanded:[&>svg.lucide-chevron-down]:rotate-180');
     expect(tokens).toContain(
-      '[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_220ms_var(--ease-out)]',
+      '[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_var(--transition-duration-button-icon-turn)_var(--ease-out)]',
     );
     expect(tokens).toContain(
       'motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)]',

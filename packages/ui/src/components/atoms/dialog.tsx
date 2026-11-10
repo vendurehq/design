@@ -32,7 +32,7 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-scrim transition-opacity duration-180 ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-140 supports-backdrop-filter:backdrop-blur-[2px]",
+        "fixed inset-0 isolate z-50 bg-scrim transition-opacity duration-dialog-scrim ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-dialog-exit supports-backdrop-filter:backdrop-blur-[2px]",
         className
       )}
       {...props}
@@ -63,7 +63,7 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm transition-[opacity,scale,translate] duration-[200ms,240ms,240ms] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[120ms,140ms,140ms] data-ending-style:ease-soft motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
+          "bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-soft motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
           // The header stops before the close button, so a long title wraps instead of running under it.
           showCloseButton && "**:data-[slot=dialog-header]:pe-9",
           className
