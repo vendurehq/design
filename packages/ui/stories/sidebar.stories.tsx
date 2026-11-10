@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
+import { expect, waitFor, within } from 'storybook/test';
 import {
+  ChartLineIcon,
+  ChevronRightIcon,
   FolderTreeIcon,
   HomeIcon,
   InboxIcon,
@@ -23,9 +26,17 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarTrigger,
   SidebarInset,
 } from '../src/components/atoms/sidebar.tsx';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../src/components/atoms/collapsible.tsx';
 
 const meta = {
   title: 'Atoms/Layout/Sidebar',
@@ -141,6 +152,147 @@ export const ActiveItem: Story = {
         </SidebarProvider>
       )}
     </LightAndDark>
+  ),
+};
+
+const nestedGroups = [
+  { title: 'Catalog', icon: PackageIcon, open: true, activeChild: 'Product Variants', items: ['Products', 'Product Variants', 'Facets'] },
+  { title: 'Sales', icon: ShoppingCartIcon, open: false, activeChild: 'Orders', items: ['Orders', 'Customers'] },
+  { title: 'Settings', icon: SettingsIcon, open: false, activeChild: undefined, items: ['Channels', 'Zones'] },
+];
+
+/**
+ * A group whose nested item is the current page shows it on its icon: the icon
+ * takes the same brand-indicator colour and full opacity as the icon of an
+ * active top-level item (Insights). The group gets no fill and no bar, since the
+ * nested item carries those, and its label keeps its normal colour. The consumer
+ * sets `hasActiveChild` on the group's button, so it holds while the group is
+ * closed and its nested items are not mounted. Catalog is open, Sales is closed,
+ * Settings has no active item and stays quiet.
+ */
+export const NestedItemActive: Story = {
+  globals: { theme: 'light' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const icon = (scope: HTMLElement, name: string) =>
+      within(scope).getByRole('button', { name }).querySelector('svg') as SVGElement;
+    for (const theme of ['light', 'dark']) {
+      const scope = canvas.getByTestId(`nested-${theme}`);
+      const reference = icon(scope, 'Insights');
+      await waitFor(() => expect(getComputedStyle(reference).opacity).toBe('1'));
+      const brand = getComputedStyle(reference).color;
+      for (const name of ['Catalog', 'Sales']) {
+        const target = icon(scope, name);
+        await waitFor(() => expect(getComputedStyle(target).color).toBe(brand));
+        expect(getComputedStyle(target).opacity).toBe('1');
+        const button = within(scope).getByRole('button', { name });
+        expect(button).not.toHaveAttribute('data-active');
+        expect(getComputedStyle(button, '::before').opacity).toBe('0');
+      }
+      const quiet = icon(scope, 'Settings');
+      expect(getComputedStyle(quiet).color).not.toBe(brand);
+      expect(getComputedStyle(quiet).opacity).not.toBe('1');
+    }
+  },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <SidebarProvider className="min-h-0" data-testid={`nested-${theme}`}>
+          <div className="bg-sidebar text-sidebar-foreground w-56 rounded-lg border p-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive>
+                  <ChartLineIcon />
+                  <span>Insights</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {nestedGroups.map((group) => (
+                <Collapsible key={group.title} defaultOpen={group.open} className="group/collapsible">
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger
+                      render={<SidebarMenuButton hasActiveChild={Boolean(group.activeChild)} />}
+                    >
+                      <group.icon />
+                      <span>{group.title}</span>
+                      <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {group.items.map((item) => (
+                          <SidebarMenuSubItem key={item}>
+                            <SidebarMenuSubButton render={<a href="#" />} isActive={item === group.activeChild}>
+                              <span>{item}</span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              ))}
+            </SidebarMenu>
+          </div>
+        </SidebarProvider>
+      )}
+    </LightAndDark>
+  ),
+};
+
+/**
+ * The same on the icon rail, where a group's nested items sit in a hover card
+ * and the rail shows only icons: the icon of the group that holds the current
+ * page takes the active colour, with no fill and no bar.
+ */
+export const NestedItemActiveIconRail: Story = {
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const icon = (name: string) =>
+      canvas.getByRole('button', { name }).querySelector('svg') as SVGElement;
+    const reference = icon('Insights');
+    await waitFor(() => expect(getComputedStyle(reference).opacity).toBe('1'));
+    const target = icon('Catalog');
+    await waitFor(() => expect(getComputedStyle(target).color).toBe(getComputedStyle(reference).color));
+    expect(getComputedStyle(target).opacity).toBe('1');
+    expect(canvas.getByRole('button', { name: 'Catalog' })).not.toHaveAttribute('data-active');
+    expect(getComputedStyle(icon('Sales')).opacity).not.toBe('1');
+  },
+  render: () => (
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton isActive tooltip="Insights">
+                    <ChartLineIcon />
+                    <span>Insights</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton hasActiveChild tooltip="Catalog">
+                    <PackageIcon />
+                    <span>Catalog</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Sales">
+                    <ShoppingCartIcon />
+                    <span>Sales</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <div className="flex-1 p-5">
+          <p className="text-muted-foreground text-sm">Main content area</p>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   ),
 };
 
