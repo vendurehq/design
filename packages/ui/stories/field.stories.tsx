@@ -275,6 +275,11 @@ export const FieldLook: Story = {
       if (field.dataset.slot !== 'input-group') await expect(style.paddingLeft).toBe('10px');
     }
 
+    // An InputGroup's leading icon starts 10px in, like the text in the others.
+    const group = fields[3] as HTMLElement;
+    const icon = group.querySelector('svg') as SVGElement;
+    await expect(Math.round(icon.getBoundingClientRect().left - group.getBoundingClientRect().left)).toBe(10);
+
     // Select and NativeSelect put the chevron 10px from the edge, like the text.
     for (const select of [fields[1], fields[2]] as HTMLElement[]) {
       const chevron = (select.querySelector('svg') ?? select.parentElement?.querySelector('svg')) as SVGElement;
