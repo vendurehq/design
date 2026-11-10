@@ -55,7 +55,7 @@ export const Sides: Story = {
 
 /**
  * Moving from one trigger to the next, inside a TooltipProvider. The first
- * tooltip waits `tooltip-delay` (400ms), so a pointer that only passes over a
+ * tooltip waits `tooltip-delay` (600ms), so a pointer that only passes over a
  * trigger opens nothing. Once a tooltip is open, the next one opens at once
  * and shows in full in its first frame: Base UI marks it `data-instant`, and
  * an instant tooltip does not animate.
@@ -86,13 +86,13 @@ export const FromTriggerToTrigger: Story = {
         await userEvent.unhover(first);
         const start = performance.now();
         await userEvent.hover(first);
-        await body.findByText('First tooltip', {}, { timeout: 1000 });
+        await body.findByText('First tooltip', {}, { timeout: 1500 });
         waited = performance.now() - start;
       },
       { timeout: 5000 },
     );
     // The first tooltip waits for the delay.
-    await expect(waited).toBeGreaterThanOrEqual(350);
+    await expect(waited).toBeGreaterThanOrEqual(550);
     await userEvent.unhover(first);
     await userEvent.hover(canvas.getByRole('button', { name: 'Second' }));
     // The next one opens at once, marked instant ("delay"), with no

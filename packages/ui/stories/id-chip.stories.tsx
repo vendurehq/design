@@ -153,7 +153,7 @@ export const CopiedLabelSwaps: Story = {
 };
 
 /**
- * Inside a TooltipProvider the first tooltip waits 400ms. A click that comes
+ * Inside a TooltipProvider the first tooltip waits 600ms. A click that comes
  * sooner copies at once and still shows "Copied".
  */
 export const CopiesBeforeTheDelay: Story = {
@@ -170,7 +170,7 @@ export const CopiesBeforeTheDelay: Story = {
         ).find((label) => label.textContent === 'Copied');
         expect(copied?.dataset.swap).toBe('in');
       },
-      { timeout: 1500 },
+      { timeout: 2000 },
     );
   },
 };

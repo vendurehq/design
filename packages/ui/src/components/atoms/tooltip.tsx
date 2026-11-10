@@ -16,7 +16,7 @@ const TOOLTIP_DELAY = Number.parseFloat(duration.tooltipDelay)
 
 /**
  * Wrap the app in one TooltipProvider. The first tooltip then waits
- * `tooltip-delay` (400ms), so a pointer that only passes over a trigger opens
+ * `tooltip-delay` (600ms), so a pointer that only passes over a trigger opens
  * nothing. Once a tooltip is open, the next one opens at once and does not
  * animate, until no tooltip has been open for the provider's `timeout`.
  */

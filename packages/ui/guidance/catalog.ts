@@ -928,7 +928,7 @@ export const uiGuidance = [
       },
       {
         title: 'One TooltipProvider for the app',
-        body: 'Wrap the app in one TooltipProvider. The first tooltip then waits 400ms, so a pointer passing over a trigger opens nothing, and once a tooltip is open the next ones open at once with no animation. Do not set a delay per tooltip. Without a provider a tooltip opens at once.',
+        body: 'Wrap the app in one TooltipProvider. The first tooltip then waits 600ms, so a pointer passing over a trigger opens nothing, and once a tooltip is open the next ones open at once with no animation. Do not set a delay per tooltip. Without a provider a tooltip opens at once.',
       },
     ],
     related: ['id-chip', 'status-badge'],
