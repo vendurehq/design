@@ -43,11 +43,12 @@ function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root
       indeterminate={indeterminate}
       {...useFieldControlProps(props)}
     >
-      {/* Kept mounted, so the mark can undraw after an uncheck. */}
+      {/* Kept mounted, so the mark can undraw after an uncheck. The mark sits
+          on the fill only, so it keeps the fill's foreground while it leaves. */}
       <CheckboxPrimitive.Indicator
         keepMounted
         data-slot="checkbox-indicator"
-        className="relative grid place-content-center text-current"
+        className="relative grid place-content-center text-primary-foreground"
       >
         <svg
           viewBox="0 0 24 24"
