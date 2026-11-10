@@ -72,7 +72,7 @@ function NavigationMenuTrigger({
       {...props}
     >
       {children}{" "}
-      <ChevronDownIcon className="relative top-px ml-1 size-3 transition duration-300 group-data-open/navigation-menu-trigger:rotate-180 group-data-popup-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
+      <ChevronDownIcon className="relative top-px ml-1 size-3 transition duration-slow group-data-open/navigation-menu-trigger:rotate-180 group-data-popup-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
     </NavigationMenuPrimitive.Trigger>
   )
 }
@@ -85,7 +85,7 @@ function NavigationMenuContent({
     <NavigationMenuPrimitive.Content
       data-slot="navigation-menu-content"
       className={cn(
-        "motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pr-2.5 transition-[opacity,transform,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
+        "motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pr-2.5 transition-[opacity,transform,translate] duration-popup-resize ease-out motion-reduce:transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
         className
       )}
       {...props}
@@ -109,13 +109,13 @@ function NavigationMenuPositioner({
         align={align}
         alignOffset={alignOffset}
         className={cn(
-          "isolate z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none motion-reduce:transition-none data-[side=bottom]:before:top-[-10px] data-[side=bottom]:before:right-0 data-[side=bottom]:before:left-0",
+          "isolate z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom] duration-popup-resize ease-out data-instant:transition-none motion-reduce:transition-none data-[side=bottom]:before:top-[-10px] data-[side=bottom]:before:right-0 data-[side=bottom]:before:left-0",
           className
         )}
         {...props}
       >
-        {/* Opens with popupMotion. While open, it resizes to the next item's content in 350ms. */}
-        <NavigationMenuPrimitive.Popup className={cn("bg-popover text-popover-foreground shadow-overlay xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) rounded-xl outline-none", popupMotion, "transition-[opacity,scale,translate,width,height] [transition-duration:160ms,200ms,200ms,350ms,350ms] motion-reduce:transition-opacity")}>
+        {/* Opens with popupMotion. While open, it resizes to the next item's content in `popup-resize` (350ms). */}
+        <NavigationMenuPrimitive.Popup className={cn("bg-popover text-popover-foreground shadow-overlay xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) rounded-xl outline-none", popupMotion, "transition-[opacity,scale,translate,width,height] [transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal),var(--transition-duration-normal),var(--transition-duration-popup-resize),var(--transition-duration-popup-resize)] motion-reduce:transition-opacity")}>
           <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
         </NavigationMenuPrimitive.Popup>
       </NavigationMenuPrimitive.Positioner>
@@ -153,7 +153,7 @@ function NavigationMenuIndicator({
     <NavigationMenuPrimitive.Icon
       data-slot="navigation-menu-indicator"
       className={cn(
-        "transition-opacity duration-[160ms] ease-(--ease-out) not-data-popup-open:opacity-0 top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
+        "transition-opacity duration-popup-fade ease-out not-data-popup-open:opacity-0 top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
         className
       )}
       {...props}

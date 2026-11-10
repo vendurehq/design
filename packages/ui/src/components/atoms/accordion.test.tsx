@@ -27,13 +27,13 @@ describe('Accordion', () => {
     const trigger = tagTokens(slotTag(html, 'accordion-trigger'));
     const chevron = slotTag(html, 'accordion-trigger-icon');
     const panel = tagTokens(slotTag(render(true), 'accordion-content'));
-    expect(trigger).toContain('duration-(--transition-duration-fast)');
-    expect(trigger).toContain('ease-(--ease-default)');
+    expect(trigger).toContain('duration-fast');
+    expect(trigger).toContain('ease-default');
     expect(chevron).toContain(
       '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default)]',
     );
-    expect(panel).toContain('motion-safe:duration-(--transition-duration-slow)');
-    expect(panel).toContain('motion-safe:ease-(--ease-height)');
+    expect(panel).toContain('motion-safe:duration-slow');
+    expect(panel).toContain('motion-safe:ease-height');
   });
 
   test('the chevron sits 2px down, centred on the first 20px line of the title', () => {

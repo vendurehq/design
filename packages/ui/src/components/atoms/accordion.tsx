@@ -42,7 +42,7 @@ function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 cursor-pointer items-start justify-between rounded-md border border-transparent px-3 py-4 text-left text-sm font-medium outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-aria-expanded:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:mt-0.5",
+          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring **:data-[slot=accordion-trigger-icon]:text-muted-foreground group/accordion-trigger relative flex flex-1 cursor-pointer items-start justify-between rounded-md border border-transparent px-3 py-4 text-left text-sm font-medium outline-none transition-colors duration-fast ease-default not-aria-expanded:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-4 **:data-[slot=accordion-trigger-icon]:mt-0.5",
           className
         )}
         {...props}
@@ -71,7 +71,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="h-(--accordion-panel-height) overflow-hidden text-sm data-starting-style:h-0 data-starting-style:opacity-0 data-ending-style:h-0 data-ending-style:opacity-0 motion-safe:transition-[height,opacity] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-height) motion-reduce:transition-opacity motion-reduce:data-ending-style:h-(--accordion-panel-height) motion-reduce:duration-(--transition-duration-fast) motion-reduce:ease-(--ease-default)"
+      className="h-(--accordion-panel-height) overflow-hidden text-sm data-starting-style:h-0 data-starting-style:opacity-0 data-ending-style:h-0 data-ending-style:opacity-0 motion-safe:transition-[height,opacity] motion-safe:duration-slow motion-safe:ease-height motion-reduce:transition-opacity motion-reduce:data-ending-style:h-(--accordion-panel-height) motion-reduce:duration-fast motion-reduce:ease-default"
       {...props}
     >
       <div

@@ -90,7 +90,7 @@ function ListRow({ className, enter, style, ...props }: ListRowProps) {
         'group/list-row relative flex min-h-12 items-center gap-3 border-t border-border ps-4.5 pe-4 text-sm first:border-t-0',
         '[[data-slot=list-row-group-heading]+&]:border-t-0',
         'has-data-[slot=list-row-meta]:py-2.5',
-        'transition-colors duration-(--transition-duration-fast) ease-(--ease-default)',
+        'transition-colors duration-fast ease-default',
         'has-data-[slot=list-row-link]:cursor-pointer has-data-[slot=list-row-link]:hover:bg-muted',
         'has-[[data-slot=list-row-link]:focus-visible]:outline-solid has-[[data-slot=list-row-link]:focus-visible]:outline-2 has-[[data-slot=list-row-link]:focus-visible]:-outline-offset-2 has-[[data-slot=list-row-link]:focus-visible]:outline-ring',
         LIFT_CONTROLS,
@@ -137,7 +137,7 @@ function ListRowLeading({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot="list-row-leading"
       className={cn(
         "flex shrink-0 items-center text-muted-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
-        "[&>svg:not([class*='opacity-']):not([class*='text-'])]:text-foreground [&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-55 [&>svg:not([class*='opacity-']):not([class*='text-'])]:transition-opacity [&>svg:not([class*='opacity-']):not([class*='text-'])]:duration-(--transition-duration-moderate) group-hover/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85 group-focus-within/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85",
+        "[&>svg:not([class*='opacity-']):not([class*='text-'])]:text-foreground [&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-55 [&>svg:not([class*='opacity-']):not([class*='text-'])]:transition-opacity [&>svg:not([class*='opacity-']):not([class*='text-'])]:duration-moderate group-hover/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85 group-focus-within/list-row:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85",
         className,
       )}
       {...props}
@@ -219,7 +219,7 @@ function ListRowTrailing({ className, ...props }: React.ComponentProps<'div'>) {
 // the row has focus, while one of them has its menu open, and on touch
 // screens, where there is no hover.
 const revealOnRowHover =
-  'opacity-0 transition-opacity duration-(--transition-duration-quick) ease-(--ease-soft) group-hover/list-row:opacity-100 group-focus-within/list-row:opacity-100 [@media(hover:none)]:opacity-100';
+  'opacity-0 transition-opacity duration-quick ease-soft group-hover/list-row:opacity-100 group-focus-within/list-row:opacity-100 [@media(hover:none)]:opacity-100';
 
 /** Secondary row actions. Hidden until the row is hovered or has focus. */
 function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {
@@ -245,7 +245,7 @@ function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {
 // names stay literal so Tailwind can scan them.
 const ROW_CHEVRON_CLASS = [
   'size-3.75 shrink-0 text-muted-foreground opacity-0 rtl:-scale-x-100',
-  'transition-[opacity,translate] duration-(--transition-duration-fast) ease-(--ease-out)',
+  'transition-[opacity,translate] duration-fast ease-out',
   'motion-safe:-translate-x-0.75 motion-safe:rtl:translate-x-0.75',
   'group-hover/list-row:translate-x-0 group-hover/list-row:opacity-100 group-has-[:focus-visible]/list-row:translate-x-0 group-has-[:focus-visible]/list-row:opacity-100',
   'group-hover/row:translate-x-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:translate-x-0 group-has-[:focus-visible]/row:opacity-100',

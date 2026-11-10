@@ -147,8 +147,8 @@ describe('DataTableRowLink', () => {
     const listRow = classOf(html(<ListRowChevron />), 'list-row-chevron');
     for (const motion of [
       'transition-[opacity,translate]',
-      'duration-(--transition-duration-fast)',
-      'ease-(--ease-out)',
+      'duration-fast',
+      'ease-out',
       'motion-safe:-translate-x-0.75',
       'group-hover/row:opacity-100',
       'group-hover/list-row:opacity-100',

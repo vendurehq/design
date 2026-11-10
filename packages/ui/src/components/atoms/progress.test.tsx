@@ -21,8 +21,8 @@ describe('Progress', () => {
     expect(fill).toContain('scale-x-(--progress-scale,1)');
     expect(fill).toContain('motion-safe:transition-[scale]');
     expect(fill).toContain('motion-safe:not-data-indeterminate:starting:scale-x-0');
-    expect(fill).toContain('motion-safe:duration-(--transition-duration-progress-fill)');
-    expect(fill).toContain('motion-safe:ease-(--ease-out)');
+    expect(fill).toContain('motion-safe:duration-progress-fill');
+    expect(fill).toContain('motion-safe:ease-out');
   });
 
   test('right to left: the fill grows from the right, the band sweeps in reverse, the value sits at the end', () => {

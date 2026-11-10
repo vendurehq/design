@@ -69,7 +69,7 @@ function CommandDialog({
         showCloseButton={showCloseButton}
         // The palette is transient and keeps the page in view: a lighter scrim
         // with a 2px blur that fades with the palette.
-        overlayClassName="bg-scrim-subtle duration-palette-enter ease-(--ease-out) data-ending-style:duration-palette-exit supports-backdrop-filter:backdrop-blur-[2px]"
+        overlayClassName="bg-scrim-subtle duration-palette-enter ease-out data-ending-style:duration-palette-exit supports-backdrop-filter:backdrop-blur-[2px]"
       >
         {children}
       </DialogContent>
@@ -132,7 +132,7 @@ function CommandList({
       data-slot="command-list"
       data-highlight={slidingHighlight ? "slide" : undefined}
       className={cn(
-        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-(--transition-duration-normal) ease-height in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
+        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-normal ease-height in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
         ENTERING_RESULTS,
         className
       )}
@@ -425,7 +425,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-(--transition-duration-fast) data-ready:ease-soft"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-fast data-ready:ease-soft"
     />
   )
 }
@@ -499,7 +499,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[selected=true]:bg-muted not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-(--transition-duration-moderate) not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
+        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[selected=true]:bg-muted not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-moderate not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
         className
       )}
       {...props}

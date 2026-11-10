@@ -63,8 +63,8 @@ describe('SidebarMenuButton hover fill', () => {
     expect(tokens).toEqual(
       expect.arrayContaining([
         'transition-[width,height,padding,background-color,color]',
-        'duration-(--transition-duration-fast)',
-        'ease-(--ease-default)',
+        'duration-fast',
+        'ease-default',
       ]),
     );
   });
@@ -131,7 +131,7 @@ describe('Sidebar rail', () => {
       expect(tokens).toEqual(
         expect.arrayContaining([
           'ease-drawer',
-          'duration-(--transition-duration-slow)',
+          'duration-slow',
           'motion-reduce:transition-none',
         ]),
       );
@@ -239,7 +239,7 @@ describe('Sidebar spacing and labels, the v3 look', () => {
 
   test('the pill slides in 280ms on the drawer curve and fades in 150ms', () => {
     expect(slotTokens(html, 'sidebar-menu-indicator')).toContain(
-      'data-ready:[transition:transform_280ms_var(--ease-drawer),height_280ms_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)]',
+      'data-ready:[transition:transform_var(--transition-duration-sidebar-pill)_var(--ease-drawer),height_var(--transition-duration-sidebar-pill)_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)]',
     );
   });
 });

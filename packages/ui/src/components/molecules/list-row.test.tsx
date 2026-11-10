@@ -102,8 +102,8 @@ describe('ListRow', () => {
 
   test('row actions and a new row run on the v3-look timings', () => {
     const actions = slotTag(renderToStaticMarkup(<ListRowActions />), 'list-row-actions');
-    expect(actions).toContain('duration-(--transition-duration-quick)');
-    expect(actions).toContain('ease-(--ease-soft)');
+    expect(actions).toContain('duration-quick');
+    expect(actions).toContain('ease-soft');
     const row = slotTag(renderToStaticMarkup(<ListRow enter="new" />), 'list-row');
     // The content fades in on `ease` after the height has started to open.
     expect(row).toContain(

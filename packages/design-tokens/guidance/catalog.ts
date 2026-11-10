@@ -123,7 +123,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles rather than literal milliseconds or custom curves. Use ease-out for entrances, ease-drawer for drawers and sheets that slide in from an edge, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft for small colour, opacity and blur changes. The palette-* durations belong to the command palette only, the tooltip-* durations to the tooltip only, row-enter to a new ListRow only, progress-fill to the Progress fill only.',
+        body: 'Every duration and easing is a token. Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles: ease-out for entrances, ease-drawer for drawers, sheets and the sidebar pill, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft (the CSS `ease` curve) for small colour, opacity and blur changes. When the scale lacks a value, add a duration token named for the component or shared look that owns it, and use it there only: palette-* for the command palette, tooltip-* for the tooltip, popup-fade and popup-resize for popups, sidebar-pill for the sidebar pill, toast-* for toasts, progress-fill for Progress and row-enter for a new ListRow. Never write a literal millisecond value or curve in a class. Write the short class form: duration-quick and ease-soft, not duration-(--transition-duration-quick).',
       },
       {
         title: 'Match duration to distance and consequence',

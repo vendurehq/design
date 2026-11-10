@@ -66,7 +66,7 @@ function CollapsibleSection({
       <Heading data-slot="collapsible-section-heading" className="m-0">
         <CollapsibleTrigger
           data-slot="collapsible-section-trigger"
-          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 ps-4.5 pe-4 text-left outline-none transition-colors duration-(--transition-duration-fast) ease-(--ease-default) not-data-disabled:hover:bg-muted data-disabled:cursor-default focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          className="group/collapsible-section-trigger flex min-h-12 w-full cursor-pointer items-center gap-2 ps-4.5 pe-4 text-left outline-none transition-colors duration-fast ease-default not-data-disabled:hover:bg-muted data-disabled:cursor-default focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           {/* The title is quieter than the rows it labels. */}
           <span
@@ -111,13 +111,13 @@ function CollapsibleSection({
           only the rows fade. */}
       <CollapsibleContent
         data-slot="collapsible-section-panel"
-        className="group/collapsible-section-panel h-(--collapsible-panel-height) overflow-hidden border-t border-border data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-(--transition-duration-slow) motion-safe:ease-(--ease-height)"
+        className="group/collapsible-section-panel h-(--collapsible-panel-height) overflow-hidden border-t border-border data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-slow motion-safe:ease-height"
       >
         {/* Opening, the rows fade in over the second half of the height;
             closing, they leave at once so the height settles on nothing. */}
         <div
           data-slot="collapsible-section-rows"
-          className="transition-opacity delay-(--transition-duration-moderate) duration-(--transition-duration-moderate) ease-(--ease-out) group-data-ending-style/collapsible-section-panel:opacity-0 group-data-ending-style/collapsible-section-panel:delay-0 group-data-ending-style/collapsible-section-panel:duration-(--transition-duration-fast) group-data-starting-style/collapsible-section-panel:opacity-0"
+          className="transition-opacity delay-(--transition-duration-moderate) duration-moderate ease-out group-data-ending-style/collapsible-section-panel:opacity-0 group-data-ending-style/collapsible-section-panel:delay-0 group-data-ending-style/collapsible-section-panel:duration-fast group-data-starting-style/collapsible-section-panel:opacity-0"
         >
           {children}
         </div>

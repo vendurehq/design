@@ -10,7 +10,7 @@
  * it. Each field adds its own height, padding and text size.
  */
 const fieldBase =
-  'bg-muted shadow-[inset_0_0_0_1px_var(--border)] rounded-lg outline-none transition-shadow duration-120 ease-[ease] forced-colors:border';
+  'bg-muted shadow-[inset_0_0_0_1px_var(--border)] rounded-lg outline-none transition-shadow duration-quick ease-soft forced-colors:border';
 
 export const fieldSurface = `${fieldBase} focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)] aria-invalid:focus-visible:outline-destructive`;
 

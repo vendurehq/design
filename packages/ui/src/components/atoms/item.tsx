@@ -38,7 +38,7 @@ function ItemSeparator({
 }
 
 const itemVariants = cva(
-  "[a]:hover:bg-muted rounded-md border text-sm w-full group/item focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring flex items-center flex-wrap outline-none transition-colors duration-100 [a]:transition-colors",
+  "[a]:hover:bg-muted rounded-md border text-sm w-full group/item focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring flex items-center flex-wrap outline-none transition-colors duration-fast [a]:transition-colors",
   {
     variants: {
       variant: {
@@ -89,7 +89,7 @@ const itemMediaVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        icon: "[&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-55 [&>svg:not([class*='opacity-']):not([class*='text-'])]:transition-opacity [&>svg:not([class*='opacity-']):not([class*='text-'])]:duration-(--transition-duration-moderate) group-hover/item:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85 group-focus-visible/item:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85",
+        icon: "[&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-55 [&>svg:not([class*='opacity-']):not([class*='text-'])]:transition-opacity [&>svg:not([class*='opacity-']):not([class*='text-'])]:duration-moderate group-hover/item:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85 group-focus-visible/item:[&>svg:not([class*='opacity-']):not([class*='text-'])]:opacity-85",
         image:
           "size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 group-data-[size=xs]/item:size-6 [&_img]:size-full [&_img]:object-cover",
       },

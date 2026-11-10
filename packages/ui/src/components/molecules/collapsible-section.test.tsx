@@ -143,7 +143,7 @@ describe('CollapsibleSection', () => {
     const trigger = slotTag(html, 'collapsible-section-trigger');
     const chevron = tagTokens(html.match(/<svg[^>]*>/)?.[0] ?? '');
     expect(tagTokens(trigger)).toEqual(
-      expect.arrayContaining(['duration-(--transition-duration-fast)', 'ease-(--ease-default)']),
+      expect.arrayContaining(['duration-fast', 'ease-default']),
     );
     // One transition list: the turn on the height curve, colour and opacity
     // on the fill's timing.
@@ -163,7 +163,7 @@ describe('CollapsibleSection', () => {
       '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
     );
     expect(slotTokens(html, 'collapsible-section-panel')).toContain(
-      'motion-safe:ease-(--ease-height)',
+      'motion-safe:ease-height',
     );
   });
 });
