@@ -437,6 +437,22 @@ describe('DataTable row selection (controlled source of truth)', () => {
     expect(String(warn.mock.calls[0]?.[0])).toContain('getRowId');
   });
 
+  // While rows are selected, a click on a row selects it: the table carries
+  // data-selecting, which drops the link cursor and the row chevron.
+  test('marks the table as selecting only while a row is selected', () => {
+    const table = (value: Record<string, boolean>) =>
+      html(
+        <DataTable
+          rows={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          rowSelection={{ value, onChange: () => {} }}
+        />,
+      ).match(/<table[^>]*>/)?.[0] ?? '';
+    expect(table({})).not.toContain('data-selecting');
+    expect(table({ '1': true })).toContain('data-selecting=""');
+  });
+
   test('partial page selection renders a distinct mixed select-all indicator', () => {
     const markup = html(
       <DataTable
