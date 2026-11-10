@@ -76,6 +76,10 @@ export const duration = {
   toastExitMove: '180ms',
   toastFade: '220ms',
   toastMove: '320ms',
+  // A Checkbox's check mark starts to draw this long after its fill starts
+  // to grow, so the mark lands on a fill that is already there. Only
+  // Checkbox uses it.
+  checkMarkDelay: '15ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a

@@ -448,7 +448,8 @@ describe('DataTable row selection (controlled source of truth)', () => {
     );
 
     expect(markup).toContain('aria-checked="mixed"');
-    expect(markup).toContain('lucide-minus');
+    // The indeterminate mark is a drawn line, not the lucide icon.
+    expect(markup).toContain('d="M5 12h14"');
   });
 });
 

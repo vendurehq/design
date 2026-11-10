@@ -6,7 +6,7 @@ import { Table, TableRow } from './table.tsx';
 // DataTable marks selected rows with data-state="selected" (TanStack), so the
 // selector is live. Selected must stay distinct from the bg-muted/50 hover.
 describe('TableRow selected state', () => {
-  test('uses the muted fill and a primary leading bar', () => {
+  test('uses the muted fill and a brand-colour leading bar', () => {
     const html = renderToStaticMarkup(
       <table>
         <tbody>
@@ -19,9 +19,14 @@ describe('TableRow selected state', () => {
       expect.arrayContaining([
         'hover:bg-muted/50',
         'data-[state=selected]:bg-muted',
-        'data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)]',
+        'before:bg-brand-indicator',
+        'after:bg-brand-indicator',
+        'data-[state=selected]:before:[clip-path:inset(0_0_50%_0)]!',
+        'data-[state=selected]:after:[clip-path:inset(50%_0_0_0)]!',
       ]),
     );
+    // A box-shadow cannot grow from an edge; the bar is drawn by the pseudo-elements.
+    expect(tokens.some((token) => token.includes('shadow-[inset'))).toBe(false);
     expect(tokens).not.toContain('data-[state=selected]:bg-accent');
   });
 });
@@ -29,6 +34,35 @@ describe('TableRow selected state', () => {
 // The container becomes a tab stop only when it overflows (measured in the
 // browser after mount, then tracked with a ResizeObserver), so a server render
 // has no tabindex.
+// The bar grows from where the row touches a selected row. The starting clip
+// of each case comes from sibling selectors, so no JS is involved; the story
+// SelectionMotion checks the computed values in the browser.
+describe('TableRow selection bar origin', () => {
+  test('each neighbour case has its own starting clip', () => {
+    const html = renderToStaticMarkup(
+      <table>
+        <tbody>
+          <TableRow />
+        </tbody>
+      </table>,
+    );
+    const tokens = (html.match(/class="([^"]*)"/)?.[1] ?? '').replaceAll('&amp;', '&').split(/\s+/);
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        // Alone: from the middle.
+        'before:[clip-path:inset(50%_0_50%_0)]',
+        // A selected row above: from the top.
+        '[[data-state=selected]+&]:before:[clip-path:inset(0_0_100%_0)]',
+        // A selected row below: from the bottom.
+        '[&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]',
+        // Both: each half from its own end.
+        '[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)]',
+        '[[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]',
+      ]),
+    );
+  });
+});
+
 describe('Table container', () => {
   test('has an inset focus ring and no tab stop until it overflows', () => {
     const html = renderToStaticMarkup(

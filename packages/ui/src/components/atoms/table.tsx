@@ -83,14 +83,45 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 
 // data-state="selected" is the DataTable (TanStack) row-selection marker, not a
 // Radix attribute, so the selector is live. Selected rows use the muted fill,
-// as in the v3 look, plus a primary bar on the leading edge, so they stay
-// distinct from the lighter muted/50 hover.
+// as in the v3 look, plus a brand-colour bar on the inline-start edge, so they
+// stay distinct from the lighter muted/50 hover.
+//
+// The bar draws itself and knows its neighbours. It is two pseudo-elements of
+// the row, both full height and absolute (so neither becomes a table cell):
+// ::before shows the top half and ::after the bottom half, each through a
+// clip-path inset. A selected row shows both halves. An unselected row
+// collapses each half to the point the bar grows from, so selecting animates
+// the clip from there (`moderate`, `ease-out`) and deselecting plays it back:
+// - no selected neighbour: both halves from the middle, so it grows outward;
+// - a selected row above: both from the top, so it extends that row's bar down;
+// - a selected row below: both from the bottom, so it grows up from it;
+// - selected rows on both sides: the top half from the top and the bottom half
+//   from the bottom, so they meet in the middle.
+// The selected clips are `!important` to beat the neighbour rules, whose
+// sibling selectors are more specific. A range selection grows all its bars
+// at once. Under reduced motion the bar is whole and only fades: the clip
+// jumps on select and waits for the fade on deselect.
+const selectedBar = [
+  "before:pointer-events-none before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-brand-indicator",
+  "after:pointer-events-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 after:bg-brand-indicator",
+  "before:[clip-path:inset(50%_0_50%_0)] after:[clip-path:inset(50%_0_50%_0)]",
+  "[[data-state=selected]+&]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&]:after:[clip-path:inset(0_0_100%_0)]",
+  "[&:has(+[data-state=selected])]:before:[clip-path:inset(100%_0_0_0)] [&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
+  "[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
+  "data-[state=selected]:before:[clip-path:inset(0_0_50%_0)]! data-[state=selected]:after:[clip-path:inset(50%_0_0_0)]!",
+  "before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)]",
+  "motion-reduce:before:opacity-0 motion-reduce:after:opacity-0 motion-reduce:data-[state=selected]:before:opacity-100 motion-reduce:data-[state=selected]:after:opacity-100",
+  "motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)] motion-reduce:after:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)]",
+  "motion-reduce:data-[state=selected]:before:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)] motion-reduce:data-[state=selected]:after:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)]",
+].join(" ")
+
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted data-[state=selected]:shadow-[inset_2px_0_0_var(--primary)] border-b border-border/50 transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-muted relative border-b border-border/50 transition-colors",
+        selectedBar,
         className
       )}
       {...props}
