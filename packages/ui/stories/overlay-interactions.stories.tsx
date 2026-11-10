@@ -407,10 +407,6 @@ export const NavigationMenuLook: Story = {
     await expect(popup).not.toBeNull();
     await expectOverlaySurface(popup as HTMLElement, '8px');
     await expectPopupMotion(popup as HTMLElement);
-    // Close it before the a11y scan: the open menu's focus guards are
-    // aria-hidden and tabbable, which axe flags.
-    await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(document.querySelector('[data-slot="navigation-menu-content"]')).toBeNull());
   },
 };
 
