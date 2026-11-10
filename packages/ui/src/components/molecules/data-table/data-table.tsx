@@ -242,7 +242,9 @@ const bulkBandOpen = {
 // While rows are selected, a click on a row selects it instead of opening it.
 // These elements in a row keep their own click: the same list the linked row
 // lifts above its stretched link, plus the select checkbox and menu items. The
-// row link itself is not one of them: a click on it selects too.
+// row link itself is not one of them: a click on it selects too. Only a
+// control inside the row counts: an ancestor of the table that matches (an app
+// shell's `<main tabindex="-1">`, the skip link target) is not a row control.
 const ROW_CONTROL_SELECTOR =
   '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
 
@@ -256,6 +258,11 @@ const ROW_CONTROL_SELECTOR =
 const SELECT_AREA_CLASS =
   'absolute inset-y-0 left-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
 const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
+
+function isRowControl(target: Element, row: Element): boolean {
+  const control = target.closest(ROW_CONTROL_SELECTOR);
+  return control != null && row.contains(control);
+}
 
 /**
  * Toggles a row from a click on it or on its checkbox. With `extend` (Shift),
@@ -685,14 +692,18 @@ function DataTable<TData>({
     if (event.button !== 0 || event.detail === 0) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target as Element;
-    if (!event.currentTarget.contains(target) || target.closest(ROW_CONTROL_SELECTOR)) return;
+    if (!event.currentTarget.contains(target) || isRowControl(target, event.currentTarget)) return;
     event.preventDefault();
     event.stopPropagation();
     selectFromClick(table, row, event.shiftKey, selectionAnchor);
   };
   // Shift+press would also extend the page's text selection across the rows.
   const onRowMouseDown = (event: React.MouseEvent<HTMLElement>) => {
-    if (selecting && event.shiftKey && !(event.target as Element).closest(ROW_CONTROL_SELECTOR)) {
+    if (
+      selecting &&
+      event.shiftKey &&
+      !isRowControl(event.target as Element, event.currentTarget)
+    ) {
       event.preventDefault();
     }
   };
