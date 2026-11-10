@@ -141,8 +141,18 @@ const config: TestRunnerConfig = {
     // `faint-foreground`, below 4.5:1. Fields mark it with `data-placeholder`
     // (Select, Combobox and the date pickers; a native ::placeholder is never
     // scanned), so the contrast rule skips it. All other text is still checked.
+    //
+    // Base UI renders focus guards (`[data-base-ui-focus-guard]`) around some
+    // popups, such as the open NavigationMenu. They are aria-hidden and
+    // tabbable on purpose: they catch Tab at the popup edge and move focus into
+    // it. Base UI says to exclude them from axe (mui/base-ui#5237); removing
+    // `aria-hidden` raises `aria-required-children` instead. Only this rule
+    // skips them.
     await configureAxe(page, {
-      rules: [{ id: 'color-contrast', selector: '*:not([data-placeholder])' }],
+      rules: [
+        { id: 'color-contrast', selector: '*:not([data-placeholder])' },
+        { id: 'aria-hidden-focus', selector: '[aria-hidden="true"]:not([data-base-ui-focus-guard])' },
+      ],
     });
   },
   async postVisit(page, context) {
