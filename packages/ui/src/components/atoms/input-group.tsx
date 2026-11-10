@@ -16,7 +16,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       role="group"
       className={cn(
         fieldSurface,
-        "has-[[data-slot=input-group-control]:focus-visible]:outline-solid has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2 has-[[data-slot=input-group-control]:focus-visible]:outline-ring has-[[data-slot][aria-invalid=true]]:outline-destructive has-[[data-slot][aria-invalid=true]]:shadow-[inset_0_0_0_1px_var(--destructive)] group/input-group relative flex h-8.5 w-full min-w-0 items-center in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 in-data-[slot=combobox-content]:outline-none! has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5",
+        "has-[[data-slot=input-group-control]:focus-visible]:outline-solid has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2 has-[[data-slot=input-group-control]:focus-visible]:outline-ring has-[[data-slot][aria-invalid=true]]:outline-destructive has-[[data-slot][aria-invalid=true]]:shadow-[inset_0_0_0_1px_var(--destructive)] group/input-group relative flex h-8.5 w-full min-w-0 items-center in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 in-data-[slot=combobox-content]:outline-none! has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pe-1.5 has-[>[data-align=inline-start]]:[&>input]:ps-1.5",
         className
       )}
       {...props}
@@ -24,15 +24,18 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+// An inline addon starts 10px in, like the text of an Input. A button or kbd
+// in it keeps to its old spot nearer the edge: its own padding puts its
+// content about 10px in. Logical sides, so right-to-left mirrors it.
 const inputGroupAddonVariants = cva(
   "text-muted-foreground h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4 flex cursor-text items-center justify-center select-none",
   {
     variants: {
       align: {
         "inline-start":
-          "pl-2 has-[>button]:-ml-1 has-[>kbd]:ml-[-0.15rem] order-first",
+          "ps-2.5 has-[>button]:-ms-1.5 has-[>kbd]:ms-[-0.275rem] order-first",
         "inline-end":
-          "pr-2 has-[>button]:-mr-1 has-[>kbd]:mr-[-0.15rem] order-last",
+          "pe-2.5 has-[>button]:-me-1.5 has-[>kbd]:me-[-0.275rem] order-last",
         "block-start":
           "px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2 order-first w-full justify-start",
         "block-end":
