@@ -37,6 +37,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'palette-detail-move',
             'palette-result-blur',
             'tooltip-enter',
+            'tooltip-delay',
             'tooltip-label-fade',
             'tooltip-label-move',
             'tooltip-resize',
