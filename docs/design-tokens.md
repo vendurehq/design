@@ -66,7 +66,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 - `background`, `foreground` — Page background and primary text
 - `foreground-secondary` — Secondary text on any surface tier: descriptions, table values, inactive navigation (`text-foreground-secondary`). It sits between `foreground` and `muted-foreground`. It is not the text on a `secondary` fill; that is `secondary-foreground`
-- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier. `overlay` points at `surface-raised` in both themes; the `shadow-overlay` edge, ring and drop separate floating content
+- `surface`, `surface-raised`, `overlay` — The surface ramp: content plane, lifted elements, floating layer. Contrast between tiers separates content; borders divide siblings within a tier. `overlay` points at `surface-raised` in both themes; the `shadow-overlay` edge and drop separate floating content
 - `inset` — Sunken wells (tab tracks, skeletons) that read below their host surface
 - `scrim` — Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer): `bg-scrim`
 - `scrim-subtle` — Lighter backdrop for a transient overlay that keeps the page in view, such as the command palette: `bg-scrim-subtle`
@@ -132,7 +132,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 ### Shadows
 
 - `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
-- `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a clear 1px edge, a soft 4px ring outside it, and a soft drop. It is the popup's border, so a popup takes no border or ring class. Light and dark have different values. Use `shadow-overlay`
+- `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a clear 1px edge and a soft drop. It is the popup's border, so a popup takes no border or ring class. Light and dark have different values. Use `shadow-overlay`
 - `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
 
 ### Motion

@@ -8,18 +8,11 @@ describe('The overlay shadow gives a popup a visible border', () => {
     ['light', lightShadows],
     ['dark', darkShadows],
   ] as const) {
-    test(`${mode}: a 1px edge, a 4px ring outside it, then the drops`, () => {
-      const [edge = '', ring = '', ...drops] = layers(shadows.overlay);
+    test(`${mode}: a 1px edge, then the drops, no ring`, () => {
+      const [edge = '', ...drops] = layers(shadows.overlay);
       expect(edge).toStartWith('0 0 0 1px ');
-      expect(ring).toStartWith('0 0 0 5px ');
       expect(drops.length).toBeGreaterThan(0);
       for (const drop of drops) expect(drop).not.toStartWith('0 0 0 ');
-    });
-
-    test(`${mode}: the edge is stronger than the ring`, () => {
-      const alpha = (layer: string) => Number(layer.match(/\/ ([\d.]+)\)/)?.[1]);
-      const [edge = '', ring = ''] = layers(shadows.overlay);
-      expect(alpha(edge)).toBeGreaterThan(alpha(ring));
     });
   }
 });

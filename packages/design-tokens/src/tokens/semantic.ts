@@ -148,7 +148,7 @@ export const darkTheme = {
   'foreground-secondary': 'oklch(0.838 0.01 231)',
   // Dark mode expresses the page tiers through lightness. `surface` sits
   // halfway between the canvas and the raised tier. `overlay` points at
-  // `surface-raised`, as in the v3 look: the overlay shadow's 1px ring and
+  // `surface-raised`, as in the v3 look: the overlay shadow's 1px edge and
   // drop separate floating content, not a lighter fill.
   surface: 'oklch(0.222 0.012 231)',
   'surface-raised': 'oklch(0.238 0.013 231)',

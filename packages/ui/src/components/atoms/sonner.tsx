@@ -92,7 +92,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             // Sonner's own stylesheet is unlayered, so the overlay shadow and
             // the type need ! to win over it.
             // 44px high, 10px 14px padding, 13px medium text, a 10px gap. The
-            // overlay shadow gives the edge and the ring. The toast has no
+            // overlay shadow gives the edge. The toast has no
             // border and no inset hairline: either would sit next to the
             // shadow's 1px edge and read as a second line. A new toast fades in from 12px
             // below; a leaving one drops 6px at 0.97. The entry has no scale:
