@@ -120,7 +120,9 @@ describe('v3 overlay look', () => {
       'command.tsx': 'data-[selected=true]:bg-muted',
     };
     for (const [file, token] of Object.entries(highlight)) {
-      const code = source(file);
+      // A combobox chip is a value in the field, not a list item: it takes
+      // the accent fill to stand out from the muted field.
+      const code = source(file).replace(/function ComboboxChip\([\s\S]*?\n}\n/, '');
       expect(code).toContain(token);
       expect(code).not.toMatch(/(?:focus|data-highlighted|data-open|data-popup-open|data-\[selected=true\]):bg-accent\b/);
       expect(code).not.toMatch(/"bg-accent /);
