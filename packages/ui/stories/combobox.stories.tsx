@@ -174,6 +174,11 @@ export const Chips: Story = {
     await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
     await expect(style.borderTopLeftRadius).toBe('6px');
     probe.remove();
+    // A chip stands out from the field: its own fill and a grey outline, the
+    // v3 look's grey chip.
+    const chip = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chip"]') as HTMLElement;
+    await expect(getComputedStyle(chip).backgroundColor).not.toBe(style.backgroundColor);
+    await expect(getComputedStyle(chip).boxShadow).not.toBe('none');
     // Focus on the input inside rings the whole field, 2px inside.
     within(canvasElement).getByRole('combobox', { name: 'Countries' }).focus();
     await waitFor(() => expect(style.outlineWidth).toBe('2px'));

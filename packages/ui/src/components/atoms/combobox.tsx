@@ -268,6 +268,8 @@ function ComboboxChips({
   )
 }
 
+// A chip is the v3 look's grey chip: the accent fill, one step above the
+// muted field it sits on, with a grey outline, so each value stands out.
 function ComboboxChip({
   className,
   children,
@@ -283,7 +285,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "bg-muted text-foreground flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0",
+        "bg-accent inset-ring inset-ring-[color-mix(in_oklab,var(--neutral-text)_34%,transparent)] text-foreground flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0",
         className
       )}
       {...props}
