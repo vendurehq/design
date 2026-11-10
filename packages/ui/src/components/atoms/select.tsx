@@ -61,6 +61,51 @@ function SelectTrigger({
   )
 }
 
+/**
+ * Base UI puts the origin of a list placed over its trigger at 50% of the list
+ * width and at the height of the selected label. The list is as wide as its
+ * widest item, so scaling from 50% moves the label sideways, away from the
+ * trigger label under it. Move the origin to the middle of the label: the
+ * label then keeps its place while the list opens and closes.
+ *
+ * The label rect is read through the popup's own scale, so it is the same at
+ * any point of the transition. Base UI rewrites its origin variable each time
+ * it positions the list, so this runs again on every style change of the popup.
+ */
+function originOnSelectedLabel(popup: HTMLElement | null) {
+  if (!popup) return () => {}
+  let placed = { x: NaN, y: NaN }
+  const place = () => {
+    if (popup.dataset.side !== "none") {
+      placed = { x: NaN, y: NaN }
+      popup.style.removeProperty("transform-origin")
+      return
+    }
+    const item =
+      popup.querySelector<HTMLElement>("[data-slot=select-item][data-selected]") ??
+      popup.querySelector<HTMLElement>("[data-slot=select-item]")
+    const label = item?.firstElementChild
+    if (!label || !popup.offsetWidth) return
+    const range = document.createRange()
+    range.selectNodeContents(label)
+    const text = range.getBoundingClientRect()
+    const box = popup.getBoundingClientRect()
+    const scale = box.width / popup.offsetWidth
+    if (!text.width || !scale) return
+    const x = (text.left + text.width / 2 - box.left) / scale
+    const y = (text.top + text.height / 2 - box.top) / scale
+    // Writing the origin is a style change, which runs this again: skip a
+    // write that would only repeat the last one by a rounding difference.
+    if (Math.abs(x - placed.x) < 0.1 && Math.abs(y - placed.y) < 0.1) return
+    placed = { x, y }
+    popup.style.transformOrigin = `${x}px ${y}px`
+  }
+  const observer = new MutationObserver(place)
+  observer.observe(popup, { attributes: true, attributeFilter: ["style", "data-side"] })
+  place()
+  return () => observer.disconnect()
+}
+
 // min-w-(--anchor-width) rather than w-(--anchor-width) so the popup can expand beyond the trigger to fit content
 function SelectContent({
   className,
@@ -70,6 +115,7 @@ function SelectContent({
   align = "center",
   alignOffset = 0,
   alignItemWithTrigger = true,
+  ref,
   ...props
 }: SelectPrimitive.Popup.Props &
   Pick<
@@ -95,6 +141,20 @@ function SelectContent({
     [children]
   )
 
+  const popupRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      const stop = originOnSelectedLabel(node)
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+      return () => {
+        stop()
+        if (typeof ref === "function") ref(null)
+        else if (ref) ref.current = null
+      }
+    },
+    [ref]
+  )
+
   const dir = usePopupDir()
   return (
     <SelectPrimitive.Portal key={childrenKey}>
@@ -110,7 +170,8 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
-          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "data-[side=none]:transition-none", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0", className )}
+          ref={popupRef}
           {...props}
         >
           <SelectScrollUpButton />

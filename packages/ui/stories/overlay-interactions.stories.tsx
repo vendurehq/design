@@ -276,7 +276,51 @@ export const SelectFallbackLook: Story = {
   },
 };
 
-/** With room around the trigger, the list sits over it and opens at once. */
+const textCentre = (element: Element) => {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const box = range.getBoundingClientRect();
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+};
+
+/**
+ * Samples every frame while the list is shown: how far the selected label in
+ * the list is from the label in the trigger, and how many frames the popup is
+ * between hidden and fully shown.
+ */
+function trackSelectedLabel(trigger: HTMLElement) {
+  const value = trigger.querySelector('[data-slot=select-value]') as HTMLElement;
+  let running = true;
+  let offset = 0;
+  let frames = 0;
+  let fading = 0;
+  const tick = () => {
+    const popup = document.querySelector('[data-slot=select-content]') as HTMLElement | null;
+    const label = popup?.querySelector('[data-selected]')?.firstElementChild;
+    if (popup && label && !popup.parentElement?.hidden) {
+      const from = textCentre(label);
+      const to = textCentre(value);
+      offset = Math.max(offset, Math.hypot(from.x - to.x, from.y - to.y));
+      frames += 1;
+      const opacity = Number(getComputedStyle(popup).opacity);
+      if (opacity > 0 && opacity < 1) fading += 1;
+    }
+    if (running) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  return {
+    stop() {
+      running = false;
+      return { offset, frames, fading };
+    },
+  };
+}
+
+/**
+ * With room around the trigger, the list sits over it and opens with the popup
+ * motion: it fades and scales in and out like the others, with no slide, and
+ * grows from the selected label, which stays on the label in the trigger.
+ */
 export const SelectAlignedLook: Story = {
   render: () => (
     <div className="pt-60">
@@ -298,10 +342,30 @@ export const SelectAlignedLook: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
+    const trigger = within(canvasElement).getByRole('combobox', { name: 'Currency' });
+    const track = trackSelectedLabel(trigger);
+    await userEvent.click(trigger);
     const popup = await findSlot('select-content');
     await waitFor(() => expect(popup.dataset.side).toBe('none'));
-    await expect(getComputedStyle(popup).transitionProperty).toBe('none');
+    await expectPopupMotion(popup);
+    // The origin is the middle of the selected label, not 50% of the list width.
+    const label = popup.querySelector('[data-selected]')?.firstElementChild as HTMLElement;
+    await waitFor(() => expect(popup.hasAttribute('data-starting-style')).toBe(false));
+    await waitFor(() => expect(getComputedStyle(popup).scale).toBe('none'));
+    const [originX = NaN, originY = NaN] = getComputedStyle(popup).transformOrigin.split(' ').map(parseFloat);
+    const box = popup.getBoundingClientRect();
+    const middle = textCentre(label);
+    await expect(Math.abs(box.left + originX - middle.x)).toBeLessThan(0.5);
+    await expect(Math.abs(box.top + originY - middle.y)).toBeLessThan(0.5);
+    // Keyboard close animates too.
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(popup.parentElement?.hidden || !popup.isConnected).toBe(true));
+    const { offset, frames, fading } = track.stop();
+    // The list was on screen for the whole motion, not for one frame.
+    await expect(frames).toBeGreaterThan(8);
+    await expect(fading).toBeGreaterThan(4);
+    // The label never left the trigger label.
+    await expect(offset).toBeLessThan(0.5);
   },
 };
 
