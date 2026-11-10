@@ -111,8 +111,9 @@ export const FromTriggerToTrigger: Story = {
 };
 
 /**
- * A tooltip without a TooltipProvider opens at once, as it does inside one.
- * A TooltipProvider is only needed to set a delay for a group of tooltips.
+ * A tooltip without a TooltipProvider waits `tooltip-delay` (600ms) before it
+ * opens, as it does inside one. A TooltipProvider is what lets the next
+ * tooltips open at once, without animation.
  */
 export const WithoutProvider: Story = {
   render: () => (
@@ -127,21 +128,24 @@ export const WithoutProvider: Story = {
     const canvas = within(canvasElement);
     const body = within(document.body);
     const trigger = canvas.getByRole('button', { name: 'Copy' });
-    // Base UI's own default waits 600ms; this tooltip must open well before
-    // that, within 300ms of a hover. A production build can run the play
-    // before the trigger listens, so a hover that lands too early is retried:
-    // each try leaves the trigger first, which cancels any pending open, so a
-    // delayed tooltip still fails every try.
+    // A production build can run the play before the trigger listens, so a
+    // hover that opens nothing is retried. Each try leaves the trigger first,
+    // which cancels a pending open.
+    let waited = 0;
     await waitFor(
       async () => {
         await userEvent.unhover(trigger);
+        const start = performance.now();
         await userEvent.hover(trigger);
-        await expect(
-          await body.findByText('Copy the order code', {}, { timeout: 300 }),
-        ).toBeInTheDocument();
+        // Nothing is open before the delay is over.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        expect(body.queryByText('Copy the order code')).toBeNull();
+        await body.findByText('Copy the order code', {}, { timeout: 1500 });
+        waited = performance.now() - start;
       },
-      { timeout: 3000 },
+      { timeout: 5000 },
     );
+    await expect(waited).toBeGreaterThanOrEqual(550);
   },
 };
 

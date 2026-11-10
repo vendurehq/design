@@ -14,6 +14,10 @@ describe('TooltipProvider', () => {
     expect(source).toContain('delay = TOOLTIP_DELAY');
   });
 
+  test('a trigger without a provider waits the same delay', () => {
+    expect(source).toContain('inProvider ? undefined : TOOLTIP_DELAY');
+  });
+
   test('an instant tooltip does not animate', () => {
     expect(source).toContain('data-instant:duration-instant');
   });
