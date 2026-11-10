@@ -82,4 +82,4 @@ jobs:
             apps/storybook/visual-output
             apps/storybook/test-results
           if-no-files-found: ignore
-          retention-days: 14
+          retention-days: 1
