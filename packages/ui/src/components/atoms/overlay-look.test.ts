@@ -188,16 +188,17 @@ describe('v3 overlay look', () => {
     expect(code).toContain('critical: "text-destructive-text"');
   });
 
-  test('the toaster defaults to bottom right on the 2xl radius, overlay shadow and a hairline', () => {
+  test('the toaster defaults to bottom right on the 2xl radius and the overlay shadow', () => {
     const code = source('sonner.tsx');
     expect(code).toContain('position="bottom-right"');
     expect(code).toContain('var(--radius-2xl)');
-    expect(code).toContain('shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!');
+    expect(code).toContain('shadow-overlay!');
   });
 
-  test('the toast has one edge: no border between the shadow ring and the hairline', () => {
+  test('the toast has one edge: the overlay shadow, no border and no inset hairline', () => {
     const code = source('sonner.tsx');
-    expect(code).toContain('"border-0! shadow-[var(--shadow-overlay),inset_0_0_0_1px_var(--border)]!"');
+    expect(code).toContain('"border-0! shadow-overlay!"');
+    expect(code).not.toContain('inset_0_0_0_1px_var(--border)');
     expect(code).not.toContain('"--normal-border"');
   });
 

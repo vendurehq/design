@@ -77,7 +77,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Overlay is for floating content',
-        body: 'Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.',
+        body: "Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. The overlay shadow is the popup's border: a clear 1px edge, a soft 4px ring outside it, then the drop. Do not add a border or ring class to a popup. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.",
       },
       {
         title: 'Inset reads below its host',
