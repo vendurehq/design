@@ -1343,3 +1343,70 @@ export const KeyboardSelection: Story = {
     await toggleWithSpace('Select row 1', 'true');
   },
 };
+
+// Selection motion. This table has no toolbar, so the bulk bar opens a band of
+// its own: the band eases its height open on the first selection and closed
+// on the last, and the rows glide instead of jumping. Each selected row draws
+// a brand-colour bar on its leading edge. The bar grows from where it touches
+// a selected row: down from a selected row above, up from one below, from both
+// ends when it closes a gap, and out from its middle when it touches none.
+// Deselecting plays the same motion backwards. The play function selects rows
+// 2 and 4, so rows 1, 3, 5 and 7 show each case's starting clip.
+export const SelectionMotion: Story = {
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Order>
+        rows={orders}
+        columns={columns}
+        getRowId={(order) => order.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        bulkActions={({ selection: selected, clearSelection }) => (
+          <>
+            <span className="text-sm font-medium">{selected.length} selected</span>
+            <Button variant="outline" size="sm" onClick={clearSelection}>
+              Clear
+            </Button>
+          </>
+        )}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const rows = () => [...canvasElement.querySelectorAll<HTMLElement>('tbody tr')];
+    const clips = (row: HTMLElement) => [
+      getComputedStyle(row, '::before').clipPath,
+      getComputedStyle(row, '::after').clipPath,
+    ];
+    const FULL = ['inset(0px 0px 50%)', 'inset(50% 0px 0px)'];
+
+    await step('selecting rows 2 and 4 opens the bulk band', async () => {
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 4' }));
+      await expect(await canvas.findByText('2 selected')).toBeVisible();
+    });
+
+    await step('a selected row shows the whole bar in the brand colour', async () => {
+      const row = rows()[1] as HTMLElement;
+      await waitFor(() => expect(clips(row)).toEqual(FULL));
+      const brand = getComputedStyle(row).getPropertyValue('--brand-indicator').trim();
+      await expect(getComputedStyle(row, '::before').backgroundColor).toBe(brand);
+      await expect(getComputedStyle(row, '::after').backgroundColor).toBe(brand);
+    });
+
+    await step('each unselected row starts its bar where it touches a selection', async () => {
+      const [below, , gap, , above, , alone] = rows() as HTMLElement[];
+      await waitFor(() => {
+        // A selected row below: both halves start at the bottom.
+        expect(clips(below as HTMLElement)).toEqual(['inset(100% 0px 0px)', 'inset(100% 0px 0px)']);
+        // Selected rows on both sides: the halves start at their own ends.
+        expect(clips(gap as HTMLElement)).toEqual(['inset(0px 0px 100%)', 'inset(100% 0px 0px)']);
+        // A selected row above: both halves start at the top.
+        expect(clips(above as HTMLElement)).toEqual(['inset(0px 0px 100%)', 'inset(0px 0px 100%)']);
+        // No selected neighbour: both halves start in the middle.
+        expect(clips(alone as HTMLElement)).toEqual(['inset(50% 0px)', 'inset(50% 0px)']);
+      });
+    });
+  },
+};

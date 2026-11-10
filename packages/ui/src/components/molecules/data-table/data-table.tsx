@@ -59,7 +59,7 @@ import {
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { ListRowChevron } from '@vendure-io/ui/components/molecules/list-row';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
@@ -225,6 +225,16 @@ const bandRowFade = {
   transition: { duration: 0.1, ease: 'easeOut' },
 } as const;
 
+// The bulk-only band (a selectable table with no header content) opens and
+// closes its height in --transition-duration-normal (200ms) on --ease-height,
+// while its content takes `bandRowFade`. Reduced motion skips the height.
+const bulkBandOpen = {
+  initial: { height: 0 },
+  animate: { height: 'auto' },
+  exit: { height: 0 },
+  transition: { duration: 0.2, ease: [0.25, 1, 0.5, 1] },
+} as const;
+
 function ariaSort<TData>(
   hasSorting: boolean,
   column: Column<TData, unknown>,
@@ -342,7 +352,7 @@ function DataTable<TData>({
               indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
               onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
               aria-label={displayProps.current.l.selectAllRows}
-              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
+              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100"
             />
           ),
           cell: ({ row }) => (
@@ -351,7 +361,7 @@ function DataTable<TData>({
               disabled={!row.getCanSelect()}
               onCheckedChange={(checked) => row.toggleSelected(checked)}
               aria-label={displayProps.current.l.selectRow(row.index)}
-              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
+              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100"
             />
           ),
         }
@@ -437,6 +447,7 @@ function DataTable<TData>({
   }, [table]);
 
   const selectionCache = useSelectionCache(table);
+  const reduceMotion = useReducedMotion();
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
@@ -554,17 +565,49 @@ function DataTable<TData>({
   const showHeader = header != null || showControls || showChips;
   // Unlike the other zones, the bulk bar exists only while rows are selected,
   // so it opens the header band on its own only then — a controls-less
-  // selectable table must not render an empty band. (Deliberate trade-off:
-  // for a table with no header content at all, the band pops in on first
-  // selection rather than reserving empty space.)
+  // selectable table must not render an empty band. That band eases its
+  // height open and closed (see `bulkBandOpen`), so the rows glide down and
+  // back instead of jumping.
   const showBulk =
     rowSelection != null &&
     bulkActions != null &&
     getSelectedRowIds(table.getState().rowSelection).length > 0;
 
+  const bulkOnlyBand = !showHeader && rowSelection != null && bulkActions != null;
+
   const bands = (
     <>
-      {(showHeader || showBulk) && (
+      {bulkOnlyBand && (
+        <MotionConfig reducedMotion="user">
+          <AnimatePresence initial={false}>
+            {showBulk && (
+              // The band and the card gap below it open together: the wrapper
+              // pulls the gap back with a negative margin, and in a card the
+              // header adds it back inside, so at height 0 the band takes no
+              // space. A plain frame keeps its top padding instead.
+              <motion.div
+                key="bulk-band"
+                className="-mb-(--card-gap) overflow-hidden"
+                {...bulkBandOpen}
+                transition={reduceMotion ? { duration: 0 } : bulkBandOpen.transition}
+              >
+                <CardHeader className={cn('border-b', frame !== 'plain' && 'mb-(--card-gap)')}>
+                  <ListHeader>
+                    <motion.div {...bandRowFade}>
+                      <DataTableBulkActions
+                        table={table}
+                        cache={selectionCache}
+                        render={bulkActions}
+                      />
+                    </motion.div>
+                  </ListHeader>
+                </CardHeader>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </MotionConfig>
+      )}
+      {showHeader && (
         <CardHeader className="border-b">
           <ListHeader>
             {header}
@@ -771,11 +814,7 @@ function DataTable<TData>({
   return frame === 'plain' ? (
     <div
       data-slot="data-table"
-      className={cn(
-        'flex flex-col gap-(--card-gap)',
-        !(showHeader || showBulk) && 'pt-(--card-gap)',
-        className,
-      )}
+      className={cn('flex flex-col gap-(--card-gap)', !showHeader && 'pt-(--card-gap)', className)}
     >
       {bands}
     </div>
