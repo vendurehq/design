@@ -49,8 +49,9 @@ describe('ButtonLabelSwap and TooltipLabelSwap', () => {
 
 describe('Tooltip width', () => {
   // The bubble side renders in a portal, which server rendering skips; the
-  // WiderTooltipLabel story checks it in a browser.
-  test('a changing label wraps at --tooltip-max-w, less the bubble padding', () => {
-    expect(tooltip.label).toContain('max-w-[calc(var(--tooltip-max-w,20rem)-1.25rem)]');
+  // NeverWiderThan320 story checks it in a browser.
+  test('a changing label wraps at the 320px bubble, less its padding', () => {
+    expect(tooltip.label).toContain('max-w-[calc(--spacing(80)-1.25rem)]');
+    expect(tooltip.label).not.toContain('--tooltip-max-w');
   });
 });
