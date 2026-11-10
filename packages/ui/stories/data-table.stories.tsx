@@ -953,7 +953,7 @@ const variantColumns: ColumnDef<Variant>[] = [
         value={row.original.sku}
         truncate="none"
         reveal="row"
-        copyLabel={`Copy SKU of ${row.original.name}`}
+        copyLabel="Copy SKU"
       />
     ),
   },
@@ -1081,7 +1081,7 @@ export const RowLink: Story = {
 
     await step('the SKU chip copies and does not open the item', async () => {
       const hit = hitAt(rowCanvas.getByText('L2201308'));
-      await expect(hit).toBe(rowCanvas.getByRole('button', { name: 'Copy SKU of Laptop 13 inch 8GB' }));
+      await expect(hit).toBe(rowCanvas.getByRole('button', { name: 'Copy SKU L2201308' }));
       await userEvent.click(hit);
       await expect(location.hash).toBe('');
     });
@@ -1210,7 +1210,7 @@ const orderRowColumns: ColumnDef<OrderRow>[] = [
           value={row.original.code}
           truncate="none"
           reveal="row"
-          copyLabel={`Copy order code ${row.original.code}`}
+          copyLabel="Copy order code"
         />
       </>
     ),
@@ -1311,7 +1311,7 @@ export const KeyboardSelection: Story = {
     // Cells that must survive a selection change as the same DOM nodes.
     const survivors = [
       canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' }),
-      canvas.getByRole('button', { name: 'Copy SKU of Laptop 13 inch 8GB' }),
+      canvas.getByRole('button', { name: 'Copy SKU L2201308' }),
       canvas.getAllByText('Enabled')[0] as HTMLElement,
       canvas.getByRole('button', { name: 'Open menu for Laptop 13 inch 8GB' }),
     ];

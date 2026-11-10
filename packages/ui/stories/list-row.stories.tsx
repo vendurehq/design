@@ -356,7 +356,7 @@ export const ChipsInRow: Story = {
 
     // The copy chips: the value text lies under the copy button's stretched ::after.
     await expect(hitAt(canvas.getByText('5c1f8b7e…2043'))).toBe(
-      canvas.getByRole('button', { name: 'Copy order ID' }),
+      canvas.getByRole('button', { name: 'Copy order ID 5c1f8b7e…2043' }),
     );
     await expect(hitAt(canvas.getByText('vc_pat_7...5dE7'))).toBe(
       canvas.getByRole('button', { name: 'Copy token' }),

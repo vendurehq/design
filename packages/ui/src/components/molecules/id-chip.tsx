@@ -81,8 +81,8 @@ const chipCopyButtonProps = {
 
 /**
  * Tooltip text of a whole-chip copy target: "Copy" until the copy succeeds,
- * then "Copied", swapped in one motion by `TooltipLabelSwap`. `detail` (the
- * full value of a shortened chip) sits above it.
+ * then "Copied", swapped in one motion by `TooltipLabelSwap`. Nothing else:
+ * the chip shows the start and end of its value, and a click copies all of it.
  *
  * The tooltip closes as soon as the pointer leaves the chip. In a list it can
  * open below the chip and cover the chip in the next row; a tooltip that stays
@@ -94,20 +94,17 @@ function ChipCopyTooltip({
   copied,
   copyLabel,
   copiedLabel,
-  detail,
 }: {
   chip: React.ReactElement;
   copied: boolean;
   copyLabel: string;
   copiedLabel: string;
-  detail?: React.ReactNode;
 }) {
   return (
     <Tooltip disableHoverablePopup>
       {/* The click that copies must not close the tooltip, or "Copied" is never seen. */}
       <TooltipTrigger render={chip} closeOnClick={false} />
       <TooltipContent>
-        {detail ? <span className="block font-mono">{detail}</span> : null}
         <TooltipLabelSwap labels={[copyLabel, copiedLabel]} active={copied ? 1 : 0} />
       </TooltipContent>
     </Tooltip>
@@ -140,7 +137,7 @@ function truncateId(value: string, mode: TruncateMode): string {
 }
 
 interface IdChipProps {
-  /** The full value: always copied in full, and shown in a tooltip when the chip shortens it. */
+  /** The full value: always copied in full. A chip without copy shows it in a tooltip when it shortens it. */
   value: string;
   /** Override the rendered text (e.g. a longer prefix). Bypasses `truncate`. */
   display?: string;
@@ -161,9 +158,14 @@ interface IdChipProps {
   onCopied?: () => void;
   /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
-  /** Accessible label of the copy button before copying, e.g. "Copy commit SHA". @default "Copy" */
+  /**
+   * The tooltip text before copying, e.g. "Copy commit". Keep it short and
+   * leave the value out: the copy button's accessible name adds the shown
+   * text itself ("Copy commit 9f2c4e1"), so each button in a list has its own
+   * name. @default "Copy"
+   */
   copyLabel?: string;
-  /** Accessible label of the copy button while the copied state is active. @default "Copied" */
+  /** The tooltip text and the copy button's accessible name while the copied state is active. @default "Copied" */
   copiedLabel?: string;
   /** How long the check-mark feedback stays visible, in ms. @default 2000 */
   timeout?: number;
@@ -172,9 +174,8 @@ interface IdChipProps {
 /**
  * A monospace chip for IDs with a built-in copy action. The rendered text is
  * truncated for density while the full value is copied. When copyable, the
- * whole chip is the copy target: its tooltip says "Copy", then "Copied", and
- * shows the full value above when the chip shortens it. The copy button inside
- * is the only tab stop.
+ * whole chip is the copy target: its tooltip says "Copy", then "Copied". The
+ * copy button inside is the only tab stop.
  */
 function IdChip({
   value,
@@ -203,7 +204,7 @@ function IdChip({
         <CopyButton
           value={value}
           copyAction={action}
-          copyLabel={copyLabel}
+          copyLabel={`${copyLabel} ${text}`}
           copiedLabel={copiedLabel}
           {...chipCopyButtonProps}
         />
@@ -220,7 +221,6 @@ function IdChip({
         copied={action.copied}
         copyLabel={copyLabel}
         copiedLabel={copiedLabel}
-        detail={shortened ? value : undefined}
       />
     );
   }

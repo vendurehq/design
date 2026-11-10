@@ -6,20 +6,24 @@ import { IdChip } from './id-chip.tsx';
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
 describe('IdChip', () => {
-  test('the copy button keeps its default "Copy" label', () => {
+  test('the copy button is named "Copy" and the shown text by default', () => {
     expect(html(<IdChip value="5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d4e3f" />)).toContain(
-      'aria-label="Copy"',
+      'aria-label="Copy 5c1f8b7e…4e3f"',
     );
   });
 
   // `copiedLabel` takes the same path but only renders after a clipboard
   // interaction, which a static render cannot reach.
-  test('forwards copyLabel to the copy button', () => {
+  // The tooltip shows copyLabel alone; the button adds the shown text, so
+  // each button in a list has its own name.
+  test('names the copy button with copyLabel and the shown text', () => {
     const markup = html(
       <IdChip value="a1b2c3d4e5f6a7b8c9d0" copyLabel="Copy commit SHA" onCopyError={() => {}} />,
     );
-    expect(markup).toContain('aria-label="Copy commit SHA"');
-    expect(markup).not.toContain('aria-label="Copy"');
+    expect(markup).toContain('aria-label="Copy commit SHA a1b2c3d4…c9d0"');
+    expect(
+      html(<IdChip value="a1b2c3d4e5f6a7b8c9d0" display="a1b2c3d" copyLabel="Copy commit" />),
+    ).toContain('aria-label="Copy commit a1b2c3d"');
   });
 
   test('copyable={false} renders no copy button', () => {

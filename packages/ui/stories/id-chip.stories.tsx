@@ -36,7 +36,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
-// The full value is always copied and shown in the tooltip of a shortened chip.
+// The full value is always copied, whatever the chip shows.
 export const TruncationModes: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-2">
@@ -62,7 +62,9 @@ export const NotCopyable: Story = {
 
 /**
  * Name what the button copies with `copyLabel`, and handle a failed clipboard
- * write with `onCopyError` (or a `CopyFeedbackProvider`).
+ * write with `onCopyError` (or a `CopyFeedbackProvider`). The tooltip says
+ * only the copy label, even when the chip shortens the value: the chip shows
+ * its start and end, and a click copies all of it.
  */
 export const CustomCopyLabel: Story = {
   args: {
@@ -70,6 +72,19 @@ export const CustomCopyLabel: Story = {
     display: '9f2c4e1',
     copyLabel: 'Copy commit SHA',
     copiedLabel: 'Commit SHA copied',
+  },
+  play: async ({ canvasElement }) => {
+    // Focus opens the tooltip at once; a synthetic hover is not reliable in
+    // the production build.
+    within(canvasElement).getByRole('button', { name: 'Copy commit SHA 9f2c4e1' }).focus();
+    let content: HTMLElement | null = null;
+    await waitFor(() => {
+      content = document.querySelector<HTMLElement>('[data-slot="tooltip-content"]');
+      expect(content).not.toBeNull();
+    });
+    const tooltip = content as unknown as HTMLElement;
+    await expect(tooltip.textContent).not.toContain('9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9f0e');
+    await expect(tooltip.textContent).toContain('Copy commit SHA');
   },
 };
 
@@ -90,7 +105,7 @@ export const WholeChipCopies: Story = {
     // ::after), which is what makes the whole chip the click target.
     const text = canvas.getByText('9f2c4e1a…9f0e').getBoundingClientRect();
     const hit = document.elementFromPoint(text.left + 4, text.top + text.height / 2);
-    await expect(hit).toBe(canvas.getByRole('button', { name: 'Copy commit SHA' }));
+    await expect(hit).toBe(canvas.getByRole('button', { name: 'Copy commit SHA 9f2c4e1a…9f0e' }));
   },
 };
 
@@ -104,7 +119,7 @@ export const CopiedLabelSwaps: Story = {
   args: { value: 'L2201516', truncate: 'none', copyLabel: 'Copy SKU' },
   play: async ({ canvasElement }) => {
     stubClipboard();
-    const button = within(canvasElement).getByRole('button', { name: 'Copy SKU' });
+    const button = within(canvasElement).getByRole('button', { name: 'Copy SKU L2201516' });
     await userEvent.hover(button);
     let swap: HTMLElement | null = null;
     await waitFor(() => {
