@@ -117,6 +117,32 @@ async function pressRowText(page: Page, press?: { text: string; expectHash: stri
 }
 
 /**
+ * `parameters.pressSelectsRow` presses a piece of text in a table row with a
+ * real mouse while rows are selected, and expects the press to select the row:
+ * the checkbox named `expectChecked` must become checked and the URL must not
+ * change. A play function's click is not hit-tested against the page around
+ * the table; this press is.
+ */
+async function pressSelectsRow(page: Page, press?: { text: string; expectChecked: string }) {
+  if (!press) return;
+  const root = page.locator('#storybook-root');
+  const box = await root.getByText(press.text, { exact: true }).boundingBox();
+  if (!box) throw new Error(`pressSelectsRow: "${press.text}" is not visible`);
+  const url = page.url();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await root
+    .getByRole('checkbox', { name: press.expectChecked, exact: true })
+    .and(page.locator('[aria-checked=true]'))
+    .waitFor({ timeout: 1000 })
+    .catch(() => {
+      throw new Error(
+        `pressSelectsRow: the press on "${press.text}" did not check "${press.expectChecked}"`,
+      );
+    });
+  if (page.url() !== url) throw new Error(`pressSelectsRow: the press navigated to ${page.url()}`);
+}
+
+/**
  * `parameters.pressOpen` presses a trigger's text with a real mouse, so the
  * browser counts the open as a pointer interaction. A play function's click
  * is synthetic and leaves `:focus-visible` matching. The opened overlay must
@@ -170,6 +196,7 @@ const config: TestRunnerConfig = {
     await hoverText(page, storyContext.parameters?.hoverText);
     await pressText(page, storyContext.parameters?.pressText);
     await pressRowText(page, storyContext.parameters?.pressRowText);
+    await pressSelectsRow(page, storyContext.parameters?.pressSelectsRow);
     await pressOpen(page, storyContext.parameters?.pressOpen);
 
     // Opt a story out via `parameters.a11y.skip` in its meta or story export.
