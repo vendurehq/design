@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { CreditCard, LogOut, Mail, MessageSquare, Plus, Server, Settings, User, UserPlus, Users } from 'lucide-react';
 
 const meta = {
@@ -179,5 +180,81 @@ export const WithRadioItems: Story = {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+  },
+};
+
+function SideMenu({ label, align }: { label: string; align?: 'start' | 'end' }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>{label}</DropdownMenuTrigger>
+      <DropdownMenuContent align={align}>
+        <DropdownMenuItem>Edit</DropdownMenuItem>
+        <DropdownMenuItem>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem>Archive</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * A menu opens toward the centre of the screen. A trigger in the right half
+ * (the row actions at the end of a table row) lines up the menu's right edge
+ * with its own and the menu grows left; a trigger in the left half lines up
+ * the left edges. The menu scales in from the corner at the trigger. The
+ * side is physical, so it is the same in right-to-left. An explicit `align`
+ * still wins.
+ */
+export const OpensTowardTheCentre: Story = {
+  render: () => (
+    // Away from the edges, so the menu fits on either side of its trigger.
+    <div className="grid w-full grid-cols-4 gap-y-40 pb-60">
+      <div className="col-start-2">
+        <SideMenu label="Start" />
+      </div>
+      <div className="col-start-3 justify-self-end">
+        <SideMenu label="End" />
+      </div>
+      <div className="col-start-3 justify-self-end">
+        <SideMenu label="Explicit start" align="start" />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const check = async (label: string, edge: 'left' | 'right') => {
+      const trigger = canvas.getByRole('button', { name: label });
+      await userEvent.click(trigger);
+      const popup = await waitFor(() => {
+        const element = document.querySelector<HTMLElement>('[data-slot="dropdown-menu-content"]');
+        expect(element).not.toBeNull();
+        return element as HTMLElement;
+      });
+      await waitFor(() => {
+        const box = popup.getBoundingClientRect();
+        const anchor = trigger.getBoundingClientRect();
+        // The edge at the trigger lines up with the trigger's edge.
+        expect(Math.abs(box[edge] - anchor[edge])).toBeLessThan(1);
+        // It scales in from that corner.
+        const originX = Number.parseFloat(getComputedStyle(popup).transformOrigin);
+        expect(Math.abs(originX - (edge === 'left' ? 0 : box.width))).toBeLessThan(2);
+      });
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(document.querySelector('[data-slot="dropdown-menu-content"]')).toBeNull());
+    };
+    await check('Start', 'left');
+    await check('End', 'right');
+    // An explicit align wins over the side of the screen.
+    await check('Explicit start', 'left');
+    // In a right-to-left page the row flips: Start sits in the right half.
+    const root = document.documentElement;
+    const dir = root.getAttribute('dir');
+    root.setAttribute('dir', 'rtl');
+    try {
+      await check('Start', 'right');
+      await check('End', 'left');
+    } finally {
+      if (dir === null) root.removeAttribute('dir');
+      else root.setAttribute('dir', dir);
+    }
   },
 };
