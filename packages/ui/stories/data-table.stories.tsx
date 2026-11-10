@@ -1004,6 +1004,15 @@ function hitAt(element: Element): Element {
   return hit;
 }
 
+// `userEvent.click` moves a pointer onto the element first and never moves it
+// off. On a copy chip that hover can open the chip's tooltip, and only a
+// pointer leaving the chip closes it again. The test runner's real mouse never
+// entered the chip, so after the play function it cannot close that tooltip.
+async function clickCopyChip(chip: Element) {
+  await userEvent.click(chip);
+  await userEvent.unhover(chip);
+}
+
 function clearHash() {
   history.replaceState(null, '', `${location.pathname}${location.search}`);
 }
@@ -1083,7 +1092,7 @@ export const RowLink: Story = {
     await step('the SKU chip copies and does not open the item', async () => {
       const hit = hitAt(rowCanvas.getByText('L2201308'));
       await expect(hit).toBe(rowCanvas.getByRole('button', { name: 'Copy SKU L2201308' }));
-      await userEvent.click(hit);
+      await clickCopyChip(hit);
       await expect(location.hash).toBe('');
     });
 
@@ -1175,7 +1184,7 @@ export const RowLinkWithToken: Story = {
     clearHash();
     const hit = hitAt(row.getByText('vc_pat_7...5dE7'));
     await expect(hit).toBe(row.getByRole('button', { name: 'Copy CI deploys token' }));
-    await userEvent.click(hit);
+    await clickCopyChip(hit);
     await expect(location.hash).toBe('');
   },
 };
@@ -1261,7 +1270,7 @@ export const LookupKeyNamesTheRow: Story = {
     await step('a click on the code copies and does not open the order', async () => {
       const hit = hitAt(row.getByText('YVWJLP9HGJHH7EVK', { selector: 'code, span:not(.sr-only)' }));
       await expect(hit).toBe(row.getByRole('button', { name: 'Copy order code YVWJLP9HGJHH7EVK' }));
-      await userEvent.click(hit);
+      await clickCopyChip(hit);
       await expect(location.hash).toBe('');
     });
 
