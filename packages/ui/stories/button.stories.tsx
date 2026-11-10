@@ -95,7 +95,6 @@ export const Disabled: Story = {
 export const AsLink: Story = {
   args: {
     variant: 'outline',
-    // biome-ignore lint/a11y/useAnchorContent: Button injects the label via render
     render: <a href="https://vendure.io" />,
     children: 'Rendered as a link',
   },
