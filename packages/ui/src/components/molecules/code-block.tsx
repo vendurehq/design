@@ -360,7 +360,7 @@ function FadeOverlay({ visible }: FadeOverlayProps) {
   return (
     <div
       className={cn(
-        'from-card pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t to-transparent transition-opacity duration-300',
+        'from-card pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t to-transparent transition-opacity duration-slow',
         visible ? 'opacity-100' : 'opacity-0',
       )}
       aria-hidden="true"

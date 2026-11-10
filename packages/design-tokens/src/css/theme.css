@@ -237,6 +237,13 @@
   --transition-duration-tooltip-resize: 320ms;
   --transition-duration-progress-fill: 240ms;
   --transition-duration-row-enter: 340ms;
+  --transition-duration-popup-fade: 160ms;
+  --transition-duration-popup-resize: 350ms;
+  --transition-duration-sidebar-pill: 280ms;
+  --transition-duration-toast-exit-fade: 160ms;
+  --transition-duration-toast-exit-move: 180ms;
+  --transition-duration-toast-fade: 220ms;
+  --transition-duration-toast-move: 320ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;

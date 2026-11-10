@@ -203,7 +203,7 @@ function FileDropzone({
           void addFiles(Array.from(event.dataTransfer.files));
         }}
         className={cn(
-          'border-border text-muted-foreground hover:border-foreground/40 flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-[border-color,background-color,color] duration-(--transition-duration-fast) ease-(--ease-out)',
+          'border-border text-muted-foreground hover:border-foreground/40 flex min-h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-[border-color,background-color,color] duration-fast ease-out',
           'peer-focus-visible:outline-solid peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring',
           'data-dragging:border-foreground data-dragging:bg-accent data-dragging:text-accent-foreground',
           'data-disabled:pointer-events-none data-disabled:cursor-not-allowed data-disabled:opacity-50',

@@ -56,6 +56,22 @@ export const duration = {
   // A list row the user just added opens its height in this time with the
   // `height` curve. Only ListRow uses it.
   rowEnter: '340ms',
+  // A popup fades in over this time while it scales in `normal`. The shared
+  // popup motion and the NavigationMenu arrow use it.
+  popupFade: '160ms',
+  // An open NavigationMenu moves and resizes to the next item's content in
+  // this time with the `out` curve. Only NavigationMenu uses it.
+  popupResize: '350ms',
+  // The sidebar's sliding pill moves and resizes to the active item in this
+  // time with the `drawer` curve. Only the Sidebar menu indicator uses it.
+  sidebarPill: '280ms',
+  // Toasts. A toast moves to its place in the stack in `toastMove` and fades
+  // in `toastFade`; a leaving toast drops in `toastExitMove` and fades in
+  // `toastExitFade`. Only the Toaster uses them.
+  toastExitFade: '160ms',
+  toastExitMove: '180ms',
+  toastFade: '220ms',
+  toastMove: '320ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each key needs a

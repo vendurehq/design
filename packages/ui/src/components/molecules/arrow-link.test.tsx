@@ -71,7 +71,7 @@ describe('ArrowLink', () => {
   test('motion runs on tokens', () => {
     const html = renderToStaticMarkup(<ArrowLink href="#">View details</ArrowLink>);
     expect(slotTokens(html, 'arrow-link')).toEqual(
-      expect.arrayContaining(['duration-(--transition-duration-quick)', 'ease-(--ease-soft)']),
+      expect.arrayContaining(['duration-quick', 'ease-soft']),
     );
     expect(slotTokens(html, 'arrow-link-arrow')).toContain(
       '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',

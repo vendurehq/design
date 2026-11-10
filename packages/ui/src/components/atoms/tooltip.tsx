@@ -71,7 +71,7 @@ function TooltipContent({
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "bg-foreground text-background z-50 w-fit max-w-[var(--tooltip-max-w,20rem)] origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-(--transition-duration-fast) motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-[instant=dismiss]:transition-none has-data-[slot=tooltip-label-swap]:overflow-hidden",
+            "bg-foreground text-background z-50 w-fit max-w-[var(--tooltip-max-w,20rem)] origin-(--transform-origin) rounded-lg px-2.5 py-[7px] text-xs leading-[17px] font-medium transition-[opacity,scale] duration-tooltip-enter ease-soft data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-starting-style:scale-97 motion-safe:data-ending-style:scale-97 data-[instant=dismiss]:transition-none has-data-[slot=tooltip-label-swap]:overflow-hidden",
             className
           )}
           {...props}

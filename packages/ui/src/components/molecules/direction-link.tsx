@@ -65,7 +65,7 @@ function DirectionLink({
       {
         className: cn(
           'group/arrow-link inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-foreground-secondary',
-          'transition-colors duration-(--transition-duration-quick) ease-(--ease-soft)',
+          'transition-colors duration-quick ease-soft',
           'hover:text-foreground focus-visible:text-foreground group-hover/arrow-link:text-foreground',
           'rounded-md outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
           className,

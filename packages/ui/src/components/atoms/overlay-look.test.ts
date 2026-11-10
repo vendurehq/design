@@ -46,7 +46,7 @@ describe('v3 overlay look', () => {
       expect(code).toContain('data-starting-style:opacity-0');
       expect(code).toMatch(/motion-safe:data-starting-style:scale-9[67]/);
       // The tooltip opens on ease-soft (the CSS `ease`); everything else on the strong ease-out.
-      expect(code).toContain(file === 'tooltip.tsx' ? 'ease-soft' : 'ease-(--ease-out)');
+      expect(code).toContain(file === 'tooltip.tsx' ? 'ease-soft' : 'ease-out');
       // The keyframe entrance and its reduced-motion switch-off are gone:
       // reduced motion keeps the fade and drops only the scale.
       expect(code).not.toContain('animate-in');
@@ -82,11 +82,11 @@ describe('v3 overlay look', () => {
     for (const token of [
       'origin-(--transform-origin)',
       'transition-[opacity,scale,translate]',
-      '[transition-duration:160ms,200ms,200ms]',
-      'ease-(--ease-out)',
+      '[transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal),var(--transition-duration-normal)]',
+      'ease-out',
       'data-starting-style:opacity-0',
       'data-ending-style:opacity-0',
-      'data-ending-style:duration-120',
+      'data-ending-style:duration-quick',
       'motion-safe:data-starting-style:scale-96',
       'motion-safe:data-starting-style:-translate-y-0.5',
       'motion-safe:data-[side=top]:data-starting-style:translate-y-0.5',
@@ -166,7 +166,7 @@ describe('v3 overlay look', () => {
   test('sheet and drawer slide on the drawer easing', () => {
     for (const file of ['sheet.tsx', 'drawer.tsx']) {
       const code = source(file);
-      expect(code).toContain('ease-(--ease-drawer)');
+      expect(code).toContain('ease-drawer');
       expect(code).toContain('bg-scrim');
       expect(code).not.toContain('ease-[cubic-bezier(0.32,0.72,0,1)]');
     }
@@ -219,7 +219,7 @@ describe('v3 overlay look', () => {
   test('a toast moves on the drawer curve and changes height on the height curve', () => {
     const code = source('sonner.tsx');
     expect(code).toContain(
-      '[transition:transform_320ms_var(--ease-drawer),opacity_220ms_ease,height_320ms_var(--ease-height)]!',
+      '[transition:transform_var(--transition-duration-toast-move)_var(--ease-drawer),opacity_var(--transition-duration-toast-fade)_var(--ease-soft),height_var(--transition-duration-toast-move)_var(--ease-height)]!',
     );
   });
 
@@ -236,7 +236,7 @@ describe('v3 overlay look', () => {
     expect(code).toContain('gap={8}');
     expect(code).toContain('scale(calc(1-var(--index)*0.03))');
     expect(code).toContain('opacity-[calc(1-var(--index)*0.2)]!');
-    expect(code).toContain('motion-reduce:[transition:opacity_220ms_ease]!');
+    expect(code).toContain('motion-reduce:[transition:opacity_var(--transition-duration-toast-fade)_var(--ease-soft)]!');
   });
 
   test('the info icon is the brand mark', () => {
