@@ -1390,7 +1390,12 @@ export const SelectionMotion: Story = {
     await step('a selected row shows the whole bar in the brand colour', async () => {
       const row = rows()[1] as HTMLElement;
       await waitFor(() => expect(clips(row)).toEqual(FULL));
-      const brand = getComputedStyle(row).getPropertyValue('--brand-indicator').trim();
+      // Resolve the token through a probe, so both sides use the computed form.
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = 'var(--brand-indicator)';
+      row.append(probe);
+      const brand = getComputedStyle(probe).backgroundColor;
+      probe.remove();
       await expect(getComputedStyle(row, '::before').backgroundColor).toBe(brand);
       await expect(getComputedStyle(row, '::after').backgroundColor).toBe(brand);
     });
