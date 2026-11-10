@@ -1,3 +1,5 @@
+import { lightTheme } from './semantic.js';
+
 export const shadows = {
   '2xs': '0 1px 1px 0 oklch(0 0 0 / 0.05)',
   xs: '0 1px 2px 0 oklch(0 0 0 / 0.05)',
@@ -20,10 +22,12 @@ export const shadows = {
 // destructive and outline buttons, button groups, Card): a 1px bottom edge and
 // a faint 2px blur. Dark mode keeps only the
 // edge, darker, because a blur does not read on the dark tiers.
+// Light shadows are tinted with the light `foreground`, so they follow it.
+const ink = (alpha: number) => lightTheme.foreground.replace(/\)$/, ` / ${alpha})`);
+
 export const lightShadows = {
-  overlay:
-    '0 0 0 1px oklch(0.173 0.011 231 / 0.1), 0 12px 32px -8px oklch(0.173 0.011 231 / 0.18), 0 4px 8px -4px oklch(0.173 0.011 231 / 0.08)',
-  control: '0 1px 0 oklch(0.173 0.011 231 / 0.04), 0 1px 2px oklch(0.173 0.011 231 / 0.04)',
+  overlay: `0 0 0 1px ${ink(0.1)}, 0 12px 32px -8px ${ink(0.18)}, 0 4px 8px -4px ${ink(0.08)}`,
+  control: `0 1px 0 ${ink(0.04)}, 0 1px 2px ${ink(0.04)}`,
 } as const;
 
 export const darkShadows = {
