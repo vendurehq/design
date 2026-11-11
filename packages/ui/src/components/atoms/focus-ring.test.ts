@@ -26,7 +26,8 @@ const outset = [
   'atoms/resizable.tsx',
   'atoms/navigation-menu.tsx',
   'molecules/direction-link.tsx',
-  'molecules/relative-time.tsx',
+  // RelativeTime and ElapsedTime draw it through their shared tooltip trigger.
+  'molecules/time-tooltip.tsx',
   'molecules/skip-link.tsx',
   'molecules/data-table/data-table-filters.tsx',
 ];

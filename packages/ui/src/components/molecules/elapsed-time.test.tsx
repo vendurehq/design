@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 import { ElapsedTime } from './elapsed-time.tsx';
+import { StatusBadge } from './status-badge.tsx';
 
 const START = new Date('2026-11-11T16:00:00Z');
 
@@ -41,5 +42,52 @@ describe('ElapsedTime', () => {
       />,
     );
     expect(markup).toContain('5 sec');
+  });
+
+  test('has no tooltip by default', () => {
+    const tag = slotTag(renderToStaticMarkup(<ElapsedTime since={START} />), 'elapsed-time');
+    expect(tag).not.toContain('data-base-ui-tooltip-trigger');
+    expect(tag).not.toContain('aria-describedby');
+  });
+
+  test('tooltip shows when it started, as the description too', () => {
+    const markup = renderToString(<ElapsedTime since={START} tooltip locale="en-US" />);
+    const tag = slotTag(markup, 'elapsed-time');
+    expect(tag).toContain('data-base-ui-tooltip-trigger');
+    const id = tag.match(/aria-describedby="([^"]+)"/)?.[1];
+    expect(markup).toMatch(new RegExp(`<span id="${id}" hidden="">[^<]*2026[^<]*</span>`));
+    // The count still starts on the client, so hydration matches.
+    expect(markup).toContain('—');
+  });
+
+  test('tooltip with until shows the range and how long it took', () => {
+    const markup = renderToStaticMarkup(
+      <ElapsedTime since={START} until={START.getTime() + 75_000} tooltip locale="en-US" />,
+    );
+    expect(markup).toContain('–');
+    expect(markup).toContain('>1m 15s</span>');
+  });
+
+  test('takes custom tooltip content', () => {
+    const markup = renderToStaticMarkup(<ElapsedTime since={START} tooltip="Queued by CI" />);
+    expect(markup).toContain('hidden="">Queued by CI</span>');
+  });
+
+  test('under a status label it is a tab stop by default', () => {
+    const inDetail = (time: React.ReactElement) =>
+      slotTag(
+        renderToStaticMarkup(
+          <StatusBadge appearance="icon" detail={time}>
+            Building
+          </StatusBadge>,
+        ),
+        'elapsed-time',
+      );
+    expect(inDetail(<ElapsedTime since={START} tooltip />)).toContain('tabindex="0"');
+    expect(inDetail(<ElapsedTime since={START} tooltip focusable={false} />)).not.toContain(
+      'tabindex',
+    );
+    // Without a tooltip there is nothing to open.
+    expect(inDetail(<ElapsedTime since={START} />)).not.toContain('tabindex');
   });
 });

@@ -18,6 +18,7 @@
     "./components/molecules/code-block/*": null,
     "./components/molecules/data-table/data-table-helpers": null,
     "./components/molecules/direction-link": null,
+    "./components/molecules/time-tooltip": null,
     "./lib/*": "./src/lib/*.ts",
     "./lib/popup-align": null,
     "./lib/popup-direction": null,

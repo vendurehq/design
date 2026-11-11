@@ -52,6 +52,7 @@ import {
 import type {
   ControlledState,
   DataTableProps,
+  DataTableRowCellProps,
   DataTableRowRipple,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
@@ -775,6 +776,16 @@ function DataTable<TData>({
       : undefined;
   };
 
+  // What a built-in body cell of this column carries. Handed to `renderRow` as
+  // `ctx.cellProps`, so a row a consumer renders itself takes the select cell's
+  // and the leading cell's classes from here instead of copying them.
+  const bodyCellProps = (columnId: string): DataTableRowCellProps => ({
+    'data-column-id': columnId,
+    'data-content-inset-cell': '',
+    className: cn(columnClass(columnId), bodyCellClass),
+    style: columnIndentStyle(columnId),
+  });
+
   // Loading cells follow the real column layout (same ids, same cell classes),
   // so a consumer's `skeletonCells` entry can match its loaded cell's height.
   const skeletonCell = (id: string): React.ReactNode => {
@@ -1038,13 +1049,7 @@ function DataTable<TData>({
                       onMouseDown={onRowMouseDown}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          data-column-id={cell.column.id}
-                          data-content-inset-cell=""
-                          className={cn(columnClass(cell.column.id), bodyCellClass)}
-                          style={columnIndentStyle(cell.column.id)}
-                        >
+                        <TableCell key={cell.id} {...bodyCellProps(cell.column.id)}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
@@ -1069,7 +1074,13 @@ function DataTable<TData>({
                   return (
                     <React.Fragment key={row.id}>
                       {renderRow
-                        ? renderRow(row, { table, columnCount, defaultRow, ripple })
+                        ? renderRow(row, {
+                            table,
+                            columnCount,
+                            defaultRow,
+                            ripple,
+                            cellProps: bodyCellProps,
+                          })
                         : defaultRow}
                     </React.Fragment>
                   );

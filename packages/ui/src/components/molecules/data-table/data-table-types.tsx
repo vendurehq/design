@@ -154,6 +154,21 @@ export interface DataTableRowRipple {
   style: React.CSSProperties;
 }
 
+/**
+ * What a built-in body cell of one column carries, handed to `renderRow` as
+ * `ctx.cellProps(columnId)`. Spread it on the `<td>` you render
+ * (`<TableCell {...cellProps(cell.column.id)}>`) and the cell matches the
+ * built-in row: the select cell is the zero-width cell the checkbox floats
+ * over, the leading data cell carries the checkbox gutter, and every cell
+ * lines its content up with the header. Merge your own classes with `cn`.
+ */
+export interface DataTableRowCellProps {
+  'data-column-id': string;
+  'data-content-inset-cell': string;
+  className: string;
+  style: React.CSSProperties | undefined;
+}
+
 export interface DataTableLabels {
   empty?: string; // 'No results'
   selectAllRows?: string; // 'Select all rows'
@@ -255,6 +270,9 @@ export interface DataTableProps<TData> {
    * A row you render yourself changes with the others when select all or clear
    * all ripples down the page only if it takes `ctx.ripple` (see
    * {@link DataTableRowRipple}); a row that ignores it changes at once.
+   * `ctx.cellProps(columnId)` gives each cell the built-in cell's classes (see
+   * {@link DataTableRowCellProps}), so the row's select cell and leading cell
+   * never drift from the table's own.
    */
   renderRow?: (
     row: Row<TData>,
@@ -263,6 +281,7 @@ export interface DataTableProps<TData> {
       columnCount: number;
       defaultRow: React.ReactNode;
       ripple: DataTableRowRipple;
+      cellProps: (columnId: string) => DataTableRowCellProps;
     },
   ) => React.ReactNode;
 

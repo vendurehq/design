@@ -21,7 +21,6 @@ import {
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -36,7 +35,6 @@ import {
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
-import { DateTime } from '../src/components/molecules/date-time.tsx';
 import { ElapsedTime } from '../src/components/molecules/elapsed-time.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
@@ -50,7 +48,6 @@ import {
 } from '../src/components/molecules/page-header.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import { cn } from '../src/lib/utils.ts';
-import { formatElapsed } from '../src/lib/format-elapsed.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 
 // Realistic commerce data: a page of orders, the canonical DataTable use case in
@@ -1446,11 +1443,12 @@ export const SelectionMotion: Story = {
 // sizes can be compared. With a header, the bulk bar replaces the header
 // controls, as on a list page, and the rows stay put.
 // A row the consumer renders itself, as a draggable row does: it sets its own
-// inline `transform` and `opacity`, and takes the ripple from `ctx.ripple`. The
-// timing is custom properties only, so spreading it first loses nothing.
+// inline `transform` and `opacity`, takes the ripple from `ctx.ripple` and each
+// cell's classes from `ctx.cellProps`. The ripple timing is custom properties
+// only, so spreading it first loses nothing.
 const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
   row,
-  { ripple },
+  { ripple, cellProps },
 ) => (
   <TableRow
     data-custom-row=""
@@ -1458,14 +1456,10 @@ const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
     className={cn('group/row', ripple.className)}
     style={{ ...ripple.style, transform: 'translate3d(0, 0, 0)', opacity: 1 }}
   >
-    {row.getVisibleCells().map((cell, index) => (
-      <TableCell
-        key={cell.id}
-        data-column-id={cell.column.id}
-        // The select cell is zero-width and the first data cell carries its
-        // gutter, as in the built-in rows.
-        className={index === 0 ? 'relative w-0 p-0 pl-0!' : index === 1 ? 'pl-8' : 'pl-2'}
-      >
+    {row.getVisibleCells().map((cell) => (
+      // The table hands over each cell's classes: the zero-width select cell,
+      // the leading cell's checkbox gutter, the content inset. None is copied.
+      <TableCell key={cell.id} {...cellProps(cell.column.id)}>
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </TableCell>
     ))}
@@ -1960,8 +1954,8 @@ export const SelectCellClickArea: Story = {
 // and a neutral label, with the one time that matters for the state under it.
 // A live or waiting state counts up every second; a finished state shows when
 // it finished, relative to now; a state that continues shows how long it has
-// lasted. The exact finish, start and duration are in a tooltip on the time,
-// which is a tab stop, so the table needs no Duration or Created column.
+// lasted. The exact times are in a tooltip on the time, which is a tab stop,
+// so the table needs no Duration or Created column.
 
 type DeploymentTiming =
   | { kind: 'live'; started: number }
@@ -2045,67 +2039,28 @@ const deployments: Deployment[] = [
   },
 ];
 
-// How long a state that continues has lasted, in whole days: "13 days".
-const days = new Intl.NumberFormat(undefined, { style: 'unit', unit: 'day', unitDisplay: 'long' });
-
-function Exact({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      {label} <DateTime value={value} dateStyle="medium" timeStyle="medium" />
-    </div>
-  );
-}
-
-// The second line, and its tooltip with the exact times.
+// The second line: the one time that matters for the state. Each time opens
+// its own tooltip with the exact times, beside the status block, and is a tab
+// stop: StatusBadge's `detail` sets both.
 function DeploymentTime({ timing }: { timing: DeploymentTiming }) {
-  let time: React.ReactNode;
-  let exact: React.ReactNode;
   switch (timing.kind) {
     case 'live':
-      time = <ElapsedTime since={timing.started} />;
-      exact = <Exact label="Started" value={timing.started} />;
-      break;
+      return <ElapsedTime since={timing.started} tooltip />;
     case 'waiting':
-      time = (
+      return (
         <>
-          Waiting <ElapsedTime since={timing.queued} />
+          Waiting <ElapsedTime since={timing.queued} tooltip />
         </>
       );
-      exact = <Exact label="Queued" value={timing.queued} />;
-      break;
     case 'finished':
-      // The tooltip around the line holds the exact time, so RelativeTime
-      // opens none of its own.
-      time = <RelativeTime value={timing.finished} tooltip={false} />;
-      exact = (
+      return <RelativeTime value={timing.finished} start={timing.started} />;
+    case 'since':
+      return (
         <>
-          <Exact label="Finished" value={timing.finished} />
-          <Exact label="Started" value={timing.started} />
-          <div>Duration {formatElapsed(timing.finished - timing.started)}</div>
+          for <RelativeTime value={timing.since} display="duration" />
         </>
       );
-      break;
-    case 'since':
-      time = `for ${days.format(Math.floor((LOADED - timing.since) / DAY))}`;
-      exact = <Exact label="Since" value={timing.since} />;
-      break;
   }
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <span
-            // A tab stop, so keyboard users can open the exact times.
-            tabIndex={0}
-            className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid"
-          />
-        }
-      >
-        {time}
-      </TooltipTrigger>
-      <TooltipContent className="tabular-nums">{exact}</TooltipContent>
-    </Tooltip>
-  );
 }
 
 const deploymentColumns: ColumnDef<Deployment>[] = [
@@ -2139,7 +2094,9 @@ function textStart(element: Element): number {
  * tone icon and a neutral label, and the second line holds the one time that
  * matters for the state: a count for Building, Deploying and Queued, how long
  * ago a finished deployment finished, and how long Degraded has lasted. Hover
- * or focus a time for the exact finish, start and duration.
+ * or focus a time for the exact times: when a count started, or when a
+ * finished deployment ran and how long it took. The tooltip opens beside the
+ * status, so the label stays readable.
  */
 export const Deployments: Story = {
   render: () => (
@@ -2187,8 +2144,43 @@ export const Deployments: Story = {
     await step('every time is a tab stop that opens its tooltip', async () => {
       for (const badge of badges) {
         const detail = badge.querySelector('[data-slot=status-badge-detail]') as HTMLElement;
-        const trigger = detail.querySelector('[data-slot=tooltip-trigger]') as HTMLElement;
-        await expect(trigger.tabIndex).toBe(0);
+        const time = detail.querySelector('time') as HTMLElement;
+        await expect(time.tabIndex).toBe(0);
+        await expect(time.hasAttribute('data-base-ui-tooltip-trigger')).toBe(true);
+      }
+    });
+
+    await step('the tooltip opens beside the status: its label, its time and the rows next to it stay readable', async () => {
+      const overlaps = (a: DOMRect, b: DOMRect) =>
+        a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      // The first, a middle and the last row.
+      for (const index of [0, 3, badges.length - 1]) {
+        const badge = badges[index] as HTMLElement;
+        const time = badge.querySelector('[data-slot=status-badge-detail] time') as HTMLElement;
+        await userEvent.hover(time);
+        const popup = await waitFor(
+          () => {
+            const node = document.querySelector<HTMLElement>('[data-slot=tooltip-content][data-open]');
+            if (!node) throw new Error('no tooltip yet');
+            return node;
+          },
+          { timeout: 2000 },
+        );
+        await waitFor(() => expect(popup.hasAttribute('data-starting-style')).toBe(false));
+        const tip = popup.getBoundingClientRect();
+        const label = badge.querySelector('[data-slot=status-badge-label]') as HTMLElement;
+        await expect(overlaps(tip, label.getBoundingClientRect())).toBe(false);
+        await expect(overlaps(tip, time.getBoundingClientRect())).toBe(false);
+        for (const neighbour of [badges[index - 1], badges[index + 1]]) {
+          if (neighbour) await expect(overlaps(tip, neighbour.getBoundingClientRect())).toBe(false);
+        }
+        // It starts after the status block, centred on it (0 ±0.5px).
+        const block = badge.getBoundingClientRect();
+        await expect(tip.left).toBeGreaterThanOrEqual(block.right);
+        await expect(
+          Math.abs((tip.top + tip.bottom) / 2 - (block.top + block.bottom) / 2),
+        ).toBeLessThanOrEqual(0.5);
+        await userEvent.unhover(time);
       }
     });
 

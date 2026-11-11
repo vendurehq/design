@@ -7,6 +7,8 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import type * as React from 'react';
 import { isValidElement } from 'react';
+// Relative: `time-tooltip` is internal.
+import { InStatusDetail } from './time-tooltip.tsx';
 
 type StatusBadgeAppearance = 'chip' | 'bare' | 'icon' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
@@ -245,9 +247,11 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * A second line under the label, in small muted text, for
    * `appearance="icon"` only. Put one time in it, the one that matters for
    * the state: an `ElapsedTime` for a state that is happening or waiting, a
-   * `RelativeTime` for when it finished ("2 minutes ago"), and how long a
-   * state that continues has lasted ("for 13 days"). The icon centres against
-   * both lines together.
+   * `RelativeTime` for when it finished ("2 minutes ago"), and a
+   * `RelativeTime` with `display="duration"` for how long a state that
+   * continues has lasted ("for 13 days"). The icon centres against both lines
+   * together. A time here with a tooltip is a tab stop, and its tooltip opens
+   * beside the status block, so the label stays readable.
    */
   detail?: React.ReactNode;
 }
@@ -302,7 +306,9 @@ function StatusBadge({
             data-slot="status-badge-detail"
             className="col-start-2 text-xs/3.75 text-muted-foreground tabular-nums"
           >
-            {detail}
+            {/* A RelativeTime or ElapsedTime here is a tab stop, and its
+                tooltip opens beside the whole status block. */}
+            <InStatusDetail.Provider value={true}>{detail}</InStatusDetail.Provider>
           </span>
         ) : null}
       </>

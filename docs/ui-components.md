@@ -265,17 +265,37 @@ green for success included. The label stays neutral.
 one time that matters for the state. In a `DataTable` the row is 46px.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
-<StatusBadge appearance="icon" tone="success" detail={<RelativeTime value={deployment.finishedAt} />}>
+<StatusBadge
+  appearance="icon"
+  tone="success"
+  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+>
   Ready
+</StatusBadge>;
+<StatusBadge
+  appearance="icon"
+  tone="warning"
+  detail={<>for <RelativeTime value={deployment.degradedSince} display="duration" /></>}
+>
+  Degraded
 </StatusBadge>;
 ```
 
 `ElapsedTime` counts up every second with tabular digits, and stops while it is
-off screen or the tab is hidden. Put the exact finish time, the start and the
-duration in a tooltip on the time, and make the time a tab stop.
+off screen or the tab is hidden. With `tooltip`, its tooltip shows when the
+count started. `RelativeTime` with `start` shows the range and how long it
+took; with `display="duration"` it says how long a state has lasted
+(`13 days`), in the reader's locale and with the same unit steps as
+`2 minutes ago`. The words around it (`for`) are yours, so they are translated
+with the rest of the page. Pass content to `tooltip` on either to show
+something else. Don't wrap them in a `Tooltip`.
+
+Under the label each time is a tab stop, and its tooltip opens at the end of
+the status block, centred on it. It covers only the cells after the status in
+its own row, so the label, the time and the rows above and below stay readable.
 
 - `icon={<Icon />}` replaces the tone icon with a more exact shape. Never put
   an icon in `children`.
@@ -509,18 +529,30 @@ import {
 <DataTable
   rows={rows}
   columns={columns}
-  renderRow={(row, { ripple }) => (
+  renderRow={(row, { ripple, cellProps }) => (
     <SortableRow
       row={row}
       className={cn("group/row", ripple.className)}
       style={{ ...ripple.style, transform, transition }}
+      cellProps={cellProps}
     />
   )}
 />
 ```
 
+Inside the row, each cell takes its attributes from the table:
+
+```tsx
+{row.getVisibleCells().map((cell) => (
+  <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+  </TableCell>
+))}
+```
+
 - `ctx.ripple.className` goes into your row's `className`. `ctx.ripple.style` is spread before your own `style`. It holds only the custom properties `--ripple-at` and `--ripple-span`, so an inline `transform`, `transition` or `opacity` (a drag) never collides with it.
 - Set `data-state="selected"` on the row while it is selected, as the built-in rows do. The row must be a `TableRow` (or carry its classes) so the selection bar exists.
+- `ctx.cellProps(columnId)` returns what a built-in cell of that column carries: `className` (the zero-width select cell `relative w-0 p-0 pl-0!`, the leading cell's checkbox gutter, the content inset), `style` (the column indent) and the `data-column-id` and `data-content-inset-cell` attributes. Spread it on the `TableCell`, and merge your own classes with `cn`. Do not copy the classes: when the table changes them, your rows follow.
 - A row that ignores `ctx.ripple` still works. It changes at once, while the rows around it ripple.
 - Returning `ctx.defaultRow` needs nothing: it already has the ripple. Reduced motion: no ripple.
 
