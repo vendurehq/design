@@ -28,6 +28,7 @@ const internal = [
   'components/molecules/data-table/data-table-helpers',
   'components/atoms/label-swap',
   'components/molecules/direction-link',
+  'lib/popup-align',
   'lib/popup-direction',
   'lib/popup-motion',
   'hooks/use-active-label-size',
