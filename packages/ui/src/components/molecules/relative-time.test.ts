@@ -51,7 +51,9 @@ describe('formatRelativeDuration', () => {
   });
 
   test('takes the same unit steps and rounding as formatRelative', () => {
-    for (const ago of [90 * 1000, 89 * MINUTE, 36 * HOUR, 13.6 * DAY, 40 * DAY]) {
+    // Half steps (90s, 36h) are left out: the two calls read the clock a
+    // millisecond apart, which can tip a half the other way.
+    for (const ago of [100 * 1000, 89 * MINUTE, 40 * HOUR, 13.6 * DAY, 40 * DAY]) {
       const when = Date.now() - ago;
       const relative = formatRelative(when, { locale: 'en-US', numeric: 'always' });
       expect(relative).toBe(`${formatRelativeDuration(when, { locale: 'en-US' })} ago`);
