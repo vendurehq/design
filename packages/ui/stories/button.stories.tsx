@@ -1,8 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, waitFor, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
-import { Check, ChevronRight, Loader2, Mail } from 'lucide-react';
+import { Bold, Check, ChevronRight, Copy, Italic, Loader2, Mail, MoreHorizontal, Pin, Underline } from 'lucide-react';
 import { Button, ButtonLabelSwap } from '../src/components/atoms/button.tsx';
+import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '../src/components/atoms/input-group.tsx';
+import {
+  type ColumnDef,
+  DataTable,
+  DataTableRowLink,
+} from '../src/components/molecules/data-table/data-table.tsx';
+import { IdChip } from '../src/components/molecules/id-chip.tsx';
 
 const meta = {
   title: 'Atoms/General/Button',
@@ -263,5 +276,137 @@ export const AllVariantsLightAndDark: Story = {
         </div>
       )}
     </LightAndDark>
+  ),
+};
+
+/** A toggle whose name says whether the last press hit it. */
+function PinToggle({ name, size }: { name: string; size: 'icon-xs' | 'icon-sm' }) {
+  const [pinned, setPinned] = useState(false);
+  return (
+    <Button
+      variant="ghost"
+      size={size}
+      aria-label={`${pinned ? 'Unpin' : 'Pin'} ${name}`}
+      aria-pressed={pinned}
+      onClick={() => setPinned((value) => !value)}
+    >
+      <Pin />
+    </Button>
+  );
+}
+
+type Deployment = { id: string; name: string; commit: string };
+
+const deployments: Deployment[] = [
+  { id: 'd1', name: 'storefront-production', commit: '8f3c2a1d9e7b4c6a' },
+  { id: 'd2', name: 'storefront-staging', commit: '1b9e4d7c2a6f8e3b' },
+];
+
+const deploymentColumns: ColumnDef<Deployment>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => (
+      <DataTableRowLink href={`#/deployments/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+    ),
+  },
+  {
+    accessorKey: 'commit',
+    header: 'Commit',
+    cell: ({ row }) => <IdChip value={row.original.commit} copyLabel="Copy commit" />,
+  },
+];
+
+function Labelled({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <div className="flex items-center">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * The icon sizes `icon-xs` (24px) and `icon-sm` (28px) take a click area of
+ * 40 × 40px around the icon. It is an invisible `::before`, so the button
+ * keeps its size, focus ring and press scale, and the layout does not move.
+ * Next to another control (a toolbar, a ButtonGroup, a field and its clear
+ * button) the area keeps the button's own width, so neighbours never share a
+ * point; above and below it still reaches 40px. In a vertical ButtonGroup it
+ * keeps the button's height too. Inside an InputGroup and in the copy chips
+ * it is off: the field and the chip are the target there.
+ *
+ * The test runner presses with a real mouse just inside the edge of the area
+ * (7px off a 24px button, 5px off a 28px button) and expects a hit, and just
+ * outside it and expects a miss. In the toolbar a press beside a button misses.
+ */
+export const SmallIconClickArea: Story = {
+  parameters: {
+    pressNear: [
+      { button: 'Pin note', edge: 'top', distance: 7, expectButton: 'Unpin note' },
+      { button: 'Unpin note', edge: 'left', distance: 7, expectButton: 'Pin note' },
+      { button: 'Pin note', edge: 'bottom', distance: 10, expectButton: 'Pin note' },
+      { button: 'Pin card', edge: 'right', distance: 5, expectButton: 'Unpin card' },
+      { button: 'Unpin card', edge: 'bottom', distance: 5, expectButton: 'Pin card' },
+      { button: 'Pin card', edge: 'top', distance: 8, expectButton: 'Pin card' },
+      { button: 'Pin toolbar', edge: 'top', distance: 5, expectButton: 'Unpin toolbar' },
+      { button: 'Unpin toolbar', edge: 'left', distance: 2, expectButton: 'Unpin toolbar' },
+    ],
+  },
+  render: () => (
+    <div className="flex w-[34rem] flex-col gap-6">
+      <div className="flex gap-10">
+        <Labelled label="icon-xs">
+          <PinToggle name="note" size="icon-xs" />
+        </Labelled>
+        <Labelled label="icon-sm">
+          <PinToggle name="card" size="icon-sm" />
+        </Labelled>
+        <Labelled label="Toolbar">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon-sm" aria-label="Bold">
+              <Bold />
+            </Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Italic">
+              <Italic />
+            </Button>
+            <PinToggle name="toolbar" size="icon-sm" />
+            <Button variant="ghost" size="icon-sm" aria-label="Underline">
+              <Underline />
+            </Button>
+          </div>
+        </Labelled>
+        <Labelled label="ButtonGroup">
+          <ButtonGroup>
+            <Button variant="outline" size="icon-sm" aria-label="Copy">
+              <Copy />
+            </Button>
+            <Button variant="outline" size="icon-sm" aria-label="More">
+              <MoreHorizontal />
+            </Button>
+          </ButtonGroup>
+        </Labelled>
+      </div>
+      <Labelled label="InputGroup">
+        <InputGroup>
+          <InputGroupInput aria-label="Token" defaultValue="tok_8f3c2a1d" />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton size="icon-xs" aria-label="Copy token">
+              <Copy />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </Labelled>
+      <DataTable<Deployment>
+        rows={deployments}
+        columns={deploymentColumns}
+        getRowId={(deployment) => deployment.id}
+        rowActions={(deployment) => (
+          <Button variant="ghost" size="icon-sm" aria-label={`More for ${deployment.name}`}>
+            <MoreHorizontal />
+          </Button>
+        )}
+      />
+    </div>
   ),
 };
