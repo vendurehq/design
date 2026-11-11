@@ -102,8 +102,8 @@ export const Invalid: Story = {
       expect(slot).not.toBeNull();
       return slot as HTMLElement;
     });
-    // The slot eases its colours in (transition-all), so wait for the end value.
-    await waitFor(() => expect(getComputedStyle(active).outlineColor).toBe(getComputedStyle(probe).outlineColor));
+    // The ring shows at once, so the end value is there without waiting.
+    await expect(getComputedStyle(active).outlineColor).toBe(getComputedStyle(probe).outlineColor);
     await expect(getComputedStyle(active).outlineOffset).toBe('-2px');
     probe.remove();
   },
