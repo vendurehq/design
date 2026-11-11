@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
+import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
@@ -188,5 +189,67 @@ export const Toggle: Story = {
       await expect(offset(check(name))).toBe('0px');
       await expect(hole(name)).toBe('50%');
     });
+  },
+};
+
+/** The opacity an element shows with: its own times every ancestor's. */
+function shownOpacity(element: Element) {
+  let opacity = 1;
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    opacity *= Number(getComputedStyle(node).opacity);
+  }
+  return opacity;
+}
+
+/**
+ * Disabled, unchecked, checked and indeterminate, on their own and inside a
+ * disabled `Field`, light and dark. Each is dimmed to half and shows the
+ * not-allowed cursor, once: the `Field` does not dim it a second time. A
+ * `Label` next to a disabled checkbox dims with it.
+ */
+export const DisabledEverywhere: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-6">
+            <Checkbox aria-label={`Alone unchecked, ${theme}`} disabled />
+            <Checkbox aria-label={`Alone checked, ${theme}`} disabled defaultChecked />
+            <Checkbox aria-label={`Alone indeterminate, ${theme}`} disabled indeterminate />
+          </div>
+          <div className="flex items-center gap-6">
+            {(['unchecked', 'checked', 'indeterminate'] as const).map((state) => (
+              <Field key={state} orientation="horizontal" data-disabled="true">
+                <Checkbox
+                  id={`field-${state}-${theme}`}
+                  aria-label={`In a field ${state}, ${theme}`}
+                  disabled
+                  defaultChecked={state === 'checked'}
+                  indeterminate={state === 'indeterminate'}
+                />
+                <FieldLabel htmlFor={`field-${state}-${theme}`}>Field</FieldLabel>
+              </Field>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox id={`with-label-${theme}`} disabled />
+            <Label htmlFor={`with-label-${theme}`}>With a label, {theme}</Label>
+          </div>
+        </div>
+      )}
+    </LightAndDark>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const boxes = canvas.getAllByRole('checkbox');
+    await expect(boxes).toHaveLength(14);
+    for (const box of boxes) {
+      await expect(shownOpacity(box)).toBeCloseTo(0.5, 2);
+      await expect(getComputedStyle(box).cursor).toBe('not-allowed');
+    }
+    for (const theme of ['light', 'dark']) {
+      await expect(shownOpacity(canvas.getByText(`With a label, ${theme}`))).toBeCloseTo(0.5, 2);
+    }
   },
 };
