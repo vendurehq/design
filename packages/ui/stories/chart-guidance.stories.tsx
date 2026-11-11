@@ -63,7 +63,7 @@ export const NameEveryShape: Story = {
         </div>
         <div className="rounded-lg border p-4">
           <p className="text-destructive-subtle-foreground mb-3 text-xs font-semibold tracking-wide uppercase">Don&apos;t</p>
-          <pre className="bg-muted text-muted-foreground flex h-40 w-40 items-center overflow-hidden rounded-md p-2 text-xs">
+          <pre className="bg-muted text-muted-foreground flex h-40 w-40 items-center rounded-md p-2 text-xs whitespace-pre-wrap">
             {'<Cell fill="var(--chart-1)" />'}
           </pre>
           <p className="text-muted-foreground mt-2 text-xs">
