@@ -2089,7 +2089,7 @@ export const ClickSelectsWhileSelecting: Story = {
  * While rows are selected, the item's name still opens the item: a click on
  * the name opens it, a click anywhere else on the row selects the row.
  * Hovering the row shows a small chevron after the name; hovering or focusing
- * the name colours it and the chevron blue (`info-text`) and moves the
+ * the name colours it and the chevron blue (`brand-text`) and moves the
  * chevron 2px. The chevron takes no space, so the name and the column do not
  * move. With nothing selected the whole row opens the item, as before. The
  * cell that opens the item is the one with `DataTableRowLink` around the name.

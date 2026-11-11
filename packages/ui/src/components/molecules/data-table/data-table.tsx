@@ -160,8 +160,8 @@ const ROW_CHEVRON_SLOT_CLASS =
  * spreads `ctx.selectProps`; without it, its link keeps covering the row. The link stops stretching over the row and the row-end
  * chevron hides. Hovering the row shows a small chevron after the name;
  * hovering or focusing the name colours it and the chevron blue, and the
- * chevron moves 2px toward the end. The blue is `info-text`, the text-safe
- * step of the brand hue: `brand-indicator` is a mark colour and reads below
+ * chevron moves 2px toward the end. The blue is `brand-text`, the brand
+ * step that reads as text: `brand-indicator` is a mark colour and reads below
  * 3:1 as text on a light selected row. The chevron overlays the
  * cell's padding, so the name and the column do not move. The name stays a
  * tab stop and a link, and its focus ring is drawn around the name.
@@ -182,7 +182,7 @@ function DataTableRowLink({
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
           // While rows are selected only the name is the link (see above).
           'in-data-click-selects:after:hidden in-data-click-selects:rounded-sm in-data-click-selects:transition-colors in-data-click-selects:duration-quick in-data-click-selects:ease-soft',
-          'in-data-click-selects:hover:text-info-text in-data-click-selects:focus-visible:text-info-text',
+          'in-data-click-selects:hover:text-brand-text in-data-click-selects:focus-visible:text-brand-text',
           'in-data-click-selects:focus-visible:outline-2 in-data-click-selects:focus-visible:outline-offset-2 in-data-click-selects:focus-visible:outline-ring in-data-click-selects:focus-visible:outline-solid',
           className,
         ),
