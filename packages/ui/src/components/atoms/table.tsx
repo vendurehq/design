@@ -108,8 +108,11 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 // widens from 1px to 2px against the table edge (`scale` 0.5 on x, origin
 // inline-start), so it arrives softly: `moderate`, opacity on `ease-soft` and
 // scale on `ease-out`, as the checkbox fill. Clearing plays it back in
-// `fast`, both on `ease-soft`. A bar that extends a selected neighbour stays
-// opaque and full width, so the line has no lighter or thinner join. At rest
+// `fast`, both on `ease-soft`, as the checkbox clears; its clip waits for that
+// and then jumps, since a collapsing clip would hide the bar in a few frames.
+// A bar that extends a selected neighbour stays opaque and full width, so the
+// line has no lighter or thinner join, and clears by shrinking toward the
+// neighbour (`--bar-clip-duration`, `--bar-clip-delay`). At rest
 // the bar is the same as without the motion: opacity 1, no scale. Under
 // reduced motion the bar is whole and only fades: the clip jumps on select and
 // waits for the fade on deselect.
@@ -126,7 +129,9 @@ const selectedBar = [
   "motion-safe:[[data-state=selected]+&]:before:opacity-100 motion-safe:[[data-state=selected]+&]:after:opacity-100 motion-safe:[[data-state=selected]+&]:before:[scale:none] motion-safe:[[data-state=selected]+&]:after:[scale:none]",
   "motion-safe:[&:has(+[data-state=selected])]:before:opacity-100 motion-safe:[&:has(+[data-state=selected])]:after:opacity-100 motion-safe:[&:has(+[data-state=selected])]:before:[scale:none] motion-safe:[&:has(+[data-state=selected])]:after:[scale:none]",
   "motion-safe:data-[state=selected]:before:opacity-100 motion-safe:data-[state=selected]:after:opacity-100 motion-safe:data-[state=selected]:before:[scale:none] motion-safe:data-[state=selected]:after:[scale:none]",
-  "before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)]",
+  "[--bar-clip-duration:0s] [--bar-clip-delay:var(--transition-duration-fast)]",
+  "[[data-state=selected]+&]:[--bar-clip-duration:var(--transition-duration-moderate)] [[data-state=selected]+&]:[--bar-clip-delay:0s] [&:has(+[data-state=selected])]:[--bar-clip-duration:var(--transition-duration-moderate)] [&:has(+[data-state=selected])]:[--bar-clip-delay:0s]",
+  "before:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] after:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)]",
   "motion-safe:data-[state=selected]:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)] motion-safe:data-[state=selected]:after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)]",
   "motion-reduce:before:opacity-0 motion-reduce:after:opacity-0 motion-reduce:data-[state=selected]:before:opacity-100 motion-reduce:data-[state=selected]:after:opacity-100",
   "motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)] motion-reduce:after:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)]",
