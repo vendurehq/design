@@ -437,7 +437,7 @@ export const uiGuidance = [
       },
       {
         title: 'The other form is a tooltip, not a title',
-        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
+        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Pass tooltip={<content />} to show other content, start to show the range and how long it took, and display="duration" for how long a state has lasted ("13 days", with the caller\'s own words around it). Add focusable where keyboard users need the exact time (a time under a StatusBadge label is a tab stop already); never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
       },
     ],
     related: ['date-picker', 'money'],
@@ -917,7 +917,7 @@ export const uiGuidance = [
       },
       {
         title: 'The second line holds one time',
-        body: 'Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Make the time a tab stop with a Tooltip that shows the exact finish time, the start and the duration, so the table needs no Duration or Created column.',
+        body: 'Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Write each time once, with no Tooltip around it: <ElapsedTime since={startedAt} tooltip /> for a count, <RelativeTime value={finishedAt} start={startedAt} /> for a finished state (its tooltip shows the range and the duration), and your own word "for" before <RelativeTime value={since} display="duration" /> for a state that continues. Under the label each time is a tab stop and its tooltip opens beside the status block, so the label stays readable and the table needs no Duration or Created column.',
       },
       {
         title: 'The chip brings its own icon',

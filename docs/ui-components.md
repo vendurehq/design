@@ -265,17 +265,37 @@ green for success included. The label stays neutral.
 one time that matters for the state. In a `DataTable` the row is 46px.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
-<StatusBadge appearance="icon" tone="success" detail={<RelativeTime value={deployment.finishedAt} />}>
+<StatusBadge
+  appearance="icon"
+  tone="success"
+  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+>
   Ready
+</StatusBadge>;
+<StatusBadge
+  appearance="icon"
+  tone="warning"
+  detail={<>for <RelativeTime value={deployment.degradedSince} display="duration" /></>}
+>
+  Degraded
 </StatusBadge>;
 ```
 
 `ElapsedTime` counts up every second with tabular digits, and stops while it is
-off screen or the tab is hidden. Put the exact finish time, the start and the
-duration in a tooltip on the time, and make the time a tab stop.
+off screen or the tab is hidden. With `tooltip`, its tooltip shows when the
+count started. `RelativeTime` with `start` shows the range and how long it
+took; with `display="duration"` it says how long a state has lasted
+(`13 days`), in the reader's locale and with the same unit steps as
+`2 minutes ago`. The words around it (`for`) are yours, so they are translated
+with the rest of the page. Pass content to `tooltip` on either to show
+something else. Don't wrap them in a `Tooltip`.
+
+Under the label each time is a tab stop, and its tooltip opens at the end of
+the status block, centred on it. It covers only the cells after the status in
+its own row, so the label, the time and the rows above and below stay readable.
 
 - `icon={<Icon />}` replaces the tone icon with a more exact shape. Never put
   an icon in `children`.
