@@ -287,6 +287,13 @@ State what the view is and place its action hierarchy in one predictable header.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
 
 Related decisions: `button`, `list-header`, `status-badge`.
+## Popover
+
+A popover holds content the user reads or edits next to its trigger. It opens toward the centre of the screen by itself.
+
+- **Do not set align unless there is a reason:** Without an align, PopoverContent opens toward the centre of the screen: a trigger in the right half lines the popover up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout, such as a popover that must line up with a field. An explicit align always wins. align="center" brings back the old look, centred on the trigger.
+
+Related decisions: `tooltip`.
 ## Progress
 
 Show task completion or usage against a limit, toned only when the level has a consequence.

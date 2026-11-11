@@ -94,16 +94,31 @@ export const FromTriggerToTrigger: Story = {
     // The first tooltip waits for the delay.
     await expect(waited).toBeGreaterThanOrEqual(550);
     await userEvent.unhover(first);
+    // Read the popup in the same task that inserts it, before any frame runs.
+    // Base UI mounts a popup with `data-starting-style` and clears it one frame
+    // later, so a read after the frame is slower on a busy machine and would
+    // pass for the wrong reason.
+    let atMount: { opacity: string; scale: string; instant: string | null } | undefined;
+    const observer = new MutationObserver(() => {
+      const popup = document.body.querySelector<HTMLElement>('[data-slot=tooltip-content]');
+      if (!popup || atMount) return;
+      const style = getComputedStyle(popup);
+      atMount = {
+        opacity: style.opacity,
+        scale: style.scale,
+        instant: popup.getAttribute('data-instant'),
+      };
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
     await userEvent.hover(canvas.getByRole('button', { name: 'Second' }));
     // The next one opens at once, marked instant ("delay"), with no
     // transition: it is fully visible in its first frame.
     const popup = (await body.findByText('Second tooltip', {}, { timeout: 200 })).closest<HTMLElement>(
       '[data-slot=tooltip-content]',
     ) as HTMLElement;
-    const style = getComputedStyle(popup);
-    await expect(popup.getAttribute('data-instant')).toBe('delay');
-    await expect(style.transitionDuration).toMatch(/^0s(, 0s)*$/);
-    await expect(style.opacity).toBe('1');
+    observer.disconnect();
+    await expect(atMount).toEqual({ opacity: '1', scale: '1', instant: 'delay' });
+    await expect(getComputedStyle(popup).transitionDuration).toMatch(/^0s(, 0s)*$/);
     // Nothing lingers: it closes when the pointer leaves.
     await userEvent.unhover(canvas.getByRole('button', { name: 'Second' }));
     await waitFor(() => expect(body.queryByText('Second tooltip')).toBeNull());

@@ -283,17 +283,21 @@ const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 // The bar reads as one line that grows down from the header: each row's two
 // halves grow from the row's top edge, linearly, over the row's share, so the
 // next row picks up exactly where this one ends. Clearing retracts the line
-// from the top in the same order. A row the select ripple has not reached yet
+// from the top in the same order. Each row's bar also fades in and widens as
+// it does alone (see the bar in atoms/table), from the row's delay, so the
+// newest part of the line is the faintest and thinnest; clearing fades it in
+// `fast`. A row the select ripple has not reached yet
 // starts from its top edge with no transition, so it does not first slide
 // from its middle; that start is set, and the style flushed, before the
-// selection changes (useSelectAllRipple). Only `clip-path`, `opacity` and the
+// selection changes (useSelectAllRipple). Only `clip-path`, `opacity`, `scale` and the
 // row's existing colour transition move; nothing changes layout.
 const SELECT_RIPPLE_TABLE_CLASS =
   '[--select-ripple-length:var(--transition-duration-fast)] data-[select-ripple=select]:[--select-ripple-length:var(--transition-duration-normal)] data-select-ripple-quick:[--select-ripple-length:var(--transition-duration-fast)]!';
 const SELECT_RIPPLE_ROW_CLASS = cn(
   '[--row-ripple-delay:calc(var(--select-ripple-length)*var(--ripple-at,0))] [--row-ripple-span:calc(var(--select-ripple-length)*var(--ripple-span,0))]',
   'in-data-select-ripple:[transition-delay:var(--row-ripple-delay)]',
-  'in-data-select-ripple:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay)]! in-data-select-ripple:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay)]!',
+  'in-data-[select-ripple=select]:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-moderate)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-moderate)_var(--ease-out)_var(--row-ripple-delay)]! in-data-[select-ripple=select]:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-moderate)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-moderate)_var(--ease-out)_var(--row-ripple-delay)]!',
+  'in-data-[select-ripple=clear]:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay)]! in-data-[select-ripple=clear]:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay)]!',
   'in-data-[select-ripple=select]:not-data-[state=selected]:before:[clip-path:inset(0_0_100%_0)]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[clip-path:inset(0_0_100%_0)]!',
   'in-data-[select-ripple=select]:not-data-[state=selected]:before:[transition:none]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[transition:none]!',
   'in-data-[select-ripple=clear]:not-data-[state=selected]:before:[clip-path:inset(100%_0_0_0)]! in-data-[select-ripple=clear]:not-data-[state=selected]:after:[clip-path:inset(100%_0_0_0)]!',
