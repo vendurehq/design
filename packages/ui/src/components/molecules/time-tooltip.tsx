@@ -88,8 +88,7 @@ const dateTimeFields: Intl.DateTimeFormatOptions = {
 /**
  * Two lines for something that ran from `start` to `end`: the range in the
  * reader's locale (`11/11/2026, 10:14:47 – 10:15:29 AM`, the date once when
- * both are on one day), then how long it took (`42s`). No words, so nothing
- * needs translating.
+ * both are on one day), then how long it took (`42s`), both in the reader's locale.
  */
 function TimeSpan({
   start,
@@ -106,7 +105,7 @@ function TimeSpan({
   return (
     <>
       <span className="block">{format.formatRange(Math.min(start, end), end)}</span>
-      <span className="block">{formatElapsed(end - start)}</span>
+      <span className="block">{formatElapsed(end - start, { locale })}</span>
     </>
   );
 }
