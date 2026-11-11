@@ -3,7 +3,10 @@
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
+import {
+  useFieldControlProps,
+  useFieldLabelCheckedClass,
+} from "@vendure-io/ui/components/atoms/field"
 
 // Checking animates; unchecking plays back quicker.
 // - The fill is the root's ::before, over the border. It closes in from the
@@ -45,20 +48,22 @@ const markBase =
 
 // The check draws while checked and not indeterminate, the line while indeterminate.
 const checkMark =
-  "group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:group-data-checked/checkbox:group-not-data-indeterminate/checkbox:opacity-100 motion-reduce:group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
+  "group-data-[checked]/checkbox:group-not-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-[checked]/checkbox:group-not-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:group-data-[checked]/checkbox:group-not-data-indeterminate/checkbox:opacity-100 motion-reduce:group-data-[checked]/checkbox:group-not-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
 
 const lineMark =
   "group-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:group-data-indeterminate/checkbox:opacity-100 motion-reduce:group-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
 
 function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root.Props) {
+  const fieldLabelChecked = useFieldLabelCheckedClass()
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
-      className={cn(
+      className={(state) => cn(
         "group/checkbox border-control-border dark:bg-input/30 data-checked:text-primary-foreground data-checked:border-primary data-indeterminate:text-primary-foreground data-indeterminate:border-primary aria-invalid:aria-checked:border-primary aria-invalid:border-destructive focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 peer relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 data-disabled:cursor-not-allowed data-disabled:opacity-50 aria-invalid:ring-3",
         rootTransition,
         fill,
-        className
+        fieldLabelChecked(state.checked && !state.indeterminate),
+        typeof className === "function" ? className(state) : className
       )}
       indeterminate={indeterminate}
       {...useFieldControlProps(props)}

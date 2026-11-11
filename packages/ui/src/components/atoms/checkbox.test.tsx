@@ -30,8 +30,12 @@ describe('Checkbox mark', () => {
     const html = renderToStaticMarkup(<Checkbox aria-label="Accept" />);
     const check = html.match(/<path d="M4 12l5 5L20 6"[^>]*>/)?.[0] ?? '';
     const line = html.match(/<path d="M5 12h14"[^>]*>/)?.[0] ?? '';
+    // Keyed on `data-checked` alone: the shared `data-checked` variant also
+    // matches `data-state`, and inside a group selector Chromium then restyles
+    // the whole subtree of any element whose `data-state` changes (every row
+    // of a DataTable at select all).
     expect(check).toContain(
-      'group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[stroke-dashoffset:0]',
+      'group-data-[checked]/checkbox:group-not-data-indeterminate/checkbox:[stroke-dashoffset:0]',
     );
     expect(line).toContain('group-data-indeterminate/checkbox:[stroke-dashoffset:0]');
     expect(line).not.toContain('group-data-checked');
