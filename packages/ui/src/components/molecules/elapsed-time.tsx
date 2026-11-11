@@ -1,5 +1,6 @@
 'use client';
 
+import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { formatElapsed, isoDuration } from '@vendure-io/ui/lib/format-elapsed';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
@@ -7,10 +8,13 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
+// Relative: `time-tooltip` is internal.
+import { TimeSpan, TimeTooltip, toTime } from './time-tooltip.tsx';
 
 // One shared clock for every timer on the page: one interval, whole seconds.
 // It runs only while at least one visible timer listens.
@@ -54,12 +58,6 @@ function readServerClock(): number | null {
 
 function noSubscription() {
   return () => {};
-}
-
-function toTime(value: string | number | Date | null | undefined): number | null {
-  if (value === null || value === undefined) return null;
-  const time = (value instanceof Date ? value : new Date(value)).getTime();
-  return Number.isNaN(time) ? null : time;
 }
 
 // True while the element is on screen and the tab is visible. Starts true, so
@@ -106,6 +104,21 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
   fallback?: ReactNode;
   /** Formats the elapsed milliseconds. Default `formatElapsed`: `1m 15s`. */
   format?: (ms: number) => string;
+  /**
+   * A tooltip on hover and focus. Default `false`. `true` shows when the
+   * count started in the reader's locale (with `until`, the range and how
+   * long it took). Pass content to show that instead. The tooltip content is
+   * the accessible description too.
+   */
+  tooltip?: boolean | ReactNode;
+  /**
+   * Make the time a tab stop so keyboard users can open the tooltip. Default
+   * `false`, and `true` under a status label (a StatusBadge `detail`). Never
+   * inside interactive content such as a link or a button. Needs `tooltip`.
+   */
+  focusable?: boolean;
+  /** The locale of the tooltip times. Default: the FormatProvider's. */
+  locale?: string;
 }
 
 /**
@@ -120,16 +133,23 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
  *   matches; the count starts right after.
  * - It renders a `<time>` with the ISO duration (`PT1M15S`). Screen readers
  *   do not announce each tick.
+ * - With `tooltip`, under a status label (a StatusBadge `detail`), the time is
+ *   a tab stop and the tooltip opens beside the whole status block.
  */
 function ElapsedTime({
   since,
   until,
   fallback = '—',
   format = formatElapsed,
+  tooltip = false,
+  focusable,
+  locale,
   className,
   ...props
 }: ElapsedTimeProps) {
   const ref = useRef<HTMLTimeElement>(null);
+  const descriptionId = useId();
+  const settings = useFormatSettings();
   const start = toTime(since);
   const end = toTime(until);
   const live = start !== null && end === null;
@@ -143,16 +163,45 @@ function ElapsedTime({
   const reference = end ?? now;
   const elapsed = start !== null && reference !== null ? reference - start : null;
 
+  const timeProps = {
+    'data-slot': 'elapsed-time',
+    dateTime: elapsed === null ? undefined : isoDuration(elapsed),
+    className: cn('tabular-nums', className),
+    ...props,
+  };
+  const text = elapsed === null ? fallback : format(elapsed);
+
+  if (tooltip === false || tooltip === null || start === null) {
+    return (
+      <time ref={ref} {...timeProps}>
+        {text}
+      </time>
+    );
+  }
+
+  const resolvedLocale = locale ?? settings.locale;
+  const content =
+    typeof tooltip !== 'boolean' ? (
+      tooltip
+    ) : end === null ? (
+      new Date(start).toLocaleString(resolvedLocale, { timeZone: settings.timeZone })
+    ) : (
+      <TimeSpan start={start} end={end} locale={resolvedLocale} timeZone={settings.timeZone} />
+    );
+  const describedBy = [props['aria-describedby'], descriptionId].filter(Boolean).join(' ');
+
   return (
-    <time
-      ref={ref}
-      data-slot="elapsed-time"
-      dateTime={elapsed === null ? undefined : isoDuration(elapsed)}
-      className={cn('tabular-nums', className)}
-      {...props}
+    <TimeTooltip
+      content={content}
+      focusable={focusable}
+      render={<time ref={ref} {...timeProps} aria-describedby={describedBy} />}
     >
-      {elapsed === null ? fallback : format(elapsed)}
-    </time>
+      {text}
+      {/* A hidden child, so the component renders one element; aria-describedby still resolves it. */}
+      <span id={descriptionId} hidden suppressHydrationWarning>
+        {content}
+      </span>
+    </TimeTooltip>
   );
 }
 

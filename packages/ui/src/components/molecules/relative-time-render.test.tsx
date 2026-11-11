@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTag } from '../../test/slot-tokens.ts';
 import { IdChip } from './id-chip.tsx';
 import { RelativeTime } from './relative-time.tsx';
+import { StatusBadge } from './status-badge.tsx';
 
 const WHEN = new Date('2026-10-01T12:00:00Z');
 
@@ -77,5 +78,45 @@ describe('IdChip full value', () => {
     const html = renderToStaticMarkup(<IdChip value="SB-2043" />);
     expect(html).not.toContain('title=');
     expect(html).not.toContain('data-slot="tooltip-trigger"');
+  });
+});
+
+describe('RelativeTime display, start and tooltip content', () => {
+  const render = (node: React.ReactElement) => renderToStaticMarkup(node);
+
+  test('display="duration" says how long a state has lasted', () => {
+    const since = Date.now() - 13 * 24 * 60 * 60 * 1000;
+    const html = render(<RelativeTime value={since} locale="en-US" display="duration" />);
+    expect(html).toContain('>13 days<');
+    expect(html).not.toContain('ago');
+  });
+
+  test('with start, the description is the range and how long it took', () => {
+    const html = render(
+      <RelativeTime value={WHEN} start={WHEN.getTime() - 42_000} locale="en-US" />,
+    );
+    expect(html).toContain('–');
+    expect(html).toContain('>42s<');
+  });
+
+  test('custom tooltip content is the description too', () => {
+    const html = render(<RelativeTime value={WHEN} tooltip="Deployed by Ana" />);
+    expect(slotTag(html, 'relative-time')).toContain('data-base-ui-tooltip-trigger');
+    expect(html).toContain('hidden="">Deployed by Ana</span>');
+  });
+
+  test('under a status label it is a tab stop by default', () => {
+    const inDetail = (time: React.ReactElement) =>
+      slotTag(
+        render(
+          <StatusBadge appearance="icon" detail={time}>
+            Ready
+          </StatusBadge>,
+        ),
+        'relative-time',
+      );
+    expect(inDetail(<RelativeTime value={WHEN} />)).toContain('tabindex="0"');
+    expect(inDetail(<RelativeTime value={WHEN} focusable={false} />)).not.toContain('tabindex');
+    expect(inDetail(<RelativeTime value={WHEN} tooltip={false} />)).not.toContain('tabindex');
   });
 });
