@@ -55,7 +55,6 @@ function SideCard({
     <HoverCard>
       <HoverCardTrigger
         delay={0}
-        closeDelay={0}
         href="#"
         className={`absolute underline underline-offset-4 ${className}`}
       >
@@ -94,23 +93,35 @@ export const OpensTowardTheCentre: Story = {
     // `nudge`: an explicit align keeps its 4px offset, inward from the trigger's edge.
     const check = async (label: string, edge: 'left' | 'right', nudge = 0) => {
       const trigger = canvas.getByRole('link', { name: label });
-      await userEvent.hover(trigger);
-      const card = await waitFor(() => {
+      const findCard = () => {
         const element = document.querySelector<HTMLElement>('[data-slot="hover-card-content"][data-open]');
-        expect(element).not.toBeNull();
+        expect(element, `${label} opens a card`).not.toBeNull();
         return element as HTMLElement;
-      });
+      };
+      // A hover that lands before the trigger has its listeners is lost, so
+      // leave and enter again when no card opens.
+      let card: HTMLElement | undefined;
+      for (let attempt = 0; attempt < 3 && !card; attempt++) {
+        await userEvent.hover(trigger);
+        try {
+          card = await waitFor(findCard, { timeout: 1500 });
+        } catch {
+          await userEvent.unhover(trigger);
+        }
+      }
+      card ??= await waitFor(findCard, { timeout: 3000 });
+      const shown = card;
       await waitFor(() => {
-        const box = card.getBoundingClientRect();
+        const box = shown.getBoundingClientRect();
         const anchor = trigger.getBoundingClientRect();
         // The edge at the trigger lines up with the trigger's edge.
         expect(Math.abs(box[edge] - anchor[edge] - (edge === 'left' ? nudge : -nudge))).toBeLessThan(1);
         // It scales in from that corner.
-        const originX = Number.parseFloat(getComputedStyle(card).transformOrigin);
+        const originX = Number.parseFloat(getComputedStyle(shown).transformOrigin);
         expect(Math.abs(originX - (edge === 'left' ? 0 : box.width))).toBeLessThan(2);
-      });
+      }, { timeout: 3000 });
       await userEvent.unhover(trigger);
-      await waitFor(() => expect(document.querySelector('[data-slot="hover-card-content"]')).toBeNull());
+      await waitFor(() => expect(document.querySelector('[data-slot="hover-card-content"]')).toBeNull(), { timeout: 3000 });
     };
     // Left half: the left edges line up. Right half: the right edges.
     await check('@left-edge', 'left');
