@@ -103,7 +103,14 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 // delay each row and start every bar from its top (SELECT_RIPPLE_ROW_CLASS). The selected halves overlap by 1px (each runs 0.5px past the middle):
 // on a row of an odd height the middle falls on a half pixel, and two edges
 // that each cover half of a pixel row blend to a lighter 1px notch. With the
-// overlap one half fully covers every pixel row, whatever the height. Under
+// overlap one half fully covers every pixel row, whatever the height.
+// A bar that grows on its own (no selected neighbour) also fades in and
+// widens from 1px to 2px against the table edge (`scale` 0.5 on x, origin
+// inline-start), so it arrives softly: `moderate`, opacity on `ease-soft` and
+// scale on `ease-out`, as the checkbox fill. Clearing plays it back in
+// `fast`, both on `ease-soft`. A bar that extends a selected neighbour stays
+// opaque and full width, so the line has no lighter or thinner join. At rest
+// the bar is the same as without the motion: opacity 1, no scale. Under
 // reduced motion the bar is whole and only fades: the clip jumps on select and
 // waits for the fade on deselect.
 const selectedBar = [
@@ -114,7 +121,13 @@ const selectedBar = [
   "[&:has(+[data-state=selected])]:before:[clip-path:inset(100%_0_0_0)] [&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
   "[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
   "data-[state=selected]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]! data-[state=selected]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!",
-  "before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)]",
+  "before:origin-left after:origin-left rtl:before:origin-right rtl:after:origin-right",
+  "motion-safe:before:opacity-0 motion-safe:after:opacity-0 motion-safe:before:[scale:0.5_1] motion-safe:after:[scale:0.5_1]",
+  "motion-safe:[[data-state=selected]+&]:before:opacity-100 motion-safe:[[data-state=selected]+&]:after:opacity-100 motion-safe:[[data-state=selected]+&]:before:[scale:none] motion-safe:[[data-state=selected]+&]:after:[scale:none]",
+  "motion-safe:[&:has(+[data-state=selected])]:before:opacity-100 motion-safe:[&:has(+[data-state=selected])]:after:opacity-100 motion-safe:[&:has(+[data-state=selected])]:before:[scale:none] motion-safe:[&:has(+[data-state=selected])]:after:[scale:none]",
+  "motion-safe:data-[state=selected]:before:opacity-100 motion-safe:data-[state=selected]:after:opacity-100 motion-safe:data-[state=selected]:before:[scale:none] motion-safe:data-[state=selected]:after:[scale:none]",
+  "before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)]",
+  "motion-safe:data-[state=selected]:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)] motion-safe:data-[state=selected]:after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)]",
   "motion-reduce:before:opacity-0 motion-reduce:after:opacity-0 motion-reduce:data-[state=selected]:before:opacity-100 motion-reduce:data-[state=selected]:after:opacity-100",
   "motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)] motion-reduce:after:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)]",
   "motion-reduce:data-[state=selected]:before:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)] motion-reduce:data-[state=selected]:after:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)]",

@@ -154,6 +154,21 @@ export interface DataTableRowRipple {
   style: React.CSSProperties;
 }
 
+/**
+ * What a built-in body cell of one column carries, handed to `renderRow` as
+ * `ctx.cellProps(columnId)`. Spread it on the `<td>` you render
+ * (`<TableCell {...cellProps(cell.column.id)}>`) and the cell matches the
+ * built-in row: the select cell is the zero-width cell the checkbox floats
+ * over, the leading data cell carries the checkbox gutter, and every cell
+ * lines its content up with the header. Merge your own classes with `cn`.
+ */
+export interface DataTableRowCellProps {
+  'data-column-id': string;
+  'data-content-inset-cell': string;
+  className: string;
+  style: React.CSSProperties | undefined;
+}
+
 export interface DataTableLabels {
   empty?: string; // 'No results'
   selectAllRows?: string; // 'Select all rows'
@@ -211,6 +226,22 @@ export interface DataTableProps<TData> {
   filters?: DataTableFilters<TData>;
   columnVisibility?: DataTableColumnVisibility;
   rowSelection?: DataTableRowSelection<TData>;
+  /**
+   * Keeps the row selection in session storage under this key, so it survives a
+   * reload and a visit to another page in the same tab. Needs `rowSelection`.
+   *
+   * - On the first load the table restores the ids stored under the key and
+   *   reports them through `rowSelection.onChange`.
+   * - Every change is stored, with the ids of rows on other pages: a selection
+   *   can span pages. An empty selection removes the entry.
+   * - A new key switches to the selection stored under it, or to none. Nothing
+   *   from the old key carries over.
+   * - No navigation and no request. Blocked or full storage is ignored.
+   *
+   * The key names the list and anything that scopes its rows, such as a channel
+   * or a project: `${route}:${channelId}`. Without the prop nothing changes.
+   */
+  selectionStorageKey?: string;
 
   // slots
   /** First child of the internal `ListHeader` (title zone) — compose `PageHeader` here. */
@@ -255,6 +286,9 @@ export interface DataTableProps<TData> {
    * A row you render yourself changes with the others when select all or clear
    * all ripples down the page only if it takes `ctx.ripple` (see
    * {@link DataTableRowRipple}); a row that ignores it changes at once.
+   * `ctx.cellProps(columnId)` gives each cell the built-in cell's classes (see
+   * {@link DataTableRowCellProps}), so the row's select cell and leading cell
+   * never drift from the table's own.
    */
   renderRow?: (
     row: Row<TData>,
@@ -263,6 +297,7 @@ export interface DataTableProps<TData> {
       columnCount: number;
       defaultRow: React.ReactNode;
       ripple: DataTableRowRipple;
+      cellProps: (columnId: string) => DataTableRowCellProps;
     },
   ) => React.ReactNode;
 

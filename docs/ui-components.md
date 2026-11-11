@@ -265,17 +265,39 @@ green for success included. The label stays neutral.
 one time that matters for the state. In a `DataTable` the row is 46px.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
-<StatusBadge appearance="icon" tone="success" detail={<RelativeTime value={deployment.finishedAt} />}>
+<StatusBadge
+  appearance="icon"
+  tone="success"
+  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+>
   Ready
+</StatusBadge>;
+<StatusBadge
+  appearance="icon"
+  tone="warning"
+  detail={<>for <RelativeTime value={deployment.degradedSince} display="duration" /></>}
+>
+  Degraded
 </StatusBadge>;
 ```
 
 `ElapsedTime` counts up every second with tabular digits, and stops while it is
-off screen or the tab is hidden. Put the exact finish time, the start and the
-duration in a tooltip on the time, and make the time a tab stop.
+off screen or the tab is hidden. It writes the count in the locale of the
+`FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
+smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
+count started. `RelativeTime` with `start` shows the range and how long it
+took; with `display="duration"` it says how long a state has lasted
+(`13 days`), in the reader's locale and with the same unit steps as
+`2 minutes ago`. The words around it (`for`) are yours, so they are translated
+with the rest of the page. Pass content to `tooltip` on either to show
+something else. Don't wrap them in a `Tooltip`.
+
+Under the label each time is a tab stop, and its tooltip opens at the end of
+the status block, centred on it. It covers only the cells after the status in
+its own row, so the label, the time and the rows above and below stay readable.
 
 - `icon={<Icon />}` replaces the tone icon with a more exact shape. Never put
   an icon in `children`.
@@ -501,6 +523,28 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable selection storage
+
+`selectionStorageKey` keeps the row selection in session storage, so it survives a reload and a visit to another page in the same tab. It needs `rowSelection`.
+
+```tsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  getRowId={(row) => row.id}
+  selectionStorageKey={`${route}:${channelId}`}
+  rowSelection={{ value: selection, onChange: setSelection }}
+/>
+```
+
+- On its first load the table restores the stored ids and reports them through `rowSelection.onChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
+- Every change is stored, with the ids of rows on other pages: a selection can span pages. An empty selection removes the entry.
+- A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
+- No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
+- Put the list and anything that scopes its rows in the key: the route, and a channel or project. Two lists with the same key share one selection.
+- The bulk action context lists `selection` for the rows the table has loaded. Ids restored from other pages are in `selectedRowIds`.
+- Without the prop nothing changes.
+
 ### DataTable custom rows
 
 `renderRow` replaces the row the table renders. Select all and clear all ripple down the rows, each row starting a little after the one above, and a row you render yourself joins that ripple when it takes `ctx.ripple`:
@@ -509,18 +553,30 @@ import {
 <DataTable
   rows={rows}
   columns={columns}
-  renderRow={(row, { ripple }) => (
+  renderRow={(row, { ripple, cellProps }) => (
     <SortableRow
       row={row}
       className={cn("group/row", ripple.className)}
       style={{ ...ripple.style, transform, transition }}
+      cellProps={cellProps}
     />
   )}
 />
 ```
 
+Inside the row, each cell takes its attributes from the table:
+
+```tsx
+{row.getVisibleCells().map((cell) => (
+  <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+  </TableCell>
+))}
+```
+
 - `ctx.ripple.className` goes into your row's `className`. `ctx.ripple.style` is spread before your own `style`. It holds only the custom properties `--ripple-at` and `--ripple-span`, so an inline `transform`, `transition` or `opacity` (a drag) never collides with it.
 - Set `data-state="selected"` on the row while it is selected, as the built-in rows do. The row must be a `TableRow` (or carry its classes) so the selection bar exists.
+- `ctx.cellProps(columnId)` returns what a built-in cell of that column carries: `className` (the zero-width select cell `relative w-0 p-0 pl-0!`, the leading cell's checkbox gutter, the content inset), `style` (the column indent) and the `data-column-id` and `data-content-inset-cell` attributes. Spread it on the `TableCell`, and merge your own classes with `cn`. Do not copy the classes: when the table changes them, your rows follow.
 - A row that ignores `ctx.ripple` still works. It changes at once, while the rows around it ripple.
 - Returning `ctx.defaultRow` needs nothing: it already has the ripple. Reduced motion: no ripple.
 
@@ -548,6 +604,7 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
+- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` has no click-to-select, so there its link keeps covering the row.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.

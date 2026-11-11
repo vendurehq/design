@@ -2,6 +2,7 @@ import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { Column } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { TableCell, TableRow } from '../../atoms/table.tsx';
 import { ListRowChevron } from '../list-row.tsx';
 
 import {
@@ -21,6 +22,7 @@ import {
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
 // (renderToStaticMarkup, no jsdom). Capability-absence is asserted from markup;
@@ -762,6 +764,182 @@ describe('DataTable renderRow ripple', () => {
     );
     expect(markup).toContain('--ripple-at:0.0000');
     expect(markup).toContain('transform:translate3d(0px, 4px, 0px)');
+  });
+});
+
+describe('DataTable renderRow cell classes', () => {
+  // The class of each body cell of the first row, in order.
+  const bodyCellClasses = (markup: string) => {
+    const firstRow = markup.split('<tbody')[1]?.split('</tr>')[0] ?? '';
+    return [...firstRow.matchAll(/<td[^>]*?class="([^"]*)"/g)].map((match) => match[1]);
+  };
+  const selectable = { value: {}, onChange: () => {} };
+
+  test('a custom row built from ctx.cellProps gets the same cell classes as a built-in row', () => {
+    const builtIn = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    const custom = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+        renderRow={(row, { cellProps }) => (
+          <TableRow>
+            {row.getVisibleCells().map((cell) => (
+              <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+                {String(cell.getValue() ?? '')}
+              </TableCell>
+            ))}
+          </TableRow>
+        )}
+      />,
+    );
+    const expected = bodyCellClasses(builtIn);
+    expect(expected).toHaveLength(3);
+    expect(bodyCellClasses(custom)).toEqual(expected);
+  });
+
+  test('cellProps gives the select cell its zero-width classes and the first content cell its gutter', () => {
+    const seen: Record<string, string> = {};
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+        renderRow={(row, { cellProps, defaultRow }) => {
+          for (const cell of row.getVisibleCells()) {
+            seen[cell.column.id] = cellProps(cell.column.id).className;
+          }
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen.select).toContain('relative w-0 p-0 pl-0!');
+    expect(seen.name).toContain('pl-[calc(var(--spacing)*8');
+    expect(seen.code).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.code).not.toContain('*8');
+  });
+
+  test('a cell the table does not select gets no gutter: without rowSelection the first cell has none', () => {
+    const seen: Record<string, string> = {};
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        renderRow={(row, { cellProps, defaultRow }) => {
+          for (const cell of row.getVisibleCells()) {
+            seen[cell.column.id] = cellProps(cell.column.id).className;
+          }
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen.name).toContain('pl-[calc(var(--spacing)*2');
+  });
+});
+
+describe('DataTable selection storage', () => {
+  const real = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  const stubStorage = (store: Record<string, string>) =>
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete store[key];
+        },
+      },
+    });
+  afterEach(() => {
+    if (real) Object.defineProperty(globalThis, 'sessionStorage', real);
+    else Reflect.deleteProperty(globalThis, 'sessionStorage');
+  });
+
+  test('a write stores the ids of every page, and a read gives them back', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeStoredSelection('orders:1', { p1: true, p2: true, p11: true, p3: false });
+    expect(JSON.parse(Object.values(store)[0] as string)).toEqual(['p1', 'p2', 'p11']);
+    expect(readStoredSelection('orders:1')).toEqual({ p1: true, p2: true, p11: true });
+  });
+
+  test('an empty selection removes the entry', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeStoredSelection('orders:1', { p1: true });
+    expect(Object.keys(store)).toHaveLength(1);
+    writeStoredSelection('orders:1', {});
+    expect(Object.keys(store)).toHaveLength(0);
+    writeStoredSelection('orders:1', { p1: false });
+    expect(Object.keys(store)).toHaveLength(0);
+  });
+
+  test('a key reads only its own selection', () => {
+    stubStorage({});
+    writeStoredSelection('orders:1', { p1: true });
+    writeStoredSelection('orders:2', { p9: true });
+    expect(readStoredSelection('orders:1')).toEqual({ p1: true });
+    expect(readStoredSelection('orders:2')).toEqual({ p9: true });
+    expect(readStoredSelection('orders:3')).toEqual({});
+  });
+
+  test('malformed or non-array storage reads as no selection', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    store['vendure-ui:data-table-selection:a'] = '{not json';
+    store['vendure-ui:data-table-selection:b'] = '{"p1":true}';
+    expect(readStoredSelection('a')).toEqual({});
+    expect(readStoredSelection('b')).toEqual({});
+  });
+
+  test('blocked or full storage is ignored', () => {
+    const blocked = () => {
+      throw new DOMException('blocked', 'QuotaExceededError');
+    };
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      value: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    });
+    expect(() => writeStoredSelection('orders:1', { p1: true })).not.toThrow();
+    expect(() => writeStoredSelection('orders:1', {})).not.toThrow();
+    expect(readStoredSelection('orders:1')).toEqual({});
+  });
+
+  test('no storage at all (server render) reads as no selection', () => {
+    Reflect.deleteProperty(globalThis, 'sessionStorage');
+    expect(readStoredSelection('orders:1')).toEqual({});
+    expect(() => writeStoredSelection('orders:1', { p1: true })).not.toThrow();
+  });
+
+  test('the prop changes nothing on a server render, and without it nothing is stored', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    const plain = html(
+      <DataTable rows={rows} columns={columns} getRowId={(row) => row.id} rowSelection={{}} />,
+    );
+    const keyed = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{}}
+        selectionStorageKey="countries"
+      />,
+    );
+    expect(keyed).toBe(plain);
+    expect(Object.keys(store)).toHaveLength(0);
   });
 });
 

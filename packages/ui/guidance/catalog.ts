@@ -365,8 +365,12 @@ export const uiGuidance = [
         body: 'Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.',
       },
       {
+        title: 'Keep the selection across a reload with selectionStorageKey',
+        body: "Pass selectionStorageKey (with rowSelection) when a list's selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.",
+      },
+      {
         title: 'A row you render yourself takes the ripple',
-        body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once.',
+        body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once. Spread ctx.cellProps(columnId) on each cell: it holds the built-in cell\'s classes (the zero-width select cell, the leading cell\'s checkbox gutter), its column indent and its data attributes, so a custom row copies none of them.',
       },
       {
         title: 'Shape loading rows like loaded rows',
@@ -374,7 +378,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -437,11 +441,11 @@ export const uiGuidance = [
       },
       {
         title: 'Pin locale and timezone under SSR',
-        body: 'Prevent hydration disagreement by making server and client formatting context explicit.',
+        body: "Prevent hydration disagreement for DateTime by making server and client formatting context explicit. RelativeTime and ElapsedTime need no pinning: they depend on the reader's clock, so the server and the first client render show the fallback, and the text follows right after. An app that renders only in the browser shows the text from its first paint.",
       },
       {
         title: 'The other form is a tooltip, not a title',
-        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Add focusable where keyboard users need the exact time; never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
+        body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Pass tooltip={<content />} to show other content, start to show the range and how long it took, and display="duration" for how long a state has lasted ("13 days", with the caller\'s own words around it). Add focusable where keyboard users need the exact time (a time under a StatusBadge label is a tab stop already); never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
       },
     ],
     related: ['date-picker', 'money'],
@@ -708,6 +712,20 @@ export const uiGuidance = [
     related: ['button', 'list-header', 'status-badge'],
   },
   {
+    id: 'popover',
+    title: 'Popover',
+    summary:
+      'A popover holds content the user reads or edits next to its trigger. It opens toward the centre of the screen by itself.',
+    sourceStory: 'popover-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Do not set align unless there is a reason',
+        body: 'Without an align, PopoverContent opens toward the centre of the screen: a trigger in the right half lines the popover up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout, such as a popover that must line up with a field. An explicit align always wins. align="center" brings back the old look, centred on the trigger.',
+      },
+    ],
+    related: ['tooltip'],
+  },
+  {
     id: 'progress',
     title: 'Progress',
     summary:
@@ -921,7 +939,7 @@ export const uiGuidance = [
       },
       {
         title: 'The second line holds one time',
-        body: 'Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Make the time a tab stop with a Tooltip that shows the exact finish time, the start and the duration, so the table needs no Duration or Created column.',
+        body: 'Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Write each time once, with no Tooltip around it: <ElapsedTime since={startedAt} tooltip /> for a count, <RelativeTime value={finishedAt} start={startedAt} /> for a finished state (its tooltip shows the range and the duration), and your own word "for" before <RelativeTime value={since} display="duration" /> for a state that continues. Under the label each time is a tab stop and its tooltip opens beside the status block, so the label stays readable and the table needs no Duration or Created column.',
       },
       {
         title: 'The chip brings its own icon',
