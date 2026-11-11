@@ -365,6 +365,10 @@ export const uiGuidance = [
         body: 'Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.',
       },
       {
+        title: 'A row you render yourself takes the ripple',
+        body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once.',
+      },
+      {
         title: 'Shape loading rows like loaded rows',
         body: 'The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.',
       },

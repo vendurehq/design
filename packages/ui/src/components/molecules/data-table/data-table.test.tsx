@@ -714,6 +714,57 @@ describe('DataTable renderRow seam', () => {
   });
 });
 
+describe('DataTable renderRow ripple', () => {
+  test("hands every row its ripple timing: the built-in rows' own, in order from the top", () => {
+    const seen: { id: string; className: string; at: string; span: string }[] = [];
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        renderRow={(row, { defaultRow, ripple }) => {
+          const style = ripple.style as Record<string, string>;
+          seen.push({
+            id: row.id,
+            className: ripple.className,
+            at: style['--ripple-at'] as string,
+            span: style['--ripple-span'] as string,
+          });
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen).toHaveLength(rows.length);
+    expect(seen[0]?.at).toBe('0.0000');
+    expect(Number(seen[1]?.at)).toBeGreaterThan(0);
+    for (const entry of seen) {
+      expect(entry.className).toContain('--row-ripple-delay');
+      expect(Number(entry.span)).toBeGreaterThan(0);
+    }
+  });
+
+  test('a custom row that merges ctx.ripple keeps its own style', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        renderRow={(row, { ripple }) => (
+          <tr
+            data-custom=""
+            className={ripple.className}
+            style={{ ...ripple.style, transform: 'translate3d(0px, 4px, 0px)' }}
+          >
+            <td>{row.id}</td>
+          </tr>
+        )}
+      />,
+    );
+    expect(markup).toContain('--ripple-at:0.0000');
+    expect(markup).toContain('transform:translate3d(0px, 4px, 0px)');
+  });
+});
+
 describe('DataTable onTableReady', () => {
   test('does not fire during render/SSR — an effect-only "ready" capture', () => {
     const onTableReady = mock(() => {});

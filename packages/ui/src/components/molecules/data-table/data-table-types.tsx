@@ -140,6 +140,20 @@ export interface DataTableBulkActionContext<TData> {
   clearSelection: () => void; // table.resetRowSelection()
 }
 
+/**
+ * The select all / clear all ripple timing of one row, handed to `renderRow`.
+ * Put both on the `<tr>` you render so it ripples like a built-in row:
+ * `className` merged into yours, `style` spread before yours. `style` holds
+ * only custom properties (`--ripple-at`, `--ripple-span`), so it never
+ * collides with an inline `transform`, `transition` or `opacity` of the row.
+ * The row also needs `data-state="selected"` while selected, as the built-in
+ * rows have.
+ */
+export interface DataTableRowRipple {
+  className: string;
+  style: React.CSSProperties;
+}
+
 export interface DataTableLabels {
   empty?: string; // 'No results'
   selectAllRows?: string; // 'Select all rows'
@@ -237,10 +251,19 @@ export interface DataTableProps<TData> {
    * MODEL) by owning the row JSX — together they restore the donor's
    * `isUtilityRow`/`renderUtilityRow`/`DraggableRow` seam without the core reading
    * `meta`.
+   *
+   * A row you render yourself changes with the others when select all or clear
+   * all ripples down the page only if it takes `ctx.ripple` (see
+   * {@link DataTableRowRipple}); a row that ignores it changes at once.
    */
   renderRow?: (
     row: Row<TData>,
-    ctx: { table: Table<TData>; columnCount: number; defaultRow: React.ReactNode },
+    ctx: {
+      table: Table<TData>;
+      columnCount: number;
+      defaultRow: React.ReactNode;
+      ripple: DataTableRowRipple;
+    },
   ) => React.ReactNode;
 
   /**
