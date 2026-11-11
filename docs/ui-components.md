@@ -204,6 +204,8 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 
 Button's `default` variant uses the neutral `primary` slot, not Vendure blue. Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`. For a deliberate identity moment, use `variant="brand"`.
 
+The small icon sizes `icon-xs` (24px) and `icon-sm` (28px) have a 40 × 40px click area around the icon. It is an invisible `::before`, so the button keeps its visible size. Next to another control the area keeps the button's own width, so neighbours never share a point. Inside an InputGroup and in the copy chips it is off. Do not give these buttons a `::before` of your own. Keep a positioned scroll container at least 8px from such a button, or the area adds to the scroll width.
+
 ### Badge
 
 ```tsx
@@ -535,6 +537,26 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable bulk actions
+
+`bulkActions` renders the bar that replaces the controls while rows are selected. Its context describes the selection:
+
+```tsx
+<DataTable
+  rowSelection={{ value: selection, onChange: setSelection }}
+  bulkActions={({ selectedCount, selectedRowIds, missingRowIds, selection, clearSelection }) => (
+    <>
+      <span>{selectedCount} selected</span>
+      <Button onClick={() => archive(selectedRowIds)}>Archive</Button>
+    </>
+  )}
+/>
+```
+
+- `selectedRowIds` is the id of every selected row, on this page, on other pages and restored from storage. Act on these. `selectedCount` is their count: show it as the count in the bar.
+- `selection` holds the row objects the table has loaded. Use it to display rows. It can be shorter than `selectedRowIds`: the selection spans pages, it can be restored before its rows load, and a stored id can name a row that no longer exists.
+- `missingRowIds` are the ids with no row object in `selection`. Empty means `selection` has every row. When it is not empty, an action that needs row data loads those rows or tells the user. It does not run on fewer rows than `selectedCount` says.
+
 ### DataTable selection storage
 
 `selectionStorageKey` keeps the row selection in session storage, so it survives a reload and a visit to another page in the same tab. It needs `rowSelection`.
@@ -554,7 +576,7 @@ import {
 - A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
 - No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
 - Put the list and anything that scopes its rows in the key: the route, and a channel or project. Two lists with the same key share one selection.
-- The bulk action context lists `selection` for the rows the table has loaded. Ids restored from other pages are in `selectedRowIds`.
+- See "DataTable bulk actions" for what an action receives when the selection spans pages.
 - Without the prop nothing changes.
 
 ### DataTable custom rows

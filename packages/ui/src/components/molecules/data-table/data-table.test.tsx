@@ -1159,6 +1159,61 @@ describe('getSelectedRowIds', () => {
   });
 });
 
+describe('DataTable bulk action context', () => {
+  const contextOf = (props: Partial<React.ComponentProps<typeof DataTable<Country>>>) => {
+    let seen: Record<string, unknown> | undefined;
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        bulkActions={(ctx) => {
+          seen = {
+            ids: ctx.selectedRowIds,
+            count: ctx.selectedCount,
+            loaded: ctx.selection.length,
+            missing: ctx.missingRowIds,
+          };
+          return null;
+        }}
+        {...props}
+      />,
+    );
+    return seen;
+  };
+
+  test('every selected id counts, also for a row on another page', () => {
+    // '9' is on a page the table has not shown: the table holds two rows.
+    expect(
+      contextOf({ rowSelection: { value: { '1': true, '9': true }, onChange: () => {} } }),
+    ).toEqual({ ids: ['1', '9'], count: 2, loaded: 1, missing: ['9'] });
+  });
+
+  test('a restored selection before its rows load still reports every id', () => {
+    expect(
+      contextOf({
+        rows: [],
+        isLoading: true,
+        rowSelection: { value: { '1': true, '2': true, '9': true }, onChange: () => {} },
+      }),
+    ).toEqual({ ids: ['1', '2', '9'], count: 3, loaded: 0, missing: ['1', '2', '9'] });
+  });
+
+  test('a row deleted on the server stays in the ids and is reported missing', () => {
+    expect(
+      contextOf({
+        rowSelection: { value: { '1': true, '2': true, '404': true }, onChange: () => {} },
+      }),
+    ).toEqual({ ids: ['1', '2', '404'], count: 3, loaded: 2, missing: ['404'] });
+  });
+
+  test('nothing is missing when every selected row is loaded', () => {
+    expect(
+      contextOf({ rowSelection: { value: { '1': true, '2': true }, onChange: () => {} } }),
+    ).toEqual({ ids: ['1', '2'], count: 2, loaded: 2, missing: [] });
+  });
+});
+
 describe('getSelectedOriginals', () => {
   const cache = new Map<string, Country>([
     ['1', aland],

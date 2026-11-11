@@ -162,6 +162,7 @@ Use the batteries-included collection engine while keeping URL, fetching, and pe
 - **Capabilities are opt-in:** Enable a capability by supplying its configuration; do not render disabled placeholder controls.
 - **The consumer owns state outside the table:** The consumer owns URL state, fetching, authorization, and persistence. DataTable owns one TanStack table instance and UI composition.
 - **Use composition seams before wrappers:** Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.
+- **A bulk action acts on ids, and rows only display:** A selection spans pages and can be restored before its rows load. Act on ctx.selectedRowIds and show ctx.selectedCount as the count in the bar. ctx.selection holds only the rows the table has loaded and can be shorter than the ids. ctx.missingRowIds lists the ids with no row object: an action that needs row data loads them or tells the user, and never runs on fewer rows than the bar says.
 - **Keep the selection across a reload with selectionStorageKey:** Pass selectionStorageKey (with rowSelection) when a list's selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.
 - **A row you render yourself takes the ripple:** Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once. Spread ctx.cellProps(columnId) on each cell: it holds the built-in cell's classes (the zero-width select cell, the leading cell's checkbox gutter), its column indent and its data attributes, so a custom row copies none of them.
 - **Shape loading rows like loaded rows:** The default loading cell is one text line tall, so one-line columns need nothing. When a cell is taller than one line (a title over a sub-line, an avatar), pass skeletonCells for its column, stacking one DataTableSkeletonLine per text line, so the loading rows keep the loaded row height and the table does not jump.
@@ -221,6 +222,13 @@ Compose accessible fields, validation, grouping, and actions independently of th
 - **Form state is host-owned:** Dashboard extensions use the form APIs exported by @vendure/dashboard. Standalone consumers keep their existing form-state library.
 
 Related decisions: `button`, `confirm-dialog`.
+## HoverCard
+
+A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.
+
+- **Do not set align unless there is a reason:** Without an align, HoverCardContent opens toward the centre of the screen: a trigger in the right half lines the card up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout. An explicit align always wins. align="center" brings back the old look, centred on the trigger.
+
+Related decisions: `popover`, `tooltip`.
 ## IdChip
 
 Show compact, copyable, non-secret identifiers only where the exact identity helps the task.

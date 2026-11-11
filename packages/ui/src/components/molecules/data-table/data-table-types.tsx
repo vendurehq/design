@@ -131,11 +131,24 @@ export type DataTableFilters<TData> = ControlledState<ColumnFiltersState> & {
 
 export interface DataTableBulkActionContext<TData> {
   /**
-   * `row.original` for EVERY selected row across pages (resolved from the core's
-   * selection cache). Named `selection` to match the donor's `BulkActionContext`.
+   * `row.original` of the selected rows the table has loaded, from the core's
+   * selection cache. Use it to DISPLAY rows. It can be SHORTER than
+   * `selectedRowIds`: a selection spans pages, it can be restored before its
+   * rows load, and a stored id can name a row that no longer exists. Act on
+   * `selectedRowIds`; read `missingRowIds` before an action that needs row data.
    */
   selection: TData[];
+  /** The id of EVERY selected row, loaded or not. Act on these. */
   selectedRowIds: string[];
+  /** `selectedRowIds.length`. Show this as the count: it is never below what the action receives. */
+  selectedCount: number;
+  /**
+   * The selected ids with no row object in `selection`. Empty when `selection`
+   * has a row for every id. When it is not empty, an action that needs row data
+   * must load these rows or tell the user: it must not act on fewer rows than
+   * `selectedCount` says.
+   */
+  missingRowIds: string[];
   table: Table<TData>;
   clearSelection: () => void; // table.resetRowSelection()
 }
