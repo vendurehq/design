@@ -258,7 +258,7 @@ const DASHBOARD_MAP: DashboardRow[] = [
   {
     capability: 'Bulk actions (permissions, confirm, registry merge)',
     lives: 'Core chrome + slot',
-    how: 'The core owns the overlay and cross-page selection cache; content comes from `bulkActions({ selection, table, clearSelection })`.',
+    how: 'The core owns the overlay and cross-page selection cache; content comes from `bulkActions({ selectedRowIds, selectedCount, selection, missingRowIds, table, clearSelection })`: act on the ids, show `selection` rows only for display.',
   },
   {
     capability: 'Row actions, delete mutations',
@@ -438,9 +438,9 @@ export const Capabilities: Story = {
               columns={productColumns}
               getRowId={(p) => p.id}
               rowSelection={{ defaultValue: {} }}
-              bulkActions={({ selection, clearSelection }) => (
+              bulkActions={({ selectedCount, clearSelection }) => (
                 <>
-                  <span className="text-sm font-medium">{selection.length} selected</span>
+                  <span className="text-sm font-medium">{selectedCount} selected</span>
                   <Button size="sm" variant="outline">
                     <ArchiveIcon />
                     Archive

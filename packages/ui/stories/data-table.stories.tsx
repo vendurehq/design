@@ -514,9 +514,9 @@ export const RowSelection: Story = {
           </InputGroup>
         }
         columnVisibility={{ defaultValue: {} }}
-        bulkActions={({ selection: selected, clearSelection }) => (
+        bulkActions={({ selectedCount, clearSelection }) => (
           <>
-            <span className="text-sm font-medium">{selected.length} selected</span>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
             <Button variant="outline" size="sm">
               Mark as shipped
             </Button>
@@ -547,6 +547,7 @@ function StoredSelectionTable({
   const [page, setPage] = useState(1);
   const [channel, setChannel] = useState('a');
   const [mount, setMount] = useState(0);
+  const [received, setReceived] = useState<number>();
   const [selection, setSelection] = useState<RowSelectionState>({});
   const pageRows = useMemo(() => pagedOrders.slice((page - 1) * 10, page * 10), [page]);
   const count = Object.keys(selection).filter((id) => selection[id]).length;
@@ -588,6 +589,20 @@ function StoredSelectionTable({
           totalItems: pagedOrders.length,
           onPageChange: setPage,
         }}
+        // The count is the count of the ids. The action acts on the ids, and says
+        // so when the rows it has are fewer than the ids.
+        bulkActions={({ selectedCount, selectedRowIds, selection: loaded, missingRowIds }) => (
+          <>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
+            <Button variant="outline" size="sm" onClick={() => setReceived(selectedRowIds.length)}>
+              Archive
+            </Button>
+            <span data-testid="bulk-received" className="text-sm">
+              {received == null ? 'Not run' : `Archived ${received} ids`}
+              {missingRowIds.length > 0 && ` (${loaded.length} loaded, ${missingRowIds.length} not)`}
+            </span>
+          </>
+        )}
       />
     </div>
   );
@@ -636,6 +651,13 @@ const playStoredSelection =
       await userEvent.click(canvas.getByRole('button', { name: 'Remount the table' }));
       await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
       await expect(count()).toHaveTextContent('3 selected');
+      // The bar and the action agree on 3, though only the rows of the loaded page
+      // (p11) are known after the remount: the action is told the others are missing.
+      await expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible();
+      await userEvent.click(canvas.getByRole('button', { name: 'Archive' }));
+      await expect(canvas.getByTestId('bulk-received')).toHaveTextContent(
+        'Archived 3 ids (1 loaded, 2 not)',
+      );
       await userEvent.click(canvas.getByRole('button', { name: 'Go to previous page' }));
       await waitFor(() => expect(row(2)).toHaveAttribute('aria-checked', 'true'));
     });
@@ -1569,9 +1591,9 @@ export const SelectionMotion: Story = {
         columns={columns}
         getRowId={(order) => order.id}
         rowSelection={{ value: selection, onChange: setSelection }}
-        bulkActions={({ selection: selected, clearSelection }) => (
+        bulkActions={({ selectedCount, clearSelection }) => (
           <>
-            <span className="text-sm font-medium">{selected.length} selected</span>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
             <Button variant="outline" size="sm" onClick={clearSelection}>
               Clear
             </Button>
@@ -1638,6 +1660,54 @@ export const SelectionMotion: Story = {
         expect(look(alone as HTMLElement)).toEqual(['0 0.5 1', '0 0.5 1']);
       });
     });
+
+    // When a row clears, read when each half of its bar starts to lose height
+    // and how long its fade runs, from the transitions the click started.
+    const clearing = (row: HTMLElement) =>
+      ['::before', '::after'].map((part) => {
+        const timing = (property: string) =>
+          document
+            .getAnimations()
+            .filter(
+              (a): a is CSSTransition =>
+                a instanceof CSSTransition &&
+                (a.effect as KeyframeEffect | null)?.target === row &&
+                (a.effect as KeyframeEffect).pseudoElement === part &&
+                a.transitionProperty === property
+            )
+            .map((a) => a.effect?.getTiming())[0];
+        const clip = timing('clip-path');
+        const fade = timing('opacity');
+        const clipText = clip ? `clip after ${clip.delay}ms for ${clip.duration}ms` : 'no clip';
+        return `${clipText}, ${fade ? `fade ${fade.duration}ms` : 'no fade'}`;
+      });
+
+    await step('a bar that clears alone fades and narrows out before it loses height', async () => {
+      // Row 4 has no selected neighbour; row 2 is then the last selected row.
+      for (const n of [4, 2]) {
+        const row = rows()[n - 1] as HTMLElement;
+        await userEvent.click(canvas.getByRole('checkbox', { name: `Select row ${n}` }));
+        await waitFor(() =>
+          expect(clearing(row)).toEqual([
+            'clip after 100ms for 0ms, fade 100ms',
+            'clip after 100ms for 0ms, fade 100ms',
+          ])
+        );
+      }
+    });
+
+    await step('a bar that clears next to a selection shrinks toward it at once', async () => {
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
+      await waitFor(() => expect(clips(rows()[2] as HTMLElement)).toEqual(FULL));
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
+      await waitFor(() =>
+        expect(clearing(rows()[2] as HTMLElement)).toEqual([
+          'clip after 0ms for 150ms, no fade',
+          'clip after 0ms for 150ms, no fade',
+        ])
+      );
+    });
   },
 };
 
@@ -1690,9 +1760,9 @@ function RippleTable({ count, custom = false }: { count: number; custom?: boolea
         </PageHeader>
       }
       rowSelection={{ value: selection, onChange: setSelection }}
-      bulkActions={({ selection: selected, clearSelection }) => (
+      bulkActions={({ selectedCount, clearSelection }) => (
         <>
-          <span className="text-sm font-medium">{selected.length} selected</span>
+          <span className="text-sm font-medium">{selectedCount} selected</span>
           <Button variant="outline" size="sm" onClick={clearSelection}>
             Clear
           </Button>
@@ -1702,10 +1772,13 @@ function RippleTable({ count, custom = false }: { count: number; custom?: boolea
   );
 }
 
-// Where each row starts in the ripple: its bar's transition delay, in ms.
+// Where each row starts in the ripple: the delay of its bar's fade, in ms.
+// (The clip of a bar that clears alone waits for the fade at rest too.)
 const rippleStarts = (canvasElement: HTMLElement) =>
   [...canvasElement.querySelectorAll<HTMLElement>('tbody tr')].map((row) => {
-    const delay = getComputedStyle(row, '::before').transitionDelay;
+    const style = getComputedStyle(row, '::before');
+    const fade = style.transitionProperty.split(', ').indexOf('opacity');
+    const delay = style.transitionDelay.split(', ')[fade] ?? '0s';
     return delay.endsWith('ms') ? Number.parseFloat(delay) : Number.parseFloat(delay) * 1000;
   });
 
