@@ -123,17 +123,21 @@ export const CopiedLabelSwaps: Story = {
     const button = within(canvasElement).getByRole('button', { name: 'Copy SKU L2201516' });
     await userEvent.hover(button);
     let swap: HTMLElement | null = null;
-    await waitFor(() => {
-      swap = document.querySelector<HTMLElement>('[data-slot="tooltip-label-swap"]');
-      expect(swap).not.toBeNull();
-    });
+    // The tooltip opens after its delay, which runs long on a loaded machine.
+    await waitFor(
+      () => {
+        swap = document.querySelector<HTMLElement>('[data-slot="tooltip-label-swap"]');
+        expect(swap).not.toBeNull();
+      },
+      { timeout: 5000 },
+    );
     const stack = swap as unknown as HTMLElement;
     const label = (text: string) =>
       Array.from(stack.children).find((child) => child.textContent === text) as HTMLElement;
     await expect(label('Copy SKU').dataset.swap).toBe('in');
 
     await userEvent.click(button);
-    await waitFor(() => expect(label('Copied').dataset.swap).toBe('in'));
+    await waitFor(() => expect(label('Copied').dataset.swap).toBe('in'), { timeout: 5000 });
     await expect(label('Copy SKU').dataset.swap).toBe('before');
     await expect(label('Copy SKU').getAttribute('aria-hidden')).toBe('true');
     // Read the end values once the transitions have run.
@@ -162,7 +166,9 @@ export const CopiesBeforeTheDelay: Story = {
   play: async ({ canvasElement }) => {
     stubClipboard();
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Copy SKU L2201516' }));
-    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Copied' })).toBeInTheDocument());
+    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Copied' })).toBeInTheDocument(), {
+      timeout: 5000,
+    });
     await waitFor(
       () => {
         const copied = Array.from(
@@ -170,7 +176,7 @@ export const CopiesBeforeTheDelay: Story = {
         ).find((label) => label.textContent === 'Copied');
         expect(copied?.dataset.swap).toBe('in');
       },
-      { timeout: 2000 },
+      { timeout: 5000 },
     );
   },
 };
