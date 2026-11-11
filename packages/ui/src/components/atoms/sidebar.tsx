@@ -581,11 +581,18 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 // slidingIndicator, the menu's pill marks the active item instead, so the item
 // drops its own fill and bar. The active icon takes brand-indicator.
 //
+// For the current page exactly one icon takes brand-indicator. An active
+// SidebarMenuSubButton lights its own leading icon. A group with
+// hasActiveChild lights its icon too, except while an active sub-button with
+// an icon is shown inside the same menu item (the :has() selector below): then
+// the sub-button's icon is the one. In the icon rail the sub-buttons are
+// hidden, so the group's icon is lit regardless.
+//
 // The icon rail keeps every button at full width and its padding unchanged:
 // the icon stays where it is (centred in the rail) and the label fades out,
 // clipped by the narrowing rail, instead of the button shrinking to a square.
 const sidebarMenuButtonVariants = cva(
-  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-[width,height,padding,background-color,color] duration-fast ease-default motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-moderate group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-fast [&_svg]:size-4 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-normal hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator data-has-active-child:[&>svg:first-child]:opacity-100 data-has-active-child:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
+  "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 in-data-[active-indicator=pill]:before:hidden in-data-[active-indicator=pill]:data-active:bg-transparent! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-[width,height,padding,background-color,color] duration-fast ease-default motion-reduce:transition-none group-has-data-[sidebar=menu-action]/menu-item:pr-8 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>span:last-child]:transition-opacity [&>span:last-child]:duration-moderate group-data-[collapsible=icon]:[&>span:last-child]:opacity-0 group-data-[collapsible=icon]:[&>span:last-child]:duration-fast [&_svg]:size-4 [&>svg:first-child]:[stroke-width:1.75] [&>svg:first-child]:opacity-55 [&>svg:first-child]:transition-[opacity,color] [&>svg:first-child]:duration-normal hover:[&>svg:first-child]:opacity-85 data-active:[&>svg:first-child]:opacity-100 data-active:[&>svg:first-child]:text-brand-indicator data-has-active-child:not-group-has-[[data-slot=sidebar-menu-sub-button][data-active]>svg:first-child]/menu-item:[&>svg:first-child]:opacity-100 data-has-active-child:not-group-has-[[data-slot=sidebar-menu-sub-button][data-active]>svg:first-child]/menu-item:[&>svg:first-child]:text-brand-indicator group-data-[collapsible=icon]:data-has-active-child:[&>svg:first-child]:opacity-100 group-data-[collapsible=icon]:data-has-active-child:[&>svg:first-child]:text-brand-indicator [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -618,7 +625,15 @@ function SidebarMenuButton({
 }: useRender.ComponentProps<"button"> &
   React.ComponentProps<"button"> & {
     isActive?: boolean
-    /** A group whose nested item is the current page: only its icon takes the active colour. */
+    /**
+     * Set it on the button of every group that holds the current page, whether
+     * or not the current item has an icon. For the current page exactly one
+     * icon takes the active colour, and the sidebar picks it: the current
+     * item's own icon when it has one, otherwise this group's icon. The group's
+     * icon also takes it when the group is closed (its items are not mounted)
+     * and in the icon rail (its items are hidden). The group gets no fill and
+     * no bar.
+     */
     hasActiveChild?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
@@ -796,7 +811,7 @@ function SidebarMenuSubButton({
     props: mergeProps<"a">(
       {
         className: cn(
-          "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground h-7 gap-2 rounded-md px-2 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:opacity-55 [&>svg]:transition-opacity [&>svg]:duration-normal hover:[&>svg]:opacity-85 data-active:[&>svg]:opacity-100 data-[size=md]:text-sm data-[size=sm]:text-xs [&>svg]:size-4 flex min-w-0 -translate-x-px items-center overflow-hidden outline-hidden group-data-[collapsible=icon]:hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:shrink-0",
+          "before:bg-sidebar-primary relative before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:opacity-0 data-active:before:opacity-100 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground h-7 gap-2 rounded-md px-2 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:opacity-55 [&>svg]:transition-opacity [&>svg]:duration-normal hover:[&>svg]:opacity-85 data-active:[&>svg]:opacity-100 data-active:[&>svg]:text-brand-indicator data-[size=md]:text-sm data-[size=sm]:text-xs [&>svg]:size-4 flex min-w-0 -translate-x-px items-center overflow-hidden outline-hidden group-data-[collapsible=icon]:hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:shrink-0",
           className
         ),
       },

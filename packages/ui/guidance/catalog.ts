@@ -782,6 +782,31 @@ export const uiGuidance = [
     related: ['anonymized-token', 'copyable-text'],
   },
   {
+    id: 'sidebar',
+    title: 'Sidebar',
+    summary:
+      "For the current page, exactly one icon in the sidebar takes the active colour: the current item's own icon, or its group's icon.",
+    sourceStory: 'sidebar-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'One icon shows the current page',
+        body: "If the current item has its own icon, only that icon takes the active colour and its group's icon stays neutral. If the current item has no icon, its group's icon takes it. In the icon rail the nested items are hidden, so the group's icon takes it.",
+      },
+      {
+        title: 'Set hasActiveChild on every group that holds the current page',
+        body: "Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `isActive` on the nested SidebarMenuSubButton as well.",
+      },
+      {
+        title: 'A closed group still lights its icon',
+        body: 'Keep `hasActiveChild` on a group whose nested items are not mounted: its icon is then the one that takes the active colour.',
+      },
+      {
+        title: 'The group gets no fill and no bar',
+        body: '`hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the fill and the bar. Never set both on one button.',
+      },
+    ],
+  },
+  {
     id: 'stat-card',
     title: 'StatCard',
     summary: 'Reserve cards for a small set of page-framing KPIs with explicit comparison context.',
