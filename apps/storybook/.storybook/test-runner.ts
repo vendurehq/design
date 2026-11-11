@@ -301,11 +301,16 @@ const config: TestRunnerConfig = {
     for (const theme of THEMES) {
       await page.evaluate(async (dark) => {
         document.documentElement.classList.toggle('dark', dark);
-        // Only transitions: infinite animations such as spinners never finish.
-        const transitions = document
+        // Every animation that ends: transitions, keyframes and Web Animations
+        // (the bulk bar's exit). Infinite ones such as spinners never finish.
+        // Two frames first, so an exit that starts after the last commit counts.
+        for (let frame = 0; frame < 2; frame++) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+        }
+        const finite = document
           .getAnimations()
-          .filter((animation) => animation instanceof CSSTransition);
-        await Promise.allSettled(transitions.map((transition) => transition.finished));
+          .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
+        await Promise.allSettled(finite.map((animation) => animation.finished));
       }, theme === 'dark');
 
       const violations = await getViolations(
