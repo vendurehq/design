@@ -194,7 +194,6 @@ function DataTableRowLink({
     ref: linkRef,
     props: mergeProps<'a'>(
       {
-        'data-nameless': nameless ? '' : undefined,
         className: cn(
           'group/row-link cursor-pointer font-medium text-foreground outline-none',
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
@@ -241,7 +240,8 @@ function DataTableRowLink({
       },
       props,
     ),
-    state: { slot: 'data-table-row-link' },
+    // `nameless` renders as `data-nameless` while true.
+    state: { slot: 'data-table-row-link', nameless },
   });
 }
 
