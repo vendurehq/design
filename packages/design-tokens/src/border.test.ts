@@ -127,9 +127,12 @@ const oldInput = solid(neutral[200]);
 const white: Rgb = [1, 1, 1];
 
 describe('Recipes that mix the light border still render as before', () => {
-  test('outline Button hover border: input with 13.5% foreground (was 12%)', () => {
+  test('outline Button hover border: input with 9.5% foreground over the hover fill (was 12% over white)', () => {
+    // The light outline Button paints its fill under the border, so on hover
+    // the border sits on the hover fill (card with 4% foreground).
+    const hoverFill = over(mix(solid('oklch(1 0 0)'), fg, 0.96), white);
     const before = over(mix(oldInput, fg, 0.88), white);
-    const after = over(mix(newInput, fg, 0.865), white);
+    const after = over(mix(newInput, fg, 0.905), hoverFill);
     expect(distance(before, after)).toBeLessThan(0.01);
   });
 
