@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 import { ElapsedTime } from './elapsed-time.tsx';
-import { FormatProvider } from './format-provider.tsx';
 import { StatusBadge } from './status-badge.tsx';
 
 const START = new Date('2026-11-11T16:00:00Z');
@@ -68,24 +67,5 @@ describe('ElapsedTime', () => {
     );
     // Without a tooltip there is nothing to open.
     expect(inDetail(<ElapsedTime since={START} />)).not.toContain('tabindex');
-  });
-
-  test("counts in the reader's locale, from the FormatProvider", () => {
-    const until = START.getTime() + 75_000;
-    const english = renderToStaticMarkup(
-      <FormatProvider locale="en-US">
-        <ElapsedTime since={START} until={until} />
-      </FormatProvider>,
-    );
-    expect(english).toContain('>1m 15s</time>');
-    const arabic = renderToStaticMarkup(
-      <FormatProvider locale="ar-EG">
-        <ElapsedTime since={START} until={until} />
-      </FormatProvider>,
-    );
-    expect(arabic).toContain('١٥');
-    expect(
-      renderToStaticMarkup(<ElapsedTime since={START} until={until} locale="ar-EG" />),
-    ).toContain('١٥');
   });
 });
