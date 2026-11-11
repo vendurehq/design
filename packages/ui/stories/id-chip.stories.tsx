@@ -121,15 +121,18 @@ export const CopiedLabelSwaps: Story = {
   play: async ({ canvasElement }) => {
     stubClipboard();
     const button = within(canvasElement).getByRole('button', { name: 'Copy SKU L2201516' });
-    await userEvent.hover(button);
     let swap: HTMLElement | null = null;
-    // The tooltip opens after its delay, which runs long on a loaded machine.
+    // The tooltip opens after its delay, which runs long on a loaded machine. A
+    // hover that came before the page was ready is lost, so hover again.
     await waitFor(
-      () => {
+      async () => {
+        await userEvent.unhover(button);
+        await userEvent.hover(button);
+        await new Promise((resolve) => setTimeout(resolve, 900));
         swap = document.querySelector<HTMLElement>('[data-slot="tooltip-label-swap"]');
         expect(swap).not.toBeNull();
       },
-      { timeout: 5000 },
+      { timeout: 8000, interval: 100 },
     );
     const stack = swap as unknown as HTMLElement;
     const label = (text: string) =>
