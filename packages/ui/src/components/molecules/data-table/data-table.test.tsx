@@ -792,9 +792,12 @@ describe('DataTable renderRow select props', () => {
     const seen = capture({ '1': true });
     expect(seen).toHaveLength(rows.length);
     for (const { selectProps, rowProps } of seen) {
-      expect(Object.keys(selectProps).sort()).toEqual(
-        ['data-click-selects', 'onClickCapture', 'onMouseDown', 'onPointerDown'],
-      );
+      expect(Object.keys(selectProps).sort()).toEqual([
+        'data-click-selects',
+        'onClickCapture',
+        'onMouseDown',
+        'onPointerDown',
+      ]);
       for (const [key, value] of Object.entries(selectProps)) {
         expect(rowProps[key]).toBe(value);
       }
