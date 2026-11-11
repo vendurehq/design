@@ -45,7 +45,7 @@ function RowCard({ children }: { children: ReactNode }) {
 }
 
 const ORDERS: { code: string; customer: string; state: string; tone: Tone; time: string }[] = [
-  { code: 'SB-2043', customer: 'Hayden Zieme', state: 'Payment settled', tone: 'success', time: '14:02' },
+  { code: 'SB-2043', customer: 'Hayden Zieme', state: 'Payment settled', tone: 'info', time: '14:02' },
   { code: 'SB-2042', customer: 'Mara Okafor', state: 'Payment authorized', tone: 'info', time: '13:47' },
   { code: 'SB-2041', customer: 'Liam Becker', state: 'Payment declined', tone: 'critical', time: '12:15' },
 ];
@@ -61,7 +61,9 @@ export const Default: Story = {
             <ListRowLink onClick={() => {}}>Order {order.code}</ListRowLink>
           </ListRowContent>
           <ListRowTrailing>
-            <StatusBadge tone={order.tone}>{order.state}</StatusBadge>
+            <StatusBadge appearance="icon" tone={order.tone} className="w-40 justify-start">
+              {order.state}
+            </StatusBadge>
             <span className="w-12 text-right">{order.time}</span>
           </ListRowTrailing>
           <ListRowChevron />
@@ -83,7 +85,9 @@ export const TwoLine: Story = {
             <ListRowMeta>Placed by {order.customer} · 3 items</ListRowMeta>
           </ListRowContent>
           <ListRowTrailing>
-            <StatusBadge tone={order.tone}>{order.state}</StatusBadge>
+            <StatusBadge appearance="icon" tone={order.tone} className="w-40 justify-start">
+              {order.state}
+            </StatusBadge>
             <span className="w-12 text-right">{order.time}</span>
           </ListRowTrailing>
           <ListRowChevron />
@@ -130,7 +134,9 @@ export const WithActions: Story = {
           </ListRowContent>
           <ListRowTrailing>
             <IdChip value={`5c1f8b7e-2f3a-4c9d-9e21-8a7b6c5d${order.code.slice(-4)}`} />
-            <StatusBadge tone={order.tone}>{order.state}</StatusBadge>
+            <StatusBadge appearance="icon" tone={order.tone} className="w-40 justify-start">
+              {order.state}
+            </StatusBadge>
           </ListRowTrailing>
           <ListRowActions>
             <DropdownMenu>

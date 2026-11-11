@@ -927,7 +927,11 @@ export const uiGuidance = [
       },
       {
         title: 'A status column is an icon and a label, with the icon in its tone colour',
-        body: 'Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. Don\'t: plain coloured text (appearance="text") in a column, a grey icon for a healthy state, or a coloured label.',
+        body: 'Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. An orders list shows one line per order with no time under it: a blue icon for an order to fulfil (Payment settled), a grey truck for Shipped, a green check for Delivered, a grey slash for Cancelled and a red icon for a declined payment. Labels are words ("Payment settled"), not code words. Give each group of states its own icon shape, so the column reads without colour. Don\'t: plain coloured text (appearance="text") in a column, a grey icon for a finished success, a coloured label, or a chip in every row.',
+      },
+      {
+        title: 'A spinner means work that runs right now',
+        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
       },
       {
         title: 'A chip marks only the exception',
