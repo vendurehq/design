@@ -378,11 +378,11 @@ export const uiGuidance = [
       },
       {
         title: 'The first column names the row',
-        body: 'Start the table with the column that names the row (title, name, key). Put the status column directly after it, as appearance="text". Do not lead with a status, a badge or a count.',
+        body: 'Start the table with the column that names the row (title, name, key). Put the status column directly after it, as a StatusBadge with appearance="icon". Do not lead with a status, a badge or a count.',
       },
       {
         title: 'No chip or badge in the first or last column',
-        body: 'A chip or badge (Badge, StatusBadge chip, Chip) is never in the first or the last column of a table or list: it would sit against the edge of the list. Show the name as plain text first, and status as plain text after it. This holds for a card or list inside a bordered container too.',
+        body: 'A chip or badge (Badge, StatusBadge chip, Chip) is never in the first or the last column of a table or list: it would sit against the edge of the list. Show the name as plain text first, and the status after it as an icon and a label. This holds for a card or list inside a bordered container too.',
       },
       {
         title: 'Do not use DataTable for static layout',
@@ -876,11 +876,23 @@ export const uiGuidance = [
       },
       {
         title: 'Pick the appearance by the room it has',
-        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A list or table column uses appearance="text", never chips, with or without dot. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
+        body: 'Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A status that every row of a table or list shows uses appearance="icon": the tone icon and a neutral label. Never plain coloured text (appearance="text") in a column. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.',
       },
       {
         title: 'Status comes after the name, never at an edge',
-        body: 'In a table or list the name comes first and the status directly after it, as plain text. A StatusBadge chip is never in the first or the last column: it would sit against the edge of the list.',
+        body: 'In a table or list the name comes first and the status directly after it. A StatusBadge chip is never in the first or the last column: it would sit against the edge of the list.',
+      },
+      {
+        title: 'A status column is an icon and a label, with the icon in its tone colour',
+        body: 'Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. Don\'t: plain coloured text (appearance="text") in a column, a grey icon for a healthy state, or a coloured label.',
+      },
+      {
+        title: 'A chip marks only the exception',
+        body: 'Do: a chip or badge signals importance, so use its colour sparingly: put a chip only on the exception that needs attention, and show nothing for the normal state, when the normal state is far more common. Example: a products list shows no mark on an enabled product and a "Disabled" chip on a disabled one. Don\'t: a chip on every row, or a chip for the normal state. A table where every row has a status uses the icon and label instead.',
+      },
+      {
+        title: 'The second line holds one time',
+        body: 'Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Make the time a tab stop with a Tooltip that shows the exact finish time, the start and the duration, so the table needs no Duration or Created column.',
       },
       {
         title: 'The chip brings its own icon',

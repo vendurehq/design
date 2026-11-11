@@ -550,7 +550,7 @@ export const ReferenceTable: Story = {
 // ── 4 · appearance ──────────────────────────────────────────────────────────
 
 const APPEARANCES: {
-  appearance: 'chip' | 'bare' | 'text' | 'dot';
+  appearance: 'chip' | 'bare' | 'icon' | 'text' | 'dot';
   sample: ReactNode;
   use: string;
 }[] = [
@@ -571,13 +571,22 @@ const APPEARANCES: {
     use: 'A state inside a surface that is already tinted, such as an accent card for the running deployment. The chip\'s icon and tinted label without the box, so there is no box inside a box.',
   },
   {
+    appearance: 'icon',
+    sample: (
+      <StatusBadge tone="progress" appearance="icon" detail="1m 15s">
+        Building
+      </StatusBadge>
+    ),
+    use: 'A status every row of a table has, such as a deployments table. The tone icon without a box, the label in neutral text, and an optional second line (detail) with the one time that matters for the state.',
+  },
+  {
     appearance: 'text',
     sample: (
       <StatusBadge tone="progress" appearance="text">
         Building
       </StatusBadge>
     ),
-    use: 'A fixed status column in a list. The word in its tone colour, nothing around it. Give the column a fixed width so every word starts on the same edge.',
+    use: 'The word in its tone colour, nothing around it. Not for a table column: colour alone does not read as a status there. A column uses icon.',
   },
   {
     appearance: 'dot',
@@ -590,19 +599,25 @@ const APPEARANCES: {
   },
 ];
 
-const ROWS: { name: string; tone: Tone; state: string }[] = [
-  { name: 'checkout-api', tone: 'success', state: 'Running' },
-  { name: 'search-worker', tone: 'progress', state: 'Deploying' },
-  { name: 'legacy-import', tone: 'critical', state: 'Failed' },
+const ROWS: { name: string; tone: Tone; state: string; time: string }[] = [
+  { name: 'checkout-api', tone: 'success', state: 'Ready', time: '2 minutes ago' },
+  { name: 'search-worker', tone: 'progress', state: 'Deploying', time: '31s' },
+  { name: 'legacy-import', tone: 'critical', state: 'Failed', time: '1 hour ago' },
+];
+
+const PRODUCTS: { name: string; enabled: boolean; stock: number }[] = [
+  { name: 'Laptop 15"', enabled: true, stock: 24 },
+  { name: 'USB-C dock', enabled: false, stock: 0 },
+  { name: 'Wireless mouse', enabled: true, stock: 180 },
 ];
 
 export const Appearance: Story = {
-  name: '4 · Chip, bare, word or dot',
+  name: '4 · Chip, bare, icon, word or dot',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="One state, four weights"
-        intro="The tone decides the colour; the appearance decides how much room the state takes. All four read the same state dictionary, so a deployment that fails is red as a chip on its page, bare in a tinted card, as a word in the list, and as a dot in the breadcrumb."
+        title="One state, five weights"
+        intro="The tone decides the colour; the appearance decides how much room the state takes. All five read the same state dictionary, so a deployment that fails is red as a chip on its page, bare in a tinted card, as an icon in the deployments table, and as a dot in the breadcrumb."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -627,20 +642,21 @@ export const Appearance: Story = {
       </Section>
 
       <Section
-        title="Words in a list, chips on their own"
-        intro="A column of chips repeats the same box on every row, and the box draws more attention than the state. In a list, the word alone is enough; colour only reinforces it."
+        title="Icon and label in a table, a chip for the exception"
+        intro="A status that every row has is the tone icon and a neutral label: the icon keeps its tone colour for every state, the label stays as quiet as the rest of the row. A chip signals importance: use it only where the normal state is far more common and shows nothing, so only the exception gets a chip. No chip in the first or the last column."
       >
-        <div className="grid gap-3 sm:grid-cols-2">
+        <h3 className="mb-2 text-sm font-semibold">A status on every row: icon and label</h3>
+        <div className="mb-6 grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="appearance=&quot;text&quot; in a fixed-width column. The failure stands out; the healthy rows stay quiet."
+            caption="A deployments table: appearance=&quot;icon&quot; on every row. The icon keeps its tone colour for every state, green for success included. The label stays neutral. The second line holds one time, the one that matters for the state."
           >
-            <div className="flex w-full flex-col gap-2 text-sm">
-              {ROWS.map(({ name, tone, state }) => (
+            <div className="flex w-full flex-col gap-3 text-sm">
+              {ROWS.map(({ name, tone, state, time }) => (
                 <div key={name} className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs">{name}</span>
-                  <span className="w-24">
-                    <StatusBadge tone={tone} appearance="text">
+                  <span className="w-32">
+                    <StatusBadge tone={tone} appearance="icon" detail={time}>
                       {state}
                     </StatusBadge>
                   </span>
@@ -650,15 +666,58 @@ export const Appearance: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="A chip on every row, even with dot. Each box competes with the row it labels, and the one failure no longer stands out."
+            caption="Plain coloured text in a status column. Colour alone does not read as a status, and it fails without colour vision. Do not grey out the icon of a healthy state either."
           >
-            <div className="flex w-full flex-col gap-2 text-sm">
+            <div className="flex w-full flex-col gap-3 text-sm">
               {ROWS.map(({ name, tone, state }) => (
                 <div key={name} className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs">{name}</span>
-                  <StatusBadge tone={tone} dot>
-                    {state}
-                  </StatusBadge>
+                  <span className="w-32">
+                    <StatusBadge tone={tone} appearance="text">
+                      {state}
+                    </StatusBadge>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Example>
+        </div>
+        <h3 className="mb-2 text-sm font-semibold">A chip only on the exception</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A products list: no mark on an enabled product, a chip on a disabled one. A chip signals importance, so its colour goes only to the exception that needs attention."
+          >
+            <div className="flex w-full flex-col gap-2 text-sm">
+              {PRODUCTS.map(({ name, enabled, stock }) => (
+                <div key={name} className="flex h-6 items-center gap-3">
+                  <span className="flex-1">{name}</span>
+                  <span className="w-20">
+                    {enabled ? null : <StatusBadge tone="neutral">Disabled</StatusBadge>}
+                  </span>
+                  <span className="text-muted-foreground w-24 whitespace-nowrap text-right tabular-nums">
+                    {stock} in stock
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A chip on every row, the normal state included. Each box competes with the row it labels, and the one disabled product no longer stands out."
+          >
+            <div className="flex w-full flex-col gap-2 text-sm">
+              {PRODUCTS.map(({ name, enabled, stock }) => (
+                <div key={name} className="flex h-6 items-center gap-3">
+                  <span className="flex-1">{name}</span>
+                  <span className="w-20">
+                    <StatusBadge tone={enabled ? 'success' : 'neutral'}>
+                      {enabled ? 'Enabled' : 'Disabled'}
+                    </StatusBadge>
+                  </span>
+                  <span className="text-muted-foreground w-24 whitespace-nowrap text-right tabular-nums">
+                    {stock} in stock
+                  </span>
                 </div>
               ))}
             </div>
