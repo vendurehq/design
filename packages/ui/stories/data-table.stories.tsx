@@ -36,6 +36,7 @@ import {
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
 import { ElapsedTime } from '../src/components/molecules/elapsed-time.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
 import { RelativeTime } from '../src/components/molecules/relative-time.tsx';
@@ -2045,24 +2046,36 @@ const deployments: Deployment[] = [
 // The second line: the one time that matters for the state. Each time opens
 // its own tooltip with the exact times, beside the status block, and is a tab
 // stop: StatusBadge's `detail` sets both.
-function DeploymentTime({ timing }: { timing: DeploymentTiming }) {
+// The words around a time belong to the app, so they are translated with the
+// rest of the page. German puts its word after the duration ("13 Tage lang"):
+// "seit" would need the dative ("seit 13 Tagen"), which a unit formatter does
+// not give.
+interface DeploymentWords {
+  waiting: (time: React.ReactNode) => React.ReactNode;
+  lasting: (time: React.ReactNode) => React.ReactNode;
+}
+
+const englishWords: DeploymentWords = {
+  waiting: (time) => <>Waiting {time}</>,
+  lasting: (time) => <>for {time}</>,
+};
+
+function DeploymentTime({
+  timing,
+  words = englishWords,
+}: {
+  timing: DeploymentTiming;
+  words?: DeploymentWords;
+}) {
   switch (timing.kind) {
     case 'live':
       return <ElapsedTime since={timing.started} tooltip />;
     case 'waiting':
-      return (
-        <>
-          Waiting <ElapsedTime since={timing.queued} tooltip />
-        </>
-      );
+      return words.waiting(<ElapsedTime since={timing.queued} tooltip />);
     case 'finished':
       return <RelativeTime value={timing.finished} start={timing.started} />;
     case 'since':
-      return (
-        <>
-          for <RelativeTime value={timing.since} display="duration" />
-        </>
-      );
+      return words.lasting(<RelativeTime value={timing.since} display="duration" />);
   }
 }
 
@@ -2206,6 +2219,70 @@ export const Deployments: Story = {
       await waitFor(() => expect(timer.getAttribute('datetime')).not.toBe(before), {
         timeout: 2500,
       });
+    });
+  },
+};
+
+const germanStatus: Record<string, string> = {
+  ready: 'Bereit',
+  building: 'Wird gebaut',
+  deploying: 'Wird ausgerollt',
+  queued: 'In der Warteschlange',
+  failed: 'Fehlgeschlagen',
+  canceled: 'Abgebrochen',
+  degraded: 'Eingeschränkt',
+};
+
+const germanWords: DeploymentWords = {
+  waiting: (time) => <>Wartet {time}</>,
+  lasting: (time) => <>{time} lang</>,
+};
+
+const germanColumns: ColumnDef<Deployment>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge
+        appearance="icon"
+        tone={row.original.tone}
+        icon={row.original.icon}
+        detail={<DeploymentTime timing={row.original.timing} words={germanWords} />}
+      >
+        {germanStatus[row.original.id]}
+      </StatusBadge>
+    ),
+  },
+  { accessorKey: 'environment', header: 'Umgebung' },
+];
+
+/**
+ * The deployments table in German. Every time takes its language from the
+ * FormatProvider: the count, how long ago, how long a state has lasted and
+ * the tooltip. The words around a time ("Wartet", "lang") are the app's.
+ */
+export const DeploymentsInGerman: Story = {
+  render: () => (
+    <FormatProvider locale="de-DE">
+      <DataTable<Deployment>
+        rows={deployments}
+        columns={germanColumns}
+        getRowId={(deployment) => deployment.id}
+        frame="card"
+      />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement, step }) => {
+    // innerText leaves out the hidden accessible descriptions.
+    const details = canvasElement.querySelectorAll<HTMLElement>('[data-slot=status-badge-detail]');
+    const detail = (id: string) =>
+      details[deployments.findIndex((deployment) => deployment.id === id)]?.innerText ?? '';
+
+    await step('every time is in German', async () => {
+      await expect(detail('degraded')).toMatch(/^13 Tage lang$/);
+      await expect(detail('failed')).toMatch(/^vor 1 Stunde$/);
+      await waitFor(() => expect(detail('queued')).toMatch(/^Wartet 9\s?Min/));
     });
   },
 };
