@@ -6,6 +6,7 @@ import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { usePopupAlign } from "../../lib/popup-align.ts"
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
@@ -19,9 +20,18 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+/**
+ * Without an `align`, the popover opens toward the centre of the screen: a
+ * trigger in the right half lines the popover up with its right edge, so it
+ * grows to the left and stays on screen, and a trigger in the left half lines
+ * it up with its left edge. The side is picked each time it opens. A popover
+ * that opens to the left or right of its trigger keeps "start". An explicit
+ * `align` always wins. Do not set `align` unless there is a reason.
+ */
 function PopoverContent({
   className,
-  align = "center",
+  align,
+  ref,
   alignOffset = 0,
   side = "bottom",
   sideOffset = 6,
@@ -32,17 +42,19 @@ function PopoverContent({
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
   const dir = usePopupDir()
+  const { popupRef, align: positionAlign } = usePopupAlign(align, side, ref)
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
         dir={dir}
-        align={align}
+        align={positionAlign}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup
+          ref={popupRef}
           data-slot="popover-content"
           className={cn(
             "bg-popover text-popover-foreground shadow-overlay z-50 flex w-72 flex-col gap-4 rounded-xl p-4 text-sm outline-hidden",

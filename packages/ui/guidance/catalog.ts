@@ -708,6 +708,20 @@ export const uiGuidance = [
     related: ['button', 'list-header', 'status-badge'],
   },
   {
+    id: 'popover',
+    title: 'Popover',
+    summary:
+      'A popover holds content the user reads or edits next to its trigger. It opens toward the centre of the screen by itself.',
+    sourceStory: 'popover-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Do not set align unless there is a reason',
+        body: 'Without an align, PopoverContent opens toward the centre of the screen: a trigger in the right half lines the popover up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout, such as a popover that must line up with a field. An explicit align always wins. align="center" brings back the old look, centred on the trigger.',
+      },
+    ],
+    related: ['tooltip'],
+  },
+  {
     id: 'progress',
     title: 'Progress',
     summary:

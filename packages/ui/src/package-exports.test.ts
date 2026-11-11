@@ -29,6 +29,7 @@ const internal = [
   'components/atoms/label-swap',
   'components/molecules/direction-link',
   'components/molecules/time-tooltip',
+  'lib/popup-align',
   'lib/popup-direction',
   'lib/popup-motion',
   'hooks/use-active-label-size',
