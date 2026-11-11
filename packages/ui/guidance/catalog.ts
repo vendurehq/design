@@ -366,7 +366,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row you render yourself takes the ripple',
-        body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once.',
+        body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once. Spread ctx.cellProps(columnId) on each cell: it holds the built-in cell\'s classes (the zero-width select cell, the leading cell\'s checkbox gutter), its column indent and its data attributes, so a custom row copies none of them.',
       },
       {
         title: 'Shape loading rows like loaded rows',
