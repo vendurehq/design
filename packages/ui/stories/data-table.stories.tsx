@@ -1661,25 +1661,20 @@ export const SelectionMotion: Story = {
       });
     });
 
-    // When a row clears, read when each half of its bar starts to lose height
-    // and how long its fade runs, from the transitions the click started.
+    // When a row clears, read when each half of its bar starts to lose height,
+    // how long its fade runs, and whether it stays opaque. Read from the
+    // computed transition, not the running one: a slow machine can finish a
+    // 100ms transition before the first check.
     const clearing = (row: HTMLElement) =>
       ['::before', '::after'].map((part) => {
-        const timing = (property: string) =>
-          document
-            .getAnimations()
-            .filter(
-              (a): a is CSSTransition =>
-                a instanceof CSSTransition &&
-                (a.effect as KeyframeEffect | null)?.target === row &&
-                (a.effect as KeyframeEffect).pseudoElement === part &&
-                a.transitionProperty === property
-            )
-            .map((a) => a.effect?.getTiming())[0];
-        const clip = timing('clip-path');
-        const fade = timing('opacity');
-        const clipText = clip ? `clip after ${clip.delay}ms for ${clip.duration}ms` : 'no clip';
-        return `${clipText}, ${fade ? `fade ${fade.duration}ms` : 'no fade'}`;
+        const style = getComputedStyle(row, part);
+        const properties = style.transitionProperty.split(', ');
+        const ms = (list: string, property: string) => {
+          const value = list.split(', ')[properties.indexOf(property)] ?? '0s';
+          return value.endsWith('ms') ? Number.parseFloat(value) : Number.parseFloat(value) * 1000;
+        };
+        const clip = `clip after ${ms(style.transitionDelay, 'clip-path')}ms for ${ms(style.transitionDuration, 'clip-path')}ms`;
+        return `${clip}, ${style.opacity === '1' ? 'opaque' : `fade ${ms(style.transitionDuration, 'opacity')}ms`}`;
       });
 
     await step('a bar that clears alone fades and narrows out before it loses height', async () => {
@@ -1703,8 +1698,8 @@ export const SelectionMotion: Story = {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
       await waitFor(() =>
         expect(clearing(rows()[2] as HTMLElement)).toEqual([
-          'clip after 0ms for 150ms, no fade',
-          'clip after 0ms for 150ms, no fade',
+          'clip after 0ms for 150ms, opaque',
+          'clip after 0ms for 150ms, opaque',
         ])
       );
     });
