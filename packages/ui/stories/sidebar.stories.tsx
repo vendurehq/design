@@ -298,6 +298,155 @@ export const NestedItemActiveIconRail: Story = {
   ),
 };
 
+type RuleItem = { title: string; icon?: typeof TagIcon; active?: boolean };
+type RuleCase = {
+  key: string;
+  caption: string;
+  group: { title: string; icon: typeof TagIcon; open: boolean; items: RuleItem[] };
+  /** The one icon that must show the active colour, per mode. */
+  lit: { expanded: string; rail: string };
+};
+
+const ruleCases: RuleCase[] = [
+  {
+    key: 'own-icon',
+    caption: 'The current item has its own icon',
+    group: {
+      title: 'Catalog',
+      icon: PackageIcon,
+      open: true,
+      items: [{ title: 'Products', icon: TagIcon, active: true }, { title: 'Facets', icon: FolderTreeIcon }],
+    },
+    lit: { expanded: 'Products', rail: 'Catalog' },
+  },
+  {
+    key: 'no-icon',
+    caption: 'The current item has no icon',
+    group: {
+      title: 'Sales',
+      icon: ShoppingCartIcon,
+      open: true,
+      items: [{ title: 'Orders', active: true }, { title: 'Customers' }],
+    },
+    lit: { expanded: 'Sales', rail: 'Sales' },
+  },
+  {
+    key: 'closed',
+    caption: 'The group is closed, so its items are not mounted',
+    group: {
+      title: 'Settings',
+      icon: SettingsIcon,
+      open: false,
+      items: [{ title: 'Channels', icon: SettingsIcon, active: true }, { title: 'Zones' }],
+    },
+    lit: { expanded: 'Settings', rail: 'Settings' },
+  },
+];
+
+/**
+ * One menu for one case. The consumer passes `hasActiveChild` on the group for
+ * every case, as it would not know whether the current item shows an icon. The
+ * Sidebar decides which icon lights up.
+ */
+function ActiveIconMenu({ rule, mode, testId }: { rule: RuleCase; mode: 'expanded' | 'rail'; testId: string }) {
+  const { group } = rule;
+  return (
+    <div
+      data-testid={testId}
+      data-collapsible={mode === 'rail' ? 'icon' : ''}
+      className={`bg-sidebar text-sidebar-foreground group rounded-lg border p-2 ${mode === 'rail' ? 'w-15' : 'w-52'}`}
+    >
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton>
+            <HomeIcon />
+            <span>Home</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <Collapsible defaultOpen={group.open} render={<SidebarMenuItem className="group/collapsible" />}>
+          <CollapsibleTrigger render={<SidebarMenuButton hasActiveChild />}>
+            <group.icon />
+            <span>{group.title}</span>
+            {mode === 'expanded' && (
+              <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {group.items.map((item) => (
+                <SidebarMenuSubItem key={item.title}>
+                  <SidebarMenuSubButton render={<a href="#" />} isActive={item.active}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </Collapsible>
+      </SidebarMenu>
+    </div>
+  );
+}
+
+/**
+ * For the current page, exactly one icon in the sidebar takes the active colour.
+ * The current item's own icon when it has one. Its group's icon when the item
+ * has no icon, when the group is closed (its items are not mounted), and in the
+ * icon rail (its items are hidden). The group's icon is never lit together with
+ * the icon of its current item. Each row is one case, expanded and as an icon
+ * rail. In every menu the group button has `hasActiveChild`.
+ */
+export const OneActiveIcon: Story = {
+  globals: { theme: 'light' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const theme of ['light', 'dark']) {
+      for (const rule of ruleCases) {
+        for (const mode of ['expanded', 'rail'] as const) {
+          const scope = canvas.getByTestId(`one-icon-${theme}-${rule.key}-${mode}`);
+          const probe = document.createElement('span');
+          probe.className = 'text-brand-indicator';
+          scope.append(probe);
+          const brand = getComputedStyle(probe).color;
+          probe.remove();
+          const lit = () =>
+            Array.from(scope.querySelectorAll<SVGElement>('button > svg:first-child, a > svg:first-child'))
+              .filter((icon) => icon.getClientRects().length > 0)
+              .filter((icon) => getComputedStyle(icon).color === brand && getComputedStyle(icon).opacity === '1')
+              .map((icon) => icon.parentElement?.textContent?.trim());
+          await waitFor(() => expect(lit()).toEqual([rule.lit[mode]]));
+        }
+      }
+    }
+  },
+  render: () => (
+    <LightAndDark>
+      {(theme) => (
+        <SidebarProvider className="min-h-0">
+          <div className="flex flex-col gap-5">
+            {ruleCases.map((rule) => (
+              <div key={rule.key} className="flex flex-col gap-2">
+                <p className="text-muted-foreground text-xs">{rule.caption}</p>
+                <div className="flex items-start gap-4">
+                  {(['expanded', 'rail'] as const).map((mode) => (
+                    <ActiveIconMenu
+                      key={mode}
+                      rule={rule}
+                      mode={mode}
+                      testId={`one-icon-${theme}-${rule.key}-${mode}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </SidebarProvider>
+      )}
+    </LightAndDark>
+  ),
+};
+
 /** A clickable menu that keeps its own active item. */
 function SlidingMenu({ tooltips = false }: { tooltips?: boolean }) {
   const [active, setActive] = useState(0);

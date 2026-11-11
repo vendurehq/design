@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSubButton,
   SidebarProvider,
 } from './sidebar.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
@@ -240,6 +241,51 @@ describe('Sidebar spacing and labels, the v3 look', () => {
   test('the pill slides in 280ms on the drawer curve and fades in 150ms', () => {
     expect(slotTokens(html, 'sidebar-menu-indicator')).toContain(
       'data-ready:[transition:transform_var(--transition-duration-sidebar-pill)_var(--ease-drawer),height_var(--transition-duration-sidebar-pill)_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft)]',
+    );
+  });
+});
+
+describe('One active icon', () => {
+  test('a group with an active nested item lights its icon unless that item shows its own', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuButton hasActiveChild>
+          <HomeIcon />
+          <span>Home</span>
+        </SidebarMenuButton>
+      </SidebarProvider>,
+    );
+
+    const tokens = slotTokens(html, 'sidebar-menu-button');
+    const hasOwnIcon =
+      'not-group-has-[[data-slot=sidebar-menu-sub-button][data-active]>svg:first-child]/menu-item:[&>svg:first-child]:text-brand-indicator';
+    expect(tokens).toContain(`data-has-active-child:${hasOwnIcon}`);
+    // The unconditional form would light both icons.
+    expect(tokens).not.toContain('data-has-active-child:[&>svg:first-child]:text-brand-indicator');
+  });
+
+  test('the icon rail lights the group icon, since its nested items are hidden', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuButton hasActiveChild>Home</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+
+    const tokens = slotTokens(html, 'sidebar-menu-button');
+    expect(tokens).toContain(
+      'group-data-[collapsible=icon]:data-has-active-child:[&>svg:first-child]:text-brand-indicator',
+    );
+  });
+
+  test('an active nested item lights its own icon', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
+      </SidebarProvider>,
+    );
+
+    expect(slotTokens(html, 'sidebar-menu-sub-button')).toContain(
+      'data-active:[&>svg]:text-brand-indicator',
     );
   });
 });
