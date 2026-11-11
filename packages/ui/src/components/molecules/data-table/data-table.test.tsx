@@ -22,6 +22,7 @@ import {
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
 // (renderToStaticMarkup, no jsdom). Capability-absence is asserted from markup;
@@ -843,6 +844,102 @@ describe('DataTable renderRow cell classes', () => {
       />,
     );
     expect(seen.name).toContain('pl-[calc(var(--spacing)*2');
+  });
+});
+
+describe('DataTable selection storage', () => {
+  const real = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+  const stubStorage = (store: Record<string, string>) =>
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete store[key];
+        },
+      },
+    });
+  afterEach(() => {
+    if (real) Object.defineProperty(globalThis, 'sessionStorage', real);
+    else Reflect.deleteProperty(globalThis, 'sessionStorage');
+  });
+
+  test('a write stores the ids of every page, and a read gives them back', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeStoredSelection('orders:1', { p1: true, p2: true, p11: true, p3: false });
+    expect(JSON.parse(Object.values(store)[0] as string)).toEqual(['p1', 'p2', 'p11']);
+    expect(readStoredSelection('orders:1')).toEqual({ p1: true, p2: true, p11: true });
+  });
+
+  test('an empty selection removes the entry', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeStoredSelection('orders:1', { p1: true });
+    expect(Object.keys(store)).toHaveLength(1);
+    writeStoredSelection('orders:1', {});
+    expect(Object.keys(store)).toHaveLength(0);
+    writeStoredSelection('orders:1', { p1: false });
+    expect(Object.keys(store)).toHaveLength(0);
+  });
+
+  test('a key reads only its own selection', () => {
+    stubStorage({});
+    writeStoredSelection('orders:1', { p1: true });
+    writeStoredSelection('orders:2', { p9: true });
+    expect(readStoredSelection('orders:1')).toEqual({ p1: true });
+    expect(readStoredSelection('orders:2')).toEqual({ p9: true });
+    expect(readStoredSelection('orders:3')).toEqual({});
+  });
+
+  test('malformed or non-array storage reads as no selection', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    store['vendure-ui:data-table-selection:a'] = '{not json';
+    store['vendure-ui:data-table-selection:b'] = '{"p1":true}';
+    expect(readStoredSelection('a')).toEqual({});
+    expect(readStoredSelection('b')).toEqual({});
+  });
+
+  test('blocked or full storage is ignored', () => {
+    const blocked = () => {
+      throw new DOMException('blocked', 'QuotaExceededError');
+    };
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      configurable: true,
+      value: { getItem: blocked, setItem: blocked, removeItem: blocked },
+    });
+    expect(() => writeStoredSelection('orders:1', { p1: true })).not.toThrow();
+    expect(() => writeStoredSelection('orders:1', {})).not.toThrow();
+    expect(readStoredSelection('orders:1')).toEqual({});
+  });
+
+  test('no storage at all (server render) reads as no selection', () => {
+    Reflect.deleteProperty(globalThis, 'sessionStorage');
+    expect(readStoredSelection('orders:1')).toEqual({});
+    expect(() => writeStoredSelection('orders:1', { p1: true })).not.toThrow();
+  });
+
+  test('the prop changes nothing on a server render, and without it nothing is stored', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    const plain = html(
+      <DataTable rows={rows} columns={columns} getRowId={(row) => row.id} rowSelection={{}} />,
+    );
+    const keyed = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{}}
+        selectionStorageKey="countries"
+      />,
+    );
+    expect(keyed).toBe(plain);
+    expect(Object.keys(store)).toHaveLength(0);
   });
 });
 

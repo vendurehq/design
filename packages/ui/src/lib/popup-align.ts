@@ -37,6 +37,10 @@ function findTrigger(popup: HTMLElement): Element | null {
  * the popup opens. A popup that opens to the left or right of its trigger
  * keeps "start".
  *
+ * The trigger is found through `aria-controls`, which the menu and popover
+ * triggers set. A popup whose trigger does not set it passes `getTrigger`
+ * instead, a function that returns the trigger element.
+ *
  * Pass `popupRef` as the popup's `ref`. It runs when the popup mounts, before
  * the first paint, so the popup never shows on the wrong side first.
  */
@@ -44,6 +48,7 @@ export function usePopupAlign<T extends HTMLElement>(
   align: PopupAlign | undefined,
   side: PopupSide,
   ref: React.Ref<T> | undefined,
+  getTrigger?: () => Element | null | undefined,
 ) {
   // Toward the centre is horizontal: a popup that opens to a side keeps "start".
   const opensBelowOrAbove = side === 'bottom' || side === 'top';
@@ -52,10 +57,11 @@ export function usePopupAlign<T extends HTMLElement>(
     (popup: T | null) => {
       if (typeof ref === 'function') ref(popup);
       else if (ref) (ref as React.RefObject<T | null>).current = popup;
-      const trigger = !align && opensBelowOrAbove && popup && findTrigger(popup);
+      const trigger =
+        !align && opensBelowOrAbove && popup && (getTrigger?.() ?? findTrigger(popup));
       if (trigger) setAutoAlign(alignTowardCentre(trigger, popup));
     },
-    [ref, align, opensBelowOrAbove],
+    [ref, align, opensBelowOrAbove, getTrigger],
   );
   return { popupRef, align: align ?? (opensBelowOrAbove ? autoAlign : 'start') };
 }
