@@ -1,6 +1,7 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
+import { cn } from '@vendure-io/ui/lib/utils';
 import type { ComponentProps, ReactNode } from 'react';
 
 function toDate(value: string | number | Date | null | undefined): Date | null {
@@ -39,6 +40,7 @@ function DateTime({
   timeZone,
   formatOptions,
   fallback = '—',
+  className,
   ...props
 }: DateTimeProps) {
   const settings = useFormatSettings();
@@ -64,7 +66,12 @@ function DateTime({
   }
 
   return (
-    <time data-slot="date-time" dateTime={date.toISOString()} {...props}>
+    <time
+      data-slot="date-time"
+      dateTime={date.toISOString()}
+      className={cn('tabular-nums', className)}
+      {...props}
+    >
       {formatted}
     </time>
   );
