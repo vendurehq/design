@@ -1371,6 +1371,8 @@ export const KeyboardSelection: Story = {
 // a brand-colour bar on its leading edge. The bar grows from where it touches
 // a selected row: down from a selected row above, up from one below, from both
 // ends when it closes a gap, and out from its middle when it touches none.
+// Alone it also fades in and widens against the edge; next to a selection it
+// only extends, so the line has no seam.
 // Deselecting plays the same motion backwards. The play function selects rows
 // 2 and 4, so rows 1, 3, 5 and 7 show each case's starting clip.
 export const SelectionMotion: Story = {
@@ -1432,6 +1434,23 @@ export const SelectionMotion: Story = {
         expect(clips(above as HTMLElement)).toEqual(['inset(0px 0px 100%)', 'inset(0px 0px 100%)']);
         // No selected neighbour: both halves start in the middle.
         expect(clips(alone as HTMLElement)).toEqual(['inset(50% 0px)', 'inset(50% 0px)']);
+      });
+    });
+
+    await step('a bar that grows alone fades and widens in; one that extends a selection does not', async () => {
+      const [below, selected, gap, , above, , alone] = rows() as HTMLElement[];
+      const look = (row: HTMLElement) =>
+        ['::before', '::after'].map((part) => {
+          const style = getComputedStyle(row, part);
+          return `${style.opacity} ${style.scale}`;
+        });
+      await waitFor(() => {
+        // At rest a selected bar has no opacity or scale of its own.
+        expect(look(selected as HTMLElement)).toEqual(['1 none', '1 none']);
+        // Next to a selection the bar starts opaque and full width: no seam.
+        for (const row of [below, gap, above]) expect(look(row as HTMLElement)).toEqual(['1 none', '1 none']);
+        // Alone it starts transparent and half as wide.
+        expect(look(alone as HTMLElement)).toEqual(['0 0.5 1', '0 0.5 1']);
       });
     });
   },
