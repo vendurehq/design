@@ -365,6 +365,10 @@ export const uiGuidance = [
         body: 'Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.',
       },
       {
+        title: 'Keep the selection across a reload with selectionStorageKey',
+        body: "Pass selectionStorageKey (with rowSelection) when a list's selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.",
+      },
+      {
         title: 'A row you render yourself takes the ripple',
         body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once. Spread ctx.cellProps(columnId) on each cell: it holds the built-in cell\'s classes (the zero-width select cell, the leading cell\'s checkbox gutter), its column indent and its data attributes, so a custom row copies none of them.',
       },
@@ -374,7 +378,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -525,6 +529,20 @@ export const uiGuidance = [
       },
     ],
     related: ['button', 'confirm-dialog'],
+  },
+  {
+    id: 'hover-card',
+    title: 'HoverCard',
+    summary:
+      'A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.',
+    sourceStory: 'hover-card-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Do not set align unless there is a reason',
+        body: 'Without an align, HoverCardContent opens toward the centre of the screen: a trigger in the right half lines the card up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout. An explicit align always wins. align="center" brings back the old look, centred on the trigger.',
+      },
+    ],
+    related: ['popover', 'tooltip'],
   },
   {
     id: 'id-chip',

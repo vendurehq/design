@@ -15,6 +15,25 @@ import { getSelectedOriginals, getSelectedRowIds } from './data-table-helpers.ts
 // selected original — not just the ones still on screen.
 
 /**
+ * Keep the latest border-box height of the controls row, so the bulk bar that
+ * replaces it can hold the same height and the table below does not move. A
+ * ResizeObserver follows the row while it shows (it can wrap on a narrow
+ * card); the last height stays once the row has left.
+ */
+function useHeldHeight(): [React.RefCallback<HTMLElement>, number | undefined] {
+  const [height, setHeight] = React.useState<number>();
+  const ref = React.useCallback((node: HTMLElement | null) => {
+    if (!node) return;
+    setHeight(node.offsetHeight);
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => setHeight(node.offsetHeight));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  return [ref, height];
+}
+
+/**
  * Accumulate `row.original` keyed by row id across page changes. Populated during
  * render (idempotent map writes) so the current render's `bulkActions` can
  * resolve the full selection synchronously.
@@ -65,4 +84,4 @@ function DataTableBulkActions<TData>({
   );
 }
 
-export { DataTableBulkActions, useSelectionCache };
+export { DataTableBulkActions, useHeldHeight, useSelectionCache };

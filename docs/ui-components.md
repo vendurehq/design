@@ -204,6 +204,8 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 
 Button's `default` variant uses the neutral `primary` slot, not Vendure blue. Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`. For a deliberate identity moment, use `variant="brand"`.
 
+The small icon sizes `icon-xs` (24px) and `icon-sm` (28px) have a 40 × 40px click area around the icon. It is an invisible `::before`, so the button keeps its visible size. Next to another control the area keeps the button's own width, so neighbours never share a point. Inside an InputGroup and in the copy chips it is off. Do not give these buttons a `::before` of your own. Keep a positioned scroll container at least 8px from such a button, or the area adds to the scroll width.
+
 ### Badge
 
 ```tsx
@@ -523,6 +525,28 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable selection storage
+
+`selectionStorageKey` keeps the row selection in session storage, so it survives a reload and a visit to another page in the same tab. It needs `rowSelection`.
+
+```tsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  getRowId={(row) => row.id}
+  selectionStorageKey={`${route}:${channelId}`}
+  rowSelection={{ value: selection, onChange: setSelection }}
+/>
+```
+
+- On its first load the table restores the stored ids and reports them through `rowSelection.onChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
+- Every change is stored, with the ids of rows on other pages: a selection can span pages. An empty selection removes the entry.
+- A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
+- No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
+- Put the list and anything that scopes its rows in the key: the route, and a channel or project. Two lists with the same key share one selection.
+- The bulk action context lists `selection` for the rows the table has loaded. Ids restored from other pages are in `selectedRowIds`.
+- Without the prop nothing changes.
+
 ### DataTable custom rows
 
 `renderRow` replaces the row the table renders. Select all and clear all ripple down the rows, each row starting a little after the one above, and a row you render yourself joins that ripple when it takes `ctx.ripple`:
@@ -582,6 +606,7 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
+- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` has no click-to-select, so there its link keeps covering the row.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.
