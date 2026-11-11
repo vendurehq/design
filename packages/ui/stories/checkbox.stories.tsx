@@ -80,13 +80,14 @@ export const States: Story = {
 const ITEMS = ['Ship to customer', 'Send invoice', 'Notify warehouse'] as const;
 
 /**
- * Checking animates: the fill fades in as it grows from 70%, then the check
- * mark draws from its short stroke to its long one. Unchecking plays it back,
- * quicker: the mark undraws and the fill shrinks as it fades. A press shrinks
- * the box a little. "All tasks" goes indeterminate
- * while some tasks are checked, and its line draws the same way. Toggle fast:
- * every step reverses from where it is. Under reduced motion only the fades
- * remain.
+ * Checking animates: the fill closes in from the edges of the box to the
+ * middle, then the check mark draws from its short stroke to its long one.
+ * Unchecking plays it back, quicker: the mark undraws and the fill opens from
+ * the middle out. A press shrinks the box a little. Space toggles with the same
+ * motion. "All tasks" goes indeterminate while some tasks are checked, and its
+ * line draws the same way; from indeterminate to checked the line undraws as
+ * the check draws. Toggle fast: every step reverses from where it is. Under
+ * reduced motion the fill and the mark only fade.
  */
 export const Toggle: Story = {
   render: () => {
@@ -124,31 +125,68 @@ export const Toggle: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     const box = (name: string) => canvas.getByRole('checkbox', { name });
-    const fillOpacity = (name: string) => getComputedStyle(box(name), '::before').opacity;
-    const mark = (name: string) => box(name).querySelector('path') as SVGPathElement;
+    // The hole in the fill: -1px is no fill, 50% is a full box.
+    const hole = (name: string) =>
+      getComputedStyle(box(name), '::before').getPropertyValue('--checkbox-fill-x').trim();
+    const check = (name: string) => box(name).querySelector('path[d^="M4"]') as SVGPathElement;
+    const line = (name: string) => box(name).querySelector('path[d^="M5"]') as SVGPathElement;
+    const offset = (path: SVGPathElement) => getComputedStyle(path).strokeDashoffset;
+    const settled = async (name: string) =>
+      waitFor(() => expect(box(name).getAnimations({ subtree: true })).toHaveLength(0));
 
-    await step('checking grows the fill in and draws the mark', async () => {
+    await step('checking closes the fill in and draws the mark', async () => {
       await userEvent.click(box('Send invoice'));
-      await waitFor(() => {
-        expect(fillOpacity('Send invoice')).toBe('1');
-        expect(getComputedStyle(mark('Send invoice')).strokeDashoffset).toBe('0px');
-      });
+      await settled('Send invoice');
+      await expect(hole('Send invoice')).toBe('50%');
+      await expect(offset(check('Send invoice'))).toBe('0px');
+      await expect(offset(line('Send invoice'))).toBe('1px');
     });
 
-    await step('unchecking fades the fill out and undraws the mark', async () => {
+    await step('unchecking opens the fill and undraws the mark', async () => {
       await userEvent.click(box('Send invoice'));
-      await waitFor(() => {
-        expect(fillOpacity('Send invoice')).toBe('0');
-        expect(getComputedStyle(mark('Send invoice')).strokeDashoffset).toBe('1px');
-      });
+      await settled('Send invoice');
+      await expect(hole('Send invoice')).toBe('-1px');
+      await expect(offset(check('Send invoice'))).toBe('1px');
+    });
+
+    await step('Space toggles with the same motion', async () => {
+      box('Send invoice').focus();
+      await userEvent.keyboard(' ');
+      await settled('Send invoice');
+      await expect(box('Send invoice')).toHaveAttribute('data-checked');
+      await expect(offset(check('Send invoice'))).toBe('0px');
+      await userEvent.keyboard(' ');
+      await settled('Send invoice');
     });
 
     await step('a partial selection draws the indeterminate line', async () => {
       await expect(box('All tasks')).toHaveAttribute('data-indeterminate');
-      await expect(mark('All tasks')).toHaveAttribute('d', 'M5 12h14');
-      await waitFor(() =>
-        expect(getComputedStyle(mark('All tasks')).strokeDashoffset).toBe('0px'),
-      );
+      await settled('All tasks');
+      await expect(hole('All tasks')).toBe('50%');
+      await expect(offset(line('All tasks'))).toBe('0px');
+      await expect(offset(check('All tasks'))).toBe('1px');
+    });
+
+    await step('a fast check, uncheck, check reverses from where it is', async () => {
+      const name = 'Notify warehouse';
+      await userEvent.click(box(name));
+      // Hold the draw halfway, then uncheck: the undraw starts from there.
+      const [draw] = check(name).getAnimations();
+      if (!draw) throw new Error('the check mark has no running draw');
+      draw.pause();
+      draw.currentTime = 90;
+      const halfway = Number.parseFloat(offset(check(name)));
+      await expect(halfway).toBeGreaterThan(0.2);
+      await expect(halfway).toBeLessThan(0.8);
+      await userEvent.click(box(name));
+      const [undraw] = check(name).getAnimations();
+      const [start] = (undraw?.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+      const from = Number.parseFloat(String(start?.strokeDashoffset));
+      await expect(Math.abs(from - halfway)).toBeLessThan(0.05);
+      await userEvent.click(box(name));
+      await settled(name);
+      await expect(offset(check(name))).toBe('0px');
+      await expect(hole(name)).toBe('50%');
     });
   },
 };

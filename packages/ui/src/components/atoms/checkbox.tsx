@@ -5,30 +5,46 @@ import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 
-// Checking animates; unchecking plays back quicker. The timings follow the
-// HeroUI Checkbox.
-// - The fill is the root's ::before. It covers the border and grows from 70%
-//   (`fast`, `ease-out`) while it fades in (`normal`). It never starts from 0:
-//   nothing appears from nothing. Unchecking shrinks and fades it in `fast`.
+// Checking animates; unchecking plays back quicker.
+// - The fill is the root's ::before, over the border. It closes in from the
+//   four edges to the middle: a clip-path polygon (even-odd) is the box with a
+//   hole, and the hole shrinks from just outside the box (nothing shows) to a
+//   point in the middle (all of it shows). The border seems to thicken inward
+//   until the box is full. Checking takes `moderate` on `ease-out`;
+//   unchecking opens the hole again in `fast`.
 // - The mark is drawn, not swapped: a path with pathLength 1 whose dash offset
 //   runs from 1 to 0 at a constant speed (`moderate`, linear), a
 //   `check-mark-delay` after the fill starts. The check starts on its short
-//   stroke. Unchecking undraws it back to its start in `fast`.
+//   stroke, near the edge the fill reaches first. Unchecking undraws it in
+//   `fast`. The check and the indeterminate line are two paths, so checked to
+//   indeterminate undraws one while the other draws, with no blank frame.
 // - A press shrinks the box to 95% (`fast`, `ease-press`).
-// Only transitions, no keyframes, so a fast toggle or a range selection
-// reverses from wherever it is. Reduced motion keeps fades only: the fill
-// stays full size and the mark is whole, fading in and out. The root also
-// transitions opacity, so a caller that fades the box in (the DataTable's
-// hidden checkboxes) needs no transition of its own, which would replace
-// this list.
+// Checking ends after about 165ms, unchecking after 100ms. Only transitions,
+// no keyframes, so a fast toggle or a range selection reverses from wherever
+// it is. Reduced motion keeps fades only: the fill is whole and the mark is
+// drawn, and both fade in and out. The root also transitions opacity, so a
+// caller that fades the box in (the DataTable's hidden checkboxes) needs no
+// transition of its own, which would replace this list. The DataTable delays
+// the root, the ::before and the paths for its select-all ripple.
 const rootTransition =
   "[transition:border-color_var(--transition-duration-fast)_var(--ease-soft),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] data-checked:[transition:border-color_var(--transition-duration-normal)_var(--ease-out),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] data-indeterminate:[transition:border-color_var(--transition-duration-normal)_var(--ease-out),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] not-data-disabled:active:scale-95 motion-reduce:active:scale-100"
 
+// `--checkbox-fill-x` and `-y` are the hole's distance from the box's edges:
+// -1px leaves no fill, 50% leaves no hole. The outer ring and the empty hole
+// sit 1px outside the box: on the box's own edge, the clip's anti-aliasing
+// left a hairline of fill at rest.
 const fill =
-  "before:absolute before:-inset-px before:rounded-[inherit] before:bg-primary before:opacity-0 before:scale-70 before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] data-checked:before:opacity-100 data-checked:before:scale-100 data-checked:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-out)] data-indeterminate:before:opacity-100 data-indeterminate:before:scale-100 data-indeterminate:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-out)] motion-reduce:before:scale-100"
+  "before:absolute before:-inset-px before:rounded-[inherit] before:bg-primary before:[--checkbox-fill-x:-1px] before:[--checkbox-fill-y:-1px] before:[clip-path:polygon(evenodd,-1px_-1px,calc(100%_+_1px)_-1px,calc(100%_+_1px)_calc(100%_+_1px),-1px_calc(100%_+_1px),-1px_-1px,var(--checkbox-fill-x)_var(--checkbox-fill-y),calc(100%_-_var(--checkbox-fill-x))_var(--checkbox-fill-y),calc(100%_-_var(--checkbox-fill-x))_calc(100%_-_var(--checkbox-fill-y)),var(--checkbox-fill-x)_calc(100%_-_var(--checkbox-fill-y)),var(--checkbox-fill-x)_var(--checkbox-fill-y))] before:[transition:clip-path_var(--transition-duration-fast)_var(--ease-soft)] data-checked:before:[--checkbox-fill-x:50%] data-checked:before:[--checkbox-fill-y:50%] data-checked:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] data-indeterminate:before:[--checkbox-fill-x:50%] data-indeterminate:before:[--checkbox-fill-y:50%] data-indeterminate:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] motion-reduce:before:[--checkbox-fill-x:50%] motion-reduce:before:[--checkbox-fill-y:50%] motion-reduce:before:opacity-0 motion-reduce:data-checked:before:opacity-100 motion-reduce:data-indeterminate:before:opacity-100 motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:data-checked:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)] motion-reduce:data-indeterminate:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
 
-const mark =
-  "[stroke-dasharray:1] [stroke-dashoffset:1] [transition:stroke-dashoffset_var(--transition-duration-fast)_var(--ease-soft)] group-data-checked/checkbox:[stroke-dashoffset:0] group-data-checked/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] group-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:[stroke-dashoffset:0] motion-reduce:opacity-0 motion-reduce:group-data-checked/checkbox:opacity-100 motion-reduce:group-data-indeterminate/checkbox:opacity-100 motion-reduce:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:group-data-checked/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)] motion-reduce:group-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
+const markBase =
+  "[stroke-dasharray:1] [stroke-dashoffset:1] [transition:stroke-dashoffset_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:[stroke-dashoffset:0] motion-reduce:opacity-0 motion-reduce:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)]"
+
+// The check draws while checked and not indeterminate, the line while indeterminate.
+const checkMark =
+  "group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:group-data-checked/checkbox:group-not-data-indeterminate/checkbox:opacity-100 motion-reduce:group-data-checked/checkbox:group-not-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
+
+const lineMark =
+  "group-data-indeterminate/checkbox:[stroke-dashoffset:0] group-data-indeterminate/checkbox:[transition:stroke-dashoffset_var(--transition-duration-moderate)_linear_var(--transition-duration-check-mark-delay)] motion-reduce:group-data-indeterminate/checkbox:opacity-100 motion-reduce:group-data-indeterminate/checkbox:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
 
 function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root.Props) {
   return (
@@ -60,11 +76,8 @@ function Checkbox({ className, indeterminate, ...props }: CheckboxPrimitive.Root
           aria-hidden="true"
           className="size-3.5"
         >
-          <path
-            d={indeterminate ? "M5 12h14" : "M4 12l5 5L20 6"}
-            pathLength={1}
-            className={mark}
-          />
+          <path d="M4 12l5 5L20 6" pathLength={1} className={`${markBase} ${checkMark}`} />
+          <path d="M5 12h14" pathLength={1} className={`${markBase} ${lineMark}`} />
         </svg>
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
