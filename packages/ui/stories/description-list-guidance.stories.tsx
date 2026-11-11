@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { TruckIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import {
@@ -338,7 +339,7 @@ export const TooManyRows: Story = {
                 </h4>
                 <DescriptionList orientation="horizontal">
                   <DescriptionListItem label="Shipment">
-                    <StatusBadge tone="info">Shipped</StatusBadge>
+                    <StatusBadge tone="neutral" icon={<TruckIcon />}>Shipped</StatusBadge>
                   </DescriptionListItem>
                   <DescriptionListItem label="Carrier">DHL Express</DescriptionListItem>
                 </DescriptionList>
@@ -358,7 +359,7 @@ export const TooManyRows: Story = {
                 <Money value={12900} currency="EUR" />
               </DescriptionListItem>
               <DescriptionListItem label="Shipment">
-                <StatusBadge tone="info">Shipped</StatusBadge>
+                <StatusBadge tone="neutral" icon={<TruckIcon />}>Shipped</StatusBadge>
               </DescriptionListItem>
               <DescriptionListItem label="Carrier">DHL Express</DescriptionListItem>
               <DescriptionListItem label="Customer">jane@vendure.io</DescriptionListItem>

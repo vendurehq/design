@@ -160,7 +160,7 @@ export const OneLinkPerRow: Story = {
                   <ListRowMeta>Placed by Hayden Zieme</ListRowMeta>
                 </ListRowContent>
                 <ListRowTrailing>
-                  <StatusBadge tone="success">Payment settled</StatusBadge>
+                  <StatusBadge appearance="icon" tone="info">Payment settled</StatusBadge>
                 </ListRowTrailing>
                 <ListRowActions>
                   <Button variant="ghost" size="icon-sm" aria-label="More for order SB-2043">
@@ -299,7 +299,7 @@ export const Slots: Story = {
                   <ListRowMeta>Placed by Mara Okafor · 3 items</ListRowMeta>
                 </ListRowContent>
                 <ListRowTrailing>
-                  <StatusBadge tone="info">Payment authorized</StatusBadge>
+                  <StatusBadge appearance="icon" tone="info">Payment authorized</StatusBadge>
                 </ListRowTrailing>
                 <ListRowChevron />
               </ListRow>
