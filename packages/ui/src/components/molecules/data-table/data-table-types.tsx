@@ -143,6 +143,10 @@ export interface DataTableBulkActionContext<TData> {
 export interface DataTableLabels {
   empty?: string; // 'No results'
   selectAllRows?: string; // 'Select all rows'
+  /** Tooltip on the header checkbox while not every row on the page is selected. */
+  selectAllOnPage?: string; // 'Select all on this page'
+  /** Tooltip on the header checkbox while every row on the page is selected. */
+  clearPageSelection?: string; // 'Clear selection on this page'
   selectRow?: (index: number) => string; // (i) => `Select row ${i + 1}`
   rowActions?: string; // 'Open row actions'
   columnsTrigger?: string; // 'Columns'

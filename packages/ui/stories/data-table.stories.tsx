@@ -1434,6 +1434,94 @@ export const SelectionMotion: Story = {
   },
 };
 
+// Select all and clear all from the header checkbox ripple down the page, row
+// by row: the bar grows down from the header as one line, and each row's fill
+// and checkbox follow it. Clear all retracts it in the same order, quicker. A
+// page of 50 rows ripples as fast as one of 10. Reduced motion: no ripple. The
+// header checkbox's tooltip says what a press does: select all on this page,
+// or clear the selection on this page. One page of 10 or 50 rows, so both
+// sizes can be compared. With a header, the bulk bar replaces the header
+// controls, as on a list page, and the rows stay put.
+function RippleTable({ count }: { count: number }) {
+  const [selection, setSelection] = useState<RowSelectionState>({});
+  const rows = useMemo(() => pagedOrders.concat(pagedOrders).slice(0, count), [count]);
+  return (
+    <DataTable<Order>
+      rows={rows}
+      columns={columns}
+      getRowId={(order, index) => `${order.id}-${index}`}
+      header={
+        <PageHeader>
+          <PageHeaderContent>
+            <PageHeaderTitle>Orders</PageHeaderTitle>
+          </PageHeaderContent>
+        </PageHeader>
+      }
+      rowSelection={{ value: selection, onChange: setSelection }}
+      bulkActions={({ selection: selected, clearSelection }) => (
+        <>
+          <span className="text-sm font-medium">{selected.length} selected</span>
+          <Button variant="outline" size="sm" onClick={clearSelection}>
+            Clear
+          </Button>
+        </>
+      )}
+    />
+  );
+}
+
+// Where each row starts in the ripple: its bar's transition delay, in ms.
+const rippleStarts = (canvasElement: HTMLElement) =>
+  [...canvasElement.querySelectorAll<HTMLElement>('tbody tr')].map((row) => {
+    const delay = getComputedStyle(row, '::before').transitionDelay;
+    return delay.endsWith('ms') ? Number.parseFloat(delay) : Number.parseFloat(delay) * 1000;
+  });
+
+// Select all starts at the top row and travels down, and its last row starts
+// within `normal` (200ms) however many rows the page has. Clear all takes the
+// same order within `fast` (100ms).
+const playSelectAllRipple: Story['play'] = async ({ canvasElement, step }) => {
+  const canvas = within(canvasElement);
+  const table = canvasElement.querySelector('table[data-slot=table]') as HTMLElement;
+  const expectRipple = (starts: number[], ceiling: number) => {
+    expect(starts[0]).toBe(0);
+    expect(starts[1]).toBeGreaterThan(0);
+    for (let index = 1; index < starts.length; index++) {
+      expect(starts[index]).toBeGreaterThanOrEqual(starts[index - 1] as number);
+    }
+    expect(Math.max(...starts)).toBeLessThanOrEqual(ceiling);
+  };
+
+  await step('select all ripples down from the header checkbox', async () => {
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select all rows' }));
+    await expect(table).toHaveAttribute('data-select-ripple', 'select');
+    expectRipple(rippleStarts(canvasElement), 200);
+  });
+
+  await step('clear all ripples down in half the time', async () => {
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select all rows' }));
+    await expect(table).toHaveAttribute('data-select-ripple', 'clear');
+    expectRipple(rippleStarts(canvasElement), 100);
+  });
+
+  await step('the ripple ends, and a row click is not delayed', async () => {
+    await waitFor(() => expect(table).not.toHaveAttribute('data-select-ripple'));
+    await expect(Math.max(...rippleStarts(canvasElement))).toBe(0);
+  });
+};
+
+export const SelectAllRipple10: Story = {
+  name: 'Select all ripple · 10 rows',
+  render: () => <RippleTable count={10} />,
+  play: playSelectAllRipple,
+};
+
+export const SelectAllRipple50: Story = {
+  name: 'Select all ripple · 50 rows',
+  render: () => <RippleTable count={50} />,
+  play: playSelectAllRipple,
+};
+
 // Body row heights for RowBarHeights: odd, even and fractional, as real rows
 // have (a thumbnail, a wrapped line, a zoomed page).
 const BAR_ROW_CONTENT_HEIGHTS = [24, 25, 23.5, 30, 24, 25, 24];

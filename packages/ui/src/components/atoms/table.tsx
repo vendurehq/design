@@ -99,7 +99,8 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 //   from the bottom, so they meet in the middle.
 // The selected clips are `!important` to beat the neighbour rules, whose
 // sibling selectors are more specific. A range selection grows all its bars
-// at once. The selected halves overlap by 1px (each runs 0.5px past the middle):
+// at once. The DataTable's select all and clear all ripple instead: they
+// delay each row and start every bar from its top (SELECT_RIPPLE_ROW_CLASS). The selected halves overlap by 1px (each runs 0.5px past the middle):
 // on a row of an odd height the middle falls on a half pixel, and two edges
 // that each cover half of a pixel row blend to a lighter 1px notch. With the
 // overlap one half fully covers every pixel row, whatever the height. Under
