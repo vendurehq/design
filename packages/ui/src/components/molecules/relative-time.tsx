@@ -8,7 +8,7 @@ import {
 } from '@vendure-io/ui/lib/format-relative';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 // Relative: `time-tooltip` is internal.
-import { TimeSpan, TimeTooltip, toTime } from './time-tooltip.tsx';
+import { TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
 
 interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   value: string | number | Date | null | undefined;
@@ -21,7 +21,11 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
    * already re-renders (e.g. a polling query drives it).
    */
   updateInterval?: number | false;
-  /** Rendered for nullish/invalid input. Default `'—'`. */
+  /**
+   * Rendered for nullish/invalid input, and on the server and the first client
+   * render of a server-rendered page (the server has no reader's clock).
+   * Default `'—'`.
+   */
   fallback?: ReactNode;
   /**
    * What the text says.
@@ -56,11 +60,10 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
 }
 
 /**
- * SSR note: output is time- and locale-dependent, so the server render and the
- * first client render can disagree. The `<time>` carries
- * `suppressHydrationWarning` and re-formats once right after mount; SSR
- * consumers should still pin `locale`/`timeZone` via `FormatProvider` (or
- * props) so the absolute description matches too.
+ * SSR: the text depends on the reader's clock, locale and time zone, so the
+ * server renders `fallback` and an empty description, and so does the first
+ * client render during hydration: the two match. The text shows right after.
+ * In an app that renders only in the browser it shows from the first paint.
  *
  * The absolute time is never a native `title`. It is the accessible
  * description (a hidden child linked by `aria-describedby`), and it shows in
@@ -88,17 +91,13 @@ function RelativeTime({
   // A bare counter to force a re-format on each tick; the value itself is unused.
   const [, tick] = useState(0);
 
+  const readersClock = useReadersClock();
   const time = toTime(value);
   const date = time === null ? null : new Date(time);
   const hasDate = date !== null;
 
   useEffect(() => {
-    if (!hasDate) return;
-    // SSR'd text can already be stale by the time hydration runs, so re-format
-    // once immediately — this also covers `updateInterval={false}`, which
-    // otherwise never refreshes on its own.
-    tick((n) => n + 1);
-    if (updateInterval === false) return;
+    if (!hasDate || updateInterval === false) return;
     const id = setInterval(() => tick((n) => n + 1), updateInterval);
     return () => clearInterval(id);
   }, [updateInterval, hasDate]);
@@ -120,8 +119,9 @@ function RelativeTime({
     );
   const custom = typeof tooltip !== 'boolean' && tooltip !== null && tooltip !== undefined;
   const description = custom ? tooltip : absolute;
-  const text =
-    display === 'duration'
+  const text = !readersClock
+    ? fallback
+    : display === 'duration'
       ? formatRelativeDuration(date, { locale: resolvedLocale, unitStyle })
       : formatRelative(date, { locale: resolvedLocale, numeric, unitStyle });
   const describedBy = [props['aria-describedby'], descriptionId].filter(Boolean).join(' ');
@@ -131,15 +131,14 @@ function RelativeTime({
   const content = (
     <>
       {text}
-      <span id={descriptionId} hidden suppressHydrationWarning>
-        {description}
+      <span id={descriptionId} hidden>
+        {readersClock ? description : null}
       </span>
     </>
   );
   const timeProps = {
     'data-slot': 'relative-time',
     dateTime: date.toISOString(),
-    suppressHydrationWarning: true,
     ...props,
     'aria-describedby': describedBy,
   };

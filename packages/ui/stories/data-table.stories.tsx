@@ -36,6 +36,7 @@ import {
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
 import { ElapsedTime } from '../src/components/molecules/elapsed-time.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
 import { RelativeTime } from '../src/components/molecules/relative-time.tsx';
@@ -1692,9 +1693,9 @@ export const RowBarHeights: Story = {
 /**
  * While rows are selected, a click on a row selects it or deselects it and
  * does not open the item, so many rows can be selected fast. Shift+click
- * selects the range from the last clicked row. The name link still opens the
- * item with the keyboard (Enter) and with Cmd/Ctrl+click or a middle click
- * (new tab). Row controls keep their own action, and the row hides its
+ * selects the range from the last clicked row. The name still opens the item:
+ * with a click (see NameOpensWhileSelecting), the keyboard (Enter), and
+ * Cmd/Ctrl+click or a middle click (new tab). Row controls keep their own action, and the row hides its
  * chevron while rows are selected. With nothing selected, the row opens the
  * item as before (the test runner checks that with a real mouse press).
  */
@@ -1824,6 +1825,105 @@ export const ClickSelectsWhileSelecting: Story = {
   },
 };
 
+/**
+ * While rows are selected, the item's name still opens the item: a click on
+ * the name opens it, a click anywhere else on the row selects the row.
+ * Hovering the row shows a small chevron after the name; hovering or focusing
+ * the name colours it and the chevron blue (`info-text`) and moves the
+ * chevron 2px. The chevron takes no space, so the name and the column do not
+ * move. With nothing selected the whole row opens the item, as before. The
+ * cell that opens the item is the one with `DataTableRowLink` around the name.
+ * The test runner presses the name of row 2 and then its price with a real
+ * mouse: the first opens the item, the second selects the row.
+ */
+export const NameOpensWhileSelecting: Story = {
+  parameters: {
+    pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' },
+    pressSelectsRow: { text: '$1,678.80', expectChecked: 'Select row 2' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    const nameOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+    const markOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link-mark] svg') as SVGElement;
+    const priceHit = (n: number) =>
+      hitAt(rowOf(n).querySelector('[data-column-id=price]') as Element);
+    const size = (element: Element) => {
+      const box = element.getBoundingClientRect();
+      return `${box.width}x${box.height}`;
+    };
+    clearHash();
+    const nameSize = size(nameOf(3));
+    const cellSize = size(nameOf(3).closest('td') as Element);
+
+    await step('with nothing selected, the name link covers the row and no chevron shows', async () => {
+      await expect(getComputedStyle(nameOf(3), '::after').display).not.toBe('none');
+      await expect(getComputedStyle(markOf(3)).opacity).toBe('0');
+    });
+
+    await step('while a row is selected, only the name is the link', async () => {
+      await user.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      await expect(getComputedStyle(nameOf(3), '::after').display).toBe('none');
+      await expect(nameOf(3)).toHaveAttribute('href', '#/variants/3');
+    });
+
+    await step('the chevron takes no space: the name and its cell keep their size', async () => {
+      await expect(size(nameOf(3))).toBe(nameSize);
+      await expect(size(nameOf(3).closest('td') as Element)).toBe(cellSize);
+    });
+
+    await step('a click on the name opens the item and keeps the selection', async () => {
+      await user.click(nameOf(3));
+      await expect(location.hash).toBe('#/variants/3');
+      await expect([checked(1), checked(3)]).toEqual([true, false]);
+      clearHash();
+    });
+
+    await step('a click anywhere else on the row selects it', async () => {
+      await user.click(priceHit(3));
+      await waitFor(() => expect(checked(3)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('Shift+click on a name extends the selection', async () => {
+      await user.keyboard('{Shift>}');
+      await user.click(nameOf(4));
+      await user.keyboard('{/Shift}');
+      await waitFor(() => expect(checked(4)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the name is the next tab stop after the checkbox, and Enter opens it', async () => {
+      checkbox(2).focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(nameOf(2));
+      await expect(canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' })).toBe(nameOf(2));
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/variants/2');
+      await expect(checked(2)).toBe(false);
+      clearHash();
+      nameOf(2).blur();
+    });
+  },
+};
+
 // A square product thumbnail, as a list's featured asset cell shows it. Inline,
 // so the story loads no image.
 const THUMBNAIL =
@@ -1844,12 +1944,13 @@ const productRowColumns: ColumnDef<Variant>[] = [
  * A product list inside an app shell, built as the Vendure Dashboard builds
  * it: a thumbnail cell, the name as the row link, a copy chip and a row menu,
  * in a `<main tabindex="-1">` (the skip link target). While a row is selected,
- * a click on the thumbnail, the name or a plain cell selects the row and does
- * not open it; the copy chip and the row menu keep their own action. The test
- * runner presses the name of row 2 with a real mouse and expects it selected.
+ * a click on the thumbnail, beside the name or on a plain cell selects the row
+ * and does not open it; the copy chip and the row menu keep their own action.
+ * The test runner presses the name of row 2 with a real mouse and expects it
+ * to open the item.
  */
 export const ClickSelectsInAppShell: Story = {
-  parameters: { pressSelectsRow: { text: 'Laptop 15 inch 8GB', expectChecked: 'Select row 2' } },
+  parameters: { pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' } },
   render: () => {
     const [selection, setSelection] = useState<RowSelectionState>({ '1': true });
     return (
@@ -1889,6 +1990,7 @@ export const ClickSelectsInAppShell: Story = {
     clearHash();
     await expect(checked(1)).toBe(true);
 
+    // The centre of the name cell is beside the name, not on it.
     for (const column of ['featuredAsset', 'name', 'enabled']) {
       await step(`a click on the ${column} cell selects the row, a second click deselects it`, async () => {
         await userEvent.click(cellHit(3, column));
@@ -2061,24 +2163,36 @@ const deployments: Deployment[] = [
 // The second line: the one time that matters for the state. Each time opens
 // its own tooltip with the exact times, beside the status block, and is a tab
 // stop: StatusBadge's `detail` sets both.
-function DeploymentTime({ timing }: { timing: DeploymentTiming }) {
+// The words around a time belong to the app, so they are translated with the
+// rest of the page. German puts its word after the duration ("13 Tage lang"):
+// "seit" would need the dative ("seit 13 Tagen"), which a unit formatter does
+// not give.
+interface DeploymentWords {
+  waiting: (time: React.ReactNode) => React.ReactNode;
+  lasting: (time: React.ReactNode) => React.ReactNode;
+}
+
+const englishWords: DeploymentWords = {
+  waiting: (time) => <>Waiting {time}</>,
+  lasting: (time) => <>for {time}</>,
+};
+
+function DeploymentTime({
+  timing,
+  words = englishWords,
+}: {
+  timing: DeploymentTiming;
+  words?: DeploymentWords;
+}) {
   switch (timing.kind) {
     case 'live':
       return <ElapsedTime since={timing.started} tooltip />;
     case 'waiting':
-      return (
-        <>
-          Waiting <ElapsedTime since={timing.queued} tooltip />
-        </>
-      );
+      return words.waiting(<ElapsedTime since={timing.queued} tooltip />);
     case 'finished':
       return <RelativeTime value={timing.finished} start={timing.started} />;
     case 'since':
-      return (
-        <>
-          for <RelativeTime value={timing.since} display="duration" />
-        </>
-      );
+      return words.lasting(<RelativeTime value={timing.since} display="duration" />);
   }
 }
 
@@ -2223,5 +2337,124 @@ export const Deployments: Story = {
         timeout: 2500,
       });
     });
+  },
+};
+
+const germanStatus: Record<string, string> = {
+  ready: 'Bereit',
+  building: 'Wird gebaut',
+  deploying: 'Wird ausgerollt',
+  queued: 'In der Warteschlange',
+  failed: 'Fehlgeschlagen',
+  canceled: 'Abgebrochen',
+  degraded: 'Eingeschränkt',
+};
+
+const germanWords: DeploymentWords = {
+  waiting: (time) => <>Wartet {time}</>,
+  lasting: (time) => <>{time} lang</>,
+};
+
+const germanColumns: ColumnDef<Deployment>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge
+        appearance="icon"
+        tone={row.original.tone}
+        icon={row.original.icon}
+        detail={<DeploymentTime timing={row.original.timing} words={germanWords} />}
+      >
+        {germanStatus[row.original.id]}
+      </StatusBadge>
+    ),
+  },
+  { accessorKey: 'environment', header: 'Umgebung' },
+];
+
+/**
+ * The deployments table in German. Every time takes its language from the
+ * FormatProvider: the count, how long ago, how long a state has lasted and
+ * the tooltip. The words around a time ("Wartet", "lang") are the app's.
+ */
+export const DeploymentsInGerman: Story = {
+  render: () => (
+    <FormatProvider locale="de-DE">
+      <DataTable<Deployment>
+        rows={deployments}
+        columns={germanColumns}
+        getRowId={(deployment) => deployment.id}
+        frame="card"
+      />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement, step }) => {
+    // innerText leaves out the hidden accessible descriptions.
+    const details = canvasElement.querySelectorAll<HTMLElement>('[data-slot=status-badge-detail]');
+    const detail = (id: string) =>
+      details[deployments.findIndex((deployment) => deployment.id === id)]?.innerText ?? '';
+
+    await step('every time is in German', async () => {
+      await expect(detail('degraded')).toMatch(/^13 Tage lang$/);
+      await expect(detail('failed')).toMatch(/^vor 1 Stunde$/);
+      await waitFor(() => expect(detail('queued')).toMatch(/^Wartet \d+\s?Min/));
+    });
+  },
+};
+
+/** The top of the first body row, sampled each frame for `ms` after `act`. */
+async function rowTopsDuring(canvasElement: HTMLElement, act: () => Promise<void> | void, ms = 400) {
+  const top = () =>
+    (canvasElement.querySelector('[aria-label="Select row 1"]')?.closest('tr') as HTMLElement)
+      .getBoundingClientRect().top;
+  const tops = [top()];
+  await act();
+  const start = performance.now();
+  while (performance.now() - start < ms) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    tops.push(top());
+  }
+  return tops;
+}
+
+// With a controls row, the bulk bar takes its place at the same height: the
+// table does not move when rows get selected or cleared.
+export const BulkBarHoldsTheTable: Story = {
+  name: 'Bulk bar · replaces the controls row',
+  render: RowSelection.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      await expect({ act, moved: Math.max(...tops) - Math.min(...tops) }).toEqual({ act, moved: 0 });
+    }
+  },
+};
+
+// With a title and no controls row, the bulk bar opens its own row: its height
+// eases open and closed, so the table moves down and back through in-between
+// frames instead of jumping in one.
+export const BulkBarOpensItsRow: Story = {
+  name: 'Bulk bar · opens its own row under a title',
+  render: () => <RippleTable count={10} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      const first = tops[0] as number;
+      const total = (tops.at(-1) as number) - first;
+      await expect(Math.abs(total)).toBeGreaterThan(20);
+      // At least one frame shows the table part of the way: it eased, it did
+      // not jump. (A slow machine may skip most frames, so this asks for one.)
+      const between = tops.some((top) => {
+        const progress = (top - first) / total;
+        return progress > 0.02 && progress < 0.98;
+      });
+      await expect({ act, between }).toEqual({ act, between: true });
+    }
   },
 };

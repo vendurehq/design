@@ -374,7 +374,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -437,7 +437,7 @@ export const uiGuidance = [
       },
       {
         title: 'Pin locale and timezone under SSR',
-        body: 'Prevent hydration disagreement by making server and client formatting context explicit.',
+        body: "Prevent hydration disagreement for DateTime by making server and client formatting context explicit. RelativeTime and ElapsedTime need no pinning: they depend on the reader's clock, so the server and the first client render show the fallback, and the text follows right after. An app that renders only in the browser shows the text from its first paint.",
       },
       {
         title: 'The other form is a tooltip, not a title',

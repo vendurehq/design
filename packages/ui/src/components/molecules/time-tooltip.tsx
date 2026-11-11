@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, type ReactElement, type ReactNode, useContext, useRef } from 'react';
+import {
+  createContext,
+  type ReactElement,
+  type ReactNode,
+  useContext,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import { formatElapsed } from '../../lib/format-elapsed.ts';
 import { cn } from '../../lib/utils.ts';
 // Relative: this module is internal (mapped to null in the package exports).
@@ -88,8 +95,7 @@ const dateTimeFields: Intl.DateTimeFormatOptions = {
 /**
  * Two lines for something that ran from `start` to `end`: the range in the
  * reader's locale (`11/11/2026, 10:14:47 – 10:15:29 AM`, the date once when
- * both are on one day), then how long it took (`42s`). No words, so nothing
- * needs translating.
+ * both are on one day), then how long it took (`42s`), both in the reader's locale.
  */
 function TimeSpan({
   start,
@@ -106,9 +112,29 @@ function TimeSpan({
   return (
     <>
       <span className="block">{format.formatRange(Math.min(start, end), end)}</span>
-      <span className="block">{formatElapsed(end - start)}</span>
+      <span className="block">{formatElapsed(end - start, { locale })}</span>
     </>
   );
 }
 
-export { InStatusDetail, TimeSpan, TimeTooltip, toTime };
+function noSubscription() {
+  return () => {};
+}
+
+/**
+ * False on the server and during hydration, true otherwise. A time depends on
+ * the reader's clock, locale and time zone, which the server does not know:
+ * while this is false, a time renders its fallback, so the server markup and
+ * the first client render are the same. React reads the client value from the
+ * first render of a browser-only app, so a time shows its text from the first
+ * paint there. After hydration React renders again with `true`.
+ */
+function useReadersClock(): boolean {
+  return useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
+}
+
+export { InStatusDetail, TimeSpan, TimeTooltip, toTime, useReadersClock };

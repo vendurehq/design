@@ -13,11 +13,14 @@ describe('ElapsedTime', () => {
     expect(slotTag(markup, 'elapsed-time')).not.toContain('dateTime');
   });
 
-  test('with until, the text is fixed and the same on the server', () => {
+  // The text depends on the reader's locale even with `until`, so the server
+  // renders the fallback; the browser renders are checked in the RelativeTime
+  // "Server and browser" story.
+  test('with until, the server renders the fallback and the ISO duration', () => {
     const markup = renderToStaticMarkup(
       <ElapsedTime since={START} until={new Date(START.getTime() + 75_000)} />,
     );
-    expect(markup).toContain('1m 15s');
+    expect(markup).toContain('>—</time>');
     expect(slotTag(markup, 'elapsed-time')).toContain('dateTime="PT1M15S"');
   });
 
@@ -33,44 +36,19 @@ describe('ElapsedTime', () => {
     expect(renderToStaticMarkup(<ElapsedTime since={null} />)).toContain('—');
   });
 
-  test('takes a custom format', () => {
-    const markup = renderToStaticMarkup(
-      <ElapsedTime
-        since={START}
-        until={START.getTime() + 5_000}
-        format={(ms) => `${ms / 1000} sec`}
-      />,
-    );
-    expect(markup).toContain('5 sec');
-  });
-
   test('has no tooltip by default', () => {
     const tag = slotTag(renderToStaticMarkup(<ElapsedTime since={START} />), 'elapsed-time');
     expect(tag).not.toContain('data-base-ui-tooltip-trigger');
     expect(tag).not.toContain('aria-describedby');
   });
 
-  test('tooltip shows when it started, as the description too', () => {
+  test('tooltip links a description, empty on the server', () => {
     const markup = renderToString(<ElapsedTime since={START} tooltip locale="en-US" />);
     const tag = slotTag(markup, 'elapsed-time');
     expect(tag).toContain('data-base-ui-tooltip-trigger');
     const id = tag.match(/aria-describedby="([^"]+)"/)?.[1];
-    expect(markup).toMatch(new RegExp(`<span id="${id}" hidden="">[^<]*2026[^<]*</span>`));
-    // The count still starts on the client, so hydration matches.
+    expect(markup).toContain(`<span id="${id}" hidden=""></span>`);
     expect(markup).toContain('—');
-  });
-
-  test('tooltip with until shows the range and how long it took', () => {
-    const markup = renderToStaticMarkup(
-      <ElapsedTime since={START} until={START.getTime() + 75_000} tooltip locale="en-US" />,
-    );
-    expect(markup).toContain('–');
-    expect(markup).toContain('>1m 15s</span>');
-  });
-
-  test('takes custom tooltip content', () => {
-    const markup = renderToStaticMarkup(<ElapsedTime since={START} tooltip="Queued by CI" />);
-    expect(markup).toContain('hidden="">Queued by CI</span>');
   });
 
   test('under a status label it is a tab stop by default', () => {

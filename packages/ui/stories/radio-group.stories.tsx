@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, within } from 'storybook/test';
 import { RadioGroup, RadioGroupItem } from '../src/components/atoms/radio-group.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
@@ -44,6 +45,17 @@ export const Disabled: Story = {
       </div>
     </RadioGroup>
   ),
+  // Each radio and its label show at half opacity with the not-allowed cursor.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const radio of canvas.getAllByRole('radio')) {
+      await expect(getComputedStyle(radio).opacity).toBe('0.5');
+      await expect(getComputedStyle(radio).cursor).toBe('not-allowed');
+    }
+    for (const label of ['Default', 'Comfortable']) {
+      await expect(getComputedStyle(canvas.getByText(label)).opacity).toBe('0.5');
+    }
+  },
 };
 
 type Theme = 'light' | 'dark';

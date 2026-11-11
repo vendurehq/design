@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, waitFor } from 'storybook/test';
 import {
   Area,
   AreaChart,
@@ -169,6 +170,14 @@ const paymentConfig = {
 
 export const DonutFiveSlices: Story = {
   name: 'Donut — 5 payment methods',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'recharts draws each slice of a `Pie` as an `img`, so each `Cell` needs an `aria-label` that says what the slice is and its value. Without one the slice fails the `svg-img-alt` accessibility rule.',
+      },
+    },
+  },
   render: () => (
     <ChartContainer config={paymentConfig} className="min-h-[320px] w-full max-w-md">
       <PieChart>
@@ -182,13 +191,29 @@ export const DonutFiveSlices: Story = {
           strokeWidth={2}
         >
           {paymentBreakdown.map((entry) => (
-            <Cell key={entry.method} fill={`var(--color-${entry.method})`} />
+            // recharts draws each slice as an `img`. It needs a name, and
+            // only the consumer knows what the slice means.
+            <Cell
+              key={entry.method}
+              fill={`var(--color-${entry.method})`}
+              aria-label={`${paymentConfig[entry.method as keyof typeof paymentConfig].label}: ${entry.value}`}
+            />
           ))}
         </Pie>
         <ChartLegend content={<ChartLegendContent nameKey="method" />} />
       </PieChart>
     </ChartContainer>
   ),
+  // The slices draw in with an animation, and the a11y scan that follows this
+  // story reads whatever is in the page. Wait for all of them, so the scan
+  // always sees the same chart and a slice without a name fails every run.
+  play: async ({ canvasElement }) => {
+    await waitFor(() =>
+      expect(canvasElement.querySelectorAll('.recharts-sector')).toHaveLength(
+        paymentBreakdown.length,
+      ),
+    );
+  },
 };
 
 export const VizPaletteSwatches: Story = {

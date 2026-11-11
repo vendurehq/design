@@ -285,7 +285,9 @@ one time that matters for the state. In a `DataTable` the row is 46px.
 ```
 
 `ElapsedTime` counts up every second with tabular digits, and stops while it is
-off screen or the tab is hidden. With `tooltip`, its tooltip shows when the
+off screen or the tab is hidden. It writes the count in the locale of the
+`FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
+smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
 count started. `RelativeTime` with `start` shows the range and how long it
 took; with `display="duration"` it says how long a state has lasted
 (`13 days`), in the reader's locale and with the same unit steps as
@@ -580,6 +582,7 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
+- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` has no click-to-select, so there its link keeps covering the row.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.
