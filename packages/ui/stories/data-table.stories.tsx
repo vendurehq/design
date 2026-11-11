@@ -1665,7 +1665,9 @@ export const SelectionMotion: Story = {
     });
 
     // When a row clears, read when each half of its bar starts to lose height
-    // and how long its fade runs, from the transitions the click started.
+    // and how long its fade runs, from the transitions the click started. They
+    // last 100 to 150ms, so the waits below poll every 5ms: the default 50ms can
+    // step over them on a loaded machine.
     const clearing = (row: HTMLElement) =>
       ['::before', '::after'].map((part) => {
         const timing = (property: string) =>
@@ -1690,11 +1692,13 @@ export const SelectionMotion: Story = {
       for (const n of [4, 2]) {
         const row = rows()[n - 1] as HTMLElement;
         await userEvent.click(canvas.getByRole('checkbox', { name: `Select row ${n}` }));
-        await waitFor(() =>
-          expect(clearing(row)).toEqual([
-            'clip after 100ms for 0ms, fade 100ms',
-            'clip after 100ms for 0ms, fade 100ms',
-          ])
+        await waitFor(
+          () =>
+            expect(clearing(row)).toEqual([
+              'clip after 100ms for 0ms, fade 100ms',
+              'clip after 100ms for 0ms, fade 100ms',
+            ]),
+          { interval: 5 },
         );
       }
     });
@@ -1704,11 +1708,13 @@ export const SelectionMotion: Story = {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
       await waitFor(() => expect(clips(rows()[2] as HTMLElement)).toEqual(FULL));
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
-      await waitFor(() =>
-        expect(clearing(rows()[2] as HTMLElement)).toEqual([
-          'clip after 0ms for 150ms, no fade',
-          'clip after 0ms for 150ms, no fade',
-        ])
+      await waitFor(
+        () =>
+          expect(clearing(rows()[2] as HTMLElement)).toEqual([
+            'clip after 0ms for 150ms, no fade',
+            'clip after 0ms for 150ms, no fade',
+          ]),
+        { interval: 5 },
       );
     });
   },
