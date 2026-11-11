@@ -76,6 +76,8 @@ import {
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+// Relative: `data-table-selection-storage` is closed in the package exports.
+import { useSelectionStorage } from './data-table-selection-storage.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
@@ -486,6 +488,7 @@ function DataTable<TData>({
   filters,
   columnVisibility,
   rowSelection,
+  selectionStorageKey,
   header,
   toolbar,
   bulkActions,
@@ -546,8 +549,9 @@ function DataTable<TData>({
     columnVisibility,
     {},
   );
+  const storedRowSelection = useSelectionStorage(selectionStorageKey, rowSelection);
   const [selectionState, onRowSelectionChange] = useControlledTableState<RowSelectionState>(
-    rowSelection,
+    storedRowSelection,
     {},
   );
   const selectColumnId = rowSelection?.selectColumnId ?? 'select';

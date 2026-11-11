@@ -535,6 +535,28 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable selection storage
+
+`selectionStorageKey` keeps the row selection in session storage, so it survives a reload and a visit to another page in the same tab. It needs `rowSelection`.
+
+```tsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  getRowId={(row) => row.id}
+  selectionStorageKey={`${route}:${channelId}`}
+  rowSelection={{ value: selection, onChange: setSelection }}
+/>
+```
+
+- On its first load the table restores the stored ids and reports them through `rowSelection.onChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
+- Every change is stored, with the ids of rows on other pages: a selection can span pages. An empty selection removes the entry.
+- A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
+- No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
+- Put the list and anything that scopes its rows in the key: the route, and a channel or project. Two lists with the same key share one selection.
+- The bulk action context lists `selection` for the rows the table has loaded. Ids restored from other pages are in `selectedRowIds`.
+- Without the prop nothing changes.
+
 ### DataTable custom rows
 
 `renderRow` replaces the row the table renders. Select all and clear all ripple down the rows, each row starting a little after the one above, and a row you render yourself joins that ripple when it takes `ctx.ripple`:

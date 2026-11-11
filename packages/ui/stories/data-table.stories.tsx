@@ -566,6 +566,193 @@ export const RowSelection: Story = {
   },
 };
 
+// The selection kept in session storage. `selectionStorageKey` names the list
+// and anything that scopes its rows (here a channel). The table restores the
+// stored ids on its first load, stores every change (with the ids of rows on
+// other pages) and switches to the key's own selection when the key changes.
+// Select rows, reload the story: they are selected again.
+function StoredSelectionTable({
+  storageKey,
+  controlled = true,
+  channels = false,
+}: {
+  storageKey: string;
+  controlled?: boolean;
+  channels?: boolean;
+}) {
+  const [page, setPage] = useState(1);
+  const [channel, setChannel] = useState('a');
+  const [mount, setMount] = useState(0);
+  const [selection, setSelection] = useState<RowSelectionState>({});
+  const pageRows = useMemo(() => pagedOrders.slice((page - 1) * 10, page * 10), [page]);
+  const count = Object.keys(selection).filter((id) => selection[id]).length;
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => setMount((n) => n + 1)}>
+          Remount the table
+        </Button>
+        {channels &&
+          ['a', 'b'].map((id) => (
+            <Button
+              key={id}
+              variant={channel === id ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setChannel(id)}
+            >
+              {`Channel ${id.toUpperCase()}`}
+            </Button>
+          ))}
+        <span data-testid="selected-count" className="text-muted-foreground text-sm">
+          {count} selected
+        </span>
+      </div>
+      <DataTable<Order>
+        key={mount}
+        rows={pageRows}
+        columns={columns}
+        getRowId={(order) => order.id}
+        selectionStorageKey={channels ? `${storageKey}:${channel}` : storageKey}
+        rowSelection={
+          controlled
+            ? { value: selection, onChange: setSelection }
+            : { defaultValue: {}, onChange: setSelection }
+        }
+        pagination={{
+          page,
+          pageSize: 10,
+          totalItems: pagedOrders.length,
+          onPageChange: setPage,
+        }}
+      />
+    </div>
+  );
+}
+
+export const SelectionStorage: Story = {
+  render: () => <StoredSelectionTable storageKey="story:selection-storage" />,
+};
+
+const storedIds = (key: string) =>
+  JSON.parse(sessionStorage.getItem(`vendure-ui:data-table-selection:${key}`) ?? '[]') as string[];
+
+const clearStoredSelection = (key: string) => {
+  for (const suffix of ['', ':a', ':b']) {
+    sessionStorage.removeItem(`vendure-ui:data-table-selection:${key}${suffix}`);
+  }
+};
+
+// Restore on first load, a write on every change, other pages' ids kept, a key
+// change that carries nothing over, and a remount (a reload, or a visit to
+// another page and back) that selects the same rows again.
+const playStoredSelection =
+  (key: string): Story['play'] =>
+  async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const row = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const count = () => canvas.getByTestId('selected-count');
+    await step('select rows on two pages', async () => {
+      await userEvent.click(row(1));
+      await userEvent.click(row(2));
+      await waitFor(() => expect(count()).toHaveTextContent('2 selected'));
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'false'));
+      await userEvent.click(row(1));
+      await waitFor(() => expect(count()).toHaveTextContent('3 selected'));
+    });
+
+    await step('the ids of every page are stored', async () => {
+      const keyForCurrentChannel = canvas.queryByRole('button', { name: 'Channel A' })
+        ? `${key}:a`
+        : key;
+      await expect(storedIds(keyForCurrentChannel).sort()).toEqual(['p1', 'p11', 'p2']);
+    });
+
+    await step('a remount restores the selection on its first load', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Remount the table' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
+      await expect(count()).toHaveTextContent('3 selected');
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to previous page' }));
+      await waitFor(() => expect(row(2)).toHaveAttribute('aria-checked', 'true'));
+    });
+
+    if (canvas.queryByRole('button', { name: 'Channel B' })) {
+      await step('a new key shows its own selection and carries nothing over', async () => {
+        await userEvent.click(canvas.getByRole('button', { name: 'Channel B' }));
+        await waitFor(() => expect(count()).toHaveTextContent('0 selected'));
+        await expect(row(1)).toHaveAttribute('aria-checked', 'false');
+        await expect(storedIds(`${key}:b`)).toEqual([]);
+        // The switch stored nothing under either key.
+        await expect(storedIds(`${key}:a`).sort()).toEqual(['p1', 'p11', 'p2']);
+        await userEvent.click(row(3));
+        await waitFor(() => expect(count()).toHaveTextContent('1 selected'));
+        await expect(storedIds(`${key}:b`)).toEqual(['p3']);
+        await userEvent.click(canvas.getByRole('button', { name: 'Channel A' }));
+        await waitFor(() => expect(count()).toHaveTextContent('3 selected'));
+        await expect(row(1)).toHaveAttribute('aria-checked', 'true');
+      });
+    }
+
+    await step('an empty selection removes its entry', async () => {
+      await userEvent.click(row(1));
+      await userEvent.click(row(2));
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
+      await userEvent.click(row(1));
+      await waitFor(() => expect(count()).toHaveTextContent('0 selected'));
+      const stored = canvas.queryByRole('button', { name: 'Channel A' }) ? `${key}:a` : key;
+      await expect(sessionStorage.getItem(`vendure-ui:data-table-selection:${stored}`)).toBeNull();
+    });
+
+    clearStoredSelection(key);
+  };
+
+export const SelectionStorageControlled: Story = {
+  name: 'Selection storage · controlled, with channels',
+  render: () => <StoredSelectionTable storageKey="story:stored-controlled" channels />,
+  beforeEach: () => clearStoredSelection('story:stored-controlled'),
+  play: playStoredSelection('story:stored-controlled'),
+};
+
+export const SelectionStorageUncontrolled: Story = {
+  name: 'Selection storage · uncontrolled',
+  render: () => (
+    <StoredSelectionTable storageKey="story:stored-uncontrolled" controlled={false} />
+  ),
+  beforeEach: () => clearStoredSelection('story:stored-uncontrolled'),
+  play: playStoredSelection('story:stored-uncontrolled'),
+};
+
+// Storage that throws, as a blocked or full store does. The table still works:
+// the selection lasts until it unmounts.
+export const SelectionStorageBlocked: Story = {
+  render: () => <StoredSelectionTable storageKey="story:stored-blocked" />,
+  beforeEach: () => {
+    const real = Object.getOwnPropertyDescriptor(window, 'sessionStorage');
+    const blocked = () => {
+      throw new DOMException('blocked', 'QuotaExceededError');
+    };
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get: () => ({ getItem: blocked, setItem: blocked, removeItem: blocked }),
+    });
+    return () => {
+      if (real) Object.defineProperty(window, 'sessionStorage', real);
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 1' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('checkbox', { name: 'Select row 1' })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      ),
+    );
+    await expect(canvas.getByTestId('selected-count')).toHaveTextContent('1 selected');
+  },
+};
+
 // Column visibility — a controlled `VisibilityState` and the "Columns" column picker.
 // Toggling an item hides its column live; the checkbox column is never listed.
 export const ColumnVisibility: Story = {
