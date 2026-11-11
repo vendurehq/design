@@ -7,10 +7,18 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Funnel,
+  FunnelChart,
   Line,
   LineChart,
   Pie,
   PieChart,
+  RadialBar,
+  RadialBarChart,
+  Sankey,
+  Scatter,
+  ScatterChart,
+  Treemap,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -214,6 +222,128 @@ export const DonutFiveSlices: Story = {
       ),
     );
   },
+};
+
+// Shapes that recharts draws as images need an accessible name. `Chart` names
+// them from what it has: the shape's name, else the config key in its colour.
+// Each story below leaves the naming to `Chart`, and the a11y scan after it
+// fails when a shape has none. The play waits for the shapes first, so the scan
+// always sees the drawn chart.
+const namedShapes = (selector: string, count: number): Story['play'] => async ({ canvasElement }) => {
+  await waitFor(() => expect(canvasElement.querySelectorAll(selector)).toHaveLength(count));
+  for (const shape of canvasElement.querySelectorAll(selector)) {
+    await expect(shape.getAttribute('aria-label')).toBeTruthy();
+  }
+};
+
+export const DonutNamedFromConfig: Story = {
+  name: 'Donut — named from the config',
+  render: () => (
+    <ChartContainer config={paymentConfig} className="min-h-[280px] w-full max-w-md">
+      <PieChart>
+        <Pie data={paymentBreakdown} dataKey="value" nameKey="method" innerRadius={60} outerRadius={110}>
+          {paymentBreakdown.map((entry) => (
+            <Cell key={entry.method} fill={`var(--color-${entry.method})`} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-sector', 5),
+};
+
+export const ScatterSeries: Story = {
+  name: 'Scatter — two series',
+  render: () => (
+    <ChartContainer config={chartConfig} className="min-h-[300px] w-full max-w-lg">
+      <ScatterChart>
+        <CartesianGrid />
+        <XAxis dataKey="desktop" type="number" name="Desktop" />
+        <YAxis dataKey="mobile" type="number" name="Mobile" />
+        <Scatter name="desktop" data={chartData} fill="var(--color-desktop)" />
+        <Scatter name="mobile" data={chartData.map((d) => ({ desktop: d.mobile, mobile: d.desktop }))} fill="var(--color-mobile)" />
+      </ScatterChart>
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-scatter-symbol', 12),
+};
+
+export const TreemapCells: Story = {
+  name: 'Treemap — payment methods',
+  render: () => (
+    <ChartContainer config={paymentConfig} className="min-h-[280px] w-full max-w-md">
+      <Treemap
+        data={paymentBreakdown.map((entry) => ({
+          name: entry.method,
+          size: entry.value,
+          fill: `var(--color-${entry.method})`,
+        }))}
+        dataKey="size"
+        isAnimationActive
+      />
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-treemap-depth-1 [role=img], [role=img]', 5),
+};
+
+export const FunnelSteps: Story = {
+  name: 'Funnel — checkout steps',
+  render: () => (
+    <ChartContainer config={paymentConfig} className="min-h-[280px] w-full max-w-md">
+      <FunnelChart>
+        <Funnel
+          data={paymentBreakdown.map((entry) => ({
+            name: entry.method,
+            value: entry.value,
+            fill: `var(--color-${entry.method})`,
+          }))}
+          dataKey="value"
+          nameKey="name"
+        />
+      </FunnelChart>
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-funnel-trapezoid', 5),
+};
+
+export const RadialBars: Story = {
+  name: 'Radial bar — payment methods',
+  render: () => (
+    <ChartContainer config={paymentConfig} className="min-h-[280px] w-full max-w-md">
+      <RadialBarChart
+        data={paymentBreakdown.map((entry) => ({
+          method: entry.method,
+          value: entry.value,
+          fill: `var(--color-${entry.method})`,
+        }))}
+        innerRadius={30}
+        outerRadius={120}
+      >
+        <RadialBar dataKey="value" background />
+      </RadialBarChart>
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-radial-bar-sector', 5),
+};
+
+export const SankeyFlow: Story = {
+  name: 'Sankey — traffic to payment',
+  render: () => (
+    <ChartContainer config={paymentConfig} className="min-h-[280px] w-full max-w-lg">
+      <Sankey
+        data={{
+          nodes: [{ name: 'card' }, { name: 'paypal' }, { name: 'klarna' }],
+          links: [
+            { source: 0, target: 1, value: 300 },
+            { source: 0, target: 2, value: 200 },
+          ],
+        }}
+        node={{ fill: 'var(--color-card)' }}
+        nodePadding={30}
+      />
+    </ChartContainer>
+  ),
+  play: namedShapes('.recharts-sankey-node', 3),
 };
 
 export const VizPaletteSwatches: Story = {

@@ -34,6 +34,53 @@ function useChart() {
   return context
 }
 
+// recharts marks some shapes as images (`role="img"`): the slices of a pie and
+// a radial bar, scatter symbols, funnel trapezoids, treemap cells and sankey
+// nodes. An image needs an accessible name. The chart gives each one a name from
+// what it already has: the shape's `name` (a pie slice has its `nameKey` value),
+// else the config key in its colour (`var(--color-card)`), through that key's
+// config `label`. A shape that already has a name keeps it, so a consumer's
+// `aria-label` (a `Cell`'s, say) wins and can carry the value too.
+const CHART_SHAPES = '[role="img"]:not([aria-label]):not([aria-labelledby])'
+
+function configLabel(config: ChartConfig, key: string | null | undefined) {
+  if (!key) return undefined
+  const label = config[key]?.label
+  return typeof label === "string" ? label : undefined
+}
+
+function nameChartShapes(root: HTMLElement, config: ChartConfig) {
+  for (const shape of root.querySelectorAll<SVGElement>(CHART_SHAPES)) {
+    if (shape.querySelector("title")) continue
+    const name = shape.getAttribute("name")
+    const color = /--color-([\w-]+)/.exec(
+      shape.getAttribute("fill") ?? shape.getAttribute("stroke") ?? ""
+    )?.[1]
+    const label = configLabel(config, name) ?? name ?? configLabel(config, color)
+    if (label) shape.setAttribute("aria-label", label)
+  }
+}
+
+/**
+ * Names the chart's image shapes, now and as the chart draws (recharts replaces
+ * shapes while it animates). It watches only the tree below the container, and
+ * adding an attribute does not trigger it again.
+ */
+function useChartShapeNames(
+  ref: React.RefObject<HTMLElement | null>,
+  config: ChartConfig
+) {
+  React.useLayoutEffect(() => {
+    const root = ref.current
+    if (!root) return
+    nameChartShapes(root, config)
+    if (typeof MutationObserver === "undefined") return
+    const observer = new MutationObserver(() => nameChartShapes(root, config))
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [ref, config])
+}
+
 function ChartContainer({
   id,
   className,
@@ -48,10 +95,13 @@ function ChartContainer({
 }) {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
+  const ref = React.useRef<HTMLDivElement>(null)
+  useChartShapeNames(ref, config)
 
   return (
     <ChartContext.Provider value={{ config }}>
       <div
+        ref={ref}
         data-slot="chart"
         data-chart={chartId}
         className={cn(
