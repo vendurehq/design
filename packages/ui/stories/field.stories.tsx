@@ -352,7 +352,9 @@ export const ChoiceCards: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const card = (name: string) => canvas.getByText(name).closest('[data-slot=field-label]') as HTMLElement;
-    const tinted = (name: string) => getComputedStyle(card(name)).backgroundColor !== 'rgba(0, 0, 0, 0)';
+    // The untinted look, read from a card that starts unchecked.
+    const plain = getComputedStyle(card('Gift wrap')).backgroundColor;
+    const tinted = (name: string) => getComputedStyle(card(name)).backgroundColor !== plain;
     await expect(tinted('Standard delivery')).toBe(true);
     await expect(tinted('Express delivery')).toBe(false);
     await expect(tinted('Email me a receipt')).toBe(false);
