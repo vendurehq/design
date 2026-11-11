@@ -509,18 +509,30 @@ import {
 <DataTable
   rows={rows}
   columns={columns}
-  renderRow={(row, { ripple }) => (
+  renderRow={(row, { ripple, cellProps }) => (
     <SortableRow
       row={row}
       className={cn("group/row", ripple.className)}
       style={{ ...ripple.style, transform, transition }}
+      cellProps={cellProps}
     />
   )}
 />
 ```
 
+Inside the row, each cell takes its attributes from the table:
+
+```tsx
+{row.getVisibleCells().map((cell) => (
+  <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+  </TableCell>
+))}
+```
+
 - `ctx.ripple.className` goes into your row's `className`. `ctx.ripple.style` is spread before your own `style`. It holds only the custom properties `--ripple-at` and `--ripple-span`, so an inline `transform`, `transition` or `opacity` (a drag) never collides with it.
 - Set `data-state="selected"` on the row while it is selected, as the built-in rows do. The row must be a `TableRow` (or carry its classes) so the selection bar exists.
+- `ctx.cellProps(columnId)` returns what a built-in cell of that column carries: `className` (the zero-width select cell `relative w-0 p-0 pl-0!`, the leading cell's checkbox gutter, the content inset), `style` (the column indent) and the `data-column-id` and `data-content-inset-cell` attributes. Spread it on the `TableCell`, and merge your own classes with `cn`. Do not copy the classes: when the table changes them, your rows follow.
 - A row that ignores `ctx.ripple` still works. It changes at once, while the rows around it ripple.
 - Returning `ctx.defaultRow` needs nothing: it already has the ripple. Reduced motion: no ripple.
 

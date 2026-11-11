@@ -2,6 +2,7 @@ import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { Column } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { TableCell, TableRow } from '../../atoms/table.tsx';
 import { ListRowChevron } from '../list-row.tsx';
 
 import {
@@ -762,6 +763,86 @@ describe('DataTable renderRow ripple', () => {
     );
     expect(markup).toContain('--ripple-at:0.0000');
     expect(markup).toContain('transform:translate3d(0px, 4px, 0px)');
+  });
+});
+
+describe('DataTable renderRow cell classes', () => {
+  // The class of each body cell of the first row, in order.
+  const bodyCellClasses = (markup: string) => {
+    const firstRow = markup.split('<tbody')[1]?.split('</tr>')[0] ?? '';
+    return [...firstRow.matchAll(/<td[^>]*?class="([^"]*)"/g)].map((match) => match[1]);
+  };
+  const selectable = { value: {}, onChange: () => {} };
+
+  test('a custom row built from ctx.cellProps gets the same cell classes as a built-in row', () => {
+    const builtIn = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    const custom = html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+        renderRow={(row, { cellProps }) => (
+          <TableRow>
+            {row.getVisibleCells().map((cell) => (
+              <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+                {String(cell.getValue() ?? '')}
+              </TableCell>
+            ))}
+          </TableRow>
+        )}
+      />,
+    );
+    const expected = bodyCellClasses(builtIn);
+    expect(expected).toHaveLength(3);
+    expect(bodyCellClasses(custom)).toEqual(expected);
+  });
+
+  test('cellProps gives the select cell its zero-width classes and the first content cell its gutter', () => {
+    const seen: Record<string, string> = {};
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+        renderRow={(row, { cellProps, defaultRow }) => {
+          for (const cell of row.getVisibleCells()) {
+            seen[cell.column.id] = cellProps(cell.column.id).className;
+          }
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen.select).toContain('relative w-0 p-0 pl-0!');
+    expect(seen.name).toContain('pl-[calc(var(--spacing)*8');
+    expect(seen.code).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.code).not.toContain('*8');
+  });
+
+  test('a cell the table does not select gets no gutter: without rowSelection the first cell has none', () => {
+    const seen: Record<string, string> = {};
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        renderRow={(row, { cellProps, defaultRow }) => {
+          for (const cell of row.getVisibleCells()) {
+            seen[cell.column.id] = cellProps(cell.column.id).className;
+          }
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen.name).toContain('pl-[calc(var(--spacing)*2');
   });
 });
 
