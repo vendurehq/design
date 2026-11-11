@@ -81,10 +81,10 @@ export const States: Story = {
 const ITEMS = ['Ship to customer', 'Send invoice', 'Notify warehouse'] as const;
 
 /**
- * Checking animates: the fill closes in from the edges of the box to the
- * middle, then the check mark draws from its short stroke to its long one.
- * Unchecking plays it back, quicker: the mark undraws and the fill opens from
- * the middle out. A press shrinks the box a little. Space toggles with the same
+ * Checking animates: the fill closes in around a shrinking circle, corners
+ * first, to the middle, then the check mark draws from its short stroke to its
+ * long one. Unchecking plays it back, quicker: the mark undraws and the fill
+ * opens from the middle out. A press shrinks the box a little. Space toggles with the same
  * motion. "All tasks" goes indeterminate while some tasks are checked, and its
  * line draws the same way; from indeterminate to checked the line undraws as
  * the check draws. Toggle fast: every step reverses from where it is. Under
@@ -126,19 +126,25 @@ export const Toggle: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     const box = (name: string) => canvas.getByRole('checkbox', { name });
-    // The hole in the fill: -1px is no fill, 50% is a full box.
+    // How far open the hole in the fill is: 1 is no fill, 0 a full box.
     const hole = (name: string) =>
-      getComputedStyle(box(name), '::before').getPropertyValue('--checkbox-fill-x').trim();
+      getComputedStyle(box(name), '::before').getPropertyValue('--checkbox-hole').trim();
+    const clip = (name: string) => getComputedStyle(box(name), '::before').clipPath;
     const check = (name: string) => box(name).querySelector('path[d^="M4"]') as SVGPathElement;
     const line = (name: string) => box(name).querySelector('path[d^="M5"]') as SVGPathElement;
     const offset = (path: SVGPathElement) => getComputedStyle(path).strokeDashoffset;
     const settled = async (name: string) =>
       waitFor(() => expect(box(name).getAnimations({ subtree: true })).toHaveLength(0));
 
+    await step('the hole is a circle where shape() is supported', async () => {
+      if (!CSS.supports('clip-path', 'shape(from 0 0, line to 1px 1px)')) return;
+      await expect(clip('Send invoice')).toMatch(/^shape\(evenodd .* arc to /);
+    });
+
     await step('checking closes the fill in and draws the mark', async () => {
       await userEvent.click(box('Send invoice'));
       await settled('Send invoice');
-      await expect(hole('Send invoice')).toBe('50%');
+      await expect(hole('Send invoice')).toBe('0');
       await expect(offset(check('Send invoice'))).toBe('0px');
       await expect(offset(line('Send invoice'))).toBe('1px');
     });
@@ -146,7 +152,7 @@ export const Toggle: Story = {
     await step('unchecking opens the fill and undraws the mark', async () => {
       await userEvent.click(box('Send invoice'));
       await settled('Send invoice');
-      await expect(hole('Send invoice')).toBe('-1px');
+      await expect(hole('Send invoice')).toBe('1');
       await expect(offset(check('Send invoice'))).toBe('1px');
     });
 
@@ -163,7 +169,7 @@ export const Toggle: Story = {
     await step('a partial selection draws the indeterminate line', async () => {
       await expect(box('All tasks')).toHaveAttribute('data-indeterminate');
       await settled('All tasks');
-      await expect(hole('All tasks')).toBe('50%');
+      await expect(hole('All tasks')).toBe('0');
       await expect(offset(line('All tasks'))).toBe('0px');
       await expect(offset(check('All tasks'))).toBe('1px');
     });
@@ -187,7 +193,7 @@ export const Toggle: Story = {
       await userEvent.click(box(name));
       await settled(name);
       await expect(offset(check(name))).toBe('0px');
-      await expect(hole(name)).toBe('50%');
+      await expect(hole(name)).toBe('0');
     });
   },
 };
