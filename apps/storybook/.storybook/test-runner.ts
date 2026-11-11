@@ -279,6 +279,11 @@ async function settle(page: Page, quietMs: number) {
     async ([cap, quiet]) => {
       const root = document.querySelector('#storybook-root');
       if (!root) return [];
+      // Two frames first, so an animation that starts after the last commit
+      // (an exit, say) is already running when it is looked for.
+      for (let frame = 0; frame < 2; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
       const running = () =>
         document.getAnimations().filter((animation) => {
           const target = (animation.effect as KeyframeEffect | null)?.target;
