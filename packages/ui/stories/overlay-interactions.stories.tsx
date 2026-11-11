@@ -311,10 +311,11 @@ function trackSelectedLabel(trigger: HTMLElement) {
       const sides = (style.clipPath.match(/inset\(([^)]*?)(?: round|\))/)?.[1] ?? '0').split(' ').map(parseFloat);
       const [top = 0] = sides;
       const right = sides[1] ?? top;
-      const insets = [top, right, sides[2] ?? top, sides[3] ?? right];
-      if (insets.some((inset) => inset > 0.5)) growing += 1;
+      const bottom = sides[2] ?? top;
+      const left = sides[3] ?? right;
+      if ([top, right, bottom, left].some((inset) => inset > 0.5)) growing += 1;
       const box = popup.getBoundingClientRect();
-      const visible = { top: box.top + insets[0], right: box.right - insets[1], bottom: box.bottom - insets[2], left: box.left + insets[3] };
+      const visible = { top: box.top + top, right: box.right - right, bottom: box.bottom - bottom, left: box.left + left };
       const target = trigger.getBoundingClientRect();
       uncovered = Math.max(
         uncovered,
