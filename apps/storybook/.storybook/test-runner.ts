@@ -96,6 +96,48 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
 }
 
 /**
+ * `parameters.pressNear` presses with a real mouse at `distance` px outside
+ * one edge of the button named `button`, centred along that edge. Only a real
+ * press is hit-tested, so only it reaches a button's invisible click area.
+ * Afterwards a button named `expectButton` must exist: a toggle that was hit
+ * renames itself, one that was missed keeps its name (pass the old name).
+ */
+type NearPress = {
+  button: string;
+  edge: 'top' | 'bottom' | 'left' | 'right';
+  distance: number;
+  expectButton: string;
+};
+
+async function pressNear(page: Page, presses?: NearPress | NearPress[]) {
+  const root = page.locator('#storybook-root');
+  for (const press of presses ? [presses].flat() : []) {
+    await page.mouse.move(0, 0);
+    const box = await root.getByRole('button', { name: press.button, exact: true }).boundingBox();
+    if (!box) throw new Error(`pressNear: "${press.button}" is not visible`);
+    const midX = box.x + box.width / 2;
+    const midY = box.y + box.height / 2;
+    const [x, y] = {
+      top: [midX, box.y - press.distance],
+      bottom: [midX, box.y + box.height + press.distance],
+      left: [box.x - press.distance, midY],
+      right: [box.x + box.width + press.distance, midY],
+    }[press.edge] as [number, number];
+    await page.mouse.click(x, y);
+    // A miss changes nothing, so give a hit time to re-render before checking.
+    await page.waitForTimeout(100);
+    await root
+      .getByRole('button', { name: press.expectButton, exact: true })
+      .waitFor({ timeout: 1000 })
+      .catch(() => {
+        throw new Error(
+          `pressNear: a press ${press.distance}px off the ${press.edge} edge of "${press.button}" did not leave a button named "${press.expectButton}"`,
+        );
+      });
+  }
+}
+
+/**
  * `parameters.pressRowText` presses a piece of plain text in a table row with
  * a real mouse, as `pressText` does, and expects the press to open the row's
  * link: the URL hash must become `expectHash`. A press scale on the link would
@@ -240,6 +282,7 @@ const config: TestRunnerConfig = {
     const storyContext = await getStoryContext(page, context);
     await hoverText(page, storyContext.parameters?.hoverText);
     await pressText(page, storyContext.parameters?.pressText);
+    await pressNear(page, storyContext.parameters?.pressNear);
     await pressRowText(page, storyContext.parameters?.pressRowText);
     await pressSelectsRow(page, storyContext.parameters?.pressSelectsRow);
     await pressSelectCell(page, storyContext.parameters?.pressSelectCell);

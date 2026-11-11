@@ -21,7 +21,6 @@ import {
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -36,8 +35,8 @@ import {
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
-import { DateTime } from '../src/components/molecules/date-time.tsx';
 import { ElapsedTime } from '../src/components/molecules/elapsed-time.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
 import { RelativeTime } from '../src/components/molecules/relative-time.tsx';
@@ -50,7 +49,6 @@ import {
 } from '../src/components/molecules/page-header.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import { cn } from '../src/lib/utils.ts';
-import { formatElapsed } from '../src/lib/format-elapsed.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 
 // Realistic commerce data: a page of orders, the canonical DataTable use case in
@@ -529,6 +527,193 @@ export const RowSelection: Story = {
         )}
       />
     );
+  },
+};
+
+// The selection kept in session storage. `selectionStorageKey` names the list
+// and anything that scopes its rows (here a channel). The table restores the
+// stored ids on its first load, stores every change (with the ids of rows on
+// other pages) and switches to the key's own selection when the key changes.
+// Select rows, reload the story: they are selected again.
+function StoredSelectionTable({
+  storageKey,
+  controlled = true,
+  channels = false,
+}: {
+  storageKey: string;
+  controlled?: boolean;
+  channels?: boolean;
+}) {
+  const [page, setPage] = useState(1);
+  const [channel, setChannel] = useState('a');
+  const [mount, setMount] = useState(0);
+  const [selection, setSelection] = useState<RowSelectionState>({});
+  const pageRows = useMemo(() => pagedOrders.slice((page - 1) * 10, page * 10), [page]);
+  const count = Object.keys(selection).filter((id) => selection[id]).length;
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => setMount((n) => n + 1)}>
+          Remount the table
+        </Button>
+        {channels &&
+          ['a', 'b'].map((id) => (
+            <Button
+              key={id}
+              variant={channel === id ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setChannel(id)}
+            >
+              {`Channel ${id.toUpperCase()}`}
+            </Button>
+          ))}
+        <span data-testid="selected-count" className="text-muted-foreground text-sm">
+          {count} selected
+        </span>
+      </div>
+      <DataTable<Order>
+        key={mount}
+        rows={pageRows}
+        columns={columns}
+        getRowId={(order) => order.id}
+        selectionStorageKey={channels ? `${storageKey}:${channel}` : storageKey}
+        rowSelection={
+          controlled
+            ? { value: selection, onChange: setSelection }
+            : { defaultValue: {}, onChange: setSelection }
+        }
+        pagination={{
+          page,
+          pageSize: 10,
+          totalItems: pagedOrders.length,
+          onPageChange: setPage,
+        }}
+      />
+    </div>
+  );
+}
+
+export const SelectionStorage: Story = {
+  render: () => <StoredSelectionTable storageKey="story:selection-storage" />,
+};
+
+const storedIds = (key: string) =>
+  JSON.parse(sessionStorage.getItem(`vendure-ui:data-table-selection:${key}`) ?? '[]') as string[];
+
+const clearStoredSelection = (key: string) => {
+  for (const suffix of ['', ':a', ':b']) {
+    sessionStorage.removeItem(`vendure-ui:data-table-selection:${key}${suffix}`);
+  }
+};
+
+// Restore on first load, a write on every change, other pages' ids kept, a key
+// change that carries nothing over, and a remount (a reload, or a visit to
+// another page and back) that selects the same rows again.
+const playStoredSelection =
+  (key: string): Story['play'] =>
+  async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const row = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const count = () => canvas.getByTestId('selected-count');
+    await step('select rows on two pages', async () => {
+      await userEvent.click(row(1));
+      await userEvent.click(row(2));
+      await waitFor(() => expect(count()).toHaveTextContent('2 selected'));
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'false'));
+      await userEvent.click(row(1));
+      await waitFor(() => expect(count()).toHaveTextContent('3 selected'));
+    });
+
+    await step('the ids of every page are stored', async () => {
+      const keyForCurrentChannel = canvas.queryByRole('button', { name: 'Channel A' })
+        ? `${key}:a`
+        : key;
+      await expect(storedIds(keyForCurrentChannel).sort()).toEqual(['p1', 'p11', 'p2']);
+    });
+
+    await step('a remount restores the selection on its first load', async () => {
+      await userEvent.click(canvas.getByRole('button', { name: 'Remount the table' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
+      await expect(count()).toHaveTextContent('3 selected');
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to previous page' }));
+      await waitFor(() => expect(row(2)).toHaveAttribute('aria-checked', 'true'));
+    });
+
+    if (canvas.queryByRole('button', { name: 'Channel B' })) {
+      await step('a new key shows its own selection and carries nothing over', async () => {
+        await userEvent.click(canvas.getByRole('button', { name: 'Channel B' }));
+        await waitFor(() => expect(count()).toHaveTextContent('0 selected'));
+        await expect(row(1)).toHaveAttribute('aria-checked', 'false');
+        await expect(storedIds(`${key}:b`)).toEqual([]);
+        // The switch stored nothing under either key.
+        await expect(storedIds(`${key}:a`).sort()).toEqual(['p1', 'p11', 'p2']);
+        await userEvent.click(row(3));
+        await waitFor(() => expect(count()).toHaveTextContent('1 selected'));
+        await expect(storedIds(`${key}:b`)).toEqual(['p3']);
+        await userEvent.click(canvas.getByRole('button', { name: 'Channel A' }));
+        await waitFor(() => expect(count()).toHaveTextContent('3 selected'));
+        await expect(row(1)).toHaveAttribute('aria-checked', 'true');
+      });
+    }
+
+    await step('an empty selection removes its entry', async () => {
+      await userEvent.click(row(1));
+      await userEvent.click(row(2));
+      await userEvent.click(canvas.getByRole('button', { name: 'Go to next page' }));
+      await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
+      await userEvent.click(row(1));
+      await waitFor(() => expect(count()).toHaveTextContent('0 selected'));
+      const stored = canvas.queryByRole('button', { name: 'Channel A' }) ? `${key}:a` : key;
+      await expect(sessionStorage.getItem(`vendure-ui:data-table-selection:${stored}`)).toBeNull();
+    });
+
+    clearStoredSelection(key);
+  };
+
+export const SelectionStorageControlled: Story = {
+  name: 'Selection storage · controlled, with channels',
+  render: () => <StoredSelectionTable storageKey="story:stored-controlled" channels />,
+  beforeEach: () => clearStoredSelection('story:stored-controlled'),
+  play: playStoredSelection('story:stored-controlled'),
+};
+
+export const SelectionStorageUncontrolled: Story = {
+  name: 'Selection storage · uncontrolled',
+  render: () => (
+    <StoredSelectionTable storageKey="story:stored-uncontrolled" controlled={false} />
+  ),
+  beforeEach: () => clearStoredSelection('story:stored-uncontrolled'),
+  play: playStoredSelection('story:stored-uncontrolled'),
+};
+
+// Storage that throws, as a blocked or full store does. The table still works:
+// the selection lasts until it unmounts.
+export const SelectionStorageBlocked: Story = {
+  render: () => <StoredSelectionTable storageKey="story:stored-blocked" />,
+  beforeEach: () => {
+    const real = Object.getOwnPropertyDescriptor(window, 'sessionStorage');
+    const blocked = () => {
+      throw new DOMException('blocked', 'QuotaExceededError');
+    };
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get: () => ({ getItem: blocked, setItem: blocked, removeItem: blocked }),
+    });
+    return () => {
+      if (real) Object.defineProperty(window, 'sessionStorage', real);
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 1' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('checkbox', { name: 'Select row 1' })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      ),
+    );
+    await expect(canvas.getByTestId('selected-count')).toHaveTextContent('1 selected');
   },
 };
 
@@ -1371,6 +1556,8 @@ export const KeyboardSelection: Story = {
 // a brand-colour bar on its leading edge. The bar grows from where it touches
 // a selected row: down from a selected row above, up from one below, from both
 // ends when it closes a gap, and out from its middle when it touches none.
+// Alone it also fades in and widens against the edge; next to a selection it
+// only extends, so the line has no seam.
 // Deselecting plays the same motion backwards. The play function selects rows
 // 2 and 4, so rows 1, 3, 5 and 7 show each case's starting clip.
 export const SelectionMotion: Story = {
@@ -1434,6 +1621,23 @@ export const SelectionMotion: Story = {
         expect(clips(alone as HTMLElement)).toEqual(['inset(50% 0px)', 'inset(50% 0px)']);
       });
     });
+
+    await step('a bar that grows alone fades and widens in; one that extends a selection does not', async () => {
+      const [below, selected, gap, , above, , alone] = rows() as HTMLElement[];
+      const look = (row: HTMLElement) =>
+        ['::before', '::after'].map((part) => {
+          const style = getComputedStyle(row, part);
+          return `${style.opacity} ${style.scale}`;
+        });
+      await waitFor(() => {
+        // At rest a selected bar has no opacity or scale of its own.
+        expect(look(selected as HTMLElement)).toEqual(['1 none', '1 none']);
+        // Next to a selection the bar starts opaque and full width: no seam.
+        for (const row of [below, gap, above]) expect(look(row as HTMLElement)).toEqual(['1 none', '1 none']);
+        // Alone it starts transparent and half as wide.
+        expect(look(alone as HTMLElement)).toEqual(['0 0.5 1', '0 0.5 1']);
+      });
+    });
   },
 };
 
@@ -1446,11 +1650,12 @@ export const SelectionMotion: Story = {
 // sizes can be compared. With a header, the bulk bar replaces the header
 // controls, as on a list page, and the rows stay put.
 // A row the consumer renders itself, as a draggable row does: it sets its own
-// inline `transform` and `opacity`, and takes the ripple from `ctx.ripple`. The
-// timing is custom properties only, so spreading it first loses nothing.
+// inline `transform` and `opacity`, takes the ripple from `ctx.ripple` and each
+// cell's classes from `ctx.cellProps`. The ripple timing is custom properties
+// only, so spreading it first loses nothing.
 const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
   row,
-  { ripple },
+  { ripple, cellProps },
 ) => (
   <TableRow
     data-custom-row=""
@@ -1458,14 +1663,10 @@ const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
     className={cn('group/row', ripple.className)}
     style={{ ...ripple.style, transform: 'translate3d(0, 0, 0)', opacity: 1 }}
   >
-    {row.getVisibleCells().map((cell, index) => (
-      <TableCell
-        key={cell.id}
-        data-column-id={cell.column.id}
-        // The select cell is zero-width and the first data cell carries its
-        // gutter, as in the built-in rows.
-        className={index === 0 ? 'relative w-0 p-0 pl-0!' : index === 1 ? 'pl-8' : 'pl-2'}
-      >
+    {row.getVisibleCells().map((cell) => (
+      // The table hands over each cell's classes: the zero-width select cell,
+      // the leading cell's checkbox gutter, the content inset. None is copied.
+      <TableCell key={cell.id} {...cellProps(cell.column.id)}>
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </TableCell>
     ))}
@@ -1679,9 +1880,9 @@ export const RowBarHeights: Story = {
 /**
  * While rows are selected, a click on a row selects it or deselects it and
  * does not open the item, so many rows can be selected fast. Shift+click
- * selects the range from the last clicked row. The name link still opens the
- * item with the keyboard (Enter) and with Cmd/Ctrl+click or a middle click
- * (new tab). Row controls keep their own action, and the row hides its
+ * selects the range from the last clicked row. The name still opens the item:
+ * with a click (see NameOpensWhileSelecting), the keyboard (Enter), and
+ * Cmd/Ctrl+click or a middle click (new tab). Row controls keep their own action, and the row hides its
  * chevron while rows are selected. With nothing selected, the row opens the
  * item as before (the test runner checks that with a real mouse press).
  */
@@ -1811,6 +2012,105 @@ export const ClickSelectsWhileSelecting: Story = {
   },
 };
 
+/**
+ * While rows are selected, the item's name still opens the item: a click on
+ * the name opens it, a click anywhere else on the row selects the row.
+ * Hovering the row shows a small chevron after the name; hovering or focusing
+ * the name colours it and the chevron blue (`info-text`) and moves the
+ * chevron 2px. The chevron takes no space, so the name and the column do not
+ * move. With nothing selected the whole row opens the item, as before. The
+ * cell that opens the item is the one with `DataTableRowLink` around the name.
+ * The test runner presses the name of row 2 and then its price with a real
+ * mouse: the first opens the item, the second selects the row.
+ */
+export const NameOpensWhileSelecting: Story = {
+  parameters: {
+    pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' },
+    pressSelectsRow: { text: '$1,678.80', expectChecked: 'Select row 2' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    const nameOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+    const markOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link-mark] svg') as SVGElement;
+    const priceHit = (n: number) =>
+      hitAt(rowOf(n).querySelector('[data-column-id=price]') as Element);
+    const size = (element: Element) => {
+      const box = element.getBoundingClientRect();
+      return `${box.width}x${box.height}`;
+    };
+    clearHash();
+    const nameSize = size(nameOf(3));
+    const cellSize = size(nameOf(3).closest('td') as Element);
+
+    await step('with nothing selected, the name link covers the row and no chevron shows', async () => {
+      await expect(getComputedStyle(nameOf(3), '::after').display).not.toBe('none');
+      await expect(getComputedStyle(markOf(3)).opacity).toBe('0');
+    });
+
+    await step('while a row is selected, only the name is the link', async () => {
+      await user.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      await expect(getComputedStyle(nameOf(3), '::after').display).toBe('none');
+      await expect(nameOf(3)).toHaveAttribute('href', '#/variants/3');
+    });
+
+    await step('the chevron takes no space: the name and its cell keep their size', async () => {
+      await expect(size(nameOf(3))).toBe(nameSize);
+      await expect(size(nameOf(3).closest('td') as Element)).toBe(cellSize);
+    });
+
+    await step('a click on the name opens the item and keeps the selection', async () => {
+      await user.click(nameOf(3));
+      await expect(location.hash).toBe('#/variants/3');
+      await expect([checked(1), checked(3)]).toEqual([true, false]);
+      clearHash();
+    });
+
+    await step('a click anywhere else on the row selects it', async () => {
+      await user.click(priceHit(3));
+      await waitFor(() => expect(checked(3)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('Shift+click on a name extends the selection', async () => {
+      await user.keyboard('{Shift>}');
+      await user.click(nameOf(4));
+      await user.keyboard('{/Shift}');
+      await waitFor(() => expect(checked(4)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the name is the next tab stop after the checkbox, and Enter opens it', async () => {
+      checkbox(2).focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(nameOf(2));
+      await expect(canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' })).toBe(nameOf(2));
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/variants/2');
+      await expect(checked(2)).toBe(false);
+      clearHash();
+      nameOf(2).blur();
+    });
+  },
+};
+
 // A square product thumbnail, as a list's featured asset cell shows it. Inline,
 // so the story loads no image.
 const THUMBNAIL =
@@ -1831,12 +2131,13 @@ const productRowColumns: ColumnDef<Variant>[] = [
  * A product list inside an app shell, built as the Vendure Dashboard builds
  * it: a thumbnail cell, the name as the row link, a copy chip and a row menu,
  * in a `<main tabindex="-1">` (the skip link target). While a row is selected,
- * a click on the thumbnail, the name or a plain cell selects the row and does
- * not open it; the copy chip and the row menu keep their own action. The test
- * runner presses the name of row 2 with a real mouse and expects it selected.
+ * a click on the thumbnail, beside the name or on a plain cell selects the row
+ * and does not open it; the copy chip and the row menu keep their own action.
+ * The test runner presses the name of row 2 with a real mouse and expects it
+ * to open the item.
  */
 export const ClickSelectsInAppShell: Story = {
-  parameters: { pressSelectsRow: { text: 'Laptop 15 inch 8GB', expectChecked: 'Select row 2' } },
+  parameters: { pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' } },
   render: () => {
     const [selection, setSelection] = useState<RowSelectionState>({ '1': true });
     return (
@@ -1876,6 +2177,7 @@ export const ClickSelectsInAppShell: Story = {
     clearHash();
     await expect(checked(1)).toBe(true);
 
+    // The centre of the name cell is beside the name, not on it.
     for (const column of ['featuredAsset', 'name', 'enabled']) {
       await step(`a click on the ${column} cell selects the row, a second click deselects it`, async () => {
         await userEvent.click(cellHit(3, column));
@@ -1960,8 +2262,8 @@ export const SelectCellClickArea: Story = {
 // and a neutral label, with the one time that matters for the state under it.
 // A live or waiting state counts up every second; a finished state shows when
 // it finished, relative to now; a state that continues shows how long it has
-// lasted. The exact finish, start and duration are in a tooltip on the time,
-// which is a tab stop, so the table needs no Duration or Created column.
+// lasted. The exact times are in a tooltip on the time, which is a tab stop,
+// so the table needs no Duration or Created column.
 
 type DeploymentTiming =
   | { kind: 'live'; started: number }
@@ -2045,67 +2347,40 @@ const deployments: Deployment[] = [
   },
 ];
 
-// How long a state that continues has lasted, in whole days: "13 days".
-const days = new Intl.NumberFormat(undefined, { style: 'unit', unit: 'day', unitDisplay: 'long' });
-
-function Exact({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      {label} <DateTime value={value} dateStyle="medium" timeStyle="medium" />
-    </div>
-  );
+// The second line: the one time that matters for the state. Each time opens
+// its own tooltip with the exact times, beside the status block, and is a tab
+// stop: StatusBadge's `detail` sets both.
+// The words around a time belong to the app, so they are translated with the
+// rest of the page. German puts its word after the duration ("13 Tage lang"):
+// "seit" would need the dative ("seit 13 Tagen"), which a unit formatter does
+// not give.
+interface DeploymentWords {
+  waiting: (time: React.ReactNode) => React.ReactNode;
+  lasting: (time: React.ReactNode) => React.ReactNode;
 }
 
-// The second line, and its tooltip with the exact times.
-function DeploymentTime({ timing }: { timing: DeploymentTiming }) {
-  let time: React.ReactNode;
-  let exact: React.ReactNode;
+const englishWords: DeploymentWords = {
+  waiting: (time) => <>Waiting {time}</>,
+  lasting: (time) => <>for {time}</>,
+};
+
+function DeploymentTime({
+  timing,
+  words = englishWords,
+}: {
+  timing: DeploymentTiming;
+  words?: DeploymentWords;
+}) {
   switch (timing.kind) {
     case 'live':
-      time = <ElapsedTime since={timing.started} />;
-      exact = <Exact label="Started" value={timing.started} />;
-      break;
+      return <ElapsedTime since={timing.started} tooltip />;
     case 'waiting':
-      time = (
-        <>
-          Waiting <ElapsedTime since={timing.queued} />
-        </>
-      );
-      exact = <Exact label="Queued" value={timing.queued} />;
-      break;
+      return words.waiting(<ElapsedTime since={timing.queued} tooltip />);
     case 'finished':
-      // The tooltip around the line holds the exact time, so RelativeTime
-      // opens none of its own.
-      time = <RelativeTime value={timing.finished} tooltip={false} />;
-      exact = (
-        <>
-          <Exact label="Finished" value={timing.finished} />
-          <Exact label="Started" value={timing.started} />
-          <div>Duration {formatElapsed(timing.finished - timing.started)}</div>
-        </>
-      );
-      break;
+      return <RelativeTime value={timing.finished} start={timing.started} />;
     case 'since':
-      time = `for ${days.format(Math.floor((LOADED - timing.since) / DAY))}`;
-      exact = <Exact label="Since" value={timing.since} />;
-      break;
+      return words.lasting(<RelativeTime value={timing.since} display="duration" />);
   }
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <span
-            // A tab stop, so keyboard users can open the exact times.
-            tabIndex={0}
-            className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid"
-          />
-        }
-      >
-        {time}
-      </TooltipTrigger>
-      <TooltipContent className="tabular-nums">{exact}</TooltipContent>
-    </Tooltip>
-  );
 }
 
 const deploymentColumns: ColumnDef<Deployment>[] = [
@@ -2139,7 +2414,9 @@ function textStart(element: Element): number {
  * tone icon and a neutral label, and the second line holds the one time that
  * matters for the state: a count for Building, Deploying and Queued, how long
  * ago a finished deployment finished, and how long Degraded has lasted. Hover
- * or focus a time for the exact finish, start and duration.
+ * or focus a time for the exact times: when a count started, or when a
+ * finished deployment ran and how long it took. The tooltip opens beside the
+ * status, so the label stays readable.
  */
 export const Deployments: Story = {
   render: () => (
@@ -2187,8 +2464,43 @@ export const Deployments: Story = {
     await step('every time is a tab stop that opens its tooltip', async () => {
       for (const badge of badges) {
         const detail = badge.querySelector('[data-slot=status-badge-detail]') as HTMLElement;
-        const trigger = detail.querySelector('[data-slot=tooltip-trigger]') as HTMLElement;
-        await expect(trigger.tabIndex).toBe(0);
+        const time = detail.querySelector('time') as HTMLElement;
+        await expect(time.tabIndex).toBe(0);
+        await expect(time.hasAttribute('data-base-ui-tooltip-trigger')).toBe(true);
+      }
+    });
+
+    await step('the tooltip opens beside the status: its label, its time and the rows next to it stay readable', async () => {
+      const overlaps = (a: DOMRect, b: DOMRect) =>
+        a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      // The first, a middle and the last row.
+      for (const index of [0, 3, badges.length - 1]) {
+        const badge = badges[index] as HTMLElement;
+        const time = badge.querySelector('[data-slot=status-badge-detail] time') as HTMLElement;
+        await userEvent.hover(time);
+        const popup = await waitFor(
+          () => {
+            const node = document.querySelector<HTMLElement>('[data-slot=tooltip-content][data-open]');
+            if (!node) throw new Error('no tooltip yet');
+            return node;
+          },
+          { timeout: 2000 },
+        );
+        await waitFor(() => expect(popup.hasAttribute('data-starting-style')).toBe(false));
+        const tip = popup.getBoundingClientRect();
+        const label = badge.querySelector('[data-slot=status-badge-label]') as HTMLElement;
+        await expect(overlaps(tip, label.getBoundingClientRect())).toBe(false);
+        await expect(overlaps(tip, time.getBoundingClientRect())).toBe(false);
+        for (const neighbour of [badges[index - 1], badges[index + 1]]) {
+          if (neighbour) await expect(overlaps(tip, neighbour.getBoundingClientRect())).toBe(false);
+        }
+        // It starts after the status block, centred on it (0 ±0.5px).
+        const block = badge.getBoundingClientRect();
+        await expect(tip.left).toBeGreaterThanOrEqual(block.right);
+        await expect(
+          Math.abs((tip.top + tip.bottom) / 2 - (block.top + block.bottom) / 2),
+        ).toBeLessThanOrEqual(0.5);
+        await userEvent.unhover(time);
       }
     });
 
@@ -2212,5 +2524,124 @@ export const Deployments: Story = {
         timeout: 2500,
       });
     });
+  },
+};
+
+const germanStatus: Record<string, string> = {
+  ready: 'Bereit',
+  building: 'Wird gebaut',
+  deploying: 'Wird ausgerollt',
+  queued: 'In der Warteschlange',
+  failed: 'Fehlgeschlagen',
+  canceled: 'Abgebrochen',
+  degraded: 'Eingeschränkt',
+};
+
+const germanWords: DeploymentWords = {
+  waiting: (time) => <>Wartet {time}</>,
+  lasting: (time) => <>{time} lang</>,
+};
+
+const germanColumns: ColumnDef<Deployment>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge
+        appearance="icon"
+        tone={row.original.tone}
+        icon={row.original.icon}
+        detail={<DeploymentTime timing={row.original.timing} words={germanWords} />}
+      >
+        {germanStatus[row.original.id]}
+      </StatusBadge>
+    ),
+  },
+  { accessorKey: 'environment', header: 'Umgebung' },
+];
+
+/**
+ * The deployments table in German. Every time takes its language from the
+ * FormatProvider: the count, how long ago, how long a state has lasted and
+ * the tooltip. The words around a time ("Wartet", "lang") are the app's.
+ */
+export const DeploymentsInGerman: Story = {
+  render: () => (
+    <FormatProvider locale="de-DE">
+      <DataTable<Deployment>
+        rows={deployments}
+        columns={germanColumns}
+        getRowId={(deployment) => deployment.id}
+        frame="card"
+      />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement, step }) => {
+    // innerText leaves out the hidden accessible descriptions.
+    const details = canvasElement.querySelectorAll<HTMLElement>('[data-slot=status-badge-detail]');
+    const detail = (id: string) =>
+      details[deployments.findIndex((deployment) => deployment.id === id)]?.innerText ?? '';
+
+    await step('every time is in German', async () => {
+      await expect(detail('degraded')).toMatch(/^13 Tage lang$/);
+      await expect(detail('failed')).toMatch(/^vor 1 Stunde$/);
+      await waitFor(() => expect(detail('queued')).toMatch(/^Wartet \d+\s?Min/));
+    });
+  },
+};
+
+/** The top of the first body row, sampled each frame for `ms` after `act`. */
+async function rowTopsDuring(canvasElement: HTMLElement, act: () => Promise<void> | void, ms = 400) {
+  const top = () =>
+    (canvasElement.querySelector('[aria-label="Select row 1"]')?.closest('tr') as HTMLElement)
+      .getBoundingClientRect().top;
+  const tops = [top()];
+  await act();
+  const start = performance.now();
+  while (performance.now() - start < ms) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    tops.push(top());
+  }
+  return tops;
+}
+
+// With a controls row, the bulk bar takes its place at the same height: the
+// table does not move when rows get selected or cleared.
+export const BulkBarHoldsTheTable: Story = {
+  name: 'Bulk bar · replaces the controls row',
+  render: RowSelection.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      await expect({ act, moved: Math.max(...tops) - Math.min(...tops) }).toEqual({ act, moved: 0 });
+    }
+  },
+};
+
+// With a title and no controls row, the bulk bar opens its own row: its height
+// eases open and closed, so the table moves down and back through in-between
+// frames instead of jumping in one.
+export const BulkBarOpensItsRow: Story = {
+  name: 'Bulk bar · opens its own row under a title',
+  render: () => <RippleTable count={10} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      const first = tops[0] as number;
+      const total = (tops.at(-1) as number) - first;
+      await expect(Math.abs(total)).toBeGreaterThan(20);
+      // At least one frame shows the table part of the way: it eased, it did
+      // not jump. (A slow machine may skip most frames, so this asks for one.)
+      const between = tops.some((top) => {
+        const progress = (top - first) / total;
+        return progress > 0.02 && progress < 0.98;
+      });
+      await expect({ act, between }).toEqual({ act, between: true });
+    }
   },
 };

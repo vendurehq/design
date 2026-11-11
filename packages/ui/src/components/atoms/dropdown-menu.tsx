@@ -7,6 +7,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { usePopupAlign } from "../../lib/popup-align.ts"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -18,32 +19,6 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
 
 function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
-}
-
-type MenuAlign = NonNullable<MenuPrimitive.Positioner.Props["align"]>
-
-/**
- * The align that opens a menu toward the centre of the viewport: its edge
- * lines up with the trigger's right edge for a trigger in the right half, and
- * with its left edge in the left half. `start` and `end` are logical, and the
- * positioner reads them in the popup's direction, so in a right-to-left page
- * the two swap.
- */
-function alignTowardCentre(trigger: Element, popup: Element): MenuAlign {
-  const box = trigger.getBoundingClientRect()
-  const inRightHalf = box.left + box.width / 2 > window.innerWidth / 2
-  const rtl = getComputedStyle(popup).direction === "rtl"
-  return inRightHalf !== rtl ? "end" : "start"
-}
-
-/** The trigger that opened this popup: it points at the popup with aria-controls. */
-function findTrigger(popup: HTMLElement): Element | null {
-  if (!popup.id) return null
-  const controls = `[aria-controls="${CSS.escape(popup.id)}"]`
-  return (
-    document.querySelector(`${controls}[data-popup-open]`) ??
-    document.querySelector(controls)
-  )
 }
 
 /**
@@ -67,27 +42,15 @@ function DropdownMenuContent({
     MenuPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
-  // Toward the centre is horizontal: a menu that opens to a side keeps "start".
-  const opensBelowOrAbove = side === "bottom" || side === "top"
-  const [autoAlign, setAutoAlign] = React.useState<MenuAlign>("start")
-  // Runs when the popup mounts, before the first paint, so the menu never
-  // shows on the wrong side first.
-  const popupRef = React.useCallback(
-    (popup: HTMLDivElement | null) => {
-      if (typeof ref === "function") ref(popup)
-      else if (ref) ref.current = popup
-      const trigger = !align && opensBelowOrAbove && popup && findTrigger(popup)
-      if (trigger) setAutoAlign(alignTowardCentre(trigger, popup))
-    },
-    [ref, align, opensBelowOrAbove]
-  )
+  // Without an align, the popup opens toward the centre of the screen.
+  const { popupRef, align: positionAlign } = usePopupAlign(align, side, ref)
   const dir = usePopupDir()
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
         dir={dir}
         className="isolate z-50 outline-none"
-        align={align ?? (opensBelowOrAbove ? autoAlign : "start")}
+        align={positionAlign}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}

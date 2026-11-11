@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { formatRelative } from './relative-time.tsx';
+import { formatRelative, formatRelativeDuration } from './relative-time.tsx';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -38,5 +38,37 @@ describe('formatRelative', () => {
     const iso = new Date(Date.now() - DAY).toISOString();
     expect(formatRelative(iso, { locale: 'en-US' })).toBe('yesterday');
     expect(formatRelative(Date.now() - DAY, { locale: 'en-US' })).toBe('yesterday');
+  });
+});
+
+describe('formatRelativeDuration', () => {
+  const MINUTE = 60 * 1000;
+
+  test('says how long ago as a length of time', () => {
+    expect(formatRelativeDuration(Date.now() - 13 * DAY, { locale: 'en-US' })).toBe('13 days');
+    expect(formatRelativeDuration(Date.now() - 5 * HOUR, { locale: 'en-US' })).toBe('5 hours');
+    expect(formatRelativeDuration(Date.now() - MINUTE, { locale: 'en-US' })).toBe('1 minute');
+  });
+
+  test('takes the same unit steps and rounding as formatRelative', () => {
+    // Half steps (90s, 36h) are left out: the two calls read the clock a
+    // millisecond apart, which can tip a half the other way.
+    for (const ago of [100 * 1000, 89 * MINUTE, 40 * HOUR, 13.6 * DAY, 40 * DAY]) {
+      const when = Date.now() - ago;
+      const relative = formatRelative(when, { locale: 'en-US', numeric: 'always' });
+      expect(relative).toBe(`${formatRelativeDuration(when, { locale: 'en-US' })} ago`);
+    }
+  });
+
+  test("is in the reader's locale, with the unit style", () => {
+    expect(formatRelativeDuration(Date.now() - 13 * DAY, { locale: 'de-DE' })).toBe('13 Tage');
+    expect(
+      formatRelativeDuration(Date.now() - 13 * DAY, { locale: 'en-US', unitStyle: 'narrow' }),
+    ).toBe('13d');
+  });
+
+  test('an instant ahead reads the same, invalid input reads zero seconds', () => {
+    expect(formatRelativeDuration(Date.now() + 2 * HOUR, { locale: 'en-US' })).toBe('2 hours');
+    expect(formatRelativeDuration('not a date', { locale: 'en-US' })).toBe('0 seconds');
   });
 });
