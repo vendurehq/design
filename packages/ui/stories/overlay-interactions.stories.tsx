@@ -374,6 +374,7 @@ export const SelectAlignedLook: Story = {
       expect(style.transitionDuration).toBe('0.16s, 0.2s');
     });
     await waitFor(() => expect(popup.hasAttribute('data-starting-style')).toBe(false));
+    await Promise.all(popup.getAnimations().map((animation) => animation.finished));
     // Keyboard close animates too.
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(popup.parentElement?.hidden || !popup.isConnected).toBe(true));
