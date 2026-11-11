@@ -1068,7 +1068,9 @@ function DataTable<TData>({
                   // express. Returning `defaultRow` keeps the built-in rendering.
                   return (
                     <React.Fragment key={row.id}>
-                      {renderRow ? renderRow(row, { table, columnCount, defaultRow, ripple }) : defaultRow}
+                      {renderRow
+                        ? renderRow(row, { table, columnCount, defaultRow, ripple })
+                        : defaultRow}
                     </React.Fragment>
                   );
                 })}

@@ -1458,8 +1458,14 @@ const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
     className={cn('group/row', ripple.className)}
     style={{ ...ripple.style, transform: 'translate3d(0, 0, 0)', opacity: 1 }}
   >
-    {row.getVisibleCells().map((cell) => (
-      <TableCell key={cell.id} data-column-id={cell.column.id} data-content-inset-cell="">
+    {row.getVisibleCells().map((cell, index) => (
+      <TableCell
+        key={cell.id}
+        data-column-id={cell.column.id}
+        // The select cell is zero-width and the first data cell carries its
+        // gutter, as in the built-in rows.
+        className={index === 0 ? 'relative w-0 p-0 pl-0!' : index === 1 ? 'pl-8' : 'pl-2'}
+      >
         {flexRender(cell.column.columnDef.cell, cell.getContext())}
       </TableCell>
     ))}

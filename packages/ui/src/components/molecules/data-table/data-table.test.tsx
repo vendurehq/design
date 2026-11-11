@@ -715,7 +715,7 @@ describe('DataTable renderRow seam', () => {
 });
 
 describe('DataTable renderRow ripple', () => {
-  test('hands every row its ripple timing: the built-in rows\' own, in order from the top', () => {
+  test("hands every row its ripple timing: the built-in rows' own, in order from the top", () => {
     const seen: { id: string; className: string; at: string; span: string }[] = [];
     html(
       <DataTable
