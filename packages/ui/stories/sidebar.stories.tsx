@@ -217,7 +217,7 @@ export const NestedItemActive: Story = {
                     >
                       <group.icon />
                       <span>{group.title}</span>
-                      <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
+                      <ChevronRightIcon className="ms-auto transition-transform group-data-[open]/collapsible:rotate-90" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
@@ -368,7 +368,7 @@ function ActiveIconMenu({ rule, mode, testId }: { rule: RuleCase; mode: 'expande
             <group.icon />
             <span>{group.title}</span>
             {mode === 'expanded' && (
-              <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
+              <ChevronRightIcon className="ms-auto transition-transform group-data-[open]/collapsible:rotate-90" />
             )}
           </CollapsibleTrigger>
           <CollapsibleContent>
