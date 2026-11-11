@@ -49,7 +49,7 @@ const buttonVariants = cva(
         // signature, not a wallpaper; see Button guidance before reaching for it.
         brand: "bg-brand text-brand-foreground shadow-control hover:bg-brand/80",
         outline:
-          "border-input bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control [&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)] hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
+          "border-input bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control [&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_13.5%)] dark:[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)] hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:

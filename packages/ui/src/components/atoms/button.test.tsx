@@ -61,9 +61,14 @@ describe('Button v3 look', () => {
   });
 
   test('outline hover darkens the border, except inside a group or when invalid', () => {
+    // 13.5% in light, where `input` is translucent, renders the colour that
+    // 12% gave over the old solid input; dark keeps 12%.
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain(
-      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_13.5%)]',
+    );
+    expect(tokens).toContain(
+      'dark:[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
     );
   });
 
