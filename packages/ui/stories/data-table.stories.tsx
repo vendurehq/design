@@ -1082,6 +1082,24 @@ export const CellTextAlignment: Story = {
   play: async ({ canvasElement }) => {
     const headers = [...canvasElement.querySelectorAll('thead th')];
     await expect(headers).toHaveLength(alignmentColumns.length);
+    // A plain header label looks the same as a sortable one: only the sort
+    // icon tells them apart.
+    const labelStyle = (header: Element) => {
+      const label = header.querySelector('[data-slot=data-table-column-header]') ?? header;
+      const { fontSize, fontWeight, color } = getComputedStyle(label);
+      return { fontSize, fontWeight, color };
+    };
+    const sortable = headers.find((header) => header.querySelector('button')) as Element;
+    const plain = headers.find((header) => !header.querySelector('button')) as Element;
+    await expect(sortable).toBeDefined();
+    await expect(plain).toBeDefined();
+    for (const header of headers) {
+      await expect(labelStyle(header), header.textContent ?? '').toEqual(labelStyle(sortable));
+    }
+    await expect(textLeft(plain) - plain.getBoundingClientRect().left).toBeCloseTo(
+      textLeft(sortable) - sortable.getBoundingClientRect().left,
+      0,
+    );
     for (const row of canvasElement.querySelectorAll('tbody tr')) {
       const cells = [...row.querySelectorAll('td')];
       for (const [index, cell] of cells.entries()) {
