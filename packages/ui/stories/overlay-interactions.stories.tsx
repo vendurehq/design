@@ -123,9 +123,11 @@ export const TooltipLook: Story = {
     await expect(style.paddingBottom).toBe('7px');
     await expect(style.paddingLeft).toBe('10px');
     await expect(style.lineHeight).toBe('17px');
-    // Opens in 125ms on the CSS `ease` curve (ease-soft).
+    // Opens in 125ms: the fade on the CSS `ease` curve (ease-soft), the scale on the strong ease-out.
     await expect(style.transitionDuration).toBe('0.125s');
-    await expect(style.transitionTimingFunction).toMatch(/^(ease|cubic-bezier\(0\.25, 0\.1, 0\.25, 1\))$/);
+    await expect(style.transitionTimingFunction).toMatch(
+      /^(ease|cubic-bezier\(0\.25, 0\.1, 0\.25, 1\)), cubic-bezier\(0\.19, 1, 0\.22, 1\)$/,
+    );
     // No arrow element inside the popup.
     await expect(tooltip.children.length).toBe(0);
   },
