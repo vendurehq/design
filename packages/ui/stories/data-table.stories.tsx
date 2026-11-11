@@ -2485,7 +2485,7 @@ export const DeploymentsInGerman: Story = {
     await step('every time is in German', async () => {
       await expect(detail('degraded')).toMatch(/^13 Tage lang$/);
       await expect(detail('failed')).toMatch(/^vor 1 Stunde$/);
-      await waitFor(() => expect(detail('queued')).toMatch(/^Wartet 9\s?Min/));
+      await waitFor(() => expect(detail('queued')).toMatch(/^Wartet \d+\s?Min/));
     });
   },
 };

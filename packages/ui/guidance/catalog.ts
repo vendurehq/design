@@ -441,7 +441,7 @@ export const uiGuidance = [
       },
       {
         title: 'Pin locale and timezone under SSR',
-        body: 'Prevent hydration disagreement by making server and client formatting context explicit.',
+        body: "Prevent hydration disagreement for DateTime by making server and client formatting context explicit. RelativeTime and ElapsedTime need no pinning: they depend on the reader's clock, so the server and the first client render show the fallback, and the text follows right after. An app that renders only in the browser shows the text from its first paint.",
       },
       {
         title: 'The other form is a tooltip, not a title',

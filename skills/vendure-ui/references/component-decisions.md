@@ -188,7 +188,7 @@ Render recency relatively and records absolutely, with formatting owned by Forma
 - **Recency reads relative; records read absolute:** Use RelativeTime when the question is freshness. Use DateTime for financial, legal, scheduled, and audit facts.
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
-- **Pin locale and timezone under SSR:** Prevent hydration disagreement by making server and client formatting context explicit.
+- **Pin locale and timezone under SSR:** Prevent hydration disagreement for DateTime by making server and client formatting context explicit. RelativeTime and ElapsedTime need no pinning: they depend on the reader's clock, so the server and the first client render show the fallback, and the text follows right after. An app that renders only in the browser shows the text from its first paint.
 - **The other form is a tooltip, not a title:** RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Pass tooltip={<content />} to show other content, start to show the range and how long it took, and display="duration" for how long a state has lasted ("13 days", with the caller's own words around it). Add focusable where keyboard users need the exact time (a time under a StatusBadge label is a tab stop already); never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.
 
 Related decisions: `date-picker`, `money`.

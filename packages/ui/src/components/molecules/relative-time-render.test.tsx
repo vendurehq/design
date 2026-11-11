@@ -10,7 +10,10 @@ const WHEN = new Date('2026-10-01T12:00:00Z');
 describe('RelativeTime', () => {
   const render = (node: React.ReactElement) => renderToStaticMarkup(node);
 
-  test('renders one root <time> with the absolute time as a hidden child description', () => {
+  // The text and the description need the reader's clock, so the server
+  // renders the fallback and an empty description. The browser renders are
+  // checked in the RelativeTime "Server and browser" story.
+  test('renders one root <time> with a hidden child description, empty on the server', () => {
     for (const html of [
       render(<RelativeTime value={WHEN} locale="en-US" />),
       render(<RelativeTime value={WHEN} locale="en-US" tooltip={false} />),
@@ -20,8 +23,9 @@ describe('RelativeTime', () => {
       expect(html.endsWith('</time>')).toBe(true);
       const id = slotTag(html, 'relative-time').match(/aria-describedby="([^"]+)"/)?.[1];
       expect(id).toBeTruthy();
-      const description = html.match(new RegExp(`<span id="${id}" hidden="">([^<]*)</span>`));
-      expect(description?.[1]).toContain('2026');
+      expect(html).toContain(`<span id="${id}" hidden=""></span>`);
+      expect(html).toContain('>—<span');
+      expect(html).not.toContain('suppressHydrationWarning');
     }
   });
 
@@ -81,28 +85,21 @@ describe('IdChip full value', () => {
   });
 });
 
-describe('RelativeTime display, start and tooltip content', () => {
+describe('RelativeTime display, start and tooltip content on the server', () => {
   const render = (node: React.ReactElement) => renderToStaticMarkup(node);
 
-  test('display="duration" says how long a state has lasted', () => {
-    const since = Date.now() - 13 * 24 * 60 * 60 * 1000;
-    const html = render(<RelativeTime value={since} locale="en-US" display="duration" />);
-    expect(html).toContain('>13 days<');
-    expect(html).not.toContain('ago');
-  });
-
-  test('with start, the description is the range and how long it took', () => {
-    const html = render(
-      <RelativeTime value={WHEN} start={WHEN.getTime() - 42_000} locale="en-US" />,
-    );
-    expect(html).toContain('–');
-    expect(html).toContain('>42s<');
-  });
-
-  test('custom tooltip content is the description too', () => {
-    const html = render(<RelativeTime value={WHEN} tooltip="Deployed by Ana" />);
-    expect(slotTag(html, 'relative-time')).toContain('data-base-ui-tooltip-trigger');
-    expect(html).toContain('hidden="">Deployed by Ana</span>');
+  test('the server renders the fallback for every display', () => {
+    for (const html of [
+      render(<RelativeTime value={WHEN} display="duration" />),
+      render(<RelativeTime value={WHEN} start={WHEN.getTime() - 42_000} />),
+      render(<RelativeTime value={WHEN} tooltip="Deployed by Ana" />),
+      render(<RelativeTime value={WHEN} fallback="soon" />),
+    ]) {
+      expect(slotTag(html, 'relative-time')).toContain(`dateTime="${WHEN.toISOString()}"`);
+      expect(html).not.toContain('ago');
+      expect(html).not.toContain('Deployed by Ana');
+    }
+    expect(render(<RelativeTime value={WHEN} fallback="soon" />)).toContain('>soon<span');
   });
 
   test('under a status label it is a tab stop by default', () => {

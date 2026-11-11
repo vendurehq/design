@@ -14,7 +14,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 // Relative: `time-tooltip` is internal.
-import { TimeSpan, TimeTooltip, toTime } from './time-tooltip.tsx';
+import { TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
 
 // One shared clock for every timer on the page: one interval, whole seconds.
 // It runs only while at least one visible timer listens.
@@ -98,7 +98,9 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
   until?: string | number | Date | null;
   /**
    * Rendered for nullish or invalid input, and on the server and the first
-   * client render of a live count (the server has no reader's clock).
+   * client render of a server-rendered page (the server has no reader's
+   * clock or locale). An app that renders only in the browser shows the count
+   * from the first paint.
    * Default `'—'`.
    */
   fallback?: ReactNode;
@@ -132,8 +134,9 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
  * - The digits are tabular, so the text does not shift while it counts.
  * - It stops ticking while it is off screen or the tab is hidden, and catches
  *   up when it shows again. All timers on a page share one interval.
- * - The server and the first client render show `fallback`, so hydration
- *   matches; the count starts right after.
+ * - The server and the first client render show `fallback`, also with
+ *   `until`, so hydration matches; the count shows right after. In an app
+ *   that renders only in the browser it shows from the first paint.
  * - It renders a `<time>` with the ISO duration (`PT1M15S`). Screen readers
  *   do not announce each tick.
  * - With `tooltip`, under a status label (a StatusBadge `detail`), the time is
@@ -162,6 +165,10 @@ function ElapsedTime({
     [active],
   );
   const now = useSyncExternalStore(subscribe, readClock, readServerClock);
+  // A fixed count (`until`) does not need the clock, but its text and its
+  // description depend on the reader's locale: the server renders the
+  // fallback for it too, the same as RelativeTime.
+  const readersClock = useReadersClock();
 
   const reference = end ?? now;
   const elapsed = start !== null && reference !== null ? reference - start : null;
@@ -174,7 +181,7 @@ function ElapsedTime({
   };
   const resolvedLocale = locale ?? settings.locale;
   const text =
-    elapsed === null
+    elapsed === null || !readersClock
       ? fallback
       : format
         ? format(elapsed)
@@ -206,8 +213,8 @@ function ElapsedTime({
     >
       {text}
       {/* A hidden child, so the component renders one element; aria-describedby still resolves it. */}
-      <span id={descriptionId} hidden suppressHydrationWarning>
-        {content}
+      <span id={descriptionId} hidden>
+        {readersClock ? content : null}
       </span>
     </TimeTooltip>
   );
