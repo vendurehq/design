@@ -145,8 +145,8 @@
   --code-diff-remove-accent: oklch(0.55 0.2 25);
   --code-inline: var(--secondary);
   --code-inline-border: var(--border);
-  --border: oklch(0.93 0.004 231);
-  --input: oklch(0.87 0.004 231);
+  --border: color-mix(in oklab, var(--foreground) 9.75%, transparent);
+  --input: color-mix(in oklab, var(--foreground) 18%, transparent);
   --control-border: oklch(0.62 0.005 231);
   --ring: var(--brand-indicator);
   --chart-1: oklch(0.56 0.12 250);
