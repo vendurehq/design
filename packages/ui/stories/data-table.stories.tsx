@@ -653,7 +653,10 @@ const playStoredSelection =
       await expect(count()).toHaveTextContent('3 selected');
       // The bar and the action agree on 3, though only the rows of the loaded page
       // (p11) are known after the remount: the action is told the others are missing.
-      await expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible();
+      // The bar eases in after the remount: wait until it shows.
+      await waitFor(() =>
+        expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible(),
+      );
       await userEvent.click(canvas.getByRole('button', { name: 'Archive' }));
       await expect(canvas.getByTestId('bulk-received')).toHaveTextContent(
         'Archived 3 ids (1 loaded, 2 not)',
