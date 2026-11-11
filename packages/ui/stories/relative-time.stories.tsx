@@ -45,6 +45,26 @@ export const Styles: Story = {
   ),
 };
 
+// `display="duration"` says how long a state that continues has lasted, with
+// the same unit steps as the relative text. The words around it are the
+// caller's. `start` turns the default tooltip into the range and how long it
+// took. `tooltip` also takes content of your own.
+export const DurationAndRange: Story = {
+  render: () => (
+    <div className="flex flex-col gap-1 tabular-nums">
+      <span>
+        Degraded for <RelativeTime value={minutesAgo(60 * 24 * 13)} locale="en-US" display="duration" />
+      </span>
+      <span>
+        Ready <RelativeTime value={minutesAgo(2)} start={minutesAgo(2.7)} locale="en-US" focusable />
+      </span>
+      <span>
+        Paused <RelativeTime value={minutesAgo(40)} locale="en-US" tooltip="Paused by the nightly job" focusable />
+      </span>
+    </div>
+  ),
+};
+
 // Pass `updateInterval={false}` when something else already re-renders (e.g. a
 // polling query) so the component stays render-driven.
 export const RenderDriven: Story = {
