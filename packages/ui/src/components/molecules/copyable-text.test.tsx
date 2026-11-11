@@ -39,6 +39,17 @@ describe('CopyableText', () => {
     expect(done).toContain('text-success-text');
   });
 
+  test('CopyStateIcon shrinks and blurs the outgoing icon only with motion allowed', () => {
+    const done = html(<CopyStateIcon copied />);
+
+    expect(done).toContain('motion-safe:scale-25');
+    expect(done).toContain('motion-safe:blur-[4px]');
+    expect(done).not.toMatch(/(?<!motion-safe:)(scale-25|blur-\[4px\])/);
+    expect(done).toContain('transition-[opacity,scale,filter]');
+    expect(done).toContain('duration-moderate');
+    expect(done).toContain('ease-out');
+  });
+
   test('CopyButton reads a shared copyAction state', () => {
     const markup = html(
       <CopyButton

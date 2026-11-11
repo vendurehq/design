@@ -43,6 +43,13 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('border-input');
   });
 
+  test('light outline paints its fill under the border, except inside a group', () => {
+    // A padding-clipped fill lets shadow-control show through the translucent
+    // light border, which darkens the side edges. Dark keeps the clip.
+    const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
+    expect(tokens).toContain('not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border');
+  });
+
   test('primary, brand, outline and destructive sit on shadow-control; disabled drops it', () => {
     for (const variant of ['default', 'brand', 'outline', 'destructive'] as const) {
       expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
@@ -54,9 +61,15 @@ describe('Button v3 look', () => {
   });
 
   test('outline hover darkens the border, except inside a group or when invalid', () => {
+    // 9.5% in light, where `input` is translucent and the hover fill shows
+    // under it, renders the colour that 12% gave over the old solid input;
+    // dark keeps 12%.
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain(
-      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_9.5%)]',
+    );
+    expect(tokens).toContain(
+      'dark:[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
     );
   });
 
