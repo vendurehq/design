@@ -49,22 +49,52 @@ function configLabel(config: ChartConfig, key: string | null | undefined) {
   return typeof label === "string" ? label : undefined
 }
 
+// Backgrounds that carry no data: the track behind a radial bar and the
+// treemap's root rectangle. They are hidden from assistive technology.
+const DECORATIVE_SHAPES =
+  ".recharts-radial-bar-background-sector, .recharts-treemap-depth-0 > * > * > [role=img]"
+
 function nameChartShapes(root: HTMLElement, config: ChartConfig) {
   for (const shape of root.querySelectorAll<SVGElement>(CHART_SHAPES)) {
     if (shape.querySelector("title")) continue
-    const name = shape.getAttribute("name")
+    if (shape.matches(DECORATIVE_SHAPES)) {
+      shape.setAttribute("aria-hidden", "true")
+      continue
+    }
+    // A scatter symbol and a funnel step are groups: the name and the colour
+    // sit on the path inside.
+    const source =
+      shape.getAttribute("name") || shape.getAttribute("fill")
+        ? shape
+        : shape.querySelector("[name], [fill]")
+    if (!source) {
+      // A group that holds nothing yet, such as a funnel step before its first
+      // frame. There is nothing to describe: hide it until its path arrives.
+      if (shape instanceof SVGGElement) {
+        shape.setAttribute("aria-hidden", "true")
+        shape.setAttribute("data-chart-pending", "")
+      }
+      continue
+    }
+    const name = source.getAttribute("name")
     const color = /--color-([\w-]+)/.exec(
-      shape.getAttribute("fill") ?? shape.getAttribute("stroke") ?? ""
+      source.getAttribute("fill") ?? source.getAttribute("stroke") ?? ""
     )?.[1]
     const label = configLabel(config, name) ?? name ?? configLabel(config, color)
-    if (label) shape.setAttribute("aria-label", label)
+    if (label) {
+      shape.setAttribute("aria-label", label)
+      if (shape.hasAttribute("data-chart-pending")) {
+        shape.removeAttribute("data-chart-pending")
+        shape.removeAttribute("aria-hidden")
+      }
+    }
   }
 }
 
 /**
  * Names the chart's image shapes, now and as the chart draws (recharts replaces
  * shapes while it animates). It watches only the tree below the container, and
- * adding an attribute does not trigger it again.
+ * setting `aria-label` or `aria-hidden` does not trigger it again.
  */
 function useChartShapeNames(
   ref: React.RefObject<HTMLElement | null>,
@@ -76,7 +106,13 @@ function useChartShapeNames(
     nameChartShapes(root, config)
     if (typeof MutationObserver === "undefined") return
     const observer = new MutationObserver(() => nameChartShapes(root, config))
-    observer.observe(root, { childList: true, subtree: true })
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+      // A funnel step gets its name and colour after it is drawn.
+      attributes: true,
+      attributeFilter: ["name", "fill", "stroke"],
+    })
     return () => observer.disconnect()
   }, [ref, config])
 }

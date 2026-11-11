@@ -230,10 +230,11 @@ export const DonutFiveSlices: Story = {
 // fails when a shape has none. The play waits for the shapes first, so the scan
 // always sees the drawn chart.
 const namedShapes = (selector: string, count: number): Story['play'] => async ({ canvasElement }) => {
-  await waitFor(() => expect(canvasElement.querySelectorAll(selector)).toHaveLength(count));
-  for (const shape of canvasElement.querySelectorAll(selector)) {
-    await expect(shape.getAttribute('aria-label')).toBeTruthy();
-  }
+  await waitFor(() => {
+    const shapes = canvasElement.querySelectorAll(selector);
+    expect(shapes).toHaveLength(count);
+    for (const shape of shapes) expect(shape.getAttribute('aria-label')).toBeTruthy();
+  });
 };
 
 export const DonutNamedFromConfig: Story = {
@@ -283,7 +284,7 @@ export const TreemapCells: Story = {
       />
     </ChartContainer>
   ),
-  play: namedShapes('.recharts-treemap-depth-1 [role=img], [role=img]', 5),
+  play: namedShapes('.recharts-treemap-depth-1 [role=img]', 5),
 };
 
 export const FunnelSteps: Story = {
