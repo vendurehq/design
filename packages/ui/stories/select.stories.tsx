@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import {
   Select,
   SelectContent,
@@ -167,10 +168,11 @@ async function expectListCoversTrigger(canvasElement: HTMLElement) {
     // The list overhangs the trigger by the same amount on both sides.
     await expect(Math.abs(box.left - list.left - (list.right - box.right))).toBeLessThan(0.5);
     const value = trigger.querySelector('[data-slot=select-value]') as HTMLElement;
-    const selected = popup.querySelector('[data-slot=select-item][data-selected] > span') as HTMLElement;
-    await expect(Math.abs(selected.getBoundingClientRect().left - value.getBoundingClientRect().left)).toBeLessThan(0.5);
+    const selected = popup.querySelector('[data-slot=select-item][data-selected]')?.firstElementChild as HTMLElement;
+    const edge = getComputedStyle(popup).direction === 'rtl' ? 'right' : 'left';
+    await expect(Math.abs(selected.getBoundingClientRect()[edge] - value.getBoundingClientRect()[edge])).toBeLessThan(0.5);
     await userEvent.keyboard('{Escape}');
-    await waitFor(() => expect(document.querySelector('[data-slot=select-content]')).toBeNull());
+    await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull());
   }
 }
 
@@ -187,6 +189,46 @@ export const OverTriggerWide: Story = {
 export const OverTriggerNarrow: Story = {
   render: () => <OverTrigger width={150} />,
   play: async ({ canvasElement }) => expectListCoversTrigger(canvasElement),
+};
+
+/** Right to left: the list overhangs evenly from the trigger's right edge. */
+export const OverTriggerRtl: Story = {
+  render: () => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl" className="px-16">
+        <OverTrigger width={240} />
+      </div>
+    </DirectionProvider>
+  ),
+  play: async ({ canvasElement }) => expectListCoversTrigger(canvasElement),
+};
+
+const COUNTRIES = Array.from({ length: 40 }, (_, index) => ({
+  value: `country-${index + 1}`,
+  label: `Country ${index + 1}`,
+}));
+
+/**
+ * A list longer than the viewport, opened over its trigger: it scrolls to
+ * the selected item and grows out of the trigger like a short list.
+ */
+export const OverTriggerLongList: Story = {
+  render: () => (
+    <div className="py-48">
+      <Select defaultValue="country-20" items={COUNTRIES}>
+        <SelectTrigger aria-label="Country" className="w-60">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {COUNTRIES.map((country) => (
+            <SelectItem key={country.value} value={country.value}>
+              {country.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  ),
 };
 
 type Theme = 'light' | 'dark';

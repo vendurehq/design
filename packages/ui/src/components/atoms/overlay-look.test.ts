@@ -95,13 +95,18 @@ describe('v3 overlay look', () => {
     }
   });
 
-  test('a Select list over its trigger takes the popup motion, with no slide and the origin on the selected label', () => {
+  test('a Select list over its trigger grows out of the trigger box, with no slide, scale or fade', () => {
     const code = source('select.tsx');
     expect(code).not.toContain('transition-none');
-    // No side, so no 2px slide, only for side none.
-    expect(code).toContain('motion-safe:data-[side=none]:data-starting-style:translate-y-0');
-    expect(code).toContain('motion-safe:data-[side=none]:data-ending-style:translate-y-0');
-    expect(code).toContain('originOnSelectedLabel');
+    // No side, so no 2px slide and no scale, only for side none.
+    for (const state of ['starting', 'ending']) {
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:translate-y-0`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:scale-100`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:opacity-100`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:[clip-path:var(--select-trigger-box)]`);
+    }
+    expect(code).toContain('data-[side=none]:transition-[opacity,clip-path]');
+    expect(code).toContain('growFromTrigger');
   });
 
   test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
