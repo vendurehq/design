@@ -222,6 +222,13 @@ Compose accessible fields, validation, grouping, and actions independently of th
 - **Form state is host-owned:** Dashboard extensions use the form APIs exported by @vendure/dashboard. Standalone consumers keep their existing form-state library.
 
 Related decisions: `button`, `confirm-dialog`.
+## HoverCard
+
+A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.
+
+- **Do not set align unless there is a reason:** Without an align, HoverCardContent opens toward the centre of the screen: a trigger in the right half lines the card up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout. An explicit align always wins. align="center" brings back the old look, centred on the trigger.
+
+Related decisions: `popover`, `tooltip`.
 ## IdChip
 
 Show compact, copyable, non-secret identifiers only where the exact identity helps the task.
