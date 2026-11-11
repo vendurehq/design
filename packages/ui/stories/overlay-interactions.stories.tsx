@@ -186,7 +186,7 @@ export const DropdownMenuLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Actions' }));
     const menu = await findSlot('dropdown-menu-content');
-    await expectOverlaySurface(menu, '8px');
+    await expectOverlaySurface(menu, '12px');
     await expectPopupMotion(menu);
     await expect(getComputedStyle(menu).paddingTop).toBe('5px');
     // offsetWidth ignores the entrance scale. Short items still get a 240px menu.
@@ -238,7 +238,7 @@ export const SelectLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
     const popup = await findSlot('select-content');
-    await expectOverlaySurface(popup, '8px');
+    await expectOverlaySurface(popup, '12px');
     await expectPopupMotion(popup);
     const option = await body().findByRole('option', { name: 'US dollar' });
     await expect(option.offsetHeight).toBe(34);
@@ -390,7 +390,7 @@ export const ComboboxLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Country' }));
     const popup = await findSlot('combobox-content');
-    await expectOverlaySurface(popup, '8px');
+    await expectOverlaySurface(popup, '12px');
     await expectPopupMotion(popup);
     // The overlay shadow alone, with no ring on top.
     const probe = document.createElement('div');
@@ -436,7 +436,7 @@ export const ContextMenuLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.pointer({ keys: '[MouseRight]', target: within(canvasElement).getByText('Order #1042') });
     const menu = await findSlot('context-menu-content');
-    await expectOverlaySurface(menu, '8px');
+    await expectOverlaySurface(menu, '12px');
     await expectPopupMotion(menu);
   },
 };

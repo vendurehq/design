@@ -104,12 +104,22 @@ describe('v3 overlay look', () => {
     expect(code).toContain('originOnSelectedLabel');
   });
 
-  test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
-    for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx', 'navigation-menu.tsx']) {
+  test('popovers and the navigation menu use the xl radius; dialogs use 2xl', () => {
+    for (const file of ['popover.tsx', 'hover-card.tsx', 'navigation-menu.tsx']) {
       expect(source(file)).toContain('rounded-xl');
     }
     for (const file of ['dialog.tsx', 'alert-dialog.tsx']) {
       expect(source(file)).toContain('rounded-2xl');
+    }
+  });
+
+  // 12px panel = 6px item corner + 5px padding, so the item corner follows the panel corner.
+  test('menu, select and combobox panels use the 2xl radius with 5px padding around 6px items', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx']) {
+      const code = source(file);
+      expect(code).toContain('rounded-2xl');
+      expect(code).toContain('p-1.25');
+      expect(code).toContain('rounded-lg');
     }
   });
 

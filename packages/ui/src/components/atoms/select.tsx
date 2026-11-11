@@ -170,7 +170,7 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
-          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-2xl", popupMotion, "motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0", className )}
           ref={popupRef}
           {...props}
         >

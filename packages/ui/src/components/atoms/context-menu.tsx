@@ -56,7 +56,7 @@ function ContextMenuContent({
       >
         <ContextMenuPrimitive.Popup
           data-slot="context-menu-content"
-          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-xl p-1.25 z-50 max-h-(--available-height) min-w-36 overflow-x-hidden overflow-y-auto outline-none", popupMotion, className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay rounded-2xl p-1.25 z-50 max-h-(--available-height) min-w-36 overflow-x-hidden overflow-y-auto outline-none", popupMotion, className )}
           {...props}
         />
       </ContextMenuPrimitive.Positioner>
