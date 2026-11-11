@@ -67,7 +67,7 @@ export const AllTones: Story = {
 };
 
 // The leading dot replaces the tone icon, for a group of chips that is not a
-// list column (a column uses `appearance="text"`). Progress ignores the prop
+// list column (a column uses `appearance="icon"`). Progress ignores the prop
 // and keeps its spinner.
 export const WithDot: Story = {
   render: () => (
@@ -107,7 +107,7 @@ export const WithIcon: Story = {
 };
 
 // `icon={false}`: an inline chip whose label already names the tone. A list
-// column uses `appearance="text"` instead. `progress` keeps its spinner, so it
+// column uses `appearance="icon"` instead. `progress` keeps its spinner, so it
 // never looks like `info`.
 const INLINE: { text: string; tone: Tone; label: string }[] = [
   { text: 'The last deploy', tone: 'critical', label: 'Failed' },
@@ -259,8 +259,33 @@ export const WithTooltip: Story = {
   },
 };
 
-// `appearance="text"`: the word alone, in the tone colour. The progress spinner
-// sits after the word so every word starts on the column edge.
+// `appearance="icon"`: the tone icon with no box, then the label in neutral
+// text, for a status every row of a table has. `detail` adds a second line in
+// small muted text; the icon centres against both lines.
+export const IconAppearance: Story = {
+  render: () => (
+    <div className="flex gap-10">
+      <div className="flex flex-col gap-3">
+        {TONES.map(({ tone, label }) => (
+          <StatusBadge key={tone} tone={tone} appearance="icon">
+            {label}
+          </StatusBadge>
+        ))}
+      </div>
+      <div className="flex flex-col gap-3">
+        {TONES.map(({ tone, label }) => (
+          <StatusBadge key={tone} tone={tone} appearance="icon" detail="2 minutes ago">
+            {label}
+          </StatusBadge>
+        ))}
+      </div>
+    </div>
+  ),
+};
+
+// `appearance="text"`: the word alone, in the tone colour. Not for a table
+// column, which uses `appearance="icon"`. The progress spinner sits after the
+// word.
 export const TextAppearance: Story = {
   render: () => (
     <div className="flex flex-col gap-2">
@@ -309,8 +334,9 @@ export const AlongsideBadge: Story = {
   ),
 };
 
-// StatusBadge in a list: a fixed status column uses the text appearance, so a
-// column of words stays calm and a failure still stands out.
+// StatusBadge in a list: the status column comes right after the name, as the
+// tone icon and a neutral label, so the column stays calm and a failure still
+// stands out by its icon.
 const ROWS: { name: string; env: string; tone: Tone; state: string }[] = [
   { name: 'checkout-api', env: 'Production', tone: 'success', state: 'Running' },
   { name: 'search-worker', env: 'Production', tone: 'progress', state: 'Deploying' },
@@ -326,22 +352,20 @@ export const InAList: Story = {
         <thead>
           <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
             <th className="p-3 font-medium">Service</th>
-            <th className="p-3 font-medium">Environment</th>
             <th className="p-3 font-medium">Status</th>
+            <th className="p-3 font-medium">Environment</th>
           </tr>
         </thead>
         <tbody>
           {ROWS.map(({ name, env, tone, state }) => (
             <tr key={name} className="border-b align-middle last:border-0">
               <td className="p-3 font-mono text-xs">{name}</td>
-              <td className="p-3">
-                <Badge variant="outline">{env}</Badge>
-              </td>
               <td className="w-32 p-3">
-                <StatusBadge tone={tone} appearance="text">
+                <StatusBadge tone={tone} appearance="icon">
                   {state}
                 </StatusBadge>
               </td>
+              <td className="p-3">{env}</td>
             </tr>
           ))}
         </tbody>

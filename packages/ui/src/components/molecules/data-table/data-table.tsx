@@ -595,7 +595,11 @@ function DataTable<TData>({
   // content one wrapper deep). The rule has zero specificity, so a margin the
   // content sets itself still wins. The cell resets the variable, so a plain
   // wrapper element does not inherit one.
-  const bodyCellClass = '[--content-inset:0px] [:where(&>:first-child)]:-ms-(--content-inset)';
+  // A cell with a two-line status (StatusBadge `appearance="icon"` with a
+  // `detail`) drops to 6px vertical padding, so its 33px block makes a 46px
+  // row.
+  const bodyCellClass =
+    '[--content-inset:0px] [:where(&>:first-child)]:-ms-(--content-inset) has-[[data-slot=status-badge][data-detail]]:py-1.5';
 
   // A pull-back that reaches past the cell's start padding indents the whole
   // column instead (see measureColumnIndents), so no content leaves its cell.

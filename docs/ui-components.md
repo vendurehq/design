@@ -101,7 +101,7 @@ behavior you need instead of rebuilding it from atoms.
 `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
 
 #### Date & number entry/display
-`date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `money`, `format-provider`
+`date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*`, `status-badge`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`
@@ -248,9 +248,34 @@ Do not attach ramp colors to states. Unknown wire values deliberately fall back
 to neutral and warn once in development.
 
 `StatusBadge` renders as a chip by default, with the tone's own icon in front
-of the label (`progress` spins). Use `appearance="text"` for a list or table
-column, and `appearance="dot"` only where no word fits (the label stays as
-screen-reader text). `size="lg"` is the 28px chip for a page header.
+of the label (`progress` spins). A status that every row of a table shows uses
+`appearance="icon"`: the tone icon with no box and a neutral label. Use
+`appearance="dot"` only where no word fits (the label stays as screen-reader
+text). `size="lg"` is the 28px chip for a page header.
+
+In a table, a chip marks only the exception: use one where the normal state is
+far more common and shows nothing (a disabled product in a products list).
+Never use plain coloured text for a status, and never put a chip in the first
+or the last column.
+
+In the icon-and-label form the icon keeps its tone colour for every state,
+green for success included. The label stays neutral.
+
+`detail` adds a second line under the label of `appearance="icon"`, with the
+one time that matters for the state. In a `DataTable` the row is 46px.
+
+```tsx
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} />}>
+  Building
+</StatusBadge>;
+<StatusBadge appearance="icon" tone="success" detail={<RelativeTime value={deployment.finishedAt} />}>
+  Ready
+</StatusBadge>;
+```
+
+`ElapsedTime` counts up every second with tabular digits, and stops while it is
+off screen or the tab is hidden. Put the exact finish time, the start and the
+duration in a tooltip on the time, and make the time a tab stop.
 
 - `icon={<Icon />}` replaces the tone icon with a more exact shape. Never put
   an icon in `children`.
