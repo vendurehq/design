@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, type ReactElement, type ReactNode, useContext, useRef } from 'react';
+import {
+  createContext,
+  type ReactElement,
+  type ReactNode,
+  useContext,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import { formatElapsed } from '../../lib/format-elapsed.ts';
 import { cn } from '../../lib/utils.ts';
 // Relative: this module is internal (mapped to null in the package exports).
@@ -110,4 +117,24 @@ function TimeSpan({
   );
 }
 
-export { InStatusDetail, TimeSpan, TimeTooltip, toTime };
+function noSubscription() {
+  return () => {};
+}
+
+/**
+ * False on the server and during hydration, true otherwise. A time depends on
+ * the reader's clock, locale and time zone, which the server does not know:
+ * while this is false, a time renders its fallback, so the server markup and
+ * the first client render are the same. React reads the client value from the
+ * first render of a browser-only app, so a time shows its text from the first
+ * paint there. After hydration React renders again with `true`.
+ */
+function useReadersClock(): boolean {
+  return useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
+}
+
+export { InStatusDetail, TimeSpan, TimeTooltip, toTime, useReadersClock };
