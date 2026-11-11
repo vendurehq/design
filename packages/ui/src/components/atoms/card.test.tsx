@@ -20,7 +20,10 @@ describe('Card', () => {
     const html = renderToStaticMarkup(<Card variant="accent">Body</Card>);
     expect(html).toContain('data-variant="accent"');
     expect(tokens).toContain(
-      'data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))]',
+      'data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_30%,var(--border))]',
+    );
+    expect(tokens).toContain(
+      'dark:data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))]',
     );
     expect(tokens).toContain(
       'data-[variant=accent]:bg-[image:linear-gradient(180deg,color-mix(in_oklab,var(--brand-500)_1.5%,transparent),transparent_55%)]',
