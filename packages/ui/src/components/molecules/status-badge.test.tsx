@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test';
+import { CircleSlashIcon } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../atoms/tooltip.tsx';
 import { StatusBadge } from './status-badge.tsx';
 
@@ -443,5 +445,90 @@ describe('StatusBadge as a tooltip trigger', () => {
     );
 
     expect(tag).not.toContain('tabindex');
+  });
+});
+
+describe('StatusBadge appearance="icon"', () => {
+  test('shows the 16px tone icon with no box and a neutral label', () => {
+    const markup = html(
+      <StatusBadge appearance="icon" tone="success">
+        Ready
+      </StatusBadge>,
+    );
+    const tokens = tagTokens(slotTag(markup, 'status-badge'));
+    expect(markup).toContain('lucide-circle-check');
+    expect(markup).toContain('[&amp;_svg]:size-4!');
+    expect(markup).toContain('text-success-text');
+    expect(tokens).toContain('text-foreground-secondary');
+    expect(tokens).not.toContain('h-6');
+    expect(tokens.some((token) => token.startsWith('inset-ring') || token.startsWith('bg-'))).toBe(
+      false,
+    );
+    expect(markup).toContain('data-appearance="icon"');
+  });
+
+  test('the label lines up with the column header: a 16px icon and an 8px gap', () => {
+    const tokens = tagTokens(
+      slotTag(html(<StatusBadge appearance="icon">Queued</StatusBadge>), 'status-badge'),
+    );
+    expect(tokens).toContain('[--content-inset:calc(var(--spacing)*6)]');
+    expect(tokens).toContain('gap-x-2');
+  });
+
+  test('a detail is a second muted line, and the icon spans both lines', () => {
+    const markup = html(
+      <StatusBadge appearance="icon" tone="progress" detail="1m 15s">
+        Building
+      </StatusBadge>,
+    );
+    expect(slotTag(markup, 'status-badge')).toContain('data-detail');
+    expect(tagTokens(slotTag(markup, 'status-badge-marker'))).toContain('row-span-2');
+    expect(tagTokens(slotTag(markup, 'status-badge-label'))).toContain('leading-4.5');
+    const detail = tagTokens(slotTag(markup, 'status-badge-detail'));
+    expect(detail).toEqual(
+      expect.arrayContaining([
+        'col-start-2',
+        'text-xs/3.75',
+        'text-muted-foreground',
+        'tabular-nums',
+      ]),
+    );
+    expect(markup).toContain('animate-spin-slow');
+  });
+
+  test('without a detail there is no second line', () => {
+    for (const detail of [undefined, null, false]) {
+      const markup = html(
+        <StatusBadge appearance="icon" detail={detail}>
+          Ready
+        </StatusBadge>,
+      );
+      expect(markup).not.toContain('status-badge-detail');
+      expect(markup).not.toContain('data-detail');
+      expect(markup).not.toContain('row-span-2');
+    }
+  });
+
+  test('always shows an icon, and takes a more exact one', () => {
+    expect(
+      html(
+        <StatusBadge appearance="icon" tone="success" icon={false}>
+          Ready
+        </StatusBadge>,
+      ),
+    ).toContain('lucide-circle-check');
+    expect(
+      html(
+        <StatusBadge appearance="icon" tone="neutral" icon={<CircleSlashIcon />}>
+          Canceled
+        </StatusBadge>,
+      ),
+    ).toContain('lucide-circle-slash');
+  });
+
+  test('a detail is ignored by the other appearances', () => {
+    expect(html(<StatusBadge detail="2 minutes ago">Ready</StatusBadge>)).not.toContain(
+      '2 minutes ago',
+    );
   });
 });

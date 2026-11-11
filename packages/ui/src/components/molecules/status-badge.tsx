@@ -8,7 +8,7 @@ import { cva } from 'class-variance-authority';
 import type * as React from 'react';
 import { isValidElement } from 'react';
 
-type StatusBadgeAppearance = 'chip' | 'bare' | 'text' | 'dot';
+type StatusBadgeAppearance = 'chip' | 'bare' | 'icon' | 'text' | 'dot';
 type StatusBadgeSize = 'default' | 'lg';
 type StatusBadgeReveal = 'always' | 'row';
 
@@ -131,6 +131,20 @@ const bareVariants = cva(
   },
 );
 
+// The `icon` appearance: the tone icon with no box, then the label in neutral
+// text, and an optional second line under it. It is the status of a table row
+// that every row has. A grid puts the icon in a column of its own, spanning
+// both lines and centred against them, and the second line under the label.
+// With a second line, the lines are 18px and 15px high (`text-sm/4.5`,
+// `text-xs/3.75`): 33px, and a DataTable cell drops to 6px vertical padding
+// for it (`py-1.5`), so the row is 46px with its divider. The 16px icon and its 8px gap make
+// the `--content-inset`, so the label lines up with the column header.
+const iconAppearanceClass = [
+  'inline-grid w-fit shrink-0 grid-cols-[auto_auto] items-center gap-x-2 whitespace-nowrap text-sm text-foreground-secondary',
+  '[--content-inset:calc(var(--spacing)*6)]',
+  contentInsetPull,
+];
+
 // The marker colour of each tone: the icon or spinner stroke.
 const toneText: Record<Tone, string> = {
   neutral: 'text-neutral-text',
@@ -185,8 +199,11 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * - `bare`: the chip's icon and tinted label without the box. Use it for a
    *   state inside a tinted or accent surface (a card that is already
    *   coloured), where a chip would be a box inside a box.
-   * - `text`: only the word, in the tone colour. Use it in a fixed status
-   *   column of a list, where a column of chips is too heavy.
+   * - `icon`: the tone icon with no box, then the label in neutral text, with
+   *   an optional second line (`detail`). Use it for a status every row of a
+   *   table shows (a deployments table).
+   * - `text`: only the word, in the tone colour. Not for a table column:
+   *   a column uses `icon`.
    * - `dot`: a lone 7px tone dot. The label stays in the DOM as screen-reader
    *   text. Use it only where there is no room for a word.
    * @default 'chip'
@@ -197,12 +214,12 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
   /**
    * Show a leading dot in the tone colour in place of the tone icon, for a
    * group of chips that is not a list column (a list column uses
-   * `appearance="text"`). Only for `appearance="chip"` and `"bare"`. `progress` keeps its
+   * `appearance="icon"`). Only for `appearance="chip"` and `"bare"`. `progress` keeps its
    * spinner, regardless of this prop.
    */
   dot?: boolean;
   /**
-   * The leading icon, in the tone colour. Only for `appearance="chip"` and `"bare"`.
+   * The leading icon, in the tone colour. Only for `appearance="chip"`, `"bare"` and `"icon"`.
    * - Leave it out for the tone's own icon: `CircleCheck` (success),
    *   `TriangleAlert` (warning), `CircleX` (critical), `CircleDot` (info),
    *   `CircleDashed` (neutral) and a spinning `Loader` (progress).
@@ -210,7 +227,7 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    *   `<MoonStarIcon />` for Asleep. It replaces the dot and the spinner too.
    * - Pass `false` or `null` for no icon, on an inline chip whose label
    *   already names the tone. `progress` still shows its spinner, and `dot`
-   *   still shows the dot.
+   *   still shows the dot. `appearance="icon"` always shows an icon.
    *
    * Never put an icon in `children`: the chip already brings one.
    */
@@ -224,6 +241,15 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * `DataTable` rows have it). @default 'always'
    */
   reveal?: StatusBadgeReveal;
+  /**
+   * A second line under the label, in small muted text, for
+   * `appearance="icon"` only. Put one time in it, the one that matters for
+   * the state: an `ElapsedTime` for a state that is happening or waiting, a
+   * `RelativeTime` for when it finished ("2 minutes ago"), and how long a
+   * state that continues has lasted ("for 13 days"). The icon centres against
+   * both lines together.
+   */
+  detail?: React.ReactNode;
 }
 
 function StatusBadge({
@@ -234,6 +260,7 @@ function StatusBadge({
   dot = false,
   icon,
   reveal = 'always',
+  detail,
   render,
   children,
   ...props
@@ -243,6 +270,8 @@ function StatusBadge({
   // dictionary is a fallback the caller resolves, not something rendered here.
   let classes: string;
   let content: React.ReactNode;
+  const hasDetail =
+    appearance === 'icon' && detail !== undefined && detail !== null && detail !== false;
 
   if (appearance === 'dot') {
     content = <span className="sr-only">{children}</span>;
@@ -252,6 +281,31 @@ function StatusBadge({
       'inline-flex size-1.75 shrink-0 rounded-full bg-current',
       toneDot[tone],
       reveal === 'row' && rowRevealClass,
+    );
+  } else if (appearance === 'icon') {
+    classes = cn(iconAppearanceClass, reveal === 'row' && rowRevealClass);
+    content = (
+      <>
+        <StatusBadgeMarker
+          tone={tone}
+          size="icon"
+          dot={false}
+          // The icon always shows here: it carries the tone.
+          icon={isValidElement(icon) ? icon : undefined}
+          className={hasDetail ? 'row-span-2' : undefined}
+        />
+        <span data-slot="status-badge-label" className={hasDetail ? 'leading-4.5' : undefined}>
+          {children}
+        </span>
+        {hasDetail ? (
+          <span
+            data-slot="status-badge-detail"
+            className="col-start-2 text-xs/3.75 text-muted-foreground tabular-nums"
+          >
+            {detail}
+          </span>
+        ) : null}
+      </>
     );
   } else if (appearance === 'text') {
     classes = cn(
@@ -311,6 +365,9 @@ function StatusBadge({
       appearance,
       // `data-reveal="row"` only when the badge reveals.
       reveal: reveal === 'row' ? 'row' : undefined,
+      // `data-detail` when a second line shows: a DataTable cell takes less
+      // vertical padding for it.
+      detail: hasDetail || undefined,
     },
   });
 }
@@ -320,21 +377,29 @@ function StatusBadgeMarker({
   size,
   dot,
   icon,
+  className,
 }: {
   tone: Tone;
-  size: StatusBadgeSize;
+  size: StatusBadgeSize | 'icon';
   dot: boolean;
   icon: React.ReactNode;
+  className?: string;
 }) {
-  // 13px icons in the 12px chip, 14px in the 13px chip, at stroke 2. The
+  // 13px icons in the 12px chip, 14px in the 13px chip, 16px beside the
+  // 13px label of the `icon` appearance, all at stroke 2. The
   // marker eases to a new tone with the outline, when a status changes in place.
   // Size and stroke are `!important`: a Button sizes every icon inside it to
   // 16px at stroke 1.75, with a selector that outranks this one, and a badge
   // inside a Button keeps its own icon.
   const iconClasses = cn(
     'inline-flex shrink-0 transition-colors duration-slow [&_svg]:shrink-0 [&_svg]:stroke-2!',
-    size === 'lg' ? '[&_svg]:size-3.5!' : '[&_svg]:size-3.25!',
+    size === 'icon'
+      ? '[&_svg]:size-4!'
+      : size === 'lg'
+        ? '[&_svg]:size-3.5!'
+        : '[&_svg]:size-3.25!',
     toneText[tone],
+    className,
   );
 
   if (isValidElement(icon)) {
