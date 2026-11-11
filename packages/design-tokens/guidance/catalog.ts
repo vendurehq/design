@@ -108,7 +108,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Typography does not carry state color',
-        body: 'Type styles define font, size, weight, tracking, and leading. Apply semantic color separately according to meaning.',
+        body: 'Type styles define font, size, weight, tracking, leading, and text wrapping: the title roles balance their lines and body avoids a single word on its last line. Apply semantic color separately according to meaning.',
       },
     ],
   },
