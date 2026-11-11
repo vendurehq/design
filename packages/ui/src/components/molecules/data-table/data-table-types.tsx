@@ -131,11 +131,24 @@ export type DataTableFilters<TData> = ControlledState<ColumnFiltersState> & {
 
 export interface DataTableBulkActionContext<TData> {
   /**
-   * `row.original` for EVERY selected row across pages (resolved from the core's
-   * selection cache). Named `selection` to match the donor's `BulkActionContext`.
+   * `row.original` of the selected rows the table has loaded, from the core's
+   * selection cache. Use it to DISPLAY rows. It can be SHORTER than
+   * `selectedRowIds`: a selection spans pages, it can be restored before its
+   * rows load, and a stored id can name a row that no longer exists. Act on
+   * `selectedRowIds`; read `missingRowIds` before an action that needs row data.
    */
   selection: TData[];
+  /** The id of EVERY selected row, loaded or not. Act on these. */
   selectedRowIds: string[];
+  /** `selectedRowIds.length`. Show this as the count: it is never below what the action receives. */
+  selectedCount: number;
+  /**
+   * The selected ids with no row object in `selection`. Empty when `selection`
+   * has a row for every id. When it is not empty, an action that needs row data
+   * must load these rows or tell the user: it must not act on fewer rows than
+   * `selectedCount` says.
+   */
+  missingRowIds: string[];
   table: Table<TData>;
   clearSelection: () => void; // table.resetRowSelection()
 }
@@ -167,6 +180,25 @@ export interface DataTableRowCellProps {
   'data-content-inset-cell': string;
   className: string;
   style: React.CSSProperties | undefined;
+}
+
+/**
+ * What a built-in row carries for click-to-select, handed to `renderRow` as
+ * `ctx.selectProps`. Spread it on the `<tr>` you render and the row behaves
+ * like a built-in row: while rows are selected a click on the row selects it,
+ * a click on the name (`DataTableRowLink`) opens the item, Shift+click extends
+ * the selection, and row controls keep their own action. A press that starts
+ * on a row control (a drag handle with `role="button"` or
+ * `data-table-row-control`) or moves more than 4px before release never
+ * selects, so a drag never does. Spread it before your own handlers: an
+ * `onClickCapture`, `onMouseDown` or `onPointerDown` of yours replaces the
+ * table's.
+ */
+export interface DataTableRowSelectProps {
+  'data-click-selects': '' | undefined;
+  onClickCapture: React.MouseEventHandler<HTMLElement>;
+  onMouseDown: React.MouseEventHandler<HTMLElement>;
+  onPointerDown: React.PointerEventHandler<HTMLElement>;
 }
 
 export interface DataTableLabels {
@@ -288,7 +320,9 @@ export interface DataTableProps<TData> {
    * {@link DataTableRowRipple}); a row that ignores it changes at once.
    * `ctx.cellProps(columnId)` gives each cell the built-in cell's classes (see
    * {@link DataTableRowCellProps}), so the row's select cell and leading cell
-   * never drift from the table's own.
+   * never drift from the table's own. `ctx.selectProps` (see
+   * {@link DataTableRowSelectProps}) gives the row click-to-select while rows
+   * are selected; a row without it keeps opening the item from anywhere on it.
    */
   renderRow?: (
     row: Row<TData>,
@@ -298,6 +332,7 @@ export interface DataTableProps<TData> {
       defaultRow: React.ReactNode;
       ripple: DataTableRowRipple;
       cellProps: (columnId: string) => DataTableRowCellProps;
+      selectProps: DataTableRowSelectProps;
     },
   ) => React.ReactNode;
 

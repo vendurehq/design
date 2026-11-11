@@ -7,11 +7,11 @@ import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 
 // Checking animates; unchecking plays back quicker.
 // - The fill is the root's ::before, over the border. It closes in from the
-//   four edges to the middle: a clip-path polygon (even-odd) is the box with a
-//   hole, and the hole shrinks from just outside the box (nothing shows) to a
-//   point in the middle (all of it shows). The border seems to thicken inward
-//   until the box is full. Checking takes `moderate` on `ease-out`;
-//   unchecking opens the hole again in `fast`.
+//   corners and edges to the middle: an even-odd clip-path is the box with a
+//   round hole, and the hole shrinks from just around the box (nothing shows)
+//   to a point in the middle (all of it shows). The corners fill first.
+//   Checking takes `moderate` on `ease-out`; unchecking opens the hole again
+//   in `fast`.
 // - The mark is drawn, not swapped: a path with pathLength 1 whose dash offset
 //   runs from 1 to 0 at a constant speed (`moderate`, linear), a
 //   `check-mark-delay` after the fill starts. The check starts on its short
@@ -29,12 +29,16 @@ import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 const rootTransition =
   "[transition:border-color_var(--transition-duration-fast)_var(--ease-soft),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] data-checked:[transition:border-color_var(--transition-duration-normal)_var(--ease-out),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] data-indeterminate:[transition:border-color_var(--transition-duration-normal)_var(--ease-out),box-shadow_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-default),scale_var(--transition-duration-fast)_var(--ease-press)] not-data-disabled:active:scale-95 motion-reduce:active:scale-100"
 
-// `--checkbox-fill-x` and `-y` are the hole's distance from the box's edges:
-// -1px leaves no fill, 50% leaves no hole. The outer ring and the empty hole
-// sit 1px outside the box: on the box's own edge, the clip's anti-aliasing
-// left a hairline of fill at rest.
+// `--checkbox-hole` is how far open the hole in the fill is: 1 leaves no fill,
+// 0 a full box. The hole is a circle around the middle. At 1 its radius is
+// half the box's diagonal plus 1px, so the corners are empty too; on the box's
+// own edge, the clip's anti-aliasing left a hairline of fill at rest. The
+// circle is a `shape()` with two half-circle arcs; their 1px radius is too
+// small for the chord, so the browser scales it up to half the chord, a true
+// circle at any size. A browser without `shape()` keeps a square hole that
+// closes in from the edges over the same time.
 const fill =
-  "before:absolute before:-inset-px before:rounded-[inherit] before:bg-primary before:[--checkbox-fill-x:-1px] before:[--checkbox-fill-y:-1px] before:[clip-path:polygon(evenodd,-1px_-1px,calc(100%_+_1px)_-1px,calc(100%_+_1px)_calc(100%_+_1px),-1px_calc(100%_+_1px),-1px_-1px,var(--checkbox-fill-x)_var(--checkbox-fill-y),calc(100%_-_var(--checkbox-fill-x))_var(--checkbox-fill-y),calc(100%_-_var(--checkbox-fill-x))_calc(100%_-_var(--checkbox-fill-y)),var(--checkbox-fill-x)_calc(100%_-_var(--checkbox-fill-y)),var(--checkbox-fill-x)_var(--checkbox-fill-y))] before:[transition:clip-path_var(--transition-duration-fast)_var(--ease-soft)] data-checked:before:[--checkbox-fill-x:50%] data-checked:before:[--checkbox-fill-y:50%] data-checked:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] data-indeterminate:before:[--checkbox-fill-x:50%] data-indeterminate:before:[--checkbox-fill-y:50%] data-indeterminate:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] motion-reduce:before:[--checkbox-fill-x:50%] motion-reduce:before:[--checkbox-fill-y:50%] motion-reduce:before:opacity-0 motion-reduce:data-checked:before:opacity-100 motion-reduce:data-indeterminate:before:opacity-100 motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:data-checked:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)] motion-reduce:data-indeterminate:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
+  "before:absolute before:-inset-px before:rounded-[inherit] before:bg-primary before:[--checkbox-hole:1] before:[clip-path:polygon(evenodd,-1px_-1px,calc(100%_+_1px)_-1px,calc(100%_+_1px)_calc(100%_+_1px),-1px_calc(100%_+_1px),-1px_-1px,calc(50%_-_var(--checkbox-hole)*(50%_+_1px))_calc(50%_-_var(--checkbox-hole)*(50%_+_1px)),calc(50%_+_var(--checkbox-hole)*(50%_+_1px))_calc(50%_-_var(--checkbox-hole)*(50%_+_1px)),calc(50%_+_var(--checkbox-hole)*(50%_+_1px))_calc(50%_+_var(--checkbox-hole)*(50%_+_1px)),calc(50%_-_var(--checkbox-hole)*(50%_+_1px))_calc(50%_+_var(--checkbox-hole)*(50%_+_1px)),calc(50%_-_var(--checkbox-hole)*(50%_+_1px))_calc(50%_-_var(--checkbox-hole)*(50%_+_1px)))] supports-[clip-path:shape(from_0_0,line_to_1px_1px)]:before:[clip-path:shape(evenodd_from_-1px_-1px,line_to_calc(100%_+_1px)_-1px,line_to_calc(100%_+_1px)_calc(100%_+_1px),line_to_-1px_calc(100%_+_1px),close,move_to_calc(50%_-_var(--checkbox-hole)*(70.711%_+_1px))_50%,arc_to_calc(50%_+_var(--checkbox-hole)*(70.711%_+_1px))_50%_of_1px_cw,arc_to_calc(50%_-_var(--checkbox-hole)*(70.711%_+_1px))_50%_of_1px_cw,close)] before:[transition:clip-path_var(--transition-duration-fast)_var(--ease-soft)] data-checked:before:[--checkbox-hole:0] data-checked:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] data-indeterminate:before:[--checkbox-hole:0] data-indeterminate:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out)] motion-reduce:before:[--checkbox-hole:0] motion-reduce:before:opacity-0 motion-reduce:data-checked:before:opacity-100 motion-reduce:data-indeterminate:before:opacity-100 motion-reduce:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:data-checked:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)] motion-reduce:data-indeterminate:before:[transition:opacity_var(--transition-duration-normal)_var(--ease-soft)]"
 
 const markBase =
   "[stroke-dasharray:1] [stroke-dashoffset:1] [transition:stroke-dashoffset_var(--transition-duration-fast)_var(--ease-soft)] motion-reduce:[stroke-dashoffset:0] motion-reduce:opacity-0 motion-reduce:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft)]"

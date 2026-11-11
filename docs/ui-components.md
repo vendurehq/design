@@ -525,6 +525,26 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable bulk actions
+
+`bulkActions` renders the bar that replaces the controls while rows are selected. Its context describes the selection:
+
+```tsx
+<DataTable
+  rowSelection={{ value: selection, onChange: setSelection }}
+  bulkActions={({ selectedCount, selectedRowIds, missingRowIds, selection, clearSelection }) => (
+    <>
+      <span>{selectedCount} selected</span>
+      <Button onClick={() => archive(selectedRowIds)}>Archive</Button>
+    </>
+  )}
+/>
+```
+
+- `selectedRowIds` is the id of every selected row, on this page, on other pages and restored from storage. Act on these. `selectedCount` is their count: show it as the count in the bar.
+- `selection` holds the row objects the table has loaded. Use it to display rows. It can be shorter than `selectedRowIds`: the selection spans pages, it can be restored before its rows load, and a stored id can name a row that no longer exists.
+- `missingRowIds` are the ids with no row object in `selection`. Empty means `selection` has every row. When it is not empty, an action that needs row data loads those rows or tells the user. It does not run on fewer rows than `selectedCount` says.
+
 ### DataTable selection storage
 
 `selectionStorageKey` keeps the row selection in session storage, so it survives a reload and a visit to another page in the same tab. It needs `rowSelection`.
@@ -544,7 +564,7 @@ import {
 - A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
 - No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
 - Put the list and anything that scopes its rows in the key: the route, and a channel or project. Two lists with the same key share one selection.
-- The bulk action context lists `selection` for the rows the table has loaded. Ids restored from other pages are in `selectedRowIds`.
+- See "DataTable bulk actions" for what an action receives when the selection spans pages.
 - Without the prop nothing changes.
 
 ### DataTable custom rows
@@ -555,8 +575,9 @@ import {
 <DataTable
   rows={rows}
   columns={columns}
-  renderRow={(row, { ripple, cellProps }) => (
+  renderRow={(row, { ripple, cellProps, selectProps }) => (
     <SortableRow
+      {...selectProps}
       row={row}
       className={cn("group/row", ripple.className)}
       style={{ ...ripple.style, transform, transition }}
@@ -579,6 +600,7 @@ Inside the row, each cell takes its attributes from the table:
 - `ctx.ripple.className` goes into your row's `className`. `ctx.ripple.style` is spread before your own `style`. It holds only the custom properties `--ripple-at` and `--ripple-span`, so an inline `transform`, `transition` or `opacity` (a drag) never collides with it.
 - Set `data-state="selected"` on the row while it is selected, as the built-in rows do. The row must be a `TableRow` (or carry its classes) so the selection bar exists.
 - `ctx.cellProps(columnId)` returns what a built-in cell of that column carries: `className` (the zero-width select cell `relative w-0 p-0 pl-0!`, the leading cell's checkbox gutter, the content inset), `style` (the column indent) and the `data-column-id` and `data-content-inset-cell` attributes. Spread it on the `TableCell`, and merge your own classes with `cn`. Do not copy the classes: when the table changes them, your rows follow.
+- `ctx.selectProps` gives the row click-to-select: spread it on the `<tr>`, before your own handlers. While rows are selected a click on the row then selects it, a click on the name opens the item, Shift+click extends the selection and row controls keep their own action, as on a built-in row. A press that starts on a row control (a drag handle with `role="button"`, or `data-table-row-control`) or moves more than 4px before release never selects, so a drag never does. Without it, the row's link keeps covering the row while rows are selected.
 - A row that ignores `ctx.ripple` still works. It changes at once, while the rows around it ripple.
 - Returning `ctx.defaultRow` needs nothing: it already has the ripple. Reduced motion: no ripple.
 
@@ -606,7 +628,7 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
-- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` has no click-to-select, so there its link keeps covering the row.
+- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` does the same when it spreads `ctx.selectProps`; without it, its link keeps covering the row.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.
