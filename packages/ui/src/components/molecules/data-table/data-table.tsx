@@ -63,8 +63,8 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { ListRowChevron } from '@vendure-io/ui/components/molecules/list-row';
-import { ChevronRight } from 'lucide-react';
 import { cn } from '@vendure-io/ui/lib/utils';
+import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
