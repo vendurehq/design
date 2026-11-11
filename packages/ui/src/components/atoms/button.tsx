@@ -37,6 +37,27 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // `data-icon="inline-start"` icon and the gap. A DataTable cell and the sort
 // header pull the button back by it, so the label lines up with the column.
 // Icon-only sizes have no text and set none.
+//
+// The small icon sizes (icon-xs 24px, icon-sm 28px) take a 40 × 40px click
+// area: an invisible ::before, centred on the button. The button stays
+// static: `position` would make it the containing block of a stretched
+// ::after (a chip's copy button, a row link). So the ::before has no insets
+// and sits at its static position, which the button's own centring puts in
+// the middle of the button; its size is in px, not %, for the same reason.
+// The text sizes stay out: their area would have to follow the label width,
+// which needs a percentage, and so a positioned button.
+// Neighbours never share a point. Next to a control (a toolbar, a
+// ButtonGroup, a field and its clear button) the area keeps the button's
+// own width (`--button-box`) and only grows up and down; in a vertical
+// ButtonGroup it keeps the height too. In an InputGroup and in the copy
+// chips it is off: the field and the chip are the click target there.
+const smallIconClickArea = [
+  "before:absolute before:size-10",
+  "[:is(a,button,input,select,textarea,[role=button])+&]:before:w-(--button-box) [&:has(+:is(a,button,input,select,textarea,[role=button]))]:before:w-(--button-box)",
+  "[[data-slot=button-group][data-orientation=vertical]>&]:before:h-(--button-box)",
+  "[:is([data-slot=input-group],[data-slot=chip],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=secret-value],[data-slot=copyable-text])_&]:before:hidden",
+]
+
 const buttonVariants = cva(
   [contentInsetPull, "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_var(--transition-duration-button-icon-turn)_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180"],
   {
@@ -68,9 +89,11 @@ const buttonVariants = cva(
         sm: "h-7 gap-1.75 px-2.5 text-xs [--content-inset:calc(var(--spacing)*2.5+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*8.25+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         lg: "h-10 gap-2 px-4 [--content-inset:calc(var(--spacing)*4+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*10+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         icon: "size-8.5",
-        "icon-xs":
-          "size-6 rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-7",
+        "icon-xs": [
+          "size-6 rounded-lg [&_svg:not([class*='size-'])]:size-3 [--button-box:--spacing(6)]",
+          smallIconClickArea,
+        ],
+        "icon-sm": ["size-7 [--button-box:--spacing(7)]", smallIconClickArea],
         "icon-lg": "size-10",
       },
     },

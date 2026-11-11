@@ -204,6 +204,8 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 
 Button's `default` variant uses the neutral `primary` slot, not Vendure blue. Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`. For a deliberate identity moment, use `variant="brand"`.
 
+The small icon sizes `icon-xs` (24px) and `icon-sm` (28px) have a 40 × 40px click area around the icon. It is an invisible `::before`, so the button keeps its visible size. Next to another control the area keeps the button's own width, so neighbours never share a point. Inside an InputGroup and in the copy chips it is off. Do not give these buttons a `::before` of your own. Keep a positioned scroll container at least 8px from such a button, or the area adds to the scroll width.
+
 ### Badge
 
 ```tsx
