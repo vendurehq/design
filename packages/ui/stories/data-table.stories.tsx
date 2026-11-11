@@ -2302,3 +2302,53 @@ export const DeploymentsInGerman: Story = {
     });
   },
 };
+
+/** The top of the first body row, sampled each frame for `ms` after `act`. */
+async function rowTopsDuring(canvasElement: HTMLElement, act: () => Promise<void> | void, ms = 400) {
+  const top = () =>
+    (canvasElement.querySelector('[aria-label="Select row 1"]')?.closest('tr') as HTMLElement)
+      .getBoundingClientRect().top;
+  const tops = [top()];
+  await act();
+  const start = performance.now();
+  while (performance.now() - start < ms) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    tops.push(top());
+  }
+  return tops;
+}
+
+// With a controls row, the bulk bar takes its place at the same height: the
+// table does not move when rows get selected or cleared.
+export const BulkBarHoldsTheTable: Story = {
+  name: 'Bulk bar · replaces the controls row',
+  render: RowSelection.render,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      await expect({ act, moved: Math.max(...tops) - Math.min(...tops) }).toEqual({ act, moved: 0 });
+    }
+  },
+};
+
+// With a title and no controls row, the bulk bar opens its own row: its height
+// eases open and closed, so the table moves down and back over several frames
+// instead of jumping in one.
+export const BulkBarOpensItsRow: Story = {
+  name: 'Bulk bar · opens its own row under a title',
+  render: () => <RippleTable count={10} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    for (const act of ['select', 'clear']) {
+      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
+      const total = Math.abs((tops.at(-1) as number) - (tops[0] as number));
+      const steps = tops.slice(1).map((value, index) => Math.abs(value - (tops[index] as number)));
+      await expect(total).toBeGreaterThan(20);
+      // No frame carries more than half of the move.
+      await expect({ act, jump: Math.max(...steps) > total / 2 }).toEqual({ act, jump: false });
+    }
+  },
+};

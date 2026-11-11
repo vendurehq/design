@@ -42,6 +42,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import {
   DataTableBulkActions,
+  useHeldHeight,
   useSelectionCache,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@vendure-io/ui/components/molecules/data-table/data-table-column-header';
@@ -240,6 +241,19 @@ const bulkBandOpen = {
   animate: { height: 'auto' },
   exit: { height: 0 },
   transition: { duration: 0.2, ease: [0.25, 1, 0.5, 1] },
+} as const;
+
+// A header with no controls row (a title only) has no row for the bulk bar to
+// replace, so the bar opens its own row: the same height ease as the
+// bulk-only band, and the table moves down as one block. The wrapper pulls the
+// header's gap-4 back with -mt-4 and adds it inside as pt-4, so at height 0
+// the row takes no space. It clips only while it moves, so the bar's focus
+// rings show once it is open.
+const bulkRowOpen = {
+  initial: { height: 0, overflow: 'hidden' },
+  animate: { height: 'auto', transitionEnd: { overflow: 'visible' } },
+  exit: { height: 0, overflow: 'hidden' },
+  transition: bulkBandOpen.transition,
 } as const;
 
 // While rows are selected, a click on a row selects it instead of opening it.
@@ -876,6 +890,8 @@ function DataTable<TData>({
   };
 
   const bulkOnlyBand = !showHeader && rowSelection != null && bulkActions != null;
+  const [controlsRowRef, controlsHeight] = useHeldHeight();
+  const bulkRender = showBulk ? bulkActions : undefined;
 
   const bands = (
     <>
@@ -922,16 +938,39 @@ function DataTable<TData>({
             {(showControls || (rowSelection != null && bulkActions != null)) && (
               <MotionConfig reducedMotion="user">
                 <AnimatePresence initial={false} mode="wait">
-                  {showBulk && bulkActions ? (
-                    <motion.div key="bulk-actions" {...bandRowFade}>
+                  {bulkRender && showControls ? (
+                    // Held at the controls row's last height, so the table
+                    // does not move when the bar takes its place.
+                    <motion.div
+                      key="bulk-actions"
+                      {...bandRowFade}
+                      style={{ minHeight: controlsHeight }}
+                      className="flex flex-col justify-center"
+                    >
                       <DataTableBulkActions
                         table={table}
                         cache={selectionCache}
-                        render={bulkActions}
+                        render={bulkRender}
+                        className={controlsHeight != null ? 'min-h-0' : undefined}
                       />
                     </motion.div>
+                  ) : bulkRender ? (
+                    <motion.div
+                      key="bulk-row"
+                      className="-mt-4"
+                      {...bulkRowOpen}
+                      transition={reduceMotion ? { duration: 0 } : bulkRowOpen.transition}
+                    >
+                      <motion.div className="pt-4" {...bandRowFade}>
+                        <DataTableBulkActions
+                          table={table}
+                          cache={selectionCache}
+                          render={bulkRender}
+                        />
+                      </motion.div>
+                    </motion.div>
                   ) : showControls ? (
-                    <motion.div key="controls" {...bandRowFade}>
+                    <motion.div key="controls" ref={controlsRowRef} {...bandRowFade}>
                       <ListHeaderControls>
                         {toolbarNode}
                         {hasFilterMenu && filters?.columns && (
