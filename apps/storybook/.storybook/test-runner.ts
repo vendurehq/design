@@ -257,6 +257,83 @@ async function pressOpen(page: Page, press?: { text: string; expectFocus: string
   await page.keyboard.press('Escape');
 }
 
+/**
+ * Waits until the story has finished drawing, so axe reads the same page every
+ * run. Two things must hold together:
+ * - No animation or transition in the story root is still running (the Web
+ *   Animations API). Endless animations (a spinner) and paused ones never
+ *   finish, so they are ignored. Transitions on <html> and <body> count too, as
+ *   axe reads their colours.
+ * - The story root has not changed for `quietMs`. This covers animations that
+ *   script drives frame by frame, such as recharts, which the first check
+ *   cannot see. Pass 0 to check only the animations.
+ * It loops, because a finished animation can start the next one. A story that
+ * is still moving after `SETTLE_CAP_MS` fails: scanning it would pass or fail
+ * by timing.
+ */
+const SETTLE_CAP_MS = 5000;
+const QUIET_MS = 250;
+
+async function settle(page: Page, quietMs: number) {
+  const stillMoving = await page.evaluate(
+    async ([cap, quiet]) => {
+      const root = document.querySelector('#storybook-root');
+      if (!root) return [];
+      const running = () =>
+        document.getAnimations().filter((animation) => {
+          const target = (animation.effect as KeyframeEffect | null)?.target;
+          if (!target || !(root.contains(target) || target.contains(root))) return false;
+          if (animation.playState === 'finished' || animation.playState === 'paused') return false;
+          return Number.isFinite(animation.effect?.getComputedTiming().endTime ?? Number.POSITIVE_INFINITY);
+        });
+      let lastChange = performance.now();
+      const observer = new MutationObserver(() => {
+        lastChange = performance.now();
+      });
+      observer.observe(root, { subtree: true, childList: true, attributes: true, characterData: true });
+      const deadline = performance.now() + cap;
+      try {
+        for (;;) {
+          const batch = running();
+          const left = deadline - performance.now();
+          if (left <= 0) {
+            return batch.length > 0
+              ? batch.map((animation) => {
+                  const name =
+                    animation instanceof CSSAnimation
+                      ? animation.animationName
+                      : animation instanceof CSSTransition
+                        ? animation.transitionProperty
+                        : 'animation';
+                  return `${((animation.effect as KeyframeEffect).target as Element).tagName.toLowerCase()} ${name}`;
+                })
+              : ['the page kept changing'];
+          }
+          if (batch.length > 0) {
+            await Promise.race([
+              Promise.allSettled(batch.map((animation) => animation.finished)),
+              new Promise((resolve) => setTimeout(resolve, left)),
+            ]);
+            lastChange = performance.now();
+            continue;
+          }
+          const idle = performance.now() - lastChange;
+          if (idle >= quiet) return [];
+          await new Promise((resolve) => setTimeout(resolve, Math.min(quiet - idle, left)));
+        }
+      } finally {
+        observer.disconnect();
+      }
+    },
+    [SETTLE_CAP_MS, quietMs] as const,
+  );
+  if (stillMoving.length > 0) {
+    throw new Error(
+      `The story is still moving after ${SETTLE_CAP_MS}ms, so the accessibility scan would depend on timing: ${stillMoving.join(', ')}`,
+    );
+  }
+}
+
 const config: TestRunnerConfig = {
   async preVisit(page) {
     await injectAxe(page);
@@ -298,15 +375,11 @@ const config: TestRunnerConfig = {
     // class on <html>, so set the same class here, then wait for the color
     // transitions to finish before axe reads the computed colors.
     const failures: string[] = [];
+    await settle(page, QUIET_MS);
     for (const theme of THEMES) {
-      await page.evaluate(async (dark) => {
-        document.documentElement.classList.toggle('dark', dark);
-        // Only transitions: infinite animations such as spinners never finish.
-        const transitions = document
-          .getAnimations()
-          .filter((animation) => animation instanceof CSSTransition);
-        await Promise.allSettled(transitions.map((transition) => transition.finished));
-      }, theme === 'dark');
+      await page.evaluate((dark) => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+      // The theme switch starts colour transitions and nothing else.
+      await settle(page, 0);
 
       const violations = await getViolations(
         page,
@@ -319,7 +392,10 @@ const config: TestRunnerConfig = {
       failures.push(
         ...blocking.map(
           (violation) =>
-            `- [${theme}] [${violation.impact}] ${violation.id}: ${violation.help} (${violation.nodes.length} node(s)) — ${violation.helpUrl}`,
+            `- [${theme}] [${violation.impact}] ${violation.id}: ${violation.help} (${violation.nodes.length} node(s)) — ${violation.helpUrl}${violation.nodes
+              .slice(0, 3)
+              .map((node) => `\n    ${node.html.slice(0, 160)}`)
+              .join('')}`,
         ),
       );
     }
