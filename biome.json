@@ -58,7 +58,7 @@
         "packages/ui/src/**",
         "packages/ui/stories/**",
         "!packages/ui/src/components/atoms/chart.tsx",
-        "!packages/ui/src/lib/highlight.ts"
+        "!packages/ui/src/lib/syntax-colors.ts"
       ],
       "plugins": ["./packages/design-lint/biome/no-raw-colors.grit"]
     }

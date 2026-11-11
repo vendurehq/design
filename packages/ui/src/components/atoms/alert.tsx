@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { alertTint, alertToneVars } from "@vendure-io/ui/lib/tint-recipes"
 
 // Alert is an inline-size container so AlertAction can move under the text when
 // the alert is narrow. A container cannot size to its content: an Alert inside a
@@ -18,10 +19,9 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // amber text colour mixes to brown. The title stays foreground and the
 // description foreground-secondary in every variant, because a muted grey on
 // a tinted fill falls below text contrast.
-// The `alertTones` block in packages/design-tokens/src/contrast.test.ts
-// copies this recipe: change both together.
-const tonedAlert =
-  "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_14%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
+// The recipe lives in lib/tint-recipes.ts, which the contrast test in
+// @vendure-io/design-tokens reads.
+const tonedAlert = alertTint
 
 // An alert enters once when it mounts: it fades in and moves 4px down into
 // place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
@@ -34,13 +34,13 @@ const alertVariants = cva(
         default: "bg-card text-card-foreground *:[svg]:text-current",
         destructive: [
           tonedAlert,
-          "[--alert-tone:var(--destructive-text)] *:[svg]:text-destructive-text",
+          alertToneVars.destructive,
         ],
         warning: [
           tonedAlert,
-          "[--alert-tone:var(--warning-indicator)] *:[svg]:text-warning-text",
+          alertToneVars.warning,
         ],
-        info: [tonedAlert, "[--alert-tone:var(--info-text)] *:[svg]:text-info-text"],
+        info: [tonedAlert, alertToneVars.info],
       },
     },
     defaultVariants: {

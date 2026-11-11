@@ -126,7 +126,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             actionButton: cn(
               buttonVariants({ size: "xs" }),
               toastButton,
-              "bg-primary! text-primary-foreground! hover:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)]!",
+              "bg-primary! text-primary-foreground! hover:bg-(--primary-hover)!",
             ),
             cancelButton: cn(
               buttonVariants({ variant: "ghost", size: "xs" }),

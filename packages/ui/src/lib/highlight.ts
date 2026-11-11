@@ -7,6 +7,7 @@ import {
 } from '@shikijs/transformers';
 import { createHighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+import { githubLightReplacements } from '@vendure-io/ui/lib/syntax-colors';
 
 /**
  * The design system's Shiki setup: a lazy shared highlighter with the DS themes
@@ -85,9 +86,8 @@ async function highlightCode(code: string, language: SupportedLanguage): Promise
         light: 'github-light',
         dark: 'github-dark-default',
       },
-      // github-light's orange (#e36209, used for GraphQL fields, CSS properties
-      // and similar) is 3.5:1 on a white card. #a35200 is 5.6:1 and keeps the hue.
-      colorReplacements: { 'github-light': { '#e36209': '#a35200' } },
+      // github-light's orange is too faint on a card; see syntax-colors.ts.
+      colorReplacements: { 'github-light': githubLightReplacements },
       transformers: [
         transformerNotationDiff({ matchAlgorithm: 'v3' }),
         transformerNotationHighlight({ matchAlgorithm: 'v3' }),

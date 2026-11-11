@@ -1,6 +1,13 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
+import {
+  statusChipFill,
+  statusChipLabel,
+  statusChipRing,
+  statusToneText,
+  statusToneVars,
+} from '@vendure-io/ui/lib/tint-recipes';
 import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
 import { toneIcons } from '@vendure-io/ui/lib/tone-icons';
 import { cn } from '@vendure-io/ui/lib/utils';
@@ -38,15 +45,7 @@ type StatusBadgeReveal = 'always' | 'row';
 // and its 6px gap. A DataTable cell pulls the chip back by it, so the label
 // lines up with the column header. `bare` has no padding, so only the marker
 // counts.
-const toneVars = {
-  neutral: '[--status-tone:var(--neutral-text)]',
-  info: '[--status-tone:var(--info-text)]',
-  success: '[--status-tone:var(--success-text)]',
-  warning:
-    '[--status-label-mix:70%] [--status-label-tone:var(--warning-text)] [--status-tone:var(--warning-indicator)]',
-  critical: '[--status-tone:var(--destructive-text)]',
-  progress: '[--status-tone:var(--info-text)]',
-} satisfies Record<Tone, string>;
+const toneVars = statusToneVars satisfies Record<Tone, string>;
 
 // `reveal="row"`: the badge is transparent at rest and fades in while its row
 // (`group/row`) is hovered or holds keyboard focus, on one transition (150ms,
@@ -61,15 +60,13 @@ const rowRevealClass = [
   'opacity-0 group-hover/row:opacity-100 group-has-[:focus-visible]/row:opacity-100 [@media(hover:none)]:opacity-100',
 ];
 
-// The label colour every chip shares: 30% of the tone (70% of `warning-text`
-// for warning) into `foreground-secondary`.
-const chipLabel =
-  'text-[color-mix(in_oklab,var(--status-label-tone,var(--status-tone))_var(--status-label-mix,30%),var(--foreground-secondary))]';
+const chipLabel = statusChipLabel;
 
 const statusBadgeVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium',
-    'bg-[color-mix(in_oklab,var(--status-tone)_5%,var(--muted))] inset-ring inset-ring-[color-mix(in_oklab,var(--status-tone)_34%,transparent)]',
+    statusChipFill,
+    statusChipRing,
     chipLabel,
     'outline-1 outline-transparent -outline-offset-1',
     contentInsetPull,
@@ -148,14 +145,7 @@ const iconAppearanceClass = [
 ];
 
 // The marker colour of each tone: the icon or spinner stroke.
-const toneText: Record<Tone, string> = {
-  neutral: 'text-neutral-text',
-  info: 'text-info-text',
-  success: 'text-success-text',
-  warning: 'text-warning-text',
-  critical: 'text-destructive-text',
-  progress: 'text-info-text',
-};
+const toneText: Record<Tone, string> = statusToneText;
 
 // The dot fill of each tone. A dot is a filled shape, not a stroke or a
 // word, so warning takes `warning-indicator`, the amber the warning chip

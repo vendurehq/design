@@ -64,7 +64,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)] aria-expanded:bg-[color-mix(in_oklab,var(--primary),var(--background)_14%)]",
+          "bg-primary text-primary-foreground shadow-control [--primary-hover:color-mix(in_oklab,var(--primary),var(--background)_14%)] hover:bg-(--primary-hover) aria-expanded:bg-(--primary-hover)",
         // Identity/marketing CTA only ("Start free trial", "Upgrade to Cloud"):
         // a deliberate brand moment, not a louder `default` primary. Brand is a
         // signature, not a wallpaper; see Button guidance before reaching for it.
