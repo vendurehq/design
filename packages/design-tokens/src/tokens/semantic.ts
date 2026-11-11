@@ -114,7 +114,7 @@ export const lightTheme = {
   'code-inline-border': 'var(--border)',
   // Hairline divider between peers. `input` is the stronger edge of an
   // outline Button, Toggle and ButtonGroup. Foreground mixes, like dark
-  // mode's white mixes: on white they render as neutral[100] and halfway
+  // mode's white mixes: on white they render as neutral[100] and
   // between neutral[100] and [200] (a softer button edge than neutral[200]),
   // and on a grey surface (a hovered row, `sidebar-accent`) the edge stays
   // the same step darker instead of disappearing.

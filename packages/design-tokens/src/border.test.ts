@@ -3,9 +3,9 @@ import { brand, neutral } from './tokens/colors.ts';
 import { darkTheme, lightTheme } from './tokens/semantic.ts';
 
 // Light `border` and `input` are translucent foreground mixes, so an edge stays
-// visible on a grey surface. On white they must render as the solid steps they
-// replaced (neutral[100] and neutral[200]), so a page of white cards looks the
-// same. Browsers composite alpha in gamma-encoded sRGB, so the check does too.
+// visible on a grey surface. On white, `border` renders as the solid step it
+// replaced (neutral[100]), so a page of white cards looks the same; `input`
+// renders softer than neutral[200]. Browsers composite alpha in gamma-encoded sRGB, so the check does too.
 
 type Rgb = [number, number, number];
 
@@ -47,7 +47,7 @@ function onWhite(value: string): number {
   return lightness(fg.map((c) => toLinear(alpha * toGamma(c) + (1 - alpha))) as Rgb);
 }
 
-describe('Light border tokens are translucent and match the old steps on white', () => {
+describe('Light border tokens are translucent, and render as set steps on white', () => {
   test('border renders as neutral[100] on white', () => {
     expect(
       Math.abs(onWhite(lightTheme.border) - lightness(oklchToLinear(neutral[100]))),
