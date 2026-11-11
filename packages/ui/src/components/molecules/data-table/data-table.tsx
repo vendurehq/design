@@ -151,8 +151,9 @@ const ROW_CHEVRON_SLOT_CLASS =
  * the end of the row: it fades in and slides 3px toward the end (fade only
  * under reduced motion). It is decorative: the link carries the name.
  *
- * While rows are selected, a click on the row selects it, and only the name
- * opens the item. The link stops stretching over the row and the row-end
+ * While rows are selected, a click on a built-in row selects it, and only
+ * the name opens the item. A row from `renderRow` has no click-to-select, so
+ * its link keeps covering the row. The link stops stretching over the row and the row-end
  * chevron hides. Hovering the row shows a small chevron after the name;
  * hovering or focusing the name colours it and the chevron blue, and the
  * chevron moves 2px toward the end. The blue is `info-text`, the text-safe
@@ -176,9 +177,9 @@ function DataTableRowLink({
           'group/row-link cursor-pointer font-medium text-foreground outline-none',
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
           // While rows are selected only the name is the link (see above).
-          'in-data-selecting:after:hidden in-data-selecting:rounded-sm in-data-selecting:transition-colors in-data-selecting:duration-quick in-data-selecting:ease-soft',
-          'in-data-selecting:hover:text-info-text in-data-selecting:focus-visible:text-info-text',
-          'in-data-selecting:focus-visible:outline-2 in-data-selecting:focus-visible:outline-offset-2 in-data-selecting:focus-visible:outline-ring in-data-selecting:focus-visible:outline-solid',
+          'in-data-click-selects:after:hidden in-data-click-selects:rounded-sm in-data-click-selects:transition-colors in-data-click-selects:duration-quick in-data-click-selects:ease-soft',
+          'in-data-click-selects:hover:text-info-text in-data-click-selects:focus-visible:text-info-text',
+          'in-data-click-selects:focus-visible:outline-2 in-data-click-selects:focus-visible:outline-offset-2 in-data-click-selects:focus-visible:outline-ring in-data-click-selects:focus-visible:outline-solid',
           className,
         ),
         children: (
@@ -192,8 +193,8 @@ function DataTableRowLink({
                 className={cn(
                   'pointer-events-none absolute start-1 top-1/2 size-3.75 -translate-y-1/2 opacity-0 rtl:-scale-x-100',
                   '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
-                  'in-data-selecting:group-hover/row:opacity-45 in-data-selecting:group-hover/row-link:opacity-100 in-data-selecting:group-focus-visible/row-link:opacity-100',
-                  'in-data-selecting:group-hover/row-link:translate-x-0.5 in-data-selecting:group-focus-visible/row-link:translate-x-0.5 rtl:in-data-selecting:group-hover/row-link:-translate-x-0.5 rtl:in-data-selecting:group-focus-visible/row-link:-translate-x-0.5',
+                  'in-data-click-selects:group-hover/row:opacity-45 in-data-click-selects:group-hover/row-link:opacity-100 in-data-click-selects:group-focus-visible/row-link:opacity-100',
+                  'in-data-click-selects:group-hover/row-link:translate-x-0.5 in-data-click-selects:group-focus-visible/row-link:translate-x-0.5 rtl:in-data-click-selects:group-hover/row-link:-translate-x-0.5 rtl:in-data-click-selects:group-focus-visible/row-link:-translate-x-0.5',
                   'motion-reduce:translate-x-0!',
                 )}
               />
@@ -1083,6 +1084,10 @@ function DataTable<TData>({
                       className={cn('group/row', LINKED_ROW_CLASS, ripple.className)}
                       style={ripple.style}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
+                      // While rows are selected a click on this row selects it
+                      // (onRowClickCapture), so only the name opens the item:
+                      // DataTableRowLink keys its look on this attribute.
+                      data-click-selects={selecting && row.getCanSelect() ? '' : undefined}
                       onClickCapture={onRowClickCapture(row)}
                       onMouseDown={onRowMouseDown}
                     >
