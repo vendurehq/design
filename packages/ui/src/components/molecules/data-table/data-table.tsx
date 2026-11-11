@@ -63,6 +63,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { ListRowChevron } from '@vendure-io/ui/components/molecules/list-row';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
@@ -149,6 +150,16 @@ const ROW_CHEVRON_SLOT_CLASS =
  * row. While the row is hovered or holds keyboard focus, a chevron appears at
  * the end of the row: it fades in and slides 3px toward the end (fade only
  * under reduced motion). It is decorative: the link carries the name.
+ *
+ * While rows are selected, a click on the row selects it, and only the name
+ * opens the item. The link stops stretching over the row and the row-end
+ * chevron hides. Hovering the row shows a small chevron after the name;
+ * hovering or focusing the name colours it and the chevron blue, and the
+ * chevron moves 2px toward the end. The blue is `info-text`, the text-safe
+ * step of the brand hue: `brand-indicator` is a mark colour and reads below
+ * 3:1 as text on a light selected row. The chevron overlays the
+ * cell's padding, so the name and the column do not move. The name stays a
+ * tab stop and a link, and its focus ring is drawn around the name.
  */
 function DataTableRowLink({
   className,
@@ -162,13 +173,31 @@ function DataTableRowLink({
     props: mergeProps<'a'>(
       {
         className: cn(
-          'cursor-pointer font-medium text-foreground outline-none in-data-selecting:cursor-default',
+          'group/row-link cursor-pointer font-medium text-foreground outline-none',
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
+          // While rows are selected only the name is the link (see above).
+          'in-data-selecting:after:hidden in-data-selecting:rounded-sm in-data-selecting:transition-colors in-data-selecting:duration-quick in-data-selecting:ease-soft',
+          'in-data-selecting:hover:text-info-text in-data-selecting:focus-visible:text-info-text',
+          'in-data-selecting:focus-visible:outline-2 in-data-selecting:focus-visible:outline-offset-2 in-data-selecting:focus-visible:outline-ring in-data-selecting:focus-visible:outline-solid',
           className,
         ),
         children: (
           <>
             {children}
+            {/* An empty inline box at the end of the name, so the chevron after
+                the name is placed without taking any space. */}
+            <span aria-hidden="true" data-slot="data-table-row-link-mark" className="relative">
+              <ChevronRight
+                strokeWidth={1.75}
+                className={cn(
+                  'pointer-events-none absolute start-1 top-1/2 size-3.75 -translate-y-1/2 opacity-0 rtl:-scale-x-100',
+                  '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
+                  'in-data-selecting:group-hover/row:opacity-45 in-data-selecting:group-hover/row-link:opacity-100 in-data-selecting:group-focus-visible/row-link:opacity-100',
+                  'in-data-selecting:group-hover/row-link:translate-x-0.5 in-data-selecting:group-focus-visible/row-link:translate-x-0.5 rtl:in-data-selecting:group-hover/row-link:-translate-x-0.5 rtl:in-data-selecting:group-focus-visible/row-link:-translate-x-0.5',
+                  'motion-reduce:translate-x-0!',
+                )}
+              />
+            </span>
             <ListRowChevron
               data-slot="data-table-row-chevron"
               className="pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden"
@@ -245,7 +274,8 @@ const bulkBandOpen = {
 // While rows are selected, a click on a row selects it instead of opening it.
 // These elements in a row keep their own click: the same list the linked row
 // lifts above its stretched link, plus the select checkbox and menu items. The
-// row link itself is not one of them: a click on it selects too. Only a
+// row link is not one of them: while rows are selected it does not stretch,
+// and the click handler lets a click on the name through. Only a
 // control inside the row counts: an ancestor of the table that matches (an app
 // shell's `<main tabindex="-1">`, the skip link target) is not a row control.
 const ROW_CONTROL_SELECTOR =
@@ -847,11 +877,11 @@ function DataTable<TData>({
     rowSelection != null && getSelectedRowIds(table.getState().rowSelection).length > 0;
   const showBulk = selecting && bulkActions != null;
 
-  // While rows are selected, a plain click on a row (the stretched row link
-  // included) selects or deselects it and does not open the item: capture
-  // phase, so a router link never sees the click. Clicks that still open the
-  // item: the keyboard (Enter fires a click with detail 0), Cmd/Ctrl/Alt+click,
-  // and the middle button (auxclick). Row controls keep their own click, and a
+  // While rows are selected, a plain click on a row selects or deselects it
+  // and does not open the item: capture phase, so a router link never sees the
+  // click. Clicks that still open the item: a click on the name (the row link,
+  // which no longer stretches over the row), the keyboard (Enter fires a click
+  // with detail 0), Cmd/Ctrl/Alt+click, and the middle button (auxclick). Row controls keep their own click, and a
   // click inside a portal (an open row menu) is not the row's.
   const onRowClickCapture = (row: Row<TData>) => (event: React.MouseEvent<HTMLElement>) => {
     if (!selecting || !row.getCanSelect()) return;
@@ -859,6 +889,10 @@ function DataTable<TData>({
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const target = event.target as Element;
     if (!event.currentTarget.contains(target) || isRowControl(target, event.currentTarget)) return;
+    // The name: the row link does not stretch while rows are selected, so a
+    // click that lands in it was on the name, and opens the item. Shift+click
+    // on it still extends the selection.
+    if (!event.shiftKey && target.closest('[data-slot=data-table-row-link]')) return;
     event.preventDefault();
     event.stopPropagation();
     selectAllRipple.end();

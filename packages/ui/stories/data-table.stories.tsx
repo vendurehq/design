@@ -1692,9 +1692,9 @@ export const RowBarHeights: Story = {
 /**
  * While rows are selected, a click on a row selects it or deselects it and
  * does not open the item, so many rows can be selected fast. Shift+click
- * selects the range from the last clicked row. The name link still opens the
- * item with the keyboard (Enter) and with Cmd/Ctrl+click or a middle click
- * (new tab). Row controls keep their own action, and the row hides its
+ * selects the range from the last clicked row. The name still opens the item:
+ * with a click (see NameOpensWhileSelecting), the keyboard (Enter), and
+ * Cmd/Ctrl+click or a middle click (new tab). Row controls keep their own action, and the row hides its
  * chevron while rows are selected. With nothing selected, the row opens the
  * item as before (the test runner checks that with a real mouse press).
  */
@@ -1824,6 +1824,105 @@ export const ClickSelectsWhileSelecting: Story = {
   },
 };
 
+/**
+ * While rows are selected, the item's name still opens the item: a click on
+ * the name opens it, a click anywhere else on the row selects the row.
+ * Hovering the row shows a small chevron after the name; hovering or focusing
+ * the name colours it and the chevron blue (`info-text`) and moves the
+ * chevron 2px. The chevron takes no space, so the name and the column do not
+ * move. With nothing selected the whole row opens the item, as before. The
+ * cell that opens the item is the one with `DataTableRowLink` around the name.
+ * The test runner presses the name of row 2 and then its price with a real
+ * mouse: the first opens the item, the second selects the row.
+ */
+export const NameOpensWhileSelecting: Story = {
+  parameters: {
+    pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' },
+    pressSelectsRow: { text: '$1,678.80', expectChecked: 'Select row 2' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    const nameOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+    const markOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link-mark] svg') as SVGElement;
+    const priceHit = (n: number) =>
+      hitAt(rowOf(n).querySelector('[data-column-id=price]') as Element);
+    const size = (element: Element) => {
+      const box = element.getBoundingClientRect();
+      return `${box.width}x${box.height}`;
+    };
+    clearHash();
+    const nameSize = size(nameOf(3));
+    const cellSize = size(nameOf(3).closest('td') as Element);
+
+    await step('with nothing selected, the name link covers the row and no chevron shows', async () => {
+      await expect(getComputedStyle(nameOf(3), '::after').display).not.toBe('none');
+      await expect(getComputedStyle(markOf(3)).opacity).toBe('0');
+    });
+
+    await step('while a row is selected, only the name is the link', async () => {
+      await user.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      await expect(getComputedStyle(nameOf(3), '::after').display).toBe('none');
+      await expect(nameOf(3)).toHaveAttribute('href', '#/variants/3');
+    });
+
+    await step('the chevron takes no space: the name and its cell keep their size', async () => {
+      await expect(size(nameOf(3))).toBe(nameSize);
+      await expect(size(nameOf(3).closest('td') as Element)).toBe(cellSize);
+    });
+
+    await step('a click on the name opens the item and keeps the selection', async () => {
+      await user.click(nameOf(3));
+      await expect(location.hash).toBe('#/variants/3');
+      await expect([checked(1), checked(3)]).toEqual([true, false]);
+      clearHash();
+    });
+
+    await step('a click anywhere else on the row selects it', async () => {
+      await user.click(priceHit(3));
+      await waitFor(() => expect(checked(3)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('Shift+click on a name extends the selection', async () => {
+      await user.keyboard('{Shift>}');
+      await user.click(nameOf(4));
+      await user.keyboard('{/Shift}');
+      await waitFor(() => expect(checked(4)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('the name is the next tab stop after the checkbox, and Enter opens it', async () => {
+      checkbox(2).focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(nameOf(2));
+      await expect(canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' })).toBe(nameOf(2));
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/variants/2');
+      await expect(checked(2)).toBe(false);
+      clearHash();
+      nameOf(2).blur();
+    });
+  },
+};
+
 // A square product thumbnail, as a list's featured asset cell shows it. Inline,
 // so the story loads no image.
 const THUMBNAIL =
@@ -1844,12 +1943,13 @@ const productRowColumns: ColumnDef<Variant>[] = [
  * A product list inside an app shell, built as the Vendure Dashboard builds
  * it: a thumbnail cell, the name as the row link, a copy chip and a row menu,
  * in a `<main tabindex="-1">` (the skip link target). While a row is selected,
- * a click on the thumbnail, the name or a plain cell selects the row and does
- * not open it; the copy chip and the row menu keep their own action. The test
- * runner presses the name of row 2 with a real mouse and expects it selected.
+ * a click on the thumbnail, beside the name or on a plain cell selects the row
+ * and does not open it; the copy chip and the row menu keep their own action.
+ * The test runner presses the name of row 2 with a real mouse and expects it
+ * to open the item.
  */
 export const ClickSelectsInAppShell: Story = {
-  parameters: { pressSelectsRow: { text: 'Laptop 15 inch 8GB', expectChecked: 'Select row 2' } },
+  parameters: { pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' } },
   render: () => {
     const [selection, setSelection] = useState<RowSelectionState>({ '1': true });
     return (
@@ -1889,6 +1989,7 @@ export const ClickSelectsInAppShell: Story = {
     clearHash();
     await expect(checked(1)).toBe(true);
 
+    // The centre of the name cell is beside the name, not on it.
     for (const column of ['featuredAsset', 'name', 'enabled']) {
       await step(`a click on the ${column} cell selects the row, a second click deselects it`, async () => {
         await userEvent.click(cellHit(3, column));
