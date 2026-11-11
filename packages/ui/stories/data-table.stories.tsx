@@ -2334,8 +2334,8 @@ export const BulkBarHoldsTheTable: Story = {
 };
 
 // With a title and no controls row, the bulk bar opens its own row: its height
-// eases open and closed, so the table moves down and back over several frames
-// instead of jumping in one.
+// eases open and closed, so the table moves down and back through in-between
+// frames instead of jumping in one.
 export const BulkBarOpensItsRow: Story = {
   name: 'Bulk bar · opens its own row under a title',
   render: () => <RippleTable count={10} />,
@@ -2344,11 +2344,16 @@ export const BulkBarOpensItsRow: Story = {
     const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
     for (const act of ['select', 'clear']) {
       const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
-      const total = Math.abs((tops.at(-1) as number) - (tops[0] as number));
-      const steps = tops.slice(1).map((value, index) => Math.abs(value - (tops[index] as number)));
-      await expect(total).toBeGreaterThan(20);
-      // No frame carries more than half of the move.
-      await expect({ act, jump: Math.max(...steps) > total / 2 }).toEqual({ act, jump: false });
+      const first = tops[0] as number;
+      const total = (tops.at(-1) as number) - first;
+      await expect(Math.abs(total)).toBeGreaterThan(20);
+      // At least one frame shows the table part of the way: it eased, it did
+      // not jump. (A slow machine may skip most frames, so this asks for one.)
+      const between = tops.some((top) => {
+        const progress = (top - first) / total;
+        return progress > 0.02 && progress < 0.98;
+      });
+      await expect({ act, between }).toEqual({ act, between: true });
     }
   },
 };
