@@ -63,9 +63,15 @@ function DataTableBulkActions<TData>({
   const selectedRowIds = getSelectedRowIds(selection);
   if (selectedRowIds.length === 0) return null;
 
+  const loaded = getSelectedOriginals(selection, cache);
   const ctx: DataTableBulkActionContext<TData> = {
-    selection: getSelectedOriginals(selection, cache),
+    selection: loaded,
     selectedRowIds,
+    selectedCount: selectedRowIds.length,
+    // The cache holds a row once the table has shown it, so an id it lacks is on
+    // a page not seen yet, still loading, or no longer exists.
+    missingRowIds:
+      loaded.length === selectedRowIds.length ? [] : selectedRowIds.filter((id) => !cache.has(id)),
     table,
     clearSelection: () => table.resetRowSelection(),
   };
