@@ -1499,6 +1499,81 @@ export const LookupKeyNamesTheRow: Story = {
 };
 
 /**
+ * The same orders while a row is selected. The code is screen-reader text in
+ * the link, so the row has no visible name to click. The chevron at the end of
+ * the row is the target instead: it shows on row hover, turns blue on its own
+ * hover or focus, and its click area is the full row height at the row end. A
+ * click anywhere else selects the row, and the code chip still copies. The
+ * test runner presses the code chip, then the customer of row 3, then the end
+ * of row 2 with a real mouse: the first copies, the second selects row 3, the
+ * third opens order 2.
+ */
+export const LookupKeyWhileSelecting: Story = {
+  parameters: {
+    pressText: { text: '314NGLFNXPVUXEBN', expectButton: 'Copied' },
+    pressSelectsRow: { text: 'Eliezer Kulas', expectChecked: 'Select row 3' },
+    pressRowEnd: { row: 'Hilario Thompson', expectHash: '#/orders/AX3KCVNM39QM6R1A' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({ YVWJLP9HGJHH7EVK: true });
+    return (
+      <DataTable<OrderRow>
+        rows={orderRows}
+        columns={orderRowColumns}
+        getRowId={(order) => order.code}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const link = canvas.getByRole('link', { name: 'AX3KCVNM39QM6R1A' });
+    const tr = link.closest('tr') as HTMLTableRowElement;
+    const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+    clearHash();
+
+    await step('the link has no visible name, and its target is the row end', async () => {
+      await expect(link).toHaveAttribute('data-nameless');
+      const target = getComputedStyle(link, '::after');
+      await expect(target.display).toBe('block');
+      const width = Number.parseFloat(target.width);
+      await expect(width).toBeGreaterThanOrEqual(24);
+      // The full row height, inside the row's 1px bottom border.
+      await expect(Number.parseFloat(target.height)).toBe(tr.getBoundingClientRect().height - 1);
+      const row = tr.getBoundingClientRect();
+      const end = document.elementFromPoint(row.right - 12, row.top + row.height / 2);
+      await expect(end).toBe(link);
+      await expect(getComputedStyle(link).cursor).toBe('pointer');
+    });
+
+    await step('the row-end chevron shows instead of hiding', async () => {
+      const chevron = tr.querySelector('[data-slot=data-table-row-chevron]') as SVGElement;
+      await expect(getComputedStyle(chevron).display).toBe('block');
+    });
+
+    await step('a click on the customer selects the row and opens nothing', async () => {
+      await user.click(hitAt(within(tr).getByText('Hilario Thompson')));
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+      await expect(location.hash).toBe('');
+      await user.click(checkbox);
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
+    });
+
+    await step('the link is a tab stop after the checkbox, and Enter opens the order', async () => {
+      checkbox.focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(link);
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/orders/AX3KCVNM39QM6R1A');
+      clearHash();
+      link.blur();
+    });
+  },
+};
+
+/**
  * Keyboard selection: Space toggles the focused checkbox and focus stays on
  * it, so a keyboard user selects several rows with Space and Tab. The
  * selection and the row actions are passed inline, as most consumers do; the
