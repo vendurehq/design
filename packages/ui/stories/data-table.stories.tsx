@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
 import { Fragment, useMemo, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
@@ -26,6 +27,7 @@ import {
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
+  type DataTableProps,
   DataTableRowLink,
   DataTableSkeletonLine,
   type RowSelectionState,
@@ -47,6 +49,7 @@ import {
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
+import { cn } from '../src/lib/utils.ts';
 import { formatElapsed } from '../src/lib/format-elapsed.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 
@@ -1442,12 +1445,34 @@ export const SelectionMotion: Story = {
 // or clear the selection on this page. One page of 10 or 50 rows, so both
 // sizes can be compared. With a header, the bulk bar replaces the header
 // controls, as on a list page, and the rows stay put.
-function RippleTable({ count }: { count: number }) {
+// A row the consumer renders itself, as a draggable row does: it sets its own
+// inline `transform` and `opacity`, and takes the ripple from `ctx.ripple`. The
+// timing is custom properties only, so spreading it first loses nothing.
+const renderCustomRippleRow: NonNullable<DataTableProps<Order>['renderRow']> = (
+  row,
+  { ripple },
+) => (
+  <TableRow
+    data-custom-row=""
+    data-state={row.getIsSelected() ? 'selected' : undefined}
+    className={cn('group/row', ripple.className)}
+    style={{ ...ripple.style, transform: 'translate3d(0, 0, 0)', opacity: 1 }}
+  >
+    {row.getVisibleCells().map((cell) => (
+      <TableCell key={cell.id} data-column-id={cell.column.id} data-content-inset-cell="">
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </TableCell>
+    ))}
+  </TableRow>
+);
+
+function RippleTable({ count, custom = false }: { count: number; custom?: boolean }) {
   const [selection, setSelection] = useState<RowSelectionState>({});
   const rows = useMemo(() => pagedOrders.concat(pagedOrders).slice(0, count), [count]);
   return (
     <DataTable<Order>
       rows={rows}
+      renderRow={custom ? renderCustomRippleRow : undefined}
       columns={columns}
       getRowId={(order, index) => `${order.id}-${index}`}
       header={
@@ -1480,8 +1505,9 @@ const rippleStarts = (canvasElement: HTMLElement) =>
 // Select all starts at the top row and travels down, and its last row starts
 // within `normal` (200ms) however many rows the page has. Clear all takes the
 // same order within `fast` (100ms).
-const playSelectAllRipple: Story['play'] = async ({ canvasElement, step }) => {
+const playSelectAllRipple: Story['play'] = async ({ canvasElement, step, parameters }) => {
   const canvas = within(canvasElement);
+  const expectedCustomRows = parameters.customRows as number | undefined;
   const table = canvasElement.querySelector('table[data-slot=table]') as HTMLElement;
   const expectRipple = (starts: number[], ceiling: number) => {
     expect(starts[0]).toBe(0);
@@ -1491,6 +1517,17 @@ const playSelectAllRipple: Story['play'] = async ({ canvasElement, step }) => {
     }
     expect(Math.max(...starts)).toBeLessThanOrEqual(ceiling);
   };
+
+  if (expectedCustomRows != null) {
+    await step('the rows are the consumer\'s own, each with its own inline transform', async () => {
+      const customRows = canvasElement.querySelectorAll<HTMLElement>('tbody tr[data-custom-row]');
+      await expect(customRows).toHaveLength(expectedCustomRows);
+      for (const row of customRows) {
+        await expect(row.style.transform).toBe('translate3d(0px, 0px, 0px)');
+        await expect(row.style.getPropertyValue('--ripple-at')).not.toBe('');
+      }
+    });
+  }
 
   await step('select all ripples down from the header checkbox', async () => {
     await userEvent.click(canvas.getByRole('checkbox', { name: 'Select all rows' }));
@@ -1508,6 +1545,14 @@ const playSelectAllRipple: Story['play'] = async ({ canvasElement, step }) => {
     await waitFor(() => expect(table).not.toHaveAttribute('data-select-ripple'));
     await expect(Math.max(...rippleStarts(canvasElement))).toBe(0);
   });
+
+  if (expectedCustomRows != null) {
+    await step('the custom rows kept their own transform through the ripple', async () => {
+      for (const row of canvasElement.querySelectorAll<HTMLElement>('tbody tr[data-custom-row]')) {
+        await expect(row.style.transform).toBe('translate3d(0px, 0px, 0px)');
+      }
+    });
+  }
 };
 
 export const SelectAllRipple10: Story = {
@@ -1519,6 +1564,24 @@ export const SelectAllRipple10: Story = {
 export const SelectAllRipple50: Story = {
   name: 'Select all ripple · 50 rows',
   render: () => <RippleTable count={50} />,
+  play: playSelectAllRipple,
+};
+
+// Rows the consumer renders through `renderRow` take the same ripple from
+// `ctx.ripple`: the same order from the top, within the same 200ms and 100ms.
+// Each row sets its own inline `transform` and `opacity`, as a draggable row
+// does, and keeps them. A row that ignores `ctx.ripple` changes at once.
+export const SelectAllRippleCustomRows10: Story = {
+  name: 'Select all ripple · custom rows · 10 rows',
+  parameters: { customRows: 10 },
+  render: () => <RippleTable count={10} custom />,
+  play: playSelectAllRipple,
+};
+
+export const SelectAllRippleCustomRows50: Story = {
+  name: 'Select all ripple · custom rows · 50 rows',
+  parameters: { customRows: 50 },
+  render: () => <RippleTable count={50} custom />,
   play: playSelectAllRipple,
 };
 

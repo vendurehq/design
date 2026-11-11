@@ -52,6 +52,7 @@ import {
 import type {
   ControlledState,
   DataTableProps,
+  DataTableRowRipple,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
 import {
@@ -1024,10 +1025,14 @@ function DataTable<TData>({
             ) : (
               <>
                 {bodyRows.map((row, rowIndex) => {
+                  const ripple: DataTableRowRipple = {
+                    className: SELECT_RIPPLE_ROW_CLASS,
+                    style: rippleTiming(rowIndex, bodyRows.length),
+                  };
                   const rowNode = (
                     <TableRow
-                      className={cn('group/row', LINKED_ROW_CLASS, SELECT_RIPPLE_ROW_CLASS)}
-                      style={rippleTiming(rowIndex, bodyRows.length)}
+                      className={cn('group/row', LINKED_ROW_CLASS, ripple.className)}
+                      style={ripple.style}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       onClickCapture={onRowClickCapture(row)}
                       onMouseDown={onRowMouseDown}
@@ -1063,7 +1068,7 @@ function DataTable<TData>({
                   // express. Returning `defaultRow` keeps the built-in rendering.
                   return (
                     <React.Fragment key={row.id}>
-                      {renderRow ? renderRow(row, { table, columnCount, defaultRow }) : defaultRow}
+                      {renderRow ? renderRow(row, { table, columnCount, defaultRow, ripple }) : defaultRow}
                     </React.Fragment>
                   );
                 })}

@@ -501,6 +501,29 @@ import {
 - A missing or `undefined` entry renders the default line. `null` renders an empty cell.
 - The generated actions column (key `actions`) defaults to an icon-button-sized block and can be overridden. The generated select cell is always empty, because its checkbox is hidden until hover.
 
+### DataTable custom rows
+
+`renderRow` replaces the row the table renders. Select all and clear all ripple down the rows, each row starting a little after the one above, and a row you render yourself joins that ripple when it takes `ctx.ripple`:
+
+```tsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  renderRow={(row, { ripple }) => (
+    <SortableRow
+      row={row}
+      className={cn("group/row", ripple.className)}
+      style={{ ...ripple.style, transform, transition }}
+    />
+  )}
+/>
+```
+
+- `ctx.ripple.className` goes into your row's `className`. `ctx.ripple.style` is spread before your own `style`. It holds only the custom properties `--ripple-at` and `--ripple-span`, so an inline `transform`, `transition` or `opacity` (a drag) never collides with it.
+- Set `data-state="selected"` on the row while it is selected, as the built-in rows do. The row must be a `TableRow` (or carry its classes) so the selection bar exists.
+- A row that ignores `ctx.ripple` still works. It changes at once, while the rows around it ripple.
+- Returning `ctx.defaultRow` needs nothing: it already has the ripple. Reduced motion: no ripple.
+
 ### DataTable row links
 
 A row that opens a detail page opens it from any point of the row. Wrap the item name in `DataTableRowLink`. It renders an `<a>`; pass `href`, or `render` with a router link:
