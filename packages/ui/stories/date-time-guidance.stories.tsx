@@ -132,7 +132,7 @@ const RULES: { n: number; title: string; body: string }[] = [
   {
     n: 5,
     title: 'Pin locale and time zone under SSR',
-    body: 'Both molecules format against the runtime locale/zone, so a server render and the first client render can disagree. SSR consumers pin both via FormatProvider (or props) so hydration matches.',
+    body: 'DateTime formats against the runtime locale and zone, so a server render and the first client render can disagree: SSR consumers pin both via FormatProvider (or props) so hydration matches. RelativeTime also depends on the reader\'s clock, so the server and the first client render show its fallback, and the text follows right after hydration. An app that renders only in the browser shows the text from its first paint.',
   },
 ];
 
