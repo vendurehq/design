@@ -41,6 +41,30 @@ function DialogOverlay({
   )
 }
 
+// Tells DialogHeader to host the close button, so the ✕ stays pinned with the
+// header while the body scrolls.
+const DialogCloseButtonContext = React.createContext(false)
+
+function DialogCloseButton({ className }: { className?: string }) {
+  return (
+    <DialogPrimitive.Close
+      data-slot="dialog-close"
+      // top-4 centres the 28px button on the title's first line.
+      render={
+        <Button
+          variant="ghost"
+          className={cn("absolute top-4 end-3.5", className)}
+          size="icon-sm"
+        />
+      }
+    >
+      <XIcon
+      />
+      <span className="sr-only">Close</span>
+    </DialogPrimitive.Close>
+  )
+}
+
 function DialogContent({
   className,
   children,
@@ -62,47 +86,53 @@ function DialogContent({
     <DialogPortal>
       <DialogOverlay className={overlayClassName} />
       {/* Enters from 4px below at 96%: opacity 200ms, scale and translate 240ms on the strong ease-out. Leaves to 98% on `ease` (opacity 120ms, scale 140ms). The scrim fades in 180ms and out in 140ms. Reduced motion keeps the fades. */}
+      {/* At most the viewport height less 1rem on each side. A taller dialog scrolls inside; DialogHeader and DialogFooter stick to its top and bottom edges. */}
       <DialogPrimitive.Popup
         dir={dir}
         data-slot="dialog-content"
         className={cn(
-          "bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-soft motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
-          // The header stops before the close button, so a long title wraps instead of running under it.
-          showCloseButton && "**:data-[slot=dialog-header]:pe-9",
+          "group/dialog-content bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto overscroll-contain rounded-2xl p-5 text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-soft motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
           className
         )}
         {...props}
       >
-        {children}
+        <DialogCloseButtonContext.Provider value={showCloseButton}>
+          {children}
+        </DialogCloseButtonContext.Provider>
+        {/* A dialog without a DialogHeader keeps the ✕ here, in the corner. */}
         {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            // top-4 centres the 28px button on the title's first line.
-            render={
-              <Button
-                variant="ghost"
-                className="absolute top-4 end-3.5"
-                size="icon-sm"
-              />
-            }
-          >
-            <XIcon
-            />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
+          <DialogCloseButton className="group-has-data-[slot=dialog-header]/dialog-content:hidden" />
         )}
       </DialogPrimitive.Popup>
     </DialogPortal>
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+// The header and the footer reach over the dialog's 20px padding and 16px of
+// the 20px gap beside them, with the dialog's surface behind, so a scrolled
+// body passes under them and stays clear of their text. The 4px left of the
+// gap keeps a field's focus ring visible. The margins cancel the paddings: a
+// short dialog keeps its layout. The sticky offsets are -20px because a
+// sticky box sticks inside the scroll container's padding.
+const pinned = "sticky z-10 -mx-5 bg-overlay px-5"
+
+function DialogHeader({ className, children, ...props }: React.ComponentProps<"div">) {
+  const showCloseButton = React.useContext(DialogCloseButtonContext)
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2.5", className)}
+      className={cn(
+        pinned,
+        "-top-5 -mt-5 -mb-4 flex flex-col gap-2.5 pt-5 pb-4",
+        // The text stops before the close button, so a long title wraps instead of running under it.
+        showCloseButton && "pe-14",
+        className
+      )}
       {...props}
-    />
+    >
+      {children}
+      {showCloseButton && <DialogCloseButton />}
+    </div>
   )
 }
 
@@ -118,7 +148,8 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        pinned,
+        "-bottom-5 -mt-4 -mb-5 flex flex-col-reverse gap-2 pt-4 pb-5 sm:flex-row sm:justify-end",
         className
       )}
       {...props}
