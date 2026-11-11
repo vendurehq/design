@@ -20,6 +20,7 @@
     "./components/molecules/direction-link": null,
     "./components/molecules/time-tooltip": null,
     "./lib/*": "./src/lib/*.ts",
+    "./lib/popup-align": null,
     "./lib/popup-direction": null,
     "./lib/popup-motion": null,
     "./hooks/*": "./src/hooks/*.ts",
