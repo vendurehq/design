@@ -43,6 +43,13 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('border-input');
   });
 
+  test('light outline paints its fill under the border, except inside a group', () => {
+    // A padding-clipped fill lets shadow-control show through the translucent
+    // light border, which darkens the side edges. Dark keeps the clip.
+    const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
+    expect(tokens).toContain('not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border');
+  });
+
   test('primary, brand, outline and destructive sit on shadow-control; disabled drops it', () => {
     for (const variant of ['default', 'brand', 'outline', 'destructive'] as const) {
       expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
