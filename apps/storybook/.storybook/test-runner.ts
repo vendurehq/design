@@ -319,7 +319,7 @@ const config: TestRunnerConfig = {
       failures.push(
         ...blocking.map(
           (violation) =>
-            `- [${theme}] [${violation.impact}] ${violation.id}: ${violation.help} (${violation.nodes.length} node(s)) — ${violation.helpUrl}`,
+            `- [${theme}] [${violation.impact}] ${violation.id}: ${violation.help} (${violation.nodes.length} node(s)) — ${violation.helpUrl}\n${violation.nodes.map((node) => `    ${node.target.join(' ')}: ${node.any[0]?.message ?? ''}`).join('\n')}`,
         ),
       );
     }
