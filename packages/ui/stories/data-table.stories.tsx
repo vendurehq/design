@@ -514,9 +514,9 @@ export const RowSelection: Story = {
           </InputGroup>
         }
         columnVisibility={{ defaultValue: {} }}
-        bulkActions={({ selection: selected, clearSelection }) => (
+        bulkActions={({ selectedCount, clearSelection }) => (
           <>
-            <span className="text-sm font-medium">{selected.length} selected</span>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
             <Button variant="outline" size="sm">
               Mark as shipped
             </Button>
@@ -547,6 +547,7 @@ function StoredSelectionTable({
   const [page, setPage] = useState(1);
   const [channel, setChannel] = useState('a');
   const [mount, setMount] = useState(0);
+  const [received, setReceived] = useState<number>();
   const [selection, setSelection] = useState<RowSelectionState>({});
   const pageRows = useMemo(() => pagedOrders.slice((page - 1) * 10, page * 10), [page]);
   const count = Object.keys(selection).filter((id) => selection[id]).length;
@@ -588,6 +589,20 @@ function StoredSelectionTable({
           totalItems: pagedOrders.length,
           onPageChange: setPage,
         }}
+        // The count is the count of the ids. The action acts on the ids, and says
+        // so when the rows it has are fewer than the ids.
+        bulkActions={({ selectedCount, selectedRowIds, selection: loaded, missingRowIds }) => (
+          <>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
+            <Button variant="outline" size="sm" onClick={() => setReceived(selectedRowIds.length)}>
+              Archive
+            </Button>
+            <span data-testid="bulk-received" className="text-sm">
+              {received == null ? 'Not run' : `Archived ${received} ids`}
+              {missingRowIds.length > 0 && ` (${loaded.length} loaded, ${missingRowIds.length} not)`}
+            </span>
+          </>
+        )}
       />
     </div>
   );
@@ -636,6 +651,13 @@ const playStoredSelection =
       await userEvent.click(canvas.getByRole('button', { name: 'Remount the table' }));
       await waitFor(() => expect(row(1)).toHaveAttribute('aria-checked', 'true'));
       await expect(count()).toHaveTextContent('3 selected');
+      // The bar and the action agree on 3, though only the rows of the loaded page
+      // (p11) are known after the remount: the action is told the others are missing.
+      await expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible();
+      await userEvent.click(canvas.getByRole('button', { name: 'Archive' }));
+      await expect(canvas.getByTestId('bulk-received')).toHaveTextContent(
+        'Archived 3 ids (1 loaded, 2 not)',
+      );
       await userEvent.click(canvas.getByRole('button', { name: 'Go to previous page' }));
       await waitFor(() => expect(row(2)).toHaveAttribute('aria-checked', 'true'));
     });
@@ -1569,9 +1591,9 @@ export const SelectionMotion: Story = {
         columns={columns}
         getRowId={(order) => order.id}
         rowSelection={{ value: selection, onChange: setSelection }}
-        bulkActions={({ selection: selected, clearSelection }) => (
+        bulkActions={({ selectedCount, clearSelection }) => (
           <>
-            <span className="text-sm font-medium">{selected.length} selected</span>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
             <Button variant="outline" size="sm" onClick={clearSelection}>
               Clear
             </Button>
@@ -1690,9 +1712,9 @@ function RippleTable({ count, custom = false }: { count: number; custom?: boolea
         </PageHeader>
       }
       rowSelection={{ value: selection, onChange: setSelection }}
-      bulkActions={({ selection: selected, clearSelection }) => (
+      bulkActions={({ selectedCount, clearSelection }) => (
         <>
-          <span className="text-sm font-medium">{selected.length} selected</span>
+          <span className="text-sm font-medium">{selectedCount} selected</span>
           <Button variant="outline" size="sm" onClick={clearSelection}>
             Clear
           </Button>
