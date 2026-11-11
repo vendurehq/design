@@ -116,7 +116,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text and keyboard hints; `text-2xs` (11px) is micro text
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
-- **Text styles**: named type compositions (font, size, weight, tracking, leading — no color), applied as a single utility class:
+- **Text styles**: named type compositions (font, size, weight, tracking, leading, line breaking — no color), applied as a single utility class:
   - `text-style-page-title` (22px), `text-style-section-title` (16px, section and dialog titles), `text-style-card-title` (14px, popover and compact state titles; `CardTitle` sets its title at 13px in `foreground-secondary`) — heading font
   - `text-style-body` — body font
   - `text-style-caption` — small print
