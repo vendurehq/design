@@ -71,6 +71,18 @@ describe('v3 overlay look', () => {
     });
   }
 
+  // Other content that floats above the page: the same surface and edge as a
+  // popup, with no motion or radius rule of its own.
+  for (const file of ['chart.tsx', 'sheet.tsx']) {
+    test(`${file} floats on the overlay shadow, not a border or a ring`, () => {
+      const code = source(file);
+      const floatingClasses = code.split('\n').find((line) => line.includes('shadow-overlay')) ?? '';
+      expect(floatingClasses).not.toBe('');
+      expect(floatingClasses).not.toMatch(/(^|[\s"':])(border|ring)(-[trblxy])?(-\d+)?(?=[\s"'])/);
+      expect(code).not.toContain('ring-foreground/10');
+    });
+  }
+
   for (const file of popups) {
     test(`${file} opens like the v3-look menu`, () => {
       expect(source(file)).toContain('popupMotion');
