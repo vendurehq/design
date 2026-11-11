@@ -29,7 +29,7 @@ describe('Alert tone variants', () => {
       expect(tokens).toContain(`[--alert-tone:var(--${tints[tone as keyof typeof tints]})]`);
       expect(tokens).toContain('[--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))]');
       expect(tokens).toContain(
-        '[--alert-border:color-mix(in_oklab,var(--alert-tone)_22%,var(--border))]',
+        '[--alert-border:color-mix(in_oklab,var(--alert-tone)_14%,var(--border))]',
       );
       expect(tokens).toContain(
         'dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)]',
