@@ -112,13 +112,14 @@ export const lightTheme = {
   // Inline code chip: the secondary intensity fill with the standard border.
   'code-inline': 'var(--secondary)',
   'code-inline-border': 'var(--border)',
-  // Hairline divider between peers. `input` is the stronger edge of text
-  // inputs and other controls that need a visible outline.
+  // Hairline divider between peers. `input` is the stronger edge of an
+  // outline Button, Toggle and ButtonGroup: between neutral-100 and -200, so
+  // the edge on a white card reads as a button without a hard line.
   border: neutral[100],
-  input: neutral[200],
+  input: `color-mix(in oklab, ${neutral[100]}, ${neutral[200]})`,
   // Boundary of controls that have no other visible edge: unchecked
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
-  // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
+  // (WCAG 1.4.11) on every surface tier. Text fields keep `border`.
   'control-border': 'oklch(0.62 0.005 231)',
   // Brand focus ring: the brand indicator blue, the v3 look's ring. It follows
   // `brand-indicator`, so it has the same ratios (the contrast test checks both slots).
