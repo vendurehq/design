@@ -527,6 +527,20 @@ export const uiGuidance = [
     related: ['button', 'confirm-dialog'],
   },
   {
+    id: 'hover-card',
+    title: 'HoverCard',
+    summary:
+      'A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.',
+    sourceStory: 'hover-card-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Do not set align unless there is a reason',
+        body: 'Without an align, HoverCardContent opens toward the centre of the screen: a trigger in the right half lines the card up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout. An explicit align always wins. align="center" brings back the old look, centred on the trigger.',
+      },
+    ],
+    related: ['popover', 'tooltip'],
+  },
+  {
     id: 'id-chip',
     title: 'IdChip',
     summary:
