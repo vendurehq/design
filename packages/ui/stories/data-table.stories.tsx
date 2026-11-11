@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
+import { CircleSlashIcon, MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
@@ -20,6 +20,7 @@ import {
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -33,8 +34,11 @@ import {
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
+import { DateTime } from '../src/components/molecules/date-time.tsx';
+import { ElapsedTime } from '../src/components/molecules/elapsed-time.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
 import { Money } from '../src/components/molecules/money.tsx';
+import { RelativeTime } from '../src/components/molecules/relative-time.tsx';
 import {
   PageHeader,
   PageHeaderActions,
@@ -43,6 +47,8 @@ import {
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
+import { formatElapsed } from '../src/lib/format-elapsed.ts';
+import type { Tone } from '../src/lib/state-dictionary.ts';
 
 // Realistic commerce data: a page of orders, the canonical DataTable use case in
 // a Vendure surface. `total` is in minor units (cents), rendered through <Money>.
@@ -1789,6 +1795,265 @@ export const SelectCellClickArea: Story = {
       await userEvent.keyboard(' ');
       await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
       checkbox.blur();
+    });
+  },
+};
+
+// A deployments table: every row has a status, so the status is the tone icon
+// and a neutral label, with the one time that matters for the state under it.
+// A live or waiting state counts up every second; a finished state shows when
+// it finished, relative to now; a state that continues shows how long it has
+// lasted. The exact finish, start and duration are in a tooltip on the time,
+// which is a tab stop, so the table needs no Duration or Created column.
+
+type DeploymentTiming =
+  | { kind: 'live'; started: number }
+  | { kind: 'waiting'; queued: number }
+  | { kind: 'finished'; started: number; finished: number }
+  | { kind: 'since'; since: number };
+
+interface Deployment {
+  id: string;
+  name: string;
+  status: string;
+  tone: Tone;
+  icon?: React.ReactNode;
+  environment: string;
+  timing: DeploymentTiming;
+}
+
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+const LOADED = Date.now();
+
+const deployments: Deployment[] = [
+  {
+    id: 'ready',
+    name: 'feat: add a minimal Vendure Cloud app',
+    status: 'Ready',
+    tone: 'success',
+    environment: 'Production',
+    timing: { kind: 'finished', started: LOADED - 2 * MINUTE - 42 * SECOND, finished: LOADED - 2 * MINUTE },
+  },
+  {
+    id: 'building',
+    name: 'build: move @vendure/core to devDependencies',
+    status: 'Building',
+    tone: 'progress',
+    environment: 'Preview',
+    timing: { kind: 'live', started: LOADED - 75 * SECOND },
+  },
+  {
+    id: 'deploying',
+    name: 'feat: add a deploy hook to the CLI',
+    status: 'Deploying',
+    tone: 'progress',
+    environment: 'Preview',
+    timing: { kind: 'live', started: LOADED - 31 * SECOND },
+  },
+  {
+    id: 'queued',
+    name: 'docs: refresh README branding',
+    status: 'Queued',
+    tone: 'neutral',
+    environment: 'Preview',
+    timing: { kind: 'waiting', queued: LOADED - 9 * MINUTE - 4 * SECOND },
+  },
+  {
+    id: 'failed',
+    name: 'fix: type the server app from @vendure/core',
+    status: 'Failed',
+    tone: 'critical',
+    environment: 'Production',
+    timing: { kind: 'finished', started: LOADED - 63 * MINUTE, finished: LOADED - 62 * MINUTE },
+  },
+  {
+    id: 'canceled',
+    name: 'revert: undo the Vendure Cloud build changes',
+    status: 'Canceled',
+    tone: 'neutral',
+    icon: <CircleSlashIcon />,
+    environment: 'Preview',
+    timing: { kind: 'finished', started: LOADED - DAY - 8 * SECOND, finished: LOADED - DAY },
+  },
+  {
+    id: 'degraded',
+    name: 'chore: bump the worker plugin to 3.1',
+    status: 'Degraded',
+    tone: 'warning',
+    environment: 'Production',
+    timing: { kind: 'since', since: LOADED - 13 * DAY },
+  },
+];
+
+// How long a state that continues has lasted, in whole days: "13 days".
+const days = new Intl.NumberFormat(undefined, { style: 'unit', unit: 'day', unitDisplay: 'long' });
+
+function Exact({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      {label} <DateTime value={value} dateStyle="medium" timeStyle="medium" />
+    </div>
+  );
+}
+
+// The second line, and its tooltip with the exact times.
+function DeploymentTime({ timing }: { timing: DeploymentTiming }) {
+  let time: React.ReactNode;
+  let exact: React.ReactNode;
+  switch (timing.kind) {
+    case 'live':
+      time = <ElapsedTime since={timing.started} />;
+      exact = <Exact label="Started" value={timing.started} />;
+      break;
+    case 'waiting':
+      time = (
+        <>
+          Waiting <ElapsedTime since={timing.queued} />
+        </>
+      );
+      exact = <Exact label="Queued" value={timing.queued} />;
+      break;
+    case 'finished':
+      // The tooltip around the line holds the exact time, so RelativeTime
+      // opens none of its own.
+      time = <RelativeTime value={timing.finished} tooltip={false} />;
+      exact = (
+        <>
+          <Exact label="Finished" value={timing.finished} />
+          <Exact label="Started" value={timing.started} />
+          <div>Duration {formatElapsed(timing.finished - timing.started)}</div>
+        </>
+      );
+      break;
+    case 'since':
+      time = `for ${days.format(Math.floor((LOADED - timing.since) / DAY))}`;
+      exact = <Exact label="Since" value={timing.since} />;
+      break;
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span
+            // A tab stop, so keyboard users can open the exact times.
+            tabIndex={0}
+            className="rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid"
+          />
+        }
+      >
+        {time}
+      </TooltipTrigger>
+      <TooltipContent className="tabular-nums">{exact}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+const deploymentColumns: ColumnDef<Deployment>[] = [
+  { accessorKey: 'name', header: 'Name' },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => (
+      <StatusBadge
+        appearance="icon"
+        tone={row.original.tone}
+        icon={row.original.icon}
+        detail={<DeploymentTime timing={row.original.timing} />}
+      >
+        {row.original.status}
+      </StatusBadge>
+    ),
+  },
+  { accessorKey: 'environment', header: 'Environment' },
+];
+
+// The left edge of the first rendered letter of an element.
+function textStart(element: Element): number {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  return range.getBoundingClientRect().left;
+}
+
+/**
+ * A deployments table: one row per state, two of them live. The status is the
+ * tone icon and a neutral label, and the second line holds the one time that
+ * matters for the state: a count for Building, Deploying and Queued, how long
+ * ago a finished deployment finished, and how long Degraded has lasted. Hover
+ * or focus a time for the exact finish, start and duration.
+ */
+export const Deployments: Story = {
+  render: () => (
+    <DataTable<Deployment>
+      rows={deployments}
+      columns={deploymentColumns}
+      getRowId={(deployment) => deployment.id}
+      frame="card"
+    />
+  ),
+  play: async ({ canvasElement, step }) => {
+    const badges = [
+      ...canvasElement.querySelectorAll<HTMLElement>('[data-slot=status-badge][data-detail]'),
+    ];
+
+    await step('every row shows a two-line status', async () => {
+      await expect(badges).toHaveLength(deployments.length);
+    });
+
+    await step('the icon is centred against both lines (0 ±0.5px)', async () => {
+      for (const badge of badges) {
+        const icon = (
+          badge.querySelector('[data-slot=status-badge-marker] svg') as SVGElement
+        ).getBoundingClientRect();
+        const label = (
+          badge.querySelector('[data-slot=status-badge-label]') as HTMLElement
+        ).getBoundingClientRect();
+        const detail = (
+          badge.querySelector('[data-slot=status-badge-detail]') as HTMLElement
+        ).getBoundingClientRect();
+        const blockMiddle = (label.top + detail.bottom) / 2;
+        const iconMiddle = (icon.top + icon.bottom) / 2;
+        await expect(Math.abs(iconMiddle - blockMiddle)).toBeLessThanOrEqual(0.5);
+      }
+    });
+
+    await step('a row with a two-line status is 46px high, with its divider', async () => {
+      // The last row has no divider.
+      for (const badge of badges.slice(0, -1)) {
+        const row = badge.closest('tr') as HTMLElement;
+        await expect(Math.abs(row.getBoundingClientRect().height - 46)).toBeLessThanOrEqual(0.5);
+      }
+    });
+
+    await step('every time is a tab stop that opens its tooltip', async () => {
+      for (const badge of badges) {
+        const detail = badge.querySelector('[data-slot=status-badge-detail]') as HTMLElement;
+        const trigger = detail.querySelector('[data-slot=tooltip-trigger]') as HTMLElement;
+        await expect(trigger.tabIndex).toBe(0);
+      }
+    });
+
+    await step('the label lines up with the header, the time with the label', async () => {
+      const header = [...canvasElement.querySelectorAll('thead th')].find(
+        (th) => th.textContent === 'Status',
+      ) as HTMLElement;
+      const headerStart = textStart(header);
+      for (const badge of badges) {
+        const label = badge.querySelector('[data-slot=status-badge-label]') as HTMLElement;
+        const detail = badge.querySelector('[data-slot=status-badge-detail]') as HTMLElement;
+        await expect(Math.abs(textStart(label) - headerStart)).toBeLessThanOrEqual(0.5);
+        await expect(Math.abs(textStart(detail) - textStart(label))).toBeLessThanOrEqual(0.5);
+      }
+    });
+
+    await step('a live timer counts up', async () => {
+      const timer = canvasElement.querySelector('[data-slot=elapsed-time]') as HTMLElement;
+      const before = timer.getAttribute('datetime');
+      await waitFor(() => expect(timer.getAttribute('datetime')).not.toBe(before), {
+        timeout: 2500,
+      });
     });
   },
 };
