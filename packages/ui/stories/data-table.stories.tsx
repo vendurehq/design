@@ -1096,10 +1096,12 @@ export const CellTextAlignment: Story = {
     for (const header of headers) {
       await expect(labelStyle(header), header.textContent ?? '').toEqual(labelStyle(sortable));
     }
-    await expect(textLeft(plain) - plain.getBoundingClientRect().left).toBeCloseTo(
-      textLeft(sortable) - sortable.getBoundingClientRect().left,
-      0,
-    );
+    // Both labels start at the header's padding edge.
+    const labelInset = (header: Element) =>
+      textLeft(header) -
+      header.getBoundingClientRect().left -
+      Number.parseFloat(getComputedStyle(header).paddingLeft);
+    await expect(labelInset(plain)).toBeCloseTo(labelInset(sortable), 0);
     for (const row of canvasElement.querySelectorAll('tbody tr')) {
       const cells = [...row.querySelectorAll('td')];
       for (const [index, cell] of cells.entries()) {
