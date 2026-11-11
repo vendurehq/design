@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from '@vendure-io/ui/components/atoms/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import {
   DataTableBulkActions,
   useSelectionCache,
@@ -259,6 +260,122 @@ const SELECT_AREA_CLASS =
   'absolute inset-y-0 left-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
 const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 
+// Select all and clear all from the header checkbox ripple down the page: the
+// change starts at the header checkbox and travels down, row by row. A row's
+// fill, bar and checkbox move together, each with its own transition, only
+// delayed. The selection itself changes at once, so a click during the ripple
+// lands on the final state; only the look lags behind, for at most the
+// ripple's length plus a row's own transition.
+//
+// The table carries `data-select-ripple` (select or clear) while it runs.
+// `--select-ripple-length` is when the last row starts: `normal` (200ms) for
+// select all, `fast` (100ms) for clear all and for the keyboard
+// (`data-select-ripple-quick`). It does not grow with the number of rows: 50
+// rows take as long as 10, each row gets a shorter share (see
+// SELECT_RIPPLE_ROWS). The rows start on an
+// ease-out (sine) curve: a row's start is `asin(index / rows)` of the length,
+// so the first rows below the header follow each other fastest and the ripple
+// settles towards the bottom. Each row carries its start and its share as
+// fractions (`--ripple-at`, `--ripple-span`, see rippleTiming).
+//
+// The bar reads as one line that grows down from the header: each row's two
+// halves grow from the row's top edge, linearly, over the row's share, so the
+// next row picks up exactly where this one ends. Clearing retracts the line
+// from the top in the same order. A row the select ripple has not reached yet
+// starts from its top edge with no transition, so it does not first slide
+// from its middle; that start is set, and the style flushed, before the
+// selection changes (useSelectAllRipple). Only `clip-path`, `opacity` and the
+// row's existing colour transition move; nothing changes layout.
+const SELECT_RIPPLE_TABLE_CLASS =
+  '[--select-ripple-length:var(--transition-duration-fast)] data-[select-ripple=select]:[--select-ripple-length:var(--transition-duration-normal)] data-select-ripple-quick:[--select-ripple-length:var(--transition-duration-fast)]!';
+const SELECT_RIPPLE_ROW_CLASS = cn(
+  '[--row-ripple-delay:calc(var(--select-ripple-length)*var(--ripple-at,0))] [--row-ripple-span:calc(var(--select-ripple-length)*var(--ripple-span,0))]',
+  'in-data-select-ripple:[transition-delay:var(--row-ripple-delay)]',
+  'in-data-select-ripple:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay)]! in-data-select-ripple:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay)]!',
+  'in-data-[select-ripple=select]:not-data-[state=selected]:before:[clip-path:inset(0_0_100%_0)]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[clip-path:inset(0_0_100%_0)]!',
+  'in-data-[select-ripple=select]:not-data-[state=selected]:before:[transition:none]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[transition:none]!',
+  'in-data-[select-ripple=clear]:not-data-[state=selected]:before:[clip-path:inset(100%_0_0_0)]! in-data-[select-ripple=clear]:not-data-[state=selected]:after:[clip-path:inset(100%_0_0_0)]!',
+);
+// The row checkbox keeps its own transitions (the fill, the mark, the fade in)
+// and only takes the row's delay. The mark still waits `check-mark-delay`
+// after the fill when it checks.
+const SELECT_RIPPLE_CHECKBOX_CLASS =
+  'in-data-select-ripple:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:before:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:[&_path]:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:data-checked:[&_path]:[transition-delay:calc(var(--row-ripple-delay)+var(--transition-duration-check-mark-delay))]!';
+// Long enough for the last row to start (`normal`) and finish its slowest
+// transition (the checkbox fill and mark, under 400ms).
+const SELECT_RIPPLE_SETTLE_MS = 700;
+
+// The ripple spreads over at most this many rows, about two screens of rows.
+// Spread over all 50 rows of a long page, the rows on screen would pass in a
+// few milliseconds and the page would look like it changed at once; this way
+// the rows on screen ripple the same on a page of 20 or of 50. Rows below it
+// start together at the end of the ripple, usually out of view.
+const SELECT_RIPPLE_ROWS = 20;
+
+/** Where a row starts in the ripple and its share of it, as fractions of the length. */
+function rippleTiming(index: number, count: number): React.CSSProperties {
+  const rows = Math.min(count, SELECT_RIPPLE_ROWS);
+  const at = (position: number) => Math.asin(Math.min(position / rows, 1)) / (Math.PI / 2);
+  const start = Math.min(index, rows - 1);
+  return {
+    '--ripple-at': at(start).toFixed(4),
+    '--ripple-span': (at(start + 1) - at(start)).toFixed(4),
+  } as React.CSSProperties;
+}
+
+/**
+ * Select all and clear all with the ripple. While a ripple runs, the next one
+ * takes over from wherever each row is: the transitions retarget, nothing
+ * restarts from zero. Reduced motion: no ripple, the rows change together.
+ * Any other selection change (a row click) ends the ripple first, so it is
+ * not delayed.
+ */
+function useSelectAllRipple(tableRef: React.RefObject<HTMLTableElement | null>) {
+  const reduceMotion = useReducedMotion();
+  const reduceMotionRef = React.useRef(reduceMotion);
+  reduceMotionRef.current = reduceMotion;
+  const timer = React.useRef<number | undefined>(undefined);
+  React.useEffect(() => () => window.clearTimeout(timer.current), []);
+  return React.useMemo(() => {
+    const end = () => {
+      window.clearTimeout(timer.current);
+      const element = tableRef.current;
+      if (!element) return;
+      delete element.dataset.selectRipple;
+      delete element.dataset.selectRippleQuick;
+    };
+    const toggleAll = <TData,>(table: TanStackTable<TData>, value: boolean, quick: boolean) => {
+      const element = tableRef.current;
+      if (!element || reduceMotionRef.current) {
+        end();
+        table.toggleAllPageRowsSelected(value);
+        return;
+      }
+      const running = element.dataset.selectRipple != null;
+      element.dataset.selectRipple = value ? 'select' : 'clear';
+      if (quick) element.dataset.selectRippleQuick = '';
+      else delete element.dataset.selectRippleQuick;
+      // A fresh select ripple: let the rows take their start (the bar at the
+      // top edge) before the selection changes, or they would transition from
+      // their middle. A running ripple is not flushed: its rows retarget from
+      // where they are.
+      if (!running) void element.offsetHeight;
+      table.toggleAllPageRowsSelected(value);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(end, SELECT_RIPPLE_SETTLE_MS);
+    };
+    return { toggleAll, end };
+  }, [tableRef]);
+}
+
+/** A checkbox toggled with Space: a keyboard event, or a click with no pointer (detail 0). */
+function fromKeyboard(event: Event | undefined): boolean {
+  return (
+    (typeof KeyboardEvent !== 'undefined' && event instanceof KeyboardEvent) ||
+    (typeof MouseEvent !== 'undefined' && event instanceof MouseEvent && event.detail === 0)
+  );
+}
+
 function isRowControl(target: Element, row: Element): boolean {
   const control = target.closest(ROW_CONTROL_SELECTOR);
   return control != null && row.contains(control);
@@ -353,6 +470,8 @@ function DataTable<TData>({
     () => ({
       empty: labels?.empty ?? 'No results',
       selectAllRows: labels?.selectAllRows ?? 'Select all rows',
+      selectAllOnPage: labels?.selectAllOnPage ?? 'Select all on this page',
+      clearPageSelection: labels?.clearPageSelection ?? 'Clear selection on this page',
       selectRow: labels?.selectRow ?? ((index: number) => `Select row ${index + 1}`),
       rowActions: labels?.rowActions ?? 'Open row actions',
       columnsTrigger: labels?.columnsTrigger ?? 'Columns',
@@ -390,6 +509,8 @@ function DataTable<TData>({
   // change on every selection change.
   // The last row a click selected or deselected: the start of a Shift+click range.
   const selectionAnchor = React.useRef<string | null>(null);
+  const tableRef = React.useRef<HTMLTableElement>(null);
+  const selectAllRipple = useSelectAllRipple(tableRef);
   const displayProps = React.useRef({ l, rowActions });
   displayProps.current = { l, rowActions };
   const hasRowSelection = rowSelection != null;
@@ -416,20 +537,41 @@ function DataTable<TData>({
                 aria-hidden
                 data-slot="data-table-select-area"
                 className={SELECT_AREA_CLASS}
-                onClick={() => table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected())}
-              />
-              <Checkbox
-                checked={table.getIsAllPageRowsSelected()}
-                indeterminate={
-                  table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
+                onClick={() =>
+                  selectAllRipple.toggleAll(table, !table.getIsAllPageRowsSelected(), false)
                 }
-                onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
-                aria-label={displayProps.current.l.selectAllRows}
-                className={cn(
-                  'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
-                  SELECT_CHECKBOX_HIT_CLASS,
-                )}
               />
+              {/* The tooltip says what a press does now. Some rows selected
+                  (indeterminate) is not all: a press selects the rest of the
+                  page, as with none selected. All selected: a press clears
+                  this page only; rows selected on other pages stay. The
+                  accessible name stays `selectAllRows`. */}
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Checkbox
+                      data-slot="checkbox"
+                      checked={table.getIsAllPageRowsSelected()}
+                      indeterminate={
+                        table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
+                      }
+                      onCheckedChange={(checked, details) =>
+                        selectAllRipple.toggleAll(table, checked, fromKeyboard(details.event))
+                      }
+                      aria-label={displayProps.current.l.selectAllRows}
+                      className={cn(
+                        'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
+                        SELECT_CHECKBOX_HIT_CLASS,
+                      )}
+                    />
+                  }
+                />
+                <TooltipContent>
+                  {table.getIsAllPageRowsSelected()
+                    ? displayProps.current.l.clearPageSelection
+                    : displayProps.current.l.selectAllOnPage}
+                </TooltipContent>
+              </Tooltip>
             </>
           ),
           cell: ({ row, table }) => (
@@ -439,7 +581,10 @@ function DataTable<TData>({
                   aria-hidden
                   data-slot="data-table-select-area"
                   className={SELECT_AREA_CLASS}
-                  onClick={(event) => selectFromClick(table, row, event.shiftKey, selectionAnchor)}
+                  onClick={(event) => {
+                    selectAllRipple.end();
+                    selectFromClick(table, row, event.shiftKey, selectionAnchor);
+                  }}
                   // Shift+press would also extend the page's text selection.
                   onMouseDown={(event) => {
                     if (event.shiftKey) event.preventDefault();
@@ -449,19 +594,21 @@ function DataTable<TData>({
               <Checkbox
                 checked={row.getIsSelected()}
                 disabled={!row.getCanSelect()}
-                onCheckedChange={(checked, details) =>
+                onCheckedChange={(checked, details) => {
+                  selectAllRipple.end();
                   selectFromClick(
                     table,
                     row,
                     Boolean((details.event as MouseEvent | KeyboardEvent | undefined)?.shiftKey),
                     selectionAnchor,
                     checked,
-                  )
-                }
+                  );
+                }}
                 aria-label={displayProps.current.l.selectRow(row.index)}
                 className={cn(
                   'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
                   SELECT_CHECKBOX_HIT_CLASS,
+                  SELECT_RIPPLE_CHECKBOX_CLASS,
                 )}
               />
             </>
@@ -481,7 +628,7 @@ function DataTable<TData>({
       : undefined;
 
     return buildDisplayColumns(columns, { select: selectColumn, actions: actionsColumn });
-  }, [columns, hasRowSelection, hasRowActions, selectColumnId]);
+  }, [columns, hasRowSelection, hasRowActions, selectColumnId, selectAllRipple]);
 
   const state: Partial<TableState> = {};
   if (sorting) state.sorting = sortingState;
@@ -600,7 +747,6 @@ function DataTable<TData>({
   // A pull-back that reaches past the cell's start padding indents the whole
   // column instead (see measureColumnIndents), so no content leaves its cell.
   // Measured before paint, whenever the rows or the visible columns change.
-  const tableRef = React.useRef<HTMLTableElement>(null);
   const [columnIndents, setColumnIndents] = React.useState<Record<string, number>>({});
   const visibleColumnKey = table
     .getVisibleLeafColumns()
@@ -695,6 +841,7 @@ function DataTable<TData>({
     if (!event.currentTarget.contains(target) || isRowControl(target, event.currentTarget)) return;
     event.preventDefault();
     event.stopPropagation();
+    selectAllRipple.end();
     selectFromClick(table, row, event.shiftKey, selectionAnchor);
   };
   // Shift+press would also extend the page's text selection across the rows.
@@ -805,7 +952,7 @@ function DataTable<TData>({
       <CardTable>
         <Table
           ref={tableRef}
-          className={ROW_CHEVRON_SLOT_CLASS}
+          className={cn(ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
         >
           <TableHeader>
@@ -872,10 +1019,11 @@ function DataTable<TData>({
               </TableRow>
             ) : (
               <>
-                {bodyRows.map((row) => {
+                {bodyRows.map((row, rowIndex) => {
                   const rowNode = (
                     <TableRow
-                      className={cn('group/row', LINKED_ROW_CLASS)}
+                      className={cn('group/row', LINKED_ROW_CLASS, SELECT_RIPPLE_ROW_CLASS)}
+                      style={rippleTiming(rowIndex, bodyRows.length)}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       onClickCapture={onRowClickCapture(row)}
                       onMouseDown={onRowMouseDown}
