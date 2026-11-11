@@ -5,9 +5,9 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from '@shikijs/transformers';
+import { githubLightReplacements } from '@vendure-io/ui/lib/syntax-colors';
 import { createHighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
-import { githubLightReplacements } from '@vendure-io/ui/lib/syntax-colors';
 
 /**
  * The design system's Shiki setup: a lazy shared highlighter with the DS themes

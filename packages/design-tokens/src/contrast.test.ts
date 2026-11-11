@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { githubLightReplacements } from '../../ui/src/lib/syntax-colors.ts';
 import {
   alertTint,
   alertToneVars,
@@ -7,7 +8,6 @@ import {
   statusToneText,
   statusToneVars,
 } from '../../ui/src/lib/tint-recipes.ts';
-import { githubLightReplacements } from '../../ui/src/lib/syntax-colors.ts';
 import { darkTheme, lightTheme } from './tokens/semantic.ts';
 
 // WCAG contrast contract for the semantic color tokens. Hand-rolled oklch →
@@ -285,8 +285,14 @@ const alertTones = Object.fromEntries(
     },
   ]),
 );
-const alertLightMix = pick(alertTint, /(?<!dark:)\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,var\(--card\)\)\]/);
-const alertDarkMix = pick(alertTint, /dark:\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,transparent\)\]/);
+const alertLightMix = pick(
+  alertTint,
+  /(?<!dark:)\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,var\(--card\)\)\]/,
+);
+const alertDarkMix = pick(
+  alertTint,
+  /dark:\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,transparent\)\]/,
+);
 const alertFill = (themeName: string, tone: string) =>
   themeName === 'dark'
     ? `color-mix(in oklab, ${tone} ${alertDarkMix}%, transparent)`
@@ -452,9 +458,9 @@ for (const [themeName, theme] of Object.entries(themes)) {
       for (const [from, to] of Object.entries(githubLightReplacements)) {
         for (const surface of surfaces) {
           test(`CodeBlock syntax colour ${to} (replaces ${from}) on ${surface} >= 4.5`, () => {
-            expect(contrastOfValues(theme, to, `var(--${surface})`, surface)).toBeGreaterThanOrEqual(
-              MIN_CONTRAST,
-            );
+            expect(
+              contrastOfValues(theme, to, `var(--${surface})`, surface),
+            ).toBeGreaterThanOrEqual(MIN_CONTRAST);
           });
         }
       }

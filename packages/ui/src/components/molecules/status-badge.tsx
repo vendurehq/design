@@ -1,6 +1,7 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
+import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
 import {
   statusChipFill,
   statusChipLabel,
@@ -8,7 +9,6 @@ import {
   statusToneText,
   statusToneVars,
 } from '@vendure-io/ui/lib/tint-recipes';
-import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
 import { toneIcons } from '@vendure-io/ui/lib/tone-icons';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
