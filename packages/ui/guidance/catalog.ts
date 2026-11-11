@@ -366,7 +366,7 @@ export const uiGuidance = [
       },
       {
         title: 'Keep the selection across a reload with selectionStorageKey',
-        body: 'Pass selectionStorageKey (with rowSelection) when a list\'s selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.',
+        body: "Pass selectionStorageKey (with rowSelection) when a list's selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.",
       },
       {
         title: 'A row you render yourself takes the ripple',
