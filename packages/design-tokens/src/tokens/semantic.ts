@@ -113,9 +113,12 @@ export const lightTheme = {
   'code-inline': 'var(--secondary)',
   'code-inline-border': 'var(--border)',
   // Hairline divider between peers. `input` is the stronger edge of text
-  // inputs and other controls that need a visible outline.
-  border: neutral[100],
-  input: neutral[200],
+  // inputs and other controls that need a visible outline. Foreground mixes,
+  // like dark mode's white mixes: on white they render as neutral[100] and
+  // neutral[200], and on a grey surface (a hovered row, `sidebar-accent`)
+  // the edge stays the same step darker instead of disappearing.
+  border: 'color-mix(in oklab, var(--foreground) 9.75%, transparent)',
+  input: 'color-mix(in oklab, var(--foreground) 18%, transparent)',
   // Boundary of controls that have no other visible edge: unchecked
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text inputs keep `input`.
