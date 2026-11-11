@@ -102,7 +102,10 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
    * Default `'—'`.
    */
   fallback?: ReactNode;
-  /** Formats the elapsed milliseconds. Default `formatElapsed`: `1m 15s`. */
+  /**
+   * Formats the elapsed milliseconds. Default `formatElapsed` in `locale`:
+   * `1m 15s` in English.
+   */
   format?: (ms: number) => string;
   /**
    * A tooltip on hover and focus. Default `false`. `true` shows when the
@@ -117,13 +120,13 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
    * inside interactive content such as a link or a button. Needs `tooltip`.
    */
   focusable?: boolean;
-  /** The locale of the tooltip times. Default: the FormatProvider's. */
+  /** The locale of the count and the tooltip times. Default: the FormatProvider's. */
   locale?: string;
 }
 
 /**
  * How long something has run, counting up every second: `31s`, `1m 15s`,
- * `1h 05m`. Use it for a state that is happening now (Building, Deploying) or
+ * `1h 05m` in English, in the reader's locale from the FormatProvider. Use it for a state that is happening now (Building, Deploying) or
  * waiting (Queued).
  *
  * - The digits are tabular, so the text does not shift while it counts.
@@ -140,7 +143,7 @@ function ElapsedTime({
   since,
   until,
   fallback = '—',
-  format = formatElapsed,
+  format,
   tooltip = false,
   focusable,
   locale,
@@ -169,7 +172,13 @@ function ElapsedTime({
     className: cn('tabular-nums', className),
     ...props,
   };
-  const text = elapsed === null ? fallback : format(elapsed);
+  const resolvedLocale = locale ?? settings.locale;
+  const text =
+    elapsed === null
+      ? fallback
+      : format
+        ? format(elapsed)
+        : formatElapsed(elapsed, { locale: resolvedLocale });
 
   if (tooltip === false || tooltip === null || start === null) {
     return (
@@ -179,7 +188,6 @@ function ElapsedTime({
     );
   }
 
-  const resolvedLocale = locale ?? settings.locale;
   const content =
     typeof tooltip !== 'boolean' ? (
       tooltip
