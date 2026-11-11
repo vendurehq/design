@@ -226,6 +226,22 @@ export interface DataTableProps<TData> {
   filters?: DataTableFilters<TData>;
   columnVisibility?: DataTableColumnVisibility;
   rowSelection?: DataTableRowSelection<TData>;
+  /**
+   * Keeps the row selection in session storage under this key, so it survives a
+   * reload and a visit to another page in the same tab. Needs `rowSelection`.
+   *
+   * - On the first load the table restores the ids stored under the key and
+   *   reports them through `rowSelection.onChange`.
+   * - Every change is stored, with the ids of rows on other pages: a selection
+   *   can span pages. An empty selection removes the entry.
+   * - A new key switches to the selection stored under it, or to none. Nothing
+   *   from the old key carries over.
+   * - No navigation and no request. Blocked or full storage is ignored.
+   *
+   * The key names the list and anything that scopes its rows, such as a channel
+   * or a project: `${route}:${channelId}`. Without the prop nothing changes.
+   */
+  selectionStorageKey?: string;
 
   // slots
   /** First child of the internal `ListHeader` (title zone) — compose `PageHeader` here. */

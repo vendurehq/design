@@ -365,6 +365,10 @@ export const uiGuidance = [
         body: 'Use provided toolbar, row, action, and display seams rather than forking the table or rebuilding its coordinated parts.',
       },
       {
+        title: 'Keep the selection across a reload with selectionStorageKey',
+        body: 'Pass selectionStorageKey (with rowSelection) when a list\'s selection must survive opening an item and coming back, or a reload. The table restores the stored ids on its first load, stores every change in session storage with the ids of rows on other pages, and switches to the selection stored under a new key. It starts no navigation and no request. Put the list and anything that scopes its rows in the key, such as the route and a channel or project. Without the prop nothing changes.',
+      },
+      {
         title: 'A row you render yourself takes the ripple',
         body: 'Select all and clear all ripple down the rows. A row returned from renderRow joins in when it merges ctx.ripple: ctx.ripple.className into its className, and ctx.ripple.style spread before its own style (it holds only custom properties, so a drag transform never collides). Set data-state="selected" while the row is selected. A row that ignores ctx.ripple changes at once. Spread ctx.cellProps(columnId) on each cell: it holds the built-in cell\'s classes (the zero-width select cell, the leading cell\'s checkbox gutter), its column indent and its data attributes, so a custom row copies none of them.',
       },
