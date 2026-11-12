@@ -103,6 +103,8 @@ async function expectDirection(root: HTMLElement, dir: Dir) {
   const content = byId(root, 'carousel').querySelector('[data-slot=carousel-content]')!.getBoundingClientRect();
   const showing = (slide: number) => Math.abs(byId(root, `slide-${slide}`).getBoundingClientRect().left - content.left) < 20;
   await expect(showing(1)).toBe(true);
+  // The button turns on once Embla has measured the slides.
+  await waitFor(() => expect(next).toBeEnabled());
   await userEvent.click(next);
   await waitFor(() => expect(showing(2)).toBe(true), { timeout: 3000 });
   byId(root, 'carousel').focus();
