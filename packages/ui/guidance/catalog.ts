@@ -875,7 +875,11 @@ export const uiGuidance = [
       },
       {
         title: 'The group gets no fill and no bar',
-        body: '`hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the fill and the bar. Never set both on one button.',
+        body: '`hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the sliding pill (or the fill and the bar in a SidebarMenu with `slidingIndicator={false}`). Never set both on one button.',
+      },
+      {
+        title: 'An area with its own navigation is a second level',
+        body: 'Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area\'s name). Set `level` from the route. Do not nest the area\'s pages as a sub-list, and do not add a second sidebar.',
       },
     ],
   },
