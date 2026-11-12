@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogTrigger } from '../src/components/atoms/alert-dialog.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { TriangleAlert } from 'lucide-react';
+import { expect, userEvent, within } from 'storybook/test';
+import { Input } from '../src/components/atoms/input.tsx';
+import { expectInsidePadding } from './overlay-bounds.ts';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -83,4 +86,37 @@ export const Small: Story = {
       </AlertDialogContent>
     </AlertDialog>
   ),
+};
+
+/** A row wider than the dialog stays inside its padding. */
+export const WideRow: Story = {
+  render: () => (
+    <AlertDialog>
+      <AlertDialogTrigger render={<Button variant="outline" />}>Reschedule</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Reschedule the backup?</AlertDialogTitle>
+          <AlertDialogDescription>The next backup runs at the new time.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="flex gap-2">
+          <Button variant="outline" className="shrink-0">is equal to</Button>
+          <Button variant="outline" className="min-w-0 flex-1 justify-start">
+            <span className="truncate">Pick a date and time for the start of the range</span>
+          </Button>
+          <Input type="time" aria-label="Time" className="w-28 shrink-0" />
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction>Reschedule</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Reschedule' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+    await expect(dialog).toBeVisible();
+    await expectInsidePadding(dialog);
+  },
 };
