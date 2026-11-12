@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MoreHorizontal, Package, RotateCcw, Truck } from 'lucide-react';
 import { Fragment, type ReactNode, useState } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card } from '../src/components/atoms/card.tsx';
 import {
@@ -22,6 +22,7 @@ import {
   ListRowLeading,
   ListRowLink,
   ListRowMeta,
+  ListRowSwap,
   ListRowTitle,
   ListRowTrailing,
 } from '../src/components/molecules/list-row.tsx';
@@ -157,6 +158,94 @@ export const WithActions: Story = {
         </ListRow>
       ))}
     </RowCard>
+  ),
+};
+
+const BACKUPS = [
+  { time: 'Today, 01:00', kind: 'Daily', size: '1.82 GB' },
+  { time: 'Yesterday, 01:00', kind: 'Daily', size: '1.79 GB' },
+  { time: 'Monday, 14:12', kind: 'Manual', size: '964 MB' },
+];
+
+const restoreBackup = fn();
+
+function BackupRows() {
+  return (
+    <RowCard>
+      {BACKUPS.map((backup) => (
+        <ListRow key={backup.time}>
+          <ListRowContent>
+            <ListRowTitle>
+              {backup.time} <span className="font-normal text-muted-foreground">· {backup.kind}</span>
+            </ListRowTitle>
+          </ListRowContent>
+          <ListRowSwap value={backup.size}>
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label={`Restore to ${backup.time}`}
+              onClick={restoreBackup}
+            >
+              Restore
+            </Button>
+          </ListRowSwap>
+        </ListRow>
+      ))}
+    </RowCard>
+  );
+}
+
+/**
+ * The last value of a row turns into an action. At rest the row ends with the
+ * backup's size. While the row is hovered or holds keyboard focus, the size
+ * fades out and Restore fades in its place; on a touch screen Restore always
+ * shows. The cell keeps the width of the wider of the two, so nothing moves,
+ * and a screen reader still reads the size. The play function tabs into the
+ * first row and checks that Restore shows and the size stays in the
+ * accessibility tree.
+ */
+export const LastValueSwap: Story = {
+  beforeEach: () => {
+    restoreBackup.mockClear();
+  },
+  render: () => <BackupRows />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const restore = canvas.getByRole('button', { name: 'Restore to Today, 01:00' });
+    const value = canvas.getByText('1.82 GB');
+    const cell = restore.closest<HTMLElement>('[data-slot=list-row-swap]');
+    const action = restore.closest<HTMLElement>('[data-slot=list-row-swap-action]');
+    if (!cell || !action) throw new Error('ListRowSwap cell not found');
+    const opacity = (element: HTMLElement) => Number(getComputedStyle(element).opacity);
+
+    // The value and the action share one grid cell: the cell is as wide as
+    // the wider of the two.
+    await expect(cell.getBoundingClientRect().width).toBeCloseTo(
+      Math.max(value.getBoundingClientRect().width, action.getBoundingClientRect().width),
+      0,
+    );
+
+    // Keyboard focus in the row shows the action and hides the value.
+    await userEvent.click(canvasElement.ownerDocument.body);
+    await userEvent.tab();
+    await expect(restore).toHaveFocus();
+    await waitFor(() => expect(opacity(action)).toBe(1));
+    await waitFor(() => expect(opacity(value)).toBe(0));
+
+    // The hidden value only fades: a screen reader still reads it.
+    await expect(value).not.toHaveAttribute('aria-hidden');
+
+    await userEvent.keyboard('{Enter}');
+    await expect(restoreBackup).toHaveBeenCalledTimes(1);
+  },
+};
+
+/** Right to left: the cell sits at the row's start edge, and the value and the action line up on it. */
+export const LastValueSwapRtl: Story = {
+  render: () => (
+    <div dir="rtl">
+      <BackupRows />
+    </div>
   ),
 };
 

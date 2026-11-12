@@ -676,6 +676,10 @@ export const uiGuidance = [
         body: 'ListRowActions appears on hover or focus. Every action in it is also available on the detail page.',
       },
       {
+        title: "One action takes the last value's place",
+        body: 'When a row has one action and ends with a value (a size, a count), put both in a ListRowSwap: the value holds the row end at rest, and the action fades in its place on hover, on focus and on touch screens. Use ListRowActions for a menu or more than one action. Name the action after its row (`Restore to today, 01:00`).',
+      },
+      {
         title: 'Group rows under a heading, not in a wrapper',
         body: 'To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.',
       },
