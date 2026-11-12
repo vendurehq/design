@@ -35,10 +35,11 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
    */
   bordered?: boolean;
   /**
-   * `compact` drops the illustration and tightens the spacing, for a small
-   * panel or side column where the full state is too tall. An explicit `icon`
-   * sits above a 14px title. Keep it to a title, a description and at most
-   * one action. Defaults to `default`.
+   * `compact` drops the illustration and tightens the spacing. Use it with an
+   * `icon` inside a card, a secondary panel or a side column: the icon sits
+   * above a 14px title. Keep the `default` size with an illustration for a
+   * whole page or a whole list. Keep compact to a title, a description and at
+   * most one action. Defaults to `default`.
    */
   size?: 'default' | 'compact';
 }
