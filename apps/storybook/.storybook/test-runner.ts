@@ -4,7 +4,9 @@ import { getStoryContext } from '@storybook/test-runner';
 import { configureAxe, getViolations, injectAxe } from 'axe-playwright';
 
 // Violations at these impact levels fail the build. `minor`/`moderate` findings
-// are logged but non-blocking, matching axe-core's own severity scale.
+// are logged but non-blocking, matching axe-core's own severity scale. One of
+// them is `region` (moderate): it fires on every popup, because a portal sits
+// outside the page's landmarks by design. It stays below the blocking level.
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
 const THEMES = ['light', 'dark'] as const;
 
@@ -339,12 +341,13 @@ async function pressOpen(page: Page, press?: { text: string; expectFocus: string
 
 /**
  * Waits until the story has finished drawing, so axe reads the same page every
- * run. Two things must hold together:
- * - No animation or transition in the story root is still running (the Web
+ * run. It watches the whole <body>, so a popup in a portal (a menu, a dialog,
+ * a toast) counts as part of the story. Two things must hold together:
+ * - No animation or transition on the page is still running (the Web
  *   Animations API). Endless animations (a spinner) and paused ones never
- *   finish, so they are ignored. Transitions on <html> and <body> count too, as
- *   axe reads their colours.
- * - The story root has not changed for `quietMs`. This covers animations that
+ *   finish, so they are ignored. Transitions on <html> count too, as axe reads
+ *   their colours.
+ * - The body has not changed for `quietMs`. This covers animations that
  *   script drives frame by frame, such as recharts, which the first check
  *   cannot see. Pass 0 to check only the animations.
  * It loops, because a finished animation can start the next one. A story that
@@ -357,8 +360,7 @@ const QUIET_MS = 250;
 async function settle(page: Page, quietMs: number) {
   const stillMoving = await page.evaluate(
     async ([cap, quiet]) => {
-      const root = document.querySelector('#storybook-root');
-      if (!root) return [];
+      const root = document.body;
       // Two frames first, so an animation that starts after the last commit
       // (an exit, say) is already running when it is looked for.
       for (let frame = 0; frame < 2; frame++) {
@@ -470,14 +472,12 @@ const config: TestRunnerConfig = {
       // The theme switch starts colour transitions and nothing else.
       await settle(page, 0);
 
-      // `parameters.a11y.include` adds selectors outside the story root to the
-      // scan, such as a popup that the play function leaves open in a portal.
-      const include: string[] = storyContext.parameters?.a11y?.include ?? [];
+      // The scan covers the whole body: popups render in portals, outside the
+      // story root, and a popup the play function leaves open is part of the
+      // story. Storybook's own docs container is hidden in story mode.
       const violations = await getViolations(
         page,
-        include.length > 0
-          ? { include: [['#storybook-root'], ...include.map((selector) => [selector])] }
-          : '#storybook-root',
+        { include: [['body']], exclude: [['#storybook-docs']] },
         storyContext.parameters?.a11y?.config,
       );
       const blocking = violations.filter((violation) =>
