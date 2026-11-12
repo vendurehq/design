@@ -116,6 +116,10 @@ export const duration = {
   // uses them.
   pageFade: '220ms',
   pageRise: '260ms',
+  // A page that switches its content in place (the environment switch)
+  // stays dimmed for this time, then the new content enters with
+  // `page-enter`. The v3 look's switch takes 420ms.
+  pageSwitch: '420ms',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each keyframe name an
@@ -140,6 +144,12 @@ export const animation = {
   pageEnter: `page-fade ${duration.pageFade} ${easing.out}, page-rise ${duration.pageRise} ${easing.out}`,
   // The same page enter with reduced motion: the fade only.
   pageFade: `page-fade ${duration.pageFade} ${easing.out}`,
+  // One flash that marks a new search match: a bar and a fill in the
+  // highlight colour hold, then fade out. It runs once. It moves nothing, so
+  // it also runs with reduced motion. A consumer sets `--match-flash-color`
+  // to flash in another tone (an error line); the default is the brand
+  // indicator. The match keeps its own static highlight after the flash.
+  matchFlash: 'match-flash 1.4s ease-out',
 } as const;
 
 // Keyframe steps for the animations above, generated as top-level
@@ -172,5 +182,13 @@ export const keyframes = {
   },
   pageRise: {
     from: { transform: 'translateY(6px)' },
+  },
+  // The flash holds its bar and its 22% fill for the first 30%, then fades
+  // to the line's own styles.
+  matchFlash: {
+    '0%, 30%': {
+      boxShadow: 'inset 2px 0 0 var(--match-flash-color, var(--brand-indicator))',
+      background: 'color-mix(in oklab, var(--match-flash-color, var(--brand-indicator)) 22%, transparent)',
+    },
   },
 } as const;

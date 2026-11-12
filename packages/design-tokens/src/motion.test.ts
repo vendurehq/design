@@ -37,3 +37,23 @@ describe('Page enter', () => {
     }
   });
 });
+
+describe('Page switch', () => {
+  test('the page stays dimmed for 420ms, then the new content enters', () => {
+    expect(duration.pageSwitch).toBe('420ms');
+  });
+});
+
+describe('Match flash', () => {
+  test('runs once in 1.4s on ease-out', () => {
+    expect(animation.matchFlash).toBe('match-flash 1.4s ease-out');
+    expect(animation.matchFlash).not.toMatch(/infinite|backwards|both|forwards/);
+  });
+
+  test('holds a bar and a 22% fill for 30%, then fades, and moves nothing', () => {
+    const step = keyframes.matchFlash['0%, 30%'];
+    expect(step.boxShadow).toBe('inset 2px 0 0 var(--match-flash-color, var(--brand-indicator))');
+    expect(step.background).toContain('22%');
+    expect(Object.keys(step)).not.toContain('transform');
+  });
+});

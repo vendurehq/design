@@ -261,6 +261,7 @@
   --transition-duration-external-arrow: 220ms;
   --transition-duration-page-fade: 220ms;
   --transition-duration-page-rise: 260ms;
+  --transition-duration-page-switch: 420ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;
@@ -268,6 +269,7 @@
   --animate-page-enter:
     page-fade 220ms cubic-bezier(0.19, 1, 0.22, 1), page-rise 260ms cubic-bezier(0.19, 1, 0.22, 1);
   --animate-page-fade: page-fade 220ms cubic-bezier(0.19, 1, 0.22, 1);
+  --animate-match-flash: match-flash 1.4s ease-out;
 }
 
 @keyframes shimmer {
@@ -318,6 +320,13 @@
 @keyframes page-rise {
   from {
     transform: translateY(6px);
+  }
+}
+
+@keyframes match-flash {
+  0%, 30% {
+    box-shadow: inset 2px 0 0 var(--match-flash-color, var(--brand-indicator));
+    background: color-mix(in oklab, var(--match-flash-color, var(--brand-indicator)) 22%, transparent);
   }
 }
 
