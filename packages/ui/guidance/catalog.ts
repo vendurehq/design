@@ -110,6 +110,10 @@ export const uiGuidance = [
         title: 'Not inside running text',
         body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
       },
+      {
+        title: 'A diagonal arrow means another site',
+        body: 'A chevron goes to a page of this app; an up-right arrow leaves it. Use `direction="external"` for a link to another site. A hostname fact in a PageHeader is a PageHeaderFactLink. A Button that opens another site takes a 14px `ArrowUpRight` as its last child, which the Button keeps quieter than the label. Never use the arrow for a page of this app.',
+      },
     ],
     related: ['button'],
   },

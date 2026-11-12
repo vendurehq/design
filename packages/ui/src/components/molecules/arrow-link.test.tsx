@@ -77,4 +77,31 @@ describe('ArrowLink', () => {
       '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
     );
   });
+
+  test('external ends with a 14px up-right arrow at 40% that moves 1.5px out on hover', () => {
+    const html = renderToStaticMarkup(
+      <ArrowLink href="https://example.com" direction="external">
+        Open storefront
+      </ArrowLink>,
+    );
+    expect(html).toContain('lucide-arrow-up-right');
+    expect(html).not.toContain('lucide-chevron');
+    expect(html.indexOf('Open storefront')).toBeLessThan(
+      html.indexOf('data-slot="arrow-link-arrow"'),
+    );
+    expect(slotTokens(html, 'arrow-link-arrow')).toEqual(
+      expect.arrayContaining([
+        'size-3.5',
+        'opacity-40',
+        'group-hover/arrow-link:opacity-85',
+        'group-focus-visible/arrow-link:opacity-85',
+        'group-hover/arrow-link:translate-x-[1.5px]',
+        'group-hover/arrow-link:-translate-y-[1.5px]',
+        'rtl:-scale-x-100',
+        'rtl:group-hover/arrow-link:-translate-x-[1.5px]',
+        'motion-reduce:translate-none!',
+        '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-external-arrow)_var(--ease-out)]',
+      ]),
+    );
+  });
 });
