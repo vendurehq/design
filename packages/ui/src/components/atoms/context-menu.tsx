@@ -82,7 +82,7 @@ function ContextMenuLabel({
       data-slot="context-menu-label"
       data-inset={inset}
       className={cn(
-        "text-muted-foreground px-2 py-1.5 text-xs font-medium data-inset:pl-8",
+        "text-muted-foreground px-2 py-1.5 text-xs font-medium data-inset:ps-8",
         className
       )}
       {...props}
@@ -105,7 +105,7 @@ function ContextMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "focus:bg-muted focus:text-accent-foreground data-[variant=destructive]:text-destructive-text data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:focus:*:[svg]:text-accent-foreground group/context-menu-item relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "focus:bg-muted focus:text-accent-foreground data-[variant=destructive]:text-destructive-text data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:focus:*:[svg]:text-accent-foreground group/context-menu-item relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}
@@ -132,13 +132,13 @@ function ContextMenuSubTrigger({
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "focus:bg-muted focus:text-accent-foreground data-popup-open:bg-muted data-popup-open:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "focus:bg-muted focus:text-accent-foreground data-popup-open:bg-muted data-popup-open:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronRightIcon className="ml-auto" />
+      <ChevronRightIcon className="ms-auto" />
     </ContextMenuPrimitive.SubmenuTrigger>
   )
 }
@@ -169,13 +169,13 @@ function ContextMenuCheckboxItem({
       data-slot="context-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        "focus:bg-muted focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85 pr-8",
+        "focus:bg-muted focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85 pe-8",
         className
       )}
       checked={checked}
       {...props}
     >
-      <span className="pointer-events-none absolute right-2">
+      <span className="pointer-events-none absolute end-2">
         <ContextMenuPrimitive.CheckboxItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
           <CheckIcon
           />
@@ -210,12 +210,12 @@ function ContextMenuRadioItem({
       data-slot="context-menu-radio-item"
       data-inset={inset}
       className={cn(
-        "focus:bg-muted focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85 pr-8",
+        "focus:bg-muted focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate focus:[&>svg:not([class*='opacity-'])]:opacity-85 pe-8",
         className
       )}
       {...props}
     >
-      <span className="pointer-events-none absolute right-2">
+      <span className="pointer-events-none absolute end-2">
         <ContextMenuPrimitive.RadioItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
           <CheckIcon
           />
@@ -247,7 +247,7 @@ function ContextMenuShortcut({
     <span
       data-slot="context-menu-shortcut"
       className={cn(
-        "text-muted-foreground group-focus/context-menu-item:text-accent-foreground ml-auto text-xs tracking-widest",
+        "text-muted-foreground group-focus/context-menu-item:text-accent-foreground ms-auto text-xs tracking-widest",
         className
       )}
       {...props}
