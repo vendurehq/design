@@ -63,6 +63,11 @@ export const duration = {
   // A list row the user just added opens its height in this time with the
   // `height` curve. Only ListRow uses it.
   rowEnter: '340ms',
+  // A ListRowSwap trades its value for its action: the outgoing one fades in
+  // `rowSwapOut`, the incoming one fades in `quick` after `rowSwapDelay`, so
+  // the two never show at once. Only ListRow uses them.
+  rowSwapOut: '80ms',
+  rowSwapDelay: '60ms',
   // A popup fades in over this time while it scales in `normal`. The shared
   // popup motion and the NavigationMenu arrow use it.
   popupFade: '160ms',

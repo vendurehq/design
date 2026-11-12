@@ -9,6 +9,7 @@ import {
   ListRowGroupHeading,
   ListRowLink,
   ListRowMeta,
+  ListRowSwap,
   ListRowTitle,
   ListRowTrailing,
 } from './list-row.tsx';
@@ -167,5 +168,39 @@ describe('ListRow', () => {
     const first = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     expect(first).not.toContain('data-enter=');
     expect(first).not.toContain('style=');
+  });
+
+  test('ListRowSwap stacks the value and the action in one cell, and the value only fades', () => {
+    const html = renderToStaticMarkup(
+      <ListRow>
+        <ListRowContent>
+          <ListRowTitle>Today, 01:00</ListRowTitle>
+        </ListRowContent>
+        <ListRowSwap value="1.82 GB">
+          <button type="button">Restore</button>
+        </ListRowSwap>
+      </ListRow>,
+    );
+    const cell = slotTag(html, 'list-row-swap');
+    expect(cell).toContain('grid');
+    const value = slotTag(html, 'list-row-swap-value');
+    const action = slotTag(html, 'list-row-swap-action');
+    // One grid area for both, so the cell is as wide as the wider of the two.
+    for (const tag of [value, action]) {
+      expect(tag).toContain('col-start-1');
+      expect(tag).toContain('row-start-1');
+    }
+    // The value stays in the accessibility tree.
+    expect(value).not.toContain('aria-hidden');
+    expect(value).toContain('group-hover/list-row:opacity-0');
+    expect(action).toContain('opacity-0');
+    expect(action).toContain('group-hover/list-row:opacity-100');
+    expect(action).toContain('group-has-[:focus-visible]/list-row:opacity-100');
+    expect(action).toContain('group-has-[[aria-expanded=true]]/list-row-swap:opacity-100');
+    expect(action).toContain('[@media(hover:none)]:opacity-100');
+    // Sequenced: the incoming one waits until the outgoing one has faded.
+    expect(action).toContain('group-hover/list-row:delay-(--transition-duration-row-swap-delay)');
+    expect(value).toContain('group-hover/list-row:duration-row-swap-out');
+    expect(value).toContain('motion-reduce:transition-none');
   });
 });

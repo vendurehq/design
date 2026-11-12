@@ -160,6 +160,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 - **External arrow duration**: `--transition-duration-external-arrow` (220ms) — the diagonal arrow of a link that opens another site (`ArrowLink` with `direction="external"`, `PageHeaderFactLink`) moving out, on `ease-out`. Only those two use it
 - **The rule**: every duration and easing is a token, written in the short class form (`duration-quick`, `ease-soft`). When the scale lacks a value, add a token named for its owner instead of a literal
 - **Row entrance duration**: `--transition-duration-row-enter` (340ms) — a new `ListRow` that opens its height, on `ease-height`. Only `ListRow` uses it
+- **Row swap durations**: `--transition-duration-row-swap-out` (80ms) — the value or action of a `ListRowSwap` fading out, on `ease-soft`; `-row-swap-delay` (60ms) — how long the incoming one waits before it fades in `quick`, so the two never show at once. Only `ListRow` uses them
 - **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner); `--animate-progress-sweep` — the `animate-progress-sweep` utility, a 2.2s linear band across an indeterminate `Progress` bar; `--animate-live-pulse` — the `animate-live-pulse` utility, a soft ring that grows out of a dot and fades every 2.4s on the `out` curve (the `LiveIndicator` ring)
 
 ## Dark Mode

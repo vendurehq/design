@@ -240,6 +240,8 @@
   --transition-duration-tooltip-resize: 320ms;
   --transition-duration-progress-fill: 240ms;
   --transition-duration-row-enter: 340ms;
+  --transition-duration-row-swap-out: 80ms;
+  --transition-duration-row-swap-delay: 60ms;
   --transition-duration-popup-fade: 160ms;
   --transition-duration-popup-resize: 350ms;
   --transition-duration-sidebar-pill: 280ms;

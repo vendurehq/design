@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from '../src/components/atoms/button.tsx';
+import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 import { Toggle } from '../src/components/atoms/toggle.tsx';
 import { ToggleGroup, ToggleGroupItem } from '../src/components/atoms/toggle-group.tsx';
-import { AlignLeft, AlignCenter, AlignRight, Bold } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, Bold, Plus } from 'lucide-react';
 import { expect, within } from 'storybook/test';
 
 const meta = {
@@ -147,5 +150,53 @@ export const PressedTint: Story = {
     await expect(pressed.backgroundColor).toBe(tint.backgroundColor);
     await expect(pressed.color).toBe(tint.color);
     await expect(pressed.borderTopColor).toBe(unpressed.borderTopColor);
+  },
+};
+
+/**
+ * In a toolbar a ToggleGroup sits level with the controls next to it: the
+ * same height as a ButtonGroup, a Button and an Input (34px) and the corners
+ * of the buttons, and
+ * at the small size the same 28px as a small Button.
+ */
+export const InAToolbar: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div data-testid="row-default" className="flex items-center gap-2">
+        <ToggleGroup variant="outline" defaultValue={['yours']} aria-label="Variables">
+          <ToggleGroupItem value="yours">Yours</ToggleGroupItem>
+          <ToggleGroupItem value="platform">Platform</ToggleGroupItem>
+        </ToggleGroup>
+        <Input className="w-48" placeholder="Filter keys" aria-label="Filter keys" />
+        <ButtonGroup>
+          <Button variant="outline">Import</Button>
+          <Button variant="outline">Export</Button>
+        </ButtonGroup>
+        <Button>
+          <Plus data-icon="inline-start" />
+          Add variable
+        </Button>
+      </div>
+      <div data-testid="row-sm" className="flex items-center gap-2">
+        <ToggleGroup size="sm" variant="outline" defaultValue={['grid']} aria-label="View">
+          <ToggleGroupItem value="grid">Grid</ToggleGroupItem>
+          <ToggleGroupItem value="list">List</ToggleGroupItem>
+        </ToggleGroup>
+        <Button size="sm" variant="outline">Refresh</Button>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const height = (element: Element) => element.getBoundingClientRect().height;
+    const radius = (element: Element) => getComputedStyle(element).borderTopLeftRadius;
+    for (const row of ['row-default', 'row-sm']) {
+      const controls = Array.from(canvas.getByTestId(row).children);
+      const heights = new Set(controls.map(height));
+      await expect([...heights]).toEqual([row === 'row-sm' ? 28 : 34]);
+      // A text field keeps its own, smaller field radius.
+      const corners = new Set(controls.filter((control) => control.tagName !== 'INPUT').map(radius));
+      await expect(corners.size).toBe(1);
+    }
   },
 };
