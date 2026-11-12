@@ -58,8 +58,11 @@ export const letterSpacing = {
   wide: '0.025em',
 } as const;
 
-// Named type compositions — font, size, weight, tracking, leading. Type
-// only, no color. Consumed as Tailwind utilities, e.g. `text-style-body`.
+// Named type compositions — font, size, weight, tracking, leading, and how
+// the lines break. Type only, no color. Titles balance their lines; body
+// text avoids a single word on its last line. The text-wrap-style longhand
+// leaves the wrap mode alone, so `truncate` and `whitespace-nowrap` still win.
+// Consumed as Tailwind utilities, e.g. `text-style-body`.
 export const textStyles = {
   // 22px page title.
   'page-title': {
@@ -68,6 +71,7 @@ export const textStyles = {
     fontWeight: fontWeight.semibold,
     letterSpacing: '-0.018em',
     lineHeight: '1.2',
+    textWrapStyle: 'balance',
   },
   // 16px: section and dialog titles.
   'section-title': {
@@ -76,6 +80,7 @@ export const textStyles = {
     fontWeight: fontWeight.semibold,
     letterSpacing: '-0.01em',
     lineHeight: '1.3',
+    textWrapStyle: 'balance',
   },
   // 14px: card and panel titles, one step above the 13px body.
   'card-title': {
@@ -84,12 +89,14 @@ export const textStyles = {
     fontWeight: fontWeight.semibold,
     letterSpacing: '-0.005em',
     lineHeight: '1.4',
+    textWrapStyle: 'balance',
   },
   body: {
     fontFamily: fontFamily.body,
     fontSize: fontSize.sm,
     fontWeight: fontWeight.normal,
     lineHeight: '1.5',
+    textWrapStyle: 'pretty',
   },
   caption: {
     // No fontFamily on purpose — captions inherit the ambient font so they

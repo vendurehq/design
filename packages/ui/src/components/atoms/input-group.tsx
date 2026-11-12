@@ -31,7 +31,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 // and the input hairline, as the v3 look's search field does: its muted text
 // on its fill on the muted field fails the axe contrast check.
 const inputGroupAddonVariants = cva(
-  "text-muted-foreground **:data-[slot=kbd]:bg-transparent **:data-[slot=kbd]:text-foreground-secondary **:data-[slot=kbd]:inset-ring-input h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4 flex cursor-text items-center justify-center select-none",
+  "text-muted-foreground **:data-[slot=kbd]:bg-transparent **:data-[slot=kbd]:text-foreground-secondary **:data-[slot=kbd]:inset-ring-input h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='stroke-'])]:stroke-[1.75] flex cursor-text items-center justify-center select-none",
   {
     variants: {
       align: {
@@ -116,7 +116,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "text-muted-foreground flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+        "text-muted-foreground flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75]",
         className
       )}
       {...props}
