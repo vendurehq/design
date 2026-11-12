@@ -164,7 +164,7 @@ describe('Sidebar rail', () => {
       </SidebarProvider>,
     );
     const button = slotTokens(html, 'sidebar-menu-button');
-    expect(button).toContain('group-data-[collapsible=icon]:[&>span:last-child]:opacity-0');
+    expect(button).toContain('group-data-[collapsible=icon]:[&>span]:opacity-0');
     expect(button).not.toContain('group-data-[collapsible=icon]:size-8!');
     const label = slotTokens(html, 'sidebar-group-label');
     expect(label).toContain('group-data-[collapsible=icon]:opacity-0');
