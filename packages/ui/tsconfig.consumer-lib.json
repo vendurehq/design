@@ -1,0 +1,10 @@
+{
+  // The Vendure Dashboard compiles this source with `lib: ["dom", "es2021.intl"]`:
+  // no `dom.iterable`, so a `for…of` or a spread over a NodeList or an
+  // HTMLCollection fails its type check. Wrap those in `Array.from(…)`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"]
+  },
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]
+}
