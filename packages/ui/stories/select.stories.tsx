@@ -487,3 +487,90 @@ export const OpensTowardTheCentre: Story = {
     }
   },
 };
+
+const PAGE_SIZES = ['10', '20', '30', '50', '100'].map((size) => ({ value: size, label: size }));
+
+function EdgeSelect({
+  label,
+  className,
+  defaultValue,
+}: {
+  label: string;
+  className: string;
+  defaultValue: string;
+}) {
+  return (
+    <div className={`fixed ${className}`}>
+      <Select defaultValue={defaultValue} items={PAGE_SIZES}>
+        <SelectTrigger aria-label={label} className="w-24">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {PAGE_SIZES.map((size) => (
+            <SelectItem key={size.value} value={size.value}>
+              {size.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+/**
+ * A short list near an edge of the screen. Over its trigger, with the
+ * selected item on the trigger, it would run off the screen: "10" at the
+ * bottom puts the four items after it below the edge, "100" at the top puts
+ * the four before it above. The list moves up or down just far enough that
+ * every item shows, still covers its trigger and still grows out of it. It
+ * scrolls only when it is taller than the screen.
+ */
+export const FitsNearTheEdges: Story = {
+  tags: ['!autodocs'],
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="h-screen">
+      <EdgeSelect label="Bottom" className="bottom-14 left-[calc(50%-3rem)]" defaultValue="10" />
+      <EdgeSelect label="Bottom left" className="bottom-14 left-6" defaultValue="10" />
+      <EdgeSelect label="Bottom right" className="right-6 bottom-14" defaultValue="10" />
+      <EdgeSelect label="Top" className="top-14 left-[calc(50%-3rem)]" defaultValue="100" />
+      <EdgeSelect label="Top left" className="top-14 left-6" defaultValue="100" />
+      <EdgeSelect label="Top right" className="top-14 right-6" defaultValue="100" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const label of ['Bottom', 'Bottom left', 'Bottom right', 'Top', 'Top left', 'Top right']) {
+      const trigger = canvas.getByRole('combobox', { name: label });
+      await userEvent.click(trigger);
+      const popup = await waitFor(() => {
+        const element = document.querySelector<HTMLElement>('[data-slot=select-content][data-open]');
+        expect(element, `${label} opens a list`).not.toBeNull();
+        expect(element?.hasAttribute('data-starting-style')).toBe(false);
+        return element as HTMLElement;
+      });
+      await Promise.all(popup.getAnimations().map((animation) => animation.finished));
+      await waitFor(() => {
+        // Over the trigger, as always.
+        expect(popup.dataset.side, `${label}: over the trigger`).toBe('none');
+        const list = popup.querySelector('[role=listbox]') as HTMLElement;
+        // Every item shows: nothing to scroll and no scroll arrow.
+        expect(list.scrollHeight - list.clientHeight, `${label}: no scroll`).toBeLessThanOrEqual(1);
+        expect(popup.querySelector('[data-slot^=select-scroll]:not([hidden])'), `${label}: no arrow`).toBeNull();
+        const box = popup.getBoundingClientRect();
+        const anchor = trigger.getBoundingClientRect();
+        expect(box.top, `${label}: covers the trigger`).toBeLessThanOrEqual(anchor.top);
+        expect(box.bottom).toBeGreaterThanOrEqual(anchor.bottom);
+        expect(box.top, `${label}: on the screen`).toBeGreaterThanOrEqual(0);
+        expect(box.bottom).toBeLessThanOrEqual(window.innerHeight);
+        // It grows out of the trigger: the clip it opens from is the trigger's box.
+        const clip = popup.style.getPropertyValue('--select-trigger-box');
+        const [top, , bottom] = clip.replace(/^inset\(|\s+round.*$/g, '').split(' ').map(Number.parseFloat);
+        expect(Math.abs(top - (anchor.top - box.top)), `${label}: clip top`).toBeLessThan(1);
+        expect(Math.abs(bottom - (box.bottom - anchor.bottom)), `${label}: clip bottom`).toBeLessThan(1);
+      });
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull(), { timeout: 3000 });
+    }
+  },
+};

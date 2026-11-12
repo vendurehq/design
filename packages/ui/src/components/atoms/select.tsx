@@ -138,6 +138,44 @@ function shadowToFilter(shadow: string) {
  * Base UI positions the list on each open, so this runs on every style
  * change of the popup.
  */
+/**
+ * Base UI puts the selected item on the trigger and cuts the list at the edge
+ * of the screen, so a short list near an edge shows a few items and scrolls
+ * ("10" selected at the bottom of the screen hides 20 to 100 below the edge).
+ * When the whole list fits on the screen, this moves it up or down just far
+ * enough to show every item, inside Base UI's 10px screen margin, and drops
+ * the scroll. It still covers the trigger: Base UI places a list over its
+ * trigger only when the trigger is at least 20px from the edges, and the list
+ * moves by no more than it ran past the edge. A list taller than the screen
+ * keeps Base UI's placement and scrolls.
+ */
+function fitOnScreen(positioner: HTMLElement, list: HTMLElement) {
+  const hidden = list.scrollHeight - list.clientHeight
+  if (hidden <= 1) return
+  const style = getComputedStyle(positioner)
+  const marginTop = parseFloat(style.marginTop) || 0
+  const marginBottom = parseFloat(style.marginBottom) || 0
+  const rect = positioner.getBoundingClientRect()
+  const height = rect.height + hidden
+  const screen = document.documentElement.clientHeight
+  if (height > screen - marginTop - marginBottom) return
+  // Where the list's first item would be if the list did not scroll: the
+  // selected item stays on the trigger as far as the screen allows.
+  const top = Math.min(
+    Math.max(rect.top - list.scrollTop, marginTop),
+    screen - marginBottom - height
+  )
+  // `top` positions the margin box: move by the difference from now.
+  const currentTop = parseFloat(style.top) || 0
+  positioner.style.top = `${currentTop + top - rect.top}px`
+  positioner.style.bottom = ""
+  positioner.style.height = `${height}px`
+  list.scrollTop = 0
+  // Base UI shows its scroll arrows from scroll events: a list that no
+  // longer scrolls hides them.
+  list.dispatchEvent(new Event("scroll"))
+}
+
 function growFromTrigger(popup: HTMLElement | null) {
   if (!popup) return () => {}
   const positioner = popup.parentElement
@@ -163,6 +201,7 @@ function growFromTrigger(popup: HTMLElement | null) {
       popup.querySelector<HTMLElement>("[data-slot=select-item]")
     const text = item?.firstElementChild
     if (!trigger || !value || !text || !popup.offsetWidth) return
+    if (positioner && list) fitOnScreen(positioner, list)
     const rtl = getComputedStyle(popup).direction === "rtl"
     const box = trigger.getBoundingClientRect()
     const valueBox = value.getBoundingClientRect()
@@ -288,7 +327,11 @@ function SelectContent({
         align={positionAlign}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
-        className="isolate z-50"
+        // Base UI gives up on placing the list over its trigger when less
+        // than its min-height (100px by default) fits between the trigger
+        // and the edge, and opens it beside the trigger instead. 1px keeps
+        // the list over the trigger; `fitOnScreen` then moves it into view.
+        className="isolate z-50 min-h-px"
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
