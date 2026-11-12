@@ -97,10 +97,13 @@ export const FromTriggerToTrigger: Story = {
     // Read the popup in the same task that inserts it, before any frame runs.
     // Base UI mounts a popup with `data-starting-style` and clears it one frame
     // later, so a read after the frame is slower on a busy machine and would
-    // pass for the wrong reason.
+    // pass for the wrong reason. Find it by its text: on a busy machine the
+    // first popup is still mounted while it fades out, at opacity 0.
     let atMount: { opacity: string; scale: string; instant: string | null } | undefined;
     const observer = new MutationObserver(() => {
-      const popup = document.body.querySelector<HTMLElement>('[data-slot=tooltip-content]');
+      const popup = [...document.body.querySelectorAll<HTMLElement>('[data-slot=tooltip-content]')].find((element) =>
+        element.textContent?.includes('Second tooltip'),
+      );
       if (!popup || atMount) return;
       const style = getComputedStyle(popup);
       atMount = {
