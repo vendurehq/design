@@ -505,7 +505,7 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <CheckIcon className="ms-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
   )
 }
@@ -533,7 +533,7 @@ function CommandShortcut({
     <span
       data-slot="command-shortcut"
       className={cn(
-        "text-muted-foreground group-data-[selected=true]/command-item:text-foreground ml-auto text-xs tracking-widest",
+        "text-muted-foreground group-data-[selected=true]/command-item:text-foreground ms-auto text-xs tracking-widest",
         className
       )}
       {...props}
@@ -553,7 +553,7 @@ function CommandItemDetail({
     <span
       data-slot="command-item-detail"
       className={cn(
-        "text-muted-foreground ml-auto max-w-[55%] shrink-0 truncate pl-3 text-xs opacity-0 -translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-palette-detail-exit ease-soft group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay) group-data-[selected=true]/command-item:duration-[var(--transition-duration-palette-move),var(--transition-duration-palette-detail-move),var(--transition-duration-palette-move)] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
+        "text-muted-foreground ms-auto max-w-[55%] shrink-0 truncate ps-3 text-xs opacity-0 -translate-x-1 rtl:translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-palette-detail-exit ease-soft group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay) group-data-[selected=true]/command-item:duration-[var(--transition-duration-palette-move),var(--transition-duration-palette-detail-move),var(--transition-duration-palette-move)] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
         className
       )}
       {...props}

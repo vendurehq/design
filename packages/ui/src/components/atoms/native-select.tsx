@@ -28,10 +28,10 @@ function NativeSelect({
       <select
         data-slot="native-select"
         data-size={size}
-        className={cn(fieldSurface, "selection:bg-primary selection:text-primary-foreground h-8.5 w-full min-w-0 appearance-none py-1 pr-8 pl-2.5 text-sm select-none disabled:pointer-events-none disabled:cursor-not-allowed data-[size=sm]:h-8")}
+        className={cn(fieldSurface, "selection:bg-primary selection:text-primary-foreground h-8.5 w-full min-w-0 appearance-none py-1 pe-8 ps-2.5 text-sm select-none disabled:pointer-events-none disabled:cursor-not-allowed data-[size=sm]:h-8")}
         {...useFieldControlProps(props)}
       />
-      <ChevronDownIcon className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 select-none" aria-hidden="true" data-slot="native-select-icon" />
+      <ChevronDownIcon className="text-muted-foreground pointer-events-none absolute top-1/2 end-2.5 size-4 -translate-y-1/2 select-none" aria-hidden="true" data-slot="native-select-icon" />
     </div>
   )
 }
