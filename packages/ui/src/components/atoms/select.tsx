@@ -10,7 +10,44 @@ import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 
-const Select = SelectPrimitive.Root
+/**
+ * The trigger of the nearest Select. Base UI names the trigger but not the
+ * list, so SelectContent reads the trigger's name from here and gives it to
+ * the list.
+ */
+const SelectTriggerContext = React.createContext<{
+  trigger: HTMLElement | null
+  setTrigger: (trigger: HTMLElement | null) => void
+} | null>(null)
+
+function Select<Value, Multiple extends boolean | undefined = false>(
+  props: SelectPrimitive.Root.Props<Value, Multiple>
+) {
+  const [trigger, setTrigger] = React.useState<HTMLElement | null>(null)
+  const context = React.useMemo(() => ({ trigger, setTrigger }), [trigger])
+  return (
+    <SelectTriggerContext.Provider value={context}>
+      <SelectPrimitive.Root {...props} />
+    </SelectTriggerContext.Provider>
+  )
+}
+
+/**
+ * The name of the list: the trigger's name. That is its `aria-labelledby`
+ * (Base UI points it at a Field label), its `aria-label`, the text of a
+ * `<label for>`, and else the trigger itself, so its value.
+ */
+function listName(trigger: HTMLElement | null) {
+  if (!trigger) return {}
+  const labelledBy = trigger.getAttribute("aria-labelledby")
+  if (labelledBy) return { "aria-labelledby": labelledBy }
+  const label = trigger.getAttribute("aria-label")
+  if (label) return { "aria-label": label }
+  const labels = (trigger as HTMLButtonElement).labels
+  const text = labels && Array.from(labels, (element) => element.textContent?.trim()).filter(Boolean).join(" ")
+  if (text) return { "aria-label": text }
+  return trigger.id ? { "aria-labelledby": trigger.id } : {}
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -36,12 +73,28 @@ function SelectTrigger({
   className,
   size = "default",
   children,
+  ref,
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: "sm" | "default"
 }) {
+  const setTrigger = React.useContext(SelectTriggerContext)?.setTrigger
+  const triggerRef = React.useCallback(
+    (node: HTMLButtonElement | null) => {
+      setTrigger?.(node)
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+      return () => {
+        setTrigger?.(null)
+        if (typeof ref === "function") ref(null)
+        else if (ref) ref.current = null
+      }
+    },
+    [ref, setTrigger]
+  )
   return (
     <SelectPrimitive.Trigger
+      ref={triggerRef}
       data-slot="select-trigger"
       data-size={size}
       className={cn(
@@ -241,6 +294,7 @@ function SelectContent({
   )
 
   const dir = usePopupDir()
+  const trigger = React.useContext(SelectTriggerContext)?.trigger ?? null
   return (
     <SelectPrimitive.Portal key={childrenKey}>
       <SelectPrimitive.Positioner
@@ -257,10 +311,17 @@ function SelectContent({
           data-align-trigger={alignItemWithTrigger}
           className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, growFromTriggerMotion, className)}
           ref={popupRef}
+          // A closing list is gone for assistive technology: its trigger no
+          // longer points at it, and it takes no input while it fades out.
+          render={(popupProps, state) => (
+            <div {...popupProps} aria-hidden={state.open ? popupProps["aria-hidden"] : true} />
+          )}
           {...props}
         >
           <SelectScrollUpButton />
-          <SelectPrimitive.List className="p-1.25">{children}</SelectPrimitive.List>
+          <SelectPrimitive.List className="p-1.25" {...listName(trigger)}>
+            {children}
+          </SelectPrimitive.List>
           <SelectScrollDownButton />
         </SelectPrimitive.Popup>
       </SelectPrimitive.Positioner>

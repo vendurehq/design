@@ -153,6 +153,11 @@ function ComboboxContent({
           data-slot="combobox-content"
           data-chips={!!anchor}
           className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
+          // A closing list is gone for assistive technology: the input no
+          // longer points at it, and it takes no input while it fades out.
+          render={(popupProps, state) => (
+            <div {...popupProps} aria-hidden={state.open ? popupProps["aria-hidden"] : true} />
+          )}
           {...props}
         />
       </ComboboxPrimitive.Positioner>
