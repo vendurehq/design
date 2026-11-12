@@ -397,9 +397,7 @@ export const ComboboxLook: Story = {
       <ComboboxTrigger aria-label="Country" className="w-64">
         <ComboboxValue placeholder="Select a country" />
       </ComboboxTrigger>
-      {/* With the search input inside it, the popup is a dialog, and Base UI
-          does not name it: name it here. */}
-      <ComboboxContent aria-label="Country">
+      <ComboboxContent>
         <ComboboxInput aria-label="Search countries" placeholder="Search" showTrigger={false} />
         <ComboboxList>
           {(item: string) => (

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
+import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import {
   Combobox,
   ComboboxChip,
@@ -63,6 +64,8 @@ export const Default: Story = {
     await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Open options' }));
     const body = within(document.body);
     await waitFor(() => expect(body.getAllByRole('option')).toHaveLength(5));
+    // The list takes the input's name.
+    await expect(body.getByRole('listbox')).toHaveAccessibleName('Framework');
     // The empty message renders only when no item matches.
     await expect(body.queryByText('No framework found.')).toBeNull();
     const option = body.getByRole('option', { name: 'Remix' });
@@ -132,6 +135,65 @@ export const FieldTrigger: Story = {
         </ComboboxContent>
       </Combobox>
     );
+  },
+  // With the search input inside it, the popup is a dialog. The dialog and the
+  // list take the trigger's name. The story ends open, so the check scans them.
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Country' }));
+    const body = within(document.body);
+    await waitFor(() => expect(body.getByRole('dialog')).toHaveAccessibleName('Country'));
+    await expect(body.getByRole('listbox')).toHaveAccessibleName('Country');
+  },
+};
+
+/** A field label names the input, and the open list takes the same name. */
+export const FieldLabelled: Story = {
+  render: () => (
+    <Field className="w-64">
+      <FieldLabel htmlFor="combobox-framework">Framework</FieldLabel>
+      <Combobox items={frameworks}>
+        <ComboboxInput id="combobox-framework" placeholder="Search frameworks..." />
+        <ComboboxContent>
+          <ComboboxList>
+            {(framework: (typeof frameworks)[number]) => (
+              <ComboboxItem key={framework.value} value={framework}>
+                {framework.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </Field>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Open options' }));
+    await waitFor(() => expect(within(document.body).getByRole('listbox')).toHaveAccessibleName('Framework'));
+  },
+};
+
+/** A name set on ComboboxContent wins over the trigger's. */
+export const OwnPopupName: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <Combobox items={countries}>
+      <ComboboxTrigger aria-label="Country" className="w-64">
+        <ComboboxValue placeholder="Select a country" />
+      </ComboboxTrigger>
+      <ComboboxContent aria-label="Shipping country">
+        <ComboboxInput aria-label="Search countries" placeholder="Search" showTrigger={false} />
+        <ComboboxList>
+          {(country: string) => (
+            <ComboboxItem key={country} value={country}>
+              {country}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Country' }));
+    await waitFor(() => expect(within(document.body).getByRole('dialog')).toHaveAccessibleName('Shipping country'));
   },
 };
 

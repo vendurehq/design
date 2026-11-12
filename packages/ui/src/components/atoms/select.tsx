@@ -9,6 +9,7 @@ import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 
 /**
  * The trigger of the nearest Select. Base UI names the trigger but not the
@@ -30,23 +31,6 @@ function Select<Value, Multiple extends boolean | undefined = false>(
       <SelectPrimitive.Root {...props} />
     </SelectTriggerContext.Provider>
   )
-}
-
-/**
- * The name of the list: the trigger's name. That is its `aria-labelledby`
- * (Base UI points it at a Field label), its `aria-label`, the text of a
- * `<label for>`, and else the trigger itself, so its value.
- */
-function listName(trigger: HTMLElement | null) {
-  if (!trigger) return {}
-  const labelledBy = trigger.getAttribute("aria-labelledby")
-  if (labelledBy) return { "aria-labelledby": labelledBy }
-  const label = trigger.getAttribute("aria-label")
-  if (label) return { "aria-label": label }
-  const labels = (trigger as HTMLButtonElement).labels
-  const text = labels && Array.from(labels, (element) => element.textContent?.trim()).filter(Boolean).join(" ")
-  if (text) return { "aria-label": text }
-  return trigger.id ? { "aria-labelledby": trigger.id } : {}
 }
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
@@ -78,20 +62,7 @@ function SelectTrigger({
 }: SelectPrimitive.Trigger.Props & {
   size?: "sm" | "default"
 }) {
-  const setTrigger = React.useContext(SelectTriggerContext)?.setTrigger
-  const triggerRef = React.useCallback(
-    (node: HTMLButtonElement | null) => {
-      setTrigger?.(node)
-      if (typeof ref === "function") ref(node)
-      else if (ref) ref.current = node
-      return () => {
-        setTrigger?.(null)
-        if (typeof ref === "function") ref(null)
-        else if (ref) ref.current = null
-      }
-    },
-    [ref, setTrigger]
-  )
+  const triggerRef = useRegisteredRef(ref, React.useContext(SelectTriggerContext)?.setTrigger)
   return (
     <SelectPrimitive.Trigger
       ref={triggerRef}
@@ -319,7 +290,7 @@ function SelectContent({
           {...props}
         >
           <SelectScrollUpButton />
-          <SelectPrimitive.List className="p-1.25" {...listName(trigger)}>
+          <SelectPrimitive.List className="p-1.25" {...nameFrom(trigger, { orSelf: true })}>
             {children}
           </SelectPrimitive.List>
           <SelectScrollDownButton />
