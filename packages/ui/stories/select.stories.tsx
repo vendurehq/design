@@ -568,7 +568,10 @@ export const FitsNearTheEdges: Story = {
         expect(box.bottom).toBeLessThanOrEqual(window.innerHeight);
         // It grows out of the trigger: the clip it opens from is the trigger's box.
         const clip = popup.style.getPropertyValue('--select-trigger-box');
-        const [top, , bottom] = clip.replace(/^inset\(|\s+round.*$/g, '').split(' ').map(Number.parseFloat);
+        const [top = Number.NaN, , bottom = Number.NaN] = clip
+          .replace(/^inset\(|\s+round.*$/g, '')
+          .split(' ')
+          .map(Number.parseFloat);
         expect(Math.abs(top - (anchor.top - box.top)), `${label}: clip top`).toBeLessThan(1);
         expect(Math.abs(bottom - (box.bottom - anchor.bottom)), `${label}: clip bottom`).toBeLessThan(1);
       });
