@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { CircleSlashIcon, TruckIcon } from 'lucide-react';
 import { Fragment, type ReactNode } from 'react';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
+import { type OrderState, orderStates } from './order-states.tsx';
 
 /**
  * Guidance, not props. This page documents the decisions behind the state
@@ -613,29 +613,16 @@ const ROWS: { name: string; tone: Tone; state: string; time: string }[] = [
   { name: 'legacy-import', tone: 'critical', state: 'Failed', time: '1 hour ago' },
 ];
 
-// An orders list: every order has a state. The do side gives each group its
-// own shape and colours only the orders that ask for the reader; the don't side
-// is a chip in every row, with a spinner on Shipped.
-const ORDERS: {
-  code: string;
-  label: string;
-  tone: Tone;
-  icon?: ReactNode;
-  wire: string;
-  chipTone: Tone;
-}[] = [
-  { code: 'ORD-1024', label: 'Payment settled', tone: 'info', wire: 'PaymentSettled', chipTone: 'success' },
-  { code: 'ORD-1025', label: 'Shipped', tone: 'neutral', icon: <TruckIcon />, wire: 'Shipped', chipTone: 'progress' },
-  { code: 'ORD-1026', label: 'Delivered', tone: 'success', wire: 'Delivered', chipTone: 'neutral' },
-  {
-    code: 'ORD-1027',
-    label: 'Cancelled',
-    tone: 'neutral',
-    icon: <CircleSlashIcon />,
-    wire: 'Cancelled',
-    chipTone: 'critical',
-  },
-  { code: 'ORD-1028', label: 'Payment declined', tone: 'critical', wire: 'PaymentDeclined', chipTone: 'critical' },
+// An orders list: every order has a state. The do side reads the tone, the
+// label and the icon from the order state dictionary, so each group has its own
+// shape and only the orders that ask for the reader get a colour; the don't
+// side is a chip in every row, with the code word and a spinner on Shipped.
+const ORDERS: { code: string; state: OrderState; chipTone: Tone }[] = [
+  { code: 'ORD-1024', state: 'PaymentSettled', chipTone: 'success' },
+  { code: 'ORD-1025', state: 'Shipped', chipTone: 'progress' },
+  { code: 'ORD-1026', state: 'Delivered', chipTone: 'neutral' },
+  { code: 'ORD-1027', state: 'Cancelled', chipTone: 'critical' },
+  { code: 'ORD-1028', state: 'PaymentDeclined', chipTone: 'critical' },
 ];
 
 const PRODUCTS: { name: string; enabled: boolean; stock: number }[] = [
@@ -726,12 +713,16 @@ export const Appearance: Story = {
             caption="An orders list: appearance=&quot;icon&quot; on every row, one line, no time under it (the list has its own date column). Colour only where the state asks for the reader: blue for an order to fulfil, green for delivered, red for a declined payment. Shipped and Cancelled stay grey, and each group has its own shape."
           >
             <div className="flex w-full flex-col gap-3 text-sm">
-              {ORDERS.map(({ code, label, tone, icon }) => (
+              {ORDERS.map(({ code, state }) => (
                 <div key={code} className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs">{code}</span>
                   <span className="w-36">
-                    <StatusBadge tone={tone} appearance="icon" icon={icon}>
-                      {label}
+                    <StatusBadge
+                      tone={orderStates.toneFor(state)}
+                      appearance="icon"
+                      icon={orderStates.iconFor(state)}
+                    >
+                      {orderStates.labelFor(state)}
                     </StatusBadge>
                   </span>
                 </div>
@@ -743,11 +734,11 @@ export const Appearance: Story = {
             caption="A chip in every row, with the state name as a code word. Five colours give every row the same weight, so the declined payment does not stand out. Shipped spins as if work runs right now."
           >
             <div className="flex w-full flex-col gap-3 text-sm">
-              {ORDERS.map(({ code, wire, chipTone }) => (
+              {ORDERS.map(({ code, state, chipTone }) => (
                 <div key={code} className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs">{code}</span>
                   <span className="w-36">
-                    <StatusBadge tone={chipTone}>{wire}</StatusBadge>
+                    <StatusBadge tone={chipTone}>{state}</StatusBadge>
                   </span>
                 </div>
               ))}
