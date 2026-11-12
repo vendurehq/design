@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Trash2Icon } from 'lucide-react';
+import { RocketIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -186,6 +186,41 @@ export const DefaultFocusesConfirm: Story = {
     const publish = within(dialog).getByRole('button', { name: 'Publish' });
     await waitFor(() => expect(publish).toHaveFocus());
     await expectRing(publish);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/**
+ * A caution dialog (costly, not destructive) focuses Cancel, shows the ring
+ * on it, and draws Confirm as an outline button, the same look as Cancel. The
+ * icon stays neutral.
+ */
+export const CautionFocusesCancel: Story = {
+  parameters: { pressOpen: { text: 'Deploy', expectFocus: 'Cancel' } },
+  render: () => (
+    <ConfirmDialog
+      icon={<RocketIcon />}
+      title="Deploy main to Production?"
+      description="The latest commit failed its pre-deploy check."
+      confirmLabel="Deploy anyway"
+      variant="caution"
+      onConfirm={() => {}}
+    >
+      <Button variant="outline">Deploy</Button>
+    </ConfirmDialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Deploy' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
+    const confirm = within(dialog).getByRole('button', { name: 'Deploy anyway' });
+    await waitFor(() => expect(cancel).toHaveFocus());
+    await expectRing(cancel);
+    await expect(getComputedStyle(confirm).backgroundColor).toBe(getComputedStyle(cancel).backgroundColor);
+    await expect(getComputedStyle(confirm).color).toBe(getComputedStyle(cancel).color);
+    const icon = dialog.querySelector('[data-slot=confirm-dialog-icon]');
+    await expect(icon?.className).toContain('text-muted-foreground');
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
   },

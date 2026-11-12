@@ -201,8 +201,28 @@ export const TypeToConfirm: Story = {
 };
 
 /**
- * `initialFocus` overrides the default. A confirm that is not destructive but
- * costly can focus Cancel, so Enter does not start it.
+ * `variant="caution"`: a costly action that is not destructive, such as a
+ * deploy after a failed check. Cancel takes the focus, so Enter does not start
+ * it, and Confirm is an outline button, so the dialog points one way.
+ */
+export const Caution: Story = {
+  render: () => (
+    <ConfirmDialog
+      icon={<RocketIcon />}
+      title="Deploy main to Production?"
+      description="The latest commit failed its pre-deploy check. A deployment builds the same commit and stops at the same point."
+      confirmLabel="Deploy anyway"
+      variant="caution"
+      onConfirm={() => console.log('deployed')}
+    >
+      <Button variant="outline">Deploy</Button>
+    </ConfirmDialog>
+  ),
+};
+
+/**
+ * `initialFocus` overrides the default focus. For a costly confirm, prefer
+ * `variant="caution"`, which also steps the confirm down to an outline button.
  */
 export const InitialFocusOnCancel: Story = {
   render: () => (
