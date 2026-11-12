@@ -123,7 +123,25 @@ behavior you need instead of rebuilding it from atoms.
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
 #### Feedback & identity
-`confirm-dialog`, `state-views/*`, `status-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`
+`confirm-dialog`, `state-views/*`, `status-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
+
+> **IssuedSecret.** A secret that was just issued, such as a new API key, is copy-only: it is never rendered. One button copies it, or one button per format (`formats`). The value shows only when the clipboard write fails, in a read-only field for a copy by hand. `useIssuedSecretGuard` holds the close guard: before the first copy, a close request shows a warning, and only "Close without copying" closes. Share one guard between `IssuedSecret` and `IssuedSecretFooter`, and pass `guard.onOpenChange` to the Dialog:
+>
+> ```tsx
+> const guard = useIssuedSecretGuard(() => setKey(null));
+> <Dialog open={key !== null} onOpenChange={guard.onOpenChange}>
+>   <DialogContent>
+>     <DialogHeader>
+>       <DialogTitle icon={<KeyRoundIcon />}>API key created</DialogTitle>
+>       <DialogDescription>Copy the key now. If you lose it, revoke it and create a new one.</DialogDescription>
+>     </DialogHeader>
+>     {key ? <IssuedSecret guard={guard} secretName="API key" name={key.name} value={key.value} /> : null}
+>     <IssuedSecretFooter guard={guard} />
+>   </DialogContent>
+> </Dialog>
+> ```
+>
+> Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
 `code-block`, `data-table/*`, `list-row`, `timeline`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
