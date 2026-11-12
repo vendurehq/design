@@ -32,6 +32,7 @@ const internal = [
   'lib/popup-align',
   'lib/popup-direction',
   'lib/popup-motion',
+  'lib/trigger-slot',
   'hooks/use-active-label-size',
   'hooks/use-pinned-height',
 ];

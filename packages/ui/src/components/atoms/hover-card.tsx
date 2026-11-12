@@ -7,6 +7,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 // A hover card trigger sets no aria-controls, so the trigger hands its element
 // to the card here. A trigger outside a HoverCard (a detached one) is not seen.
@@ -37,7 +38,7 @@ function HoverCardTrigger({
   return (
     <PreviewCardPrimitive.Trigger
       ref={setRef}
-      data-slot="hover-card-trigger"
+      {...triggerSlot("hover-card-trigger", props.render)}
       {...props}
     />
   )

@@ -9,13 +9,14 @@ import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
 function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+  return <DialogPrimitive.Trigger {...triggerSlot("dialog-trigger", props.render)} {...props} />
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
