@@ -3,9 +3,9 @@ import { brand, neutral } from './tokens/colors.ts';
 import { darkTheme, lightTheme } from './tokens/semantic.ts';
 
 // Light `border` and `input` are translucent foreground mixes, so an edge stays
-// visible on a grey surface. On white, `border` renders as the solid step it
-// replaced (neutral[100]), so a page of white cards looks the same; `input`
-// renders softer than neutral[200]. Browsers composite alpha in gamma-encoded sRGB, so the check does too.
+// visible on a grey surface. On white they must render as the solid steps they
+// replaced (neutral[100] and neutral[200]), so a page of white cards looks the
+// same. Browsers composite alpha in gamma-encoded sRGB, so the check does too.
 
 type Rgb = [number, number, number];
 
@@ -47,19 +47,17 @@ function onWhite(value: string): number {
   return lightness(fg.map((c) => toLinear(alpha * toGamma(c) + (1 - alpha))) as Rgb);
 }
 
-describe('Light border tokens are translucent, and render as set steps on white', () => {
+describe('Light border tokens are translucent and match the old steps on white', () => {
   test('border renders as neutral[100] on white', () => {
     expect(
       Math.abs(onWhite(lightTheme.border) - lightness(oklchToLinear(neutral[100]))),
     ).toBeLessThan(0.005);
   });
 
-  // `input` is softer than the neutral[200] it replaced (OSS-1179): an outline
-  // button on a white card had too hard an edge.
-  test('input renders between neutral[100] and neutral[200] on white', () => {
-    const value = onWhite(lightTheme.input);
-    expect(value).toBeGreaterThan(lightness(oklchToLinear(neutral[200])) + 0.03);
-    expect(value).toBeLessThan(lightness(oklchToLinear(neutral[100])) - 0.01);
+  test('input renders as neutral[200] on white', () => {
+    expect(
+      Math.abs(onWhite(lightTheme.input) - lightness(oklchToLinear(neutral[200]))),
+    ).toBeLessThan(0.005);
   });
 
   test('dark keeps its white mixes', () => {
@@ -129,16 +127,13 @@ const oldInput = solid(neutral[200]);
 const white: Rgb = [1, 1, 1];
 
 describe('Recipes that mix the light border still render as before', () => {
-  test('outline Button hover border: input with 9.5% foreground over the hover fill is the same step darker than rest as before', () => {
+  test('outline Button hover border: input with 9.5% foreground over the hover fill (was 12% over white)', () => {
     // The light outline Button paints its fill under the border, so on hover
-    // the border sits on the hover fill (card with 4% foreground). The rest
-    // edge is softer than the old neutral[200], so hover is compared as the
-    // step from rest, not as an absolute colour.
+    // the border sits on the hover fill (card with 4% foreground).
     const hoverFill = over(mix(solid('oklch(1 0 0)'), fg, 0.96), white);
-    const stepBefore = lightness(oldInput.rgb) - lightness(over(mix(oldInput, fg, 0.88), white));
-    const rest = over(newInput, white);
-    const stepAfter = lightness(rest) - lightness(over(mix(newInput, fg, 0.905), hoverFill));
-    expect(Math.abs(stepBefore - stepAfter)).toBeLessThan(0.01);
+    const before = over(mix(oldInput, fg, 0.88), white);
+    const after = over(mix(newInput, fg, 0.905), hoverFill);
+    expect(distance(before, after)).toBeLessThan(0.01);
   });
 
   test('Card accent border: 30% brand-500 in border (was 38%)', () => {

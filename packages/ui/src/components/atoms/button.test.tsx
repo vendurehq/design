@@ -37,10 +37,11 @@ describe('Button v3 look', () => {
     expect(buttonTokens(<Button size="icon-sm" aria-label="More" />)).toContain('size-7');
   });
 
-  test('outline sits on the card fill with the input border', () => {
+  test('outline sits on the card fill with the outline edge (the border colour)', () => {
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain('bg-card');
-    expect(tokens).toContain('border-input');
+    expect(tokens).toContain('border-border');
+    expect(tokens).not.toContain('border-input');
   });
 
   test('light outline paints its fill under the border, except inside a group', () => {
@@ -60,16 +61,10 @@ describe('Button v3 look', () => {
     expect(buttonTokens(<Button>Save</Button>)).toContain('disabled:shadow-none');
   });
 
-  test('outline hover darkens the border, except inside a group or when invalid', () => {
-    // 9.5% in light, where `input` is translucent and the hover fill shows
-    // under it, renders the colour that 12% gave over the old solid input;
-    // dark keeps 12%.
+  test('outline hover steps the edge up to input, except inside a group or when invalid', () => {
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain(
-      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_9.5%)]',
-    );
-    expect(tokens).toContain(
-      'dark:[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)]',
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-input',
     );
   });
 
@@ -142,7 +137,7 @@ describe('ButtonGroup', () => {
       </ButtonGroup>,
     );
     const tokens = slotTokens(html, 'button-group');
-    expect(tokens).toEqual(expect.arrayContaining(['inset-ring', 'inset-ring-input', 'bg-card', 'rounded-xl']));
+    expect(tokens).toEqual(expect.arrayContaining(['inset-ring', 'inset-ring-border', 'bg-card', 'rounded-xl']));
     expect(tokens).toContain('*:data-slot:border-transparent');
     expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-border');
   });

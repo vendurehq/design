@@ -116,14 +116,14 @@ export const lightTheme = {
   // Inline code chip: the secondary intensity fill with the standard border.
   'code-inline': 'var(--secondary)',
   'code-inline-border': 'var(--border)',
-  // Hairline divider between peers. `input` is the stronger edge of an
-  // outline Button, Toggle and ButtonGroup. Foreground mixes, like dark
-  // mode's white mixes: on white they render as neutral[100] and
-  // between neutral[100] and [200] (a softer button edge than neutral[200]),
-  // and on a grey surface (a hovered row, `sidebar-accent`) the edge stays
-  // the same step darker instead of disappearing.
+  // Hairline divider between peers, and the edge of text fields and outline
+  // controls. `input` is the stronger edge an outline control steps up to on
+  // hover. Foreground mixes,
+  // like dark mode's white mixes: on white they render as neutral[100] and
+  // neutral[200], and on a grey surface (a hovered row, `sidebar-accent`)
+  // the edge stays the same step darker instead of disappearing.
   border: 'color-mix(in oklab, var(--foreground) 9.75%, transparent)',
-  input: 'color-mix(in oklab, var(--foreground) 12%, transparent)',
+  input: 'color-mix(in oklab, var(--foreground) 18%, transparent)',
   // Boundary of controls that have no other visible edge: unchecked
   // checkbox, radio and switch track, slider and progress tracks. Holds 3:1
   // (WCAG 1.4.11) on every surface tier. Text fields keep `border`.
