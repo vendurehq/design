@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { CreditCard, LogOut, Mail, MessageSquare, Plus, Server, Settings, User, UserPlus, Users } from 'lucide-react';
 
@@ -256,5 +257,36 @@ export const OpensTowardTheCentre: Story = {
       if (dir === null) root.removeAttribute('dir');
       else root.setAttribute('dir', dir);
     }
+  },
+};
+
+/**
+ * A disabled item never takes the fill. The pointer passes over it without a
+ * highlight. The arrow keys still stop on it, as Base UI and the WAI-ARIA menu
+ * pattern expect, so a keyboard user can read why it is there; it then shows
+ * only the focus ring, never the fill. Enter and Space do nothing on it.
+ */
+export const DisabledItem: Story = {
+  render: () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>Actions</DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>
+          <Mail />
+          Send invite
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled>
+          <UserPlus />
+          Add member
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Settings />
+          Settings
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    await checkDisabledItemHasNoFill(within(canvasElement).getByRole('button', { name: 'Actions' }));
   },
 };

@@ -15,6 +15,8 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '../src/components/atoms/context-menu.tsx';
+import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
+import { userEvent, within } from 'storybook/test';
 
 const meta = {
   title: 'Atoms/Menus/ContextMenu',
@@ -72,4 +74,31 @@ export const Default: Story = {
       </ContextMenuContent>
     </ContextMenu>
   ),
+};
+
+/**
+ * A disabled item never takes the fill: not under the pointer, not under the
+ * arrow keys. The arrow keys still stop on it and show only the focus ring.
+ */
+export const DisabledItem: Story = {
+  render: () => (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div className="flex h-36 w-72 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+          Right click here
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem>Send invite</ContextMenuItem>
+        <ContextMenuItem disabled>Add member</ContextMenuItem>
+        <ContextMenuItem>Settings</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    const area = within(canvasElement).getByText('Right click here');
+    await checkDisabledItemHasNoFill(area, () =>
+      userEvent.pointer({ keys: '[MouseRight]', target: area }),
+    );
+  },
 };
