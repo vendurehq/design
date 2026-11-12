@@ -16,3 +16,14 @@ describe('The overlay shadow gives a popup a visible border', () => {
     });
   }
 });
+
+describe('The scrolled shadow is a 1px rule under a sticky header', () => {
+  for (const [mode, shadows] of [
+    ['light', lightShadows],
+    ['dark', darkShadows],
+  ] as const) {
+    test(`${mode}: one line below, in the input colour, no blur`, () => {
+      expect(shadows.scrolled).toBe('0 1px 0 var(--input)');
+    });
+  }
+});

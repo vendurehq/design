@@ -80,6 +80,10 @@ export const tokenGuidance = [
         body: "Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. The overlay shadow is the popup's border: a clear 1px edge, then the drop. Do not add a border or ring class to a popup. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.",
       },
       {
+        title: 'A scrolled header gets a rule',
+        body: 'A sticky header over a scroll area of your own takes shadow-scrolled while content sits under it: a 1px line in the input colour. Put useScrolled on the scroll container and in-data-scrolled:shadow-scrolled on the header. Give the header a background and z-10 so the rows pass under it. At the top, the header has no line.',
+      },
+      {
         title: 'Inset reads below its host',
         body: 'Use inset for wells, skeleton regions, or controls that should appear recessed. A Progress track is not inset: it uses the accent tint.',
       },

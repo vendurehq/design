@@ -178,6 +178,7 @@
   --shadow-none: none;
   --shadow-overlay: var(--shadow-overlay);
   --shadow-control: var(--shadow-control);
+  --shadow-scrolled: var(--shadow-scrolled);
   --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-heading: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
