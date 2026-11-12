@@ -24,6 +24,7 @@
     "./lib/popup-align": null,
     "./lib/popup-direction": null,
     "./lib/popup-motion": null,
+    "./lib/trigger-slot": null,
     "./hooks/*": "./src/hooks/*.ts",
     "./hooks/use-active-label-size": null,
     "./hooks/use-pinned-height": null

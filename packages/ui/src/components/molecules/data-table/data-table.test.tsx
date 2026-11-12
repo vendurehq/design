@@ -653,7 +653,7 @@ describe('DataTable context actions', () => {
     expect(markup).toContain('Brazil');
     expect(markup).not.toContain('Open row actions');
     // Every row became a context-menu trigger.
-    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2);
+    expect(count(markup, /data-context-menu-trigger=""/g)).toBe(2);
   });
 
   test('contextActions composes with rowActions (button column AND right-click)', () => {
@@ -667,7 +667,7 @@ describe('DataTable context actions', () => {
       />,
     );
     expect(markup).toContain('Open row actions'); // rowActions column still present
-    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2); // rows are triggers
+    expect(count(markup, /data-context-menu-trigger=""/g)).toBe(2); // rows are triggers
   });
 });
 

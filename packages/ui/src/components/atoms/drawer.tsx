@@ -5,6 +5,7 @@ import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 // Follows the shadcn base-vega Base UI drawer (upstream replaced vaul, which
 // depends on Radix). Divergences: the scrim and surface use the scrim and
@@ -60,7 +61,7 @@ function Drawer({
 }
 
 function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />
+  return <DrawerPrimitive.Trigger {...triggerSlot("drawer-trigger", props.render)} {...props} />
 }
 
 function DrawerPortal({ ...props }: DrawerPrimitive.Portal.Props) {

@@ -8,13 +8,14 @@ import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
 function SheetTrigger({ ...props }: SheetPrimitive.Trigger.Props) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+  return <SheetPrimitive.Trigger {...triggerSlot("sheet-trigger", props.render)} {...props} />
 }
 
 function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
