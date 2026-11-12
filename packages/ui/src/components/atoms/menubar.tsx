@@ -67,9 +67,16 @@ function MenubarTrigger({
   )
 }
 
+/**
+ * Without an `align`, the menu opens toward the centre of the screen, as a
+ * DropdownMenu does: a trigger in the right half lines the menu up with its
+ * right edge, one in the left half with its left edge. The -5px offset moves
+ * the menu outward on either side, so its items line up with the trigger's
+ * text. An explicit `align` always wins.
+ */
 function MenubarContent({
   className,
-  align = "start",
+  align,
   alignOffset = -5,
   sideOffset = 8,
   ...props
