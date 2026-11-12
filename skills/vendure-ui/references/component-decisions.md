@@ -50,6 +50,7 @@ Link to a page with more of what the user is looking at, at the end of the regio
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
 - **Not inside running text:** A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.
+- **A diagonal arrow means another site:** A chevron goes to a page of this app; an up-right arrow leaves it. Use `direction="external"` for a link to another site. A hostname fact in a PageHeader is a PageHeaderFactLink. A Button that opens another site takes a 14px `ArrowUpRight` as its last child, which the Button keeps quieter than the label. Never use the arrow for a page of this app.
 
 Related decisions: `button`.
 ## Badge

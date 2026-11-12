@@ -103,6 +103,20 @@ behavior you need instead of rebuilding it from atoms.
 #### Application structure
 `app-shell`, `page-header`, `skip-link`, `arrow-link`, `search-trigger`
 
+> **AppShellPage.** The page inside `AppShellMain`. When it mounts, the page fades in over 220ms and rises 6px into place over 260ms on the `out` curve; with reduced motion it only fades. The sidebar and the header stay still. It is a CSS animation that runs once on mount, so a re-render or a query that refetches does not replay it. Give it a `key` that changes with the route; with TanStack Router, the pathname (a change of search params keeps the page):
+>
+> ```tsx
+> const pathname = useLocation({ select: (location) => location.pathname });
+>
+> <AppShellMain>
+>   <AppShellPage key={pathname}>
+>     <Outlet />
+>   </AppShellPage>
+> </AppShellMain>
+> ```
+>
+> A layout without AppShell (the Dashboard) gets the same motion from `pageEnterClassName` (`animate-page-enter motion-reduce:animate-page-fade`) on its own wrapper, keyed the same way. Only opacity and transform move, so nothing shifts and the page takes clicks while it settles.
+
 > **SearchTrigger.** The search field at the end of the top bar: a button that looks like a 28px field, with a search icon, the word "Search" and the shortcut (⌘K on Apple platforms, Ctrl K elsewhere). Its accessible name is "Search (command palette)", and it announces a dialog. It only shows the shortcut: open the palette in `onClick` and bind the same key yourself. `shortcutKey` sets the letter (`null` for none). `collapse` shrinks it to an icon button: below 768px by default (`md`), `never` or `always`.
 >
 > ```tsx
@@ -148,8 +162,6 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
 
-> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
-
 ## Utilities
 
 ### `cn()` — Class Merging
@@ -179,6 +191,24 @@ import { DialogPrimitive } from "@vendure-io/ui/lib/base-ui";
 `@vendure-io/ui` 2.0 requires `@base-ui/react` `^1.8.0`. If your app also depends on `@base-ui/react` directly, set it to `^1.8.0` too. Then the package manager installs one copy, and the primitive types match the types that the atoms use.
 
 ## Hooks
+
+### `useScrolled()`
+
+A ref for a scroll container of your own. It sets `data-scrolled` on the element while its content is scrolled away from the top. A sticky header inside takes `in-data-scrolled:shadow-scrolled`: a 1px rule in the `input` colour, as under the log viewer header in the v3 look. Give the header a background and `z-10` so rows pass under it.
+
+```tsx
+import { useScrolled } from "@vendure-io/ui/hooks/use-scrolled";
+
+function Log({ lines }: { lines: string[] }) {
+  const scrolled = useScrolled<HTMLDivElement>();
+  return (
+    <div ref={scrolled} tabIndex={0} role="region" aria-label="Server log" className="h-72 overflow-y-auto">
+      <div className="bg-card sticky top-0 z-10 in-data-scrolled:shadow-scrolled">Message</div>
+      {lines.map((line) => <div key={line}>{line}</div>)}
+    </div>
+  );
+}
+```
 
 ### `useCopy()`
 
@@ -561,6 +591,12 @@ import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialo
   <Button variant="destructive">Delete channel</Button>
 </ConfirmDialog>
 ```
+
+`ConfirmDialog` has three variants. Pick by what the confirm costs:
+
+- `default`: a consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus, so Enter confirms.
+- `caution`: a costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog points one way.
+- `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
 
 ### Card
 

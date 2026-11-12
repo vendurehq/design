@@ -142,3 +142,46 @@ export const Header: Story = {
     </div>
   ),
 };
+
+export const PageEnter: Story = {
+  name: '3 · The page enters, the shell stays',
+  render: () => (
+    <div className="max-w-4xl space-y-10">
+      <Section title="Key the page to the route">
+        <p className="text-muted-foreground max-w-2xl text-sm">
+          Wrap the page in AppShellPage inside AppShellMain and give it a key that changes with
+          the route. A new page mounts a new element, so it fades in and rises 6px into place. A
+          re-render, a refetch or a change of search params keeps the element, so the motion does
+          not replay. With TanStack Router, key it to the pathname. A layout that does not use
+          AppShell puts the same classes, pageEnterClassName, on its own keyed wrapper.
+        </p>
+        <pre className="bg-muted overflow-x-auto rounded-lg p-4 font-mono text-xs">
+          {`const pathname = useLocation({ select: (location) => location.pathname });
+
+<AppShellMain>
+  <AppShellPage key={pathname}>
+    <Outlet />
+  </AppShellPage>
+</AppShellMain>`}
+        </pre>
+      </Section>
+      <Section title="Move the page, not the shell">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border p-4 text-sm">
+            <p className="text-success-subtle-foreground font-semibold">Do</p>
+            <p className="text-muted-foreground mt-2">
+              Key only the page. The sidebar shows where you went, and the header holds its place.
+            </p>
+          </div>
+          <div className="rounded-lg border p-4 text-sm">
+            <p className="text-destructive-subtle-foreground font-semibold">Don&apos;t</p>
+            <p className="text-muted-foreground mt-2">
+              Key AppShell, AppShellMain or a list that refetches. The whole window would flash, or
+              the page would enter again while the user reads it.
+            </p>
+          </div>
+        </div>
+      </Section>
+    </div>
+  ),
+};

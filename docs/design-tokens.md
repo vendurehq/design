@@ -141,6 +141,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 - `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
 - `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a clear 1px edge and a soft drop. It is the popup's border, so a popup takes no border or ring class. Light and dark have different values. Use `shadow-overlay`
 - `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
+- `--shadow-scrolled` — A 1px rule in the `input` colour under a sticky header while content sits scrolled under it. Use `in-data-scrolled:shadow-scrolled` on the header, and `useScrolled` from `@vendure-io/ui/hooks/use-scrolled` on its scroll container
 
 ### Motion
 
@@ -157,10 +158,12 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 - **Drawer durations**: `--transition-duration-drawer-slide` (450ms) — a `Drawer` sliding and its scrim fading, on `ease-drawer`; `-drawer-swipe` (400ms) — a released swipe at full strength, which the `Drawer` scales by the swipe strength. `--ease-drawer-content` is the curve of the content's fade while a nested drawer opens. Only `Drawer` uses them
 - **Alert duration**: `--transition-duration-alert-enter` (240ms) — an `Alert` that appears, on `ease-out`. Only `Alert` uses it
 - **Button icon duration**: `--transition-duration-button-icon-turn` (220ms) — the icon of a `Button` turning (a chevron on an expanded trigger), on `ease-out`. Only `Button` uses it
+- **External arrow duration**: `--transition-duration-external-arrow` (220ms) — the diagonal arrow of a link that opens another site (`ArrowLink` with `direction="external"`, `PageHeaderFactLink`) moving out, on `ease-out`. Only those two use it
 - **The rule**: every duration and easing is a token, written in the short class form (`duration-quick`, `ease-soft`). When the scale lacks a value, add a token named for its owner instead of a literal
+- **Page enter durations**: `--transition-duration-page-fade` (220ms) and `-page-rise` (260ms) — a page that opens fades in and rises into place, on `ease-out`. The `page-enter` animation uses them
 - **Row entrance duration**: `--transition-duration-row-enter` (340ms) — a new `ListRow` that opens its height, on `ease-height`. Only `ListRow` uses it
 - **Row swap durations**: `--transition-duration-row-swap-out` (80ms) — the value or action of a `ListRowSwap` fading out, on `ease-soft`; `-row-swap-delay` (60ms) — how long the incoming one waits before it fades in `quick`, so the two never show at once. Only `ListRow` uses them
-- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner); `--animate-progress-sweep` — the `animate-progress-sweep` utility, a 2.2s linear band across an indeterminate `Progress` bar; `--animate-live-pulse` — the `animate-live-pulse` utility, a soft ring that grows out of a dot and fades every 2.4s on the `out` curve (the `LiveIndicator` ring)
+- **Animations**: `--animate-shimmer` — the `animate-shimmer` utility, for loading-state gradient sweeps (e.g. `Skeleton`); `--animate-spin-slow` — the `animate-spin-slow` utility, a 1.6s linear rotation for small in-progress marks (e.g. the `StatusBadge` spinner); `--animate-progress-sweep` — the `animate-progress-sweep` utility, a 2.2s linear band across an indeterminate `Progress` bar; `--animate-live-pulse` — the `animate-live-pulse` utility, a soft ring that grows out of a dot and fades every 2.4s on the `out` curve (the `LiveIndicator` ring); `--animate-page-enter` — the `animate-page-enter` utility, a page that opens: it fades in over 220ms and rises 6px into place over 260ms, on the `out` curve, once when the element mounts (`AppShellPage`); `--animate-page-fade` — the `animate-page-fade` utility, the same page enter with reduced motion: the fade only. Write them as `animate-page-enter motion-reduce:animate-page-fade`
 
 ## Dark Mode
 

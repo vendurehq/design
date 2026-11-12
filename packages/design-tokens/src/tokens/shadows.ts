@@ -22,15 +22,20 @@ export const shadows = {
 // destructive and outline buttons, button groups, Card): a 1px bottom edge and
 // a faint 2px blur. Dark mode keeps only the
 // edge, darker, because a blur does not read on the dark tiers.
+// `scrolled` marks a sticky header while content sits scrolled under it: a 1px
+// line below the header in the `input` colour, no blur, so it reads as a rule
+// in both themes. It references `--input`, so it follows the theme on its own.
 // Light shadows are tinted with the light `foreground`, so they follow it.
 const ink = (alpha: number) => lightTheme.foreground.replace(/\)$/, ` / ${alpha})`);
 
 export const lightShadows = {
   overlay: `0 0 0 1px ${ink(0.1)}, 0 12px 32px -8px ${ink(0.18)}, 0 4px 8px -4px ${ink(0.08)}`,
   control: `0 1px 0 ${ink(0.04)}, 0 1px 2px ${ink(0.04)}`,
+  scrolled: '0 1px 0 var(--input)',
 } as const;
 
 export const darkShadows = {
   overlay: '0 0 0 1px oklch(1 0 0 / 0.12), 0 16px 40px -8px oklch(0 0 0 / 0.6)',
   control: '0 1px 0 oklch(0 0 0 / 0.2)',
+  scrolled: '0 1px 0 var(--input)',
 } as const;

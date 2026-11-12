@@ -67,7 +67,14 @@ interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
-  variant?: 'default' | 'destructive';
+  /**
+   * `default`: Confirm is the filled primary and takes the focus.
+   * `caution`: a costly action that is not destructive ("Deploy anyway" after
+   * a failed check). Cancel takes the focus and Confirm is an outline button,
+   * so the dialog points one way.
+   * `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
+   */
+  variant?: 'default' | 'caution' | 'destructive';
   /**
    * Hold the confirm button disabled while the dialog cannot be confirmed yet,
    * e.g. while the consequences it describes are still loading. Cancel stays
@@ -80,8 +87,8 @@ interface ConfirmDialogProps {
    * The element that takes focus when the dialog opens. By default the first
    * field in `body` that a user can tab to takes it; hidden inputs never do.
    * Without one, Confirm takes it, so Enter confirms. A
-   * destructive dialog, or one whose Confirm is disabled, focuses Cancel, so
-   * Enter never destroys by accident. The focused button shows its ring at
+   * caution or destructive dialog, or one whose Confirm is disabled, focuses
+   * Cancel, so Enter never starts a costly action by accident. The focused button shows its ring at
    * once, also when a mouse click opened the dialog.
    */
   initialFocus?: ComponentProps<typeof AlertDialogContent>['initialFocus'];
@@ -124,7 +131,7 @@ function ConfirmDialog({
     const fields = bodyRef.current?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [];
     const field = Array.from(fields).find(isTabbable);
     if (field) return field;
-    if (variant === 'destructive' || confirmDisabled) return cancelRef.current ?? true;
+    if (variant !== 'default' || confirmDisabled) return cancelRef.current ?? true;
     return confirmRef.current ?? true;
   };
   const showReason = confirmDisabled && !pending && Boolean(confirmDisabledReason);
@@ -205,7 +212,7 @@ function ConfirmDialog({
           {/* While pending, the spinner takes the label's place. The label stays
               in the layout (and the accessible name), so the button keeps its width. */}
           <AlertDialogAction
-            variant={variant}
+            variant={variant === 'caution' ? 'outline' : variant}
             disabled={pending || confirmDisabled}
             aria-busy={pending || undefined}
             aria-describedby={showReason ? reasonId : undefined}

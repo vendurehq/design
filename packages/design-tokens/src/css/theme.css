@@ -178,6 +178,7 @@
   --shadow-none: none;
   --shadow-overlay: var(--shadow-overlay);
   --shadow-control: var(--shadow-control);
+  --shadow-scrolled: var(--shadow-scrolled);
   --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-heading: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
@@ -257,10 +258,16 @@
   --transition-duration-drawer-swipe: 400ms;
   --transition-duration-alert-enter: 240ms;
   --transition-duration-button-icon-turn: 220ms;
+  --transition-duration-external-arrow: 220ms;
+  --transition-duration-page-fade: 220ms;
+  --transition-duration-page-rise: 260ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;
   --animate-live-pulse: live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+  --animate-page-enter:
+    page-fade 220ms cubic-bezier(0.19, 1, 0.22, 1), page-rise 260ms cubic-bezier(0.19, 1, 0.22, 1);
+  --animate-page-fade: page-fade 220ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 @keyframes shimmer {
@@ -299,6 +306,18 @@
   100% {
     transform: scale(2.6);
     opacity: 0;
+  }
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes page-rise {
+  from {
+    transform: translateY(6px);
   }
 }
 

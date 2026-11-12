@@ -80,6 +80,10 @@ export const tokenGuidance = [
         body: "Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. The overlay shadow is the popup's border: a clear 1px edge, then the drop. Do not add a border or ring class to a popup. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.",
       },
       {
+        title: 'A scrolled header gets a rule',
+        body: 'A sticky header over a scroll area of your own takes shadow-scrolled while content sits under it: a 1px line in the input colour. Put useScrolled on the scroll container and in-data-scrolled:shadow-scrolled on the header. Give the header a background and z-10 so the rows pass under it. At the top, the header has no line.',
+      },
+      {
         title: 'Inset reads below its host',
         body: 'Use inset for wells, skeleton regions, or controls that should appear recessed. A Progress track is not inset: it uses the accent tint.',
       },
@@ -123,7 +127,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Use named duration and easing tokens',
-        body: 'Every duration and easing is a token. Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles: ease-out for entrances and for the scale and movement of an exit (its fade stays on ease-soft), ease-drawer for drawers, sheets and the sidebar pill, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft (the CSS `ease` curve) for small colour, opacity and blur changes. When the scale lacks a value, add a duration token named for the component or shared look that owns it, and use it there only: palette-* for the command palette, tooltip-* for the tooltip, popup-fade and popup-resize for popups, sidebar-pill for the sidebar pill, toast-* for toasts, progress-fill for Progress, row-enter for a new ListRow, row-swap-out and row-swap-delay for a ListRowSwap, dialog-* for Dialog and AlertDialog, drawer-* for Drawer, alert-enter for Alert and button-icon-turn for the Button icon. Never write a literal millisecond value or curve in a class. Write the short class form: duration-quick and ease-soft, not duration-(--transition-duration-quick).',
+        body: 'Every duration and easing is a token. Choose instant, fast, quick, moderate, normal, slow, or slower and the shared easing roles: ease-out for entrances and for the scale and movement of an exit (its fade stays on ease-soft), ease-drawer for drawers, sheets and the sidebar pill, ease-height for a height that opens or closes, ease-press for the press scale of a control, and ease-soft (the CSS `ease` curve) for small colour, opacity and blur changes. When the scale lacks a value, add a duration token named for the component or shared look that owns it, and use it there only: palette-* for the command palette, tooltip-* for the tooltip, popup-fade and popup-resize for popups, sidebar-pill for the sidebar pill, toast-* for toasts, progress-fill for Progress, row-enter for a new ListRow, row-swap-out and row-swap-delay for a ListRowSwap, dialog-* for Dialog and AlertDialog, drawer-* for Drawer, alert-enter for Alert, button-icon-turn for the Button icon, external-arrow for the arrow of a link that opens another site and page-fade and page-rise for the page enter. Never write a literal millisecond value or curve in a class. Write the short class form: duration-quick and ease-soft, not duration-(--transition-duration-quick).',
       },
       {
         title: 'Match duration to distance and consequence',

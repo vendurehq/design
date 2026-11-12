@@ -511,3 +511,54 @@ export const TitleIcon: Story = {
     </div>
   ),
 };
+
+// ── 6 · three variants ───────────────────────────────────────────────────────
+
+export const ChoosingAVariant: Story = {
+  name: '6 · Choosing a variant',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Pick the variant by what the confirm costs"
+        intro='default: a consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus, so Enter confirms. caution: a costly action that is not a loss, such as deploying after a failed check or deploying a commit that is already building. Cancel takes the focus and Confirm is an outline button, so the dialog points one way: back. destructive: a loss. Cancel takes the focus and Confirm is solid red.'
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="A deploy that will fail again is costly, not a loss: caution. Cancel is focused, Deploy anyway is an outline button."
+          >
+            <ConfirmDialog
+              icon={<RocketIcon />}
+              title="Deploy main to Production?"
+              description="The latest commit failed its pre-deploy check. A deployment builds the same commit and stops at the same point."
+              confirmLabel="Deploy anyway"
+              variant="caution"
+              onConfirm={() => {}}
+            >
+              <Button variant="outline">Deploy</Button>
+            </ConfirmDialog>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="initialFocus on Cancel with the default variant. Focus says go back, the filled Confirm says go on: the dialog points two ways."
+          >
+            <ConfirmDialog
+              icon={<RocketIcon />}
+              title="Deploy main to Production?"
+              description="The latest commit failed its pre-deploy check. A deployment builds the same commit and stops at the same point."
+              confirmLabel="Deploy anyway"
+              initialFocus={() =>
+                document.querySelector<HTMLElement>(
+                  '[data-slot=confirm-dialog] [data-slot=alert-dialog-cancel]',
+                ) ?? true
+              }
+              onConfirm={() => {}}
+            >
+              <Button variant="outline">Deploy</Button>
+            </ConfirmDialog>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};

@@ -1,10 +1,12 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import type * as React from 'react';
 
-// Internal: ArrowLink (forward) and PageHeaderBack (back) render this. The
-// package exports map this file to null.
+// Internal: ArrowLink (forward, external) and PageHeaderBack (back) render
+// this, and PageHeaderFactLink renders ExternalArrow. The package exports map
+// this file to null.
 //
 // The v3 look: 13px medium text, and a 15px chevron at 45%: trailing forward,
 // leading back. A straight direction takes a chevron; an arrow is for a
@@ -16,16 +18,48 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 // opacity change. In a right-to-left layout the chevron points and moves the
 // other way.
 //
-// Both directions use the `group/arrow-link` group, the public hook for a card
+// A link that opens another site (`external`) ends with a 14px up-right arrow
+// at 40% instead of a chevron. On hover or keyboard focus the arrow goes to
+// 85% and moves 1.5px out along its diagonal: it fades in `moderate` on `soft`
+// and moves in `external-arrow` (220ms) on the strong ease-out. In a
+// right-to-left layout it points up-left and moves that way. With reduced
+// motion it only fades.
+//
+// Every direction uses the `group/arrow-link` group, the public hook for a card
 // or row that opens the same page (see ArrowLink).
 
-type Direction = 'forward' | 'back';
+type Direction = 'forward' | 'back' | 'external';
 
-const nudge: Record<Direction, string> = {
+const nudge: Record<Exclude<Direction, 'external'>, string> = {
   forward:
     'group-hover/arrow-link:translate-x-0.5 group-focus-visible/arrow-link:translate-x-0.5 rtl:group-hover/arrow-link:-translate-x-0.5 rtl:group-focus-visible/arrow-link:-translate-x-0.5',
   back: 'group-hover/arrow-link:-translate-x-0.5 group-focus-visible/arrow-link:-translate-x-0.5 rtl:group-hover/arrow-link:translate-x-0.5 rtl:group-focus-visible/arrow-link:translate-x-0.5',
 };
+
+// The class names stay literal so Tailwind can scan them.
+const EXTERNAL_ARROW_CLASS = [
+  'size-3.5 shrink-0 opacity-40 rtl:-scale-x-100',
+  '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-external-arrow)_var(--ease-out)]',
+  'group-hover/arrow-link:opacity-85 group-focus-visible/arrow-link:opacity-85',
+  'group-hover/arrow-link:translate-x-[1.5px] group-hover/arrow-link:-translate-y-[1.5px] group-focus-visible/arrow-link:translate-x-[1.5px] group-focus-visible/arrow-link:-translate-y-[1.5px]',
+  'rtl:group-hover/arrow-link:-translate-x-[1.5px] rtl:group-focus-visible/arrow-link:-translate-x-[1.5px]',
+  'motion-reduce:translate-none!',
+].join(' ');
+
+/**
+ * The diagonal arrow of a link that opens another site. Decorative. Its link
+ * takes `group/arrow-link`, which drives the hover.
+ */
+function ExternalArrow({ className, ...props }: React.ComponentProps<typeof ArrowUpRight>) {
+  return (
+    <ArrowUpRight
+      aria-hidden="true"
+      strokeWidth={1.75}
+      className={cn(EXTERNAL_ARROW_CLASS, className)}
+      {...props}
+    />
+  );
+}
 
 type DirectionLinkProps = useRender.ComponentProps<'a'> & {
   direction: Direction;
@@ -44,20 +78,23 @@ function DirectionLink({
   children,
   ...props
 }: DirectionLinkProps) {
-  const Icon = direction === 'forward' ? ChevronRight : ChevronLeft;
-  const icon = (
-    <Icon
-      aria-hidden="true"
-      data-slot={iconSlot}
-      className={cn(
-        'size-3.75 shrink-0 opacity-45 rtl:-scale-x-100',
-        '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
-        'group-hover/arrow-link:opacity-100 group-focus-visible/arrow-link:opacity-100',
-        nudge[direction],
-        'motion-reduce:translate-none!',
-      )}
-    />
-  );
+  const Icon = direction === 'back' ? ChevronLeft : ChevronRight;
+  const icon =
+    direction === 'external' ? (
+      <ExternalArrow data-slot={iconSlot} />
+    ) : (
+      <Icon
+        aria-hidden="true"
+        data-slot={iconSlot}
+        className={cn(
+          'size-3.75 shrink-0 opacity-45 rtl:-scale-x-100',
+          '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-normal)_var(--ease-out)]',
+          'group-hover/arrow-link:opacity-100 group-focus-visible/arrow-link:opacity-100',
+          nudge[direction],
+          'motion-reduce:translate-none!',
+        )}
+      />
+    );
   return useRender({
     defaultTagName: 'a',
     render,
@@ -71,15 +108,15 @@ function DirectionLink({
           className,
         ),
         children:
-          direction === 'forward' ? (
+          direction === 'back' ? (
             <>
-              {children}
               {icon}
+              {children}
             </>
           ) : (
             <>
-              {icon}
               {children}
+              {icon}
             </>
           ),
       },
@@ -89,4 +126,5 @@ function DirectionLink({
   });
 }
 
-export { DirectionLink };
+export { DirectionLink, ExternalArrow };
+export type { Direction };
