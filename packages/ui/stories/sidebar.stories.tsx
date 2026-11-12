@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { type ReactNode, useState } from 'react';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ChartLineIcon,
   ChevronRightIcon,
@@ -71,16 +71,7 @@ export const Default: Story = {
           <SidebarGroup>
             <SidebarGroupLabel>Application</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <SlidingMenu />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -120,19 +111,21 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * The active item gets a sidebar-primary bar on its leading edge, so it differs
- * from hover (both use the sidebar-accent fill), and its icon takes
- * brand-indicator. The outline variant draws its border again. Hover an item to
- * compare. Pinned to the light page theme.
+ * With `slidingIndicator={false}` the menu draws no pill: the active item gets
+ * the sidebar-accent fill and a sidebar-primary bar on its leading edge, so it
+ * differs from hover (same fill), and its icon takes brand-indicator. The
+ * outline variant draws its border again. Hover an item to compare. Pinned to
+ * the light page theme.
  */
 export const ActiveItem: Story = {
+  name: 'Active item without the pill',
   globals: { theme: 'light' },
   render: () => (
     <LightAndDark>
       {() => (
         <SidebarProvider className="min-h-0">
           <div className="bg-sidebar text-sidebar-foreground w-56 rounded-lg border p-2">
-            <SidebarMenu>
+            <SidebarMenu slidingIndicator={false}>
               {menuItems.slice(0, 3).map((item, index) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton isActive={index === 0}>
@@ -456,7 +449,7 @@ export const OneActiveIcon: Story = {
 function SlidingMenu({ tooltips = false }: { tooltips?: boolean }) {
   const [active, setActive] = useState(0);
   return (
-    <SidebarMenu slidingIndicator>
+    <SidebarMenu>
       {menuItems.map((item, index) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
@@ -474,22 +467,18 @@ function SlidingMenu({ tooltips = false }: { tooltips?: boolean }) {
 }
 
 /**
- * With slidingIndicator, SidebarMenu draws one pill that slides to the active
- * item on the drawer curve. Click an item to move it. Under reduced motion the
- * pill moves without sliding. Pinned to the light page theme.
+ * By default SidebarMenu marks the active item with one raised pill (surface
+ * fill, border, control shadow, no bar) that slides to the next active item on
+ * the drawer curve. Click an item to move it. Under reduced motion the pill
+ * moves without sliding. Follows the theme toggle.
  */
 export const SlidingIndicator: Story = {
-  globals: { theme: 'light' },
   render: () => (
-    <LightAndDark>
-      {() => (
-        <SidebarProvider className="min-h-0">
-          <div className="bg-sidebar text-sidebar-foreground w-58 rounded-lg border p-2">
-            <SlidingMenu />
-          </div>
-        </SidebarProvider>
-      )}
-    </LightAndDark>
+    <SidebarProvider className="min-h-0">
+      <div className="bg-sidebar text-sidebar-foreground w-58 rounded-lg border p-2">
+        <SlidingMenu />
+      </div>
+    </SidebarProvider>
   ),
 };
 
@@ -592,6 +581,197 @@ export const IconRailWithGroups: Story = {
           <header className="flex h-13 items-center gap-2 border-b px-3">
             <SidebarTrigger />
             <span className="text-sm font-medium">Orders</span>
+          </header>
+          <div className="flex-1 p-5">
+            <p className="text-muted-foreground text-sm">Main content area</p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  },
+};
+
+const dashboardTop = [
+  { title: 'Dashboard', icon: HomeIcon },
+  { title: 'Catalog', icon: PackageIcon, items: ['Products', 'Facets', 'Collections'] },
+  { title: 'Sales', icon: ShoppingCartIcon, items: ['Orders'] },
+  { title: 'Customers', icon: UsersIcon, items: ['Customer list', 'Customer groups'] },
+  { title: 'Marketing', icon: TagIcon, items: ['Promotions'] },
+];
+const dashboardBottom = [
+  { title: 'Settings', icon: SettingsIcon, items: ['Channels', 'Zones', 'Tax rates'] },
+  { title: 'System', icon: ChartLineIcon, items: ['Job queue', 'Healthchecks'] },
+];
+type DashboardEntry = (typeof dashboardTop)[number] | (typeof dashboardBottom)[number];
+
+/** One SidebarMenu of the Dashboard nav: links and collapsible sections. */
+function DashboardMenu({
+  entries,
+  current,
+  open,
+  go,
+  toggle,
+}: {
+  entries: DashboardEntry[];
+  current: string;
+  open: string | null;
+  go: (page: string) => void;
+  toggle: (section: string) => void;
+}) {
+  return (
+    <SidebarMenu>
+      {entries.map((entry) =>
+        'items' in entry && entry.items ? (
+          <Collapsible
+            key={entry.title}
+            open={open === entry.title}
+            onOpenChange={() => toggle(entry.title)}
+            render={<SidebarMenuItem className="group/collapsible" />}
+          >
+            <CollapsibleTrigger
+              render={
+                <SidebarMenuButton
+                  tooltip={entry.title}
+                  hasActiveChild={entry.items.includes(current)}
+                />
+              }
+            >
+              <entry.icon />
+              <span>{entry.title}</span>
+              <ChevronRightIcon className="ms-auto transition-transform rtl:rotate-180 group-data-[open]/collapsible:rotate-90" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {entry.items.map((item) => (
+                  <SidebarMenuSubItem key={item}>
+                    <SidebarMenuSubButton
+                      render={<a href="#" />}
+                      isActive={item === current}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        go(item);
+                      }}
+                    >
+                      <span>{item}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <SidebarMenuItem key={entry.title}>
+            <SidebarMenuButton
+              tooltip={entry.title}
+              isActive={entry.title === current}
+              onClick={() => go(entry.title)}
+            >
+              <entry.icon />
+              <span>{entry.title}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ),
+      )}
+    </SidebarMenu>
+  );
+}
+
+/**
+ * The Dashboard's navigation, with the default pill: a top menu of links and
+ * collapsible sections, and an Administration menu at the bottom. Only a
+ * top-level item gets the pill. A nested item keeps its fill, with no pill and
+ * no bar, and its section's icon is the one icon in the active colour. Open a
+ * section above the current page and the pill follows the item down. Press
+ * the trigger (or Ctrl/Cmd+B) for the icon rail.
+ */
+export const DashboardNavigation: Story = {
+  name: 'Dashboard navigation (groups and nested items)',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const pills = () =>
+      Array.from(canvasElement.querySelectorAll<HTMLElement>('[data-slot="sidebar-menu-indicator"]'));
+    const brand = () => getComputedStyle(canvas.getByRole('button', { name: 'Dashboard' }).querySelector('svg')!).color;
+    const litIcons = (color: string) =>
+      Array.from(
+        canvasElement.querySelectorAll<SVGElement>(
+          '[data-slot="sidebar-menu-button"] > svg:first-child, [data-slot="sidebar-menu-sub-button"] > svg:first-child',
+        ),
+      ).filter((svg) => getComputedStyle(svg).color === color && getComputedStyle(svg).opacity === '1');
+
+    // A top-level page: one pill, in the top menu, on the item; no bar.
+    await waitFor(() => expect(pills().filter((pill) => 'shown' in pill.dataset)).toHaveLength(1));
+    const dashboard = canvas.getByRole('button', { name: 'Dashboard' });
+    expect(getComputedStyle(dashboard, '::before').display).toBe('none');
+    await waitFor(() => expect(getComputedStyle(dashboard.querySelector('svg')!).opacity).toBe('1'));
+    const color = brand();
+    expect(litIcons(color)).toHaveLength(1);
+
+    // A nested page: no pill anywhere, the sub-item has its fill and no bar,
+    // and the section's icon is the only one in the active colour.
+    await userEvent.click(canvas.getByRole('button', { name: 'Sales' }));
+    const orders = await canvas.findByRole('link', { name: 'Orders' });
+    await userEvent.click(orders);
+    await waitFor(() => expect(pills().filter((pill) => 'shown' in pill.dataset)).toHaveLength(0));
+    expect(getComputedStyle(orders).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(getComputedStyle(orders, '::before').content).toBe('none');
+    const sales = canvas.getByRole('button', { name: 'Sales' }).querySelector('svg')!;
+    await waitFor(() => expect(getComputedStyle(sales).color).toBe(color));
+    await waitFor(() => expect(litIcons(color)).toHaveLength(1));
+
+    // Back to a top-level page: the pill comes back on it.
+    await userEvent.click(dashboard);
+    await waitFor(() => expect(pills().filter((pill) => 'shown' in pill.dataset)).toHaveLength(1));
+  },
+  render: function Render() {
+    const [current, setCurrent] = useState('Dashboard');
+    const sectionOf = (page: string) =>
+      [...dashboardTop, ...dashboardBottom].find((entry) => 'items' in entry && entry.items?.includes(page))?.title ?? null;
+    const [openTop, setOpenTop] = useState<string | null>(null);
+    const [openBottom, setOpenBottom] = useState<string | null>(null);
+    const go = (page: string) => {
+      setCurrent(page);
+      const section = sectionOf(page);
+      if (dashboardTop.some((entry) => entry.title === section)) setOpenTop(section);
+      if (dashboardBottom.some((entry) => entry.title === section)) setOpenBottom(section);
+    };
+    return (
+      <SidebarProvider>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
+              <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
+                V
+              </div>
+              <span className="truncate text-sm font-semibold">Vendure</span>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <DashboardMenu
+                entries={dashboardTop}
+                current={current}
+                open={openTop}
+                go={go}
+                toggle={(section) => setOpenTop((open) => (open === section ? null : section))}
+              />
+            </SidebarGroup>
+            <SidebarGroup className="mt-auto">
+              <SidebarGroupLabel>Administration</SidebarGroupLabel>
+              <DashboardMenu
+                entries={dashboardBottom}
+                current={current}
+                open={openBottom}
+                go={go}
+                toggle={(section) => setOpenBottom((open) => (open === section ? null : section))}
+              />
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <header className="flex h-13 items-center gap-2 border-b px-3">
+            <SidebarTrigger />
+            <span className="text-sm font-medium">{current}</span>
           </header>
           <div className="flex-1 p-5">
             <p className="text-muted-foreground text-sm">Main content area</p>

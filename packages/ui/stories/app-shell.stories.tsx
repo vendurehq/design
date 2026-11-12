@@ -79,7 +79,7 @@ function Nav() {
         <div
           key={label}
           data-active={active}
-          className="text-sidebar-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-sm data-[active=true]:font-medium"
+          className="text-sidebar-foreground data-[active=true]:bg-surface-raised data-[active=true]:border-sidebar-border data-[active=true]:shadow-control data-[active=true]:text-sidebar-accent-foreground flex h-8 items-center gap-2.5 rounded-lg border border-transparent px-2.5 text-sm data-[active=true]:font-medium"
         >
           <Icon className="size-4 in-data-[active=true]:text-brand-indicator" strokeWidth={1.75} />
           {label}
@@ -214,7 +214,7 @@ export const WithSidebarAtom: Story = {
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <SidebarMenu slidingIndicator>
+                  <SidebarMenu>
                     {nav.map(({ icon: Icon, label }) => (
                       <SidebarMenuItem key={label}>
                         <SidebarMenuButton

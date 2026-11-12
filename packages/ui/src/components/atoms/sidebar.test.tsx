@@ -196,14 +196,14 @@ describe('SidebarMenu sliding indicator', () => {
     );
   }
 
-  test('is off by default', () => {
-    const html = menu();
+  test('is off with slidingIndicator={false}: the item keeps its fill and bar', () => {
+    const html = menu(false);
     expect(html).not.toContain('data-slot="sidebar-menu-indicator"');
     expect(html).not.toContain('data-active-indicator');
   });
 
-  test('renders one hidden pill and lets it replace the item fill and bar', () => {
-    const html = menu(true);
+  test('is on by default: one hidden pill replaces the item fill and bar', () => {
+    const html = menu();
     expect(html).toContain('data-active-indicator="pill"');
     expect(html.match(/data-slot="sidebar-menu-indicator"/g)).toHaveLength(1);
     const indicator = html.match(/<li[^>]*data-slot="sidebar-menu-indicator"[^>]*>/)?.[0] ?? '';
