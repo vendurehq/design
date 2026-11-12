@@ -384,3 +384,106 @@ export const ClosingList: Story = {
     await expect(popup).toHaveAttribute('aria-hidden', 'true');
   },
 };
+
+function SideSelect({ label, className, align, overTrigger = false }: {
+  label: string;
+  className: string;
+  align?: 'start' | 'end';
+  overTrigger?: boolean;
+}) {
+  return (
+    <div className={`absolute ${className}`}>
+      <Select>
+        <SelectTrigger aria-label={label} className="w-28">
+          <SelectValue placeholder="Region" />
+        </SelectTrigger>
+        <SelectContent alignItemWithTrigger={overTrigger} align={align}>
+          <SelectItem value="eu">Europe, Middle East and Africa</SelectItem>
+          <SelectItem value="am">North and South America</SelectItem>
+          <SelectItem value="ap">Asia and the Pacific</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+/**
+ * A list that opens below its trigger (`alignItemWithTrigger={false}`) opens
+ * toward the centre of the screen. A trigger in the left half lines up the
+ * left edges and the list grows right; a trigger in the right half lines up
+ * the right edges and the list grows left. It scales in from the corner at
+ * the trigger. An explicit `align` wins, and a list that opens over its
+ * trigger (the default) keeps covering it. Right to left mirrors it.
+ */
+export const OpensTowardTheCentre: Story = {
+  tags: ['!autodocs'],
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    // Logical insets, so the row flips in right-to-left like a page does.
+    // A quarter in from the edges: a popup that would leave the screen is
+    // flipped by Base UI anyway, so the side of the screen shows here.
+    <div className="relative h-[36rem] w-full">
+      <SideSelect label="Left" className="start-[25%] top-4" />
+      <SideSelect label="Right" className="end-[25%] top-4" />
+      <SideSelect label="Explicit start" className="end-[calc(50%-10rem)] top-48" align="start" />
+      <SideSelect label="Over trigger" className="end-[25%] top-80" overTrigger />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const open = async (label: string) => {
+      const trigger = canvas.getByRole('combobox', { name: label });
+      await userEvent.click(trigger);
+      const popup = await waitFor(() => {
+        const element = document.querySelector<HTMLElement>('[data-slot=select-content][data-open]');
+        expect(element, `${label} opens a list`).not.toBeNull();
+        return element as HTMLElement;
+      });
+      return { trigger, popup };
+    };
+    const close = async () => {
+      await userEvent.keyboard('{Escape}');
+      // A closed list can stay mounted, hidden.
+      await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull(), { timeout: 3000 });
+    };
+    const check = async (label: string, edge: 'left' | 'right') => {
+      const { trigger, popup } = await open(label);
+      await waitFor(() => {
+        const box = popup.getBoundingClientRect();
+        const anchor = trigger.getBoundingClientRect();
+        // The list is wider than its trigger, so only one edge can line up.
+        expect(box.width).toBeGreaterThan(anchor.width + 8);
+        expect(Math.abs(box[edge] - anchor[edge]), `${label}: ${edge} edges`).toBeLessThan(1);
+        // It scales in from that corner.
+        const originX = Number.parseFloat(getComputedStyle(popup).transformOrigin);
+        expect(Math.abs(originX - (edge === 'left' ? 0 : box.width)), `${label}: origin`).toBeLessThan(2);
+      });
+      await close();
+    };
+    await check('Left', 'left');
+    await check('Right', 'right');
+    // In the right half, yet an explicit start lines up the left edges.
+    await check('Explicit start', 'left');
+    // Over its trigger, the list has no side and still covers the trigger.
+    const { trigger, popup } = await open('Over trigger');
+    await waitFor(() => {
+      expect(popup).toHaveAttribute('data-side', 'none');
+      const box = popup.getBoundingClientRect();
+      const anchor = trigger.getBoundingClientRect();
+      expect(box.top).toBeLessThanOrEqual(anchor.top);
+      expect(box.bottom).toBeGreaterThanOrEqual(anchor.bottom);
+    });
+    await close();
+    const root = document.documentElement;
+    const dir = root.getAttribute('dir');
+    root.setAttribute('dir', 'rtl');
+    try {
+      await check('Left', 'right');
+      await check('Right', 'left');
+      await check('Explicit start', 'right');
+    } finally {
+      if (dir === null) root.removeAttribute('dir');
+      else root.setAttribute('dir', dir);
+    }
+  },
+};

@@ -16,6 +16,7 @@ import {
 } from "@vendure-io/ui/components/atoms/input-group"
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { usePopupAlign } from "../../lib/popup-align.ts"
 import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 
 /**
@@ -164,13 +165,37 @@ function ComboboxInput({
   )
 }
 
+/**
+ * The element a list lines up with, other than an explicit `anchor`: the
+ * field trigger when there is one (the search input then sits in the popup),
+ * else the input's whole field group. Base UI would take the bare input,
+ * which stops short of the open and clear buttons, so a list lined up on
+ * its right edge would end before the field does.
+ */
+function fieldAnchor(controls: ComboboxControls | null): Element | null {
+  if (controls?.trigger) return controls.trigger
+  return controls?.input?.closest("[data-slot=input-group]") ?? controls?.input ?? null
+}
+
+function resolveAnchor(anchor: ComboboxPrimitive.Positioner.Props["anchor"]): Element | null {
+  const resolved = typeof anchor === "function" ? anchor() : anchor && "current" in anchor ? anchor.current : anchor
+  return resolved instanceof Element ? resolved : null
+}
+
+/**
+ * Without an `align`, the list opens toward the centre of the screen, as a
+ * DropdownMenu does: a field in the right half lines the list up with its
+ * right edge, one in the left half with its left edge. This shows only when
+ * the list is wider than its field. An explicit `align` always wins.
+ */
 function ComboboxContent({
   className,
   side = "bottom",
   sideOffset = 6,
-  align = "start",
+  align,
   alignOffset = 0,
   anchor,
+  ref,
   ...props
 }: ComboboxPrimitive.Popup.Props &
   Pick<
@@ -179,21 +204,31 @@ function ComboboxContent({
   >) {
   const dir = usePopupDir()
   const name = useComboboxName()
+  const controls = React.useContext(ComboboxControlsContext)
+  // Without a field trigger, the list lines up with the whole field group.
+  const fieldGroup = !anchor && !controls?.trigger ? fieldAnchor(controls) : null
+  const getTrigger = React.useCallback(
+    () => resolveAnchor(anchor) ?? fieldAnchor(controls),
+    [anchor, controls]
+  )
+  const { popupRef, align: positionAlign } = usePopupAlign(align, side, ref, getTrigger)
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
         dir={dir}
         side={side}
         sideOffset={sideOffset}
-        align={align}
+        align={positionAlign}
         alignOffset={alignOffset}
-        anchor={anchor}
+        anchor={anchor ?? fieldGroup ?? undefined}
         className="isolate z-50"
       >
         <ComboboxPrimitive.Popup
+          ref={popupRef}
           data-slot="combobox-content"
           data-chips={!!anchor}
-          className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
+          data-field-group={!!fieldGroup}
+          className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) data-[field-group=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
           // A closing list is gone for assistive technology: the input no
           // longer points at it, and it takes no input while it fades out.
           // With the search input inside it, the popup is a dialog: it takes

@@ -9,6 +9,7 @@ import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { usePopupAlign } from "../../lib/popup-align.ts"
 import { nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 
 /**
@@ -216,12 +217,20 @@ const growFromTriggerMotion =
   "data-[side=none]:shadow-none data-[side=none]:transition-[opacity,clip-path] data-[side=none]:[transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal)] data-[side=none]:data-ending-style:duration-quick motion-safe:data-[side=none]:[clip-path:inset(0_round_var(--radius-xl))] motion-safe:data-[side=none]:data-starting-style:[clip-path:var(--select-trigger-box)] motion-safe:data-[side=none]:data-ending-style:[clip-path:var(--select-trigger-box)] motion-safe:data-[side=none]:data-starting-style:opacity-100 motion-safe:data-[side=none]:data-ending-style:opacity-100 motion-safe:data-[side=none]:data-starting-style:scale-100 motion-safe:data-[side=none]:data-ending-style:scale-100 motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0"
 
 // min-w-(--anchor-width) rather than w-(--anchor-width) so the popup can expand beyond the trigger to fit content
+/**
+ * By default the list opens over its trigger and grows out of it. A list
+ * that opens below or above its trigger (`alignItemWithTrigger={false}`, or
+ * when Base UI falls back for touch or a lack of room) opens toward the
+ * centre of the screen, as a DropdownMenu does: a trigger in the right half
+ * lines the list up with its right edge, one in the left half with its left
+ * edge. An explicit `align` always wins.
+ */
 function SelectContent({
   className,
   children,
   side = "bottom",
   sideOffset = 4,
-  align = "center",
+  align,
   alignOffset = 0,
   alignItemWithTrigger = true,
   ref,
@@ -250,8 +259,13 @@ function SelectContent({
     [children]
   )
 
+  const trigger = React.useContext(SelectTriggerContext)?.trigger ?? null
+  const getTrigger = React.useCallback(() => trigger, [trigger])
+  const { popupRef: alignRef, align: positionAlign } = usePopupAlign(align, side, undefined, getTrigger)
+
   const popupRef = React.useCallback(
     (node: HTMLDivElement | null) => {
+      alignRef(node)
       const stop = growFromTrigger(node)
       if (typeof ref === "function") ref(node)
       else if (ref) ref.current = node
@@ -261,18 +275,17 @@ function SelectContent({
         else if (ref) ref.current = null
       }
     },
-    [ref]
+    [ref, alignRef]
   )
 
   const dir = usePopupDir()
-  const trigger = React.useContext(SelectTriggerContext)?.trigger ?? null
   return (
     <SelectPrimitive.Portal key={childrenKey}>
       <SelectPrimitive.Positioner
         dir={dir}
         side={side}
         sideOffset={sideOffset}
-        align={align}
+        align={positionAlign}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
         className="isolate z-50"

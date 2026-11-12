@@ -334,3 +334,115 @@ export const ClosingList: Story = {
     await expect(popup).toHaveAttribute('aria-hidden', 'true');
   },
 };
+
+/**
+ * Two layouts, each with its field in the left half and in the right half.
+ * With the input as the field, the list lines up with the input; with a field
+ * trigger, it lines up with the trigger. A field in the left half lines up the
+ * left edges and the list grows right; a field in the right half lines up the
+ * right edges and the list grows left. The list scales in from the corner at
+ * the field. An explicit `align` wins. Right to left mirrors it.
+ */
+function SideCombobox({ label, layout, className, align }: {
+  label: string;
+  layout: 'input' | 'trigger';
+  className: string;
+  align?: 'start' | 'end';
+}) {
+  return (
+    <div className={`absolute ${className}`}>
+      <Combobox items={countries}>
+        {layout === 'input' ? (
+          <ComboboxInput aria-label={label} placeholder="Search" triggerLabel={`Open ${label}`} className="w-48" />
+        ) : (
+          <ComboboxTrigger aria-label={label} className="w-48">
+            <ComboboxValue placeholder="Select a country" />
+          </ComboboxTrigger>
+        )}
+        {/* Wider than the field: a list as wide as its field has no side to pick. */}
+        <ComboboxContent align={align} className="w-72">
+          {layout === 'trigger' && (
+            <ComboboxInput aria-label={`Search ${label}`} placeholder="Search" showTrigger={false} />
+          )}
+          <ComboboxList>
+            {(country: string) => (
+              <ComboboxItem key={country} value={country}>
+                {country}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  );
+}
+
+export const OpensTowardTheCentre: Story = {
+  tags: ['!autodocs'],
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    // Logical insets, so the row flips in right-to-left like a page does.
+    // A quarter in from the edges: a popup that would leave the screen is
+    // flipped by Base UI anyway, so the side of the screen shows here.
+    <div className="relative h-[40rem] w-full">
+      <SideCombobox label="Input left" layout="input" className="start-[25%] top-4" />
+      <SideCombobox label="Input right" layout="input" className="end-[25%] top-4" />
+      <SideCombobox label="Trigger left" layout="trigger" className="start-[25%] top-80" />
+      <SideCombobox label="Trigger right" layout="trigger" className="end-[25%] top-80" />
+      <SideCombobox label="Explicit start" layout="trigger" className="end-[calc(50%-14rem)] top-[30rem]" align="start" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const check = async (label: string, edge: 'left' | 'right') => {
+      const opener = label.startsWith('Input')
+        ? canvas.getByRole('button', { name: `Open ${label}` })
+        : canvas.getByRole('combobox', { name: label });
+      // The list lines up with the input group, or with the field trigger.
+      const field = label.startsWith('Input')
+        ? (canvas.getByRole('combobox', { name: label }).closest('[data-slot=input-group]') as HTMLElement)
+        : opener;
+      await userEvent.click(opener);
+      const popup = await waitFor(() => {
+        const element = document.querySelector<HTMLElement>('[data-slot=combobox-content][data-open]');
+        expect(element, `${label} opens a list`).not.toBeNull();
+        return element as HTMLElement;
+      });
+      await waitFor(() => {
+        const box = popup.getBoundingClientRect();
+        const anchor = field.getBoundingClientRect();
+        // The list is wider than its field, so only one edge can line up.
+        expect(box.width).toBeGreaterThan(anchor.width + 8);
+        // The edge at the field lines up with the field's edge.
+        expect(Math.abs(box[edge] - anchor[edge]), `${label}: ${edge} edges`).toBeLessThan(1);
+        // It scales in from that corner.
+        const originX = Number.parseFloat(getComputedStyle(popup).transformOrigin);
+        expect(Math.abs(originX - (edge === 'left' ? 0 : box.width)), `${label}: origin`).toBeLessThan(2);
+      });
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(document.querySelector('[data-slot=combobox-content]')).toBeNull(), { timeout: 3000 });
+      // An open list hides the other fields from assistive technology; wait
+      // until they are back.
+      await waitFor(() => expect(canvasElement.querySelector('div[aria-hidden=true]')).toBeNull());
+    };
+    await check('Input left', 'left');
+    await check('Input right', 'right');
+    await check('Trigger left', 'left');
+    await check('Trigger right', 'right');
+    // In the right half, yet an explicit start lines up the left edges.
+    await check('Explicit start', 'left');
+    const root = document.documentElement;
+    const dir = root.getAttribute('dir');
+    root.setAttribute('dir', 'rtl');
+    try {
+      await check('Input left', 'right');
+      await check('Input right', 'left');
+      await check('Trigger left', 'right');
+      await check('Trigger right', 'left');
+      await check('Explicit start', 'right');
+    } finally {
+      if (dir === null) root.removeAttribute('dir');
+      else root.setAttribute('dir', dir);
+    }
+  },
+};
