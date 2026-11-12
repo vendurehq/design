@@ -21,6 +21,7 @@ import {
   AppShellContent,
   AppShellHeader,
   AppShellMain,
+  AppShellPage,
   AppShellSidebar,
 } from '../src/components/molecules/app-shell.tsx';
 import { SearchTrigger } from '../src/components/molecules/search-trigger.tsx';
@@ -100,12 +101,12 @@ function TopBarActions() {
   );
 }
 
-function Dashboard() {
+function Dashboard({ title = 'Orders' }: { title?: string }) {
   return (
     <div className="flex flex-1 flex-col gap-5 overflow-auto p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold">Orders</h1>
+          <h1 className="text-lg font-semibold">{title}</h1>
           <p className="text-muted-foreground text-sm">Everything sold across your channels.</p>
         </div>
         <Button size="sm">New order</Button>
@@ -282,4 +283,61 @@ export const StickyHeader: Story = {
       </AppShell>
     </div>
   ),
+};
+
+// Page enter. Pick another item in the sidebar: the new page fades in and rises
+// 6px into place, while the sidebar and the header stay still. AppShellPage is
+// keyed to the current page (in an app: the route's pathname), so only a page
+// change mounts it again; a re-render does not replay the motion. With reduced
+// motion the page only fades.
+export const PageEnter: Story = {
+  name: 'Page enter on navigation',
+  render: function Render() {
+    const [current, setCurrent] = useState('Orders');
+    return (
+      <AppShell className="h-[620px] min-h-0 overflow-hidden">
+        <SidebarProvider className="min-h-0">
+          <Sidebar collapsible="icon">
+            <SidebarHeader>
+              <div className="flex items-center gap-2 px-2 py-1.5">
+                <div className="bg-brand size-6 rounded-md" />
+                <span className="text-sm font-semibold">Vendure</span>
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {nav.map(({ icon: Icon, label }) => (
+                      <SidebarMenuItem key={label}>
+                        <SidebarMenuButton
+                          isActive={label === current}
+                          onClick={() => setCurrent(label)}
+                          tooltip={label}
+                        >
+                          <Icon />
+                          <span>{label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
+          <SidebarInset render={<div />}>
+            <AppShellHeader>
+              <SidebarTrigger />
+              <span className="text-muted-foreground text-sm">Marketing / {current}</span>
+            </AppShellHeader>
+            <AppShellMain>
+              <AppShellPage key={current} className="flex min-h-full flex-col">
+                <Dashboard title={current} />
+              </AppShellPage>
+            </AppShellMain>
+          </SidebarInset>
+        </SidebarProvider>
+      </AppShell>
+    );
+  },
 };

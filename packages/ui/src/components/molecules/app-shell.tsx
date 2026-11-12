@@ -102,11 +102,32 @@ function AppShellMain({
   );
 }
 
+// The page enter: the class string for a consumer with its own layout. Put
+// it on the element that wraps the page and changes its `key` with the route.
+const pageEnterClassName = 'animate-page-enter motion-reduce:animate-page-fade';
+
+// AppShellPage wraps the page inside AppShellMain. When it mounts, the page
+// fades in (220ms) and rises 6px into place (260ms) on the `out` curve; with
+// reduced motion it only fades. The header and the sidebar stay still.
+//
+// A CSS animation runs once, when the element mounts. A re-render or a query
+// that refetches does not mount it again, so the motion does not replay. Give
+// it a `key` that changes with the route (the pathname) so a new page mounts a
+// new element. Only opacity and transform move: no layout shift, and the page
+// takes clicks while it settles.
+function AppShellPage({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div data-slot="app-shell-page" className={cn(pageEnterClassName, className)} {...props} />
+  );
+}
+
 export {
   AppShell,
   AppShellSidebar,
   AppShellContent,
   AppShellHeader,
   AppShellMain,
+  AppShellPage,
+  pageEnterClassName,
   type AppShellMainProps,
 };

@@ -7,7 +7,9 @@ import {
   AppShellContent,
   AppShellHeader,
   AppShellMain,
+  AppShellPage,
   AppShellSidebar,
+  pageEnterClassName,
 } from './app-shell.tsx';
 import { SkipLink } from './skip-link.tsx';
 
@@ -123,4 +125,31 @@ test('the page is flat: the content is not inset, and the sidebar has a 1px righ
   expect(slotTokens(html, 'app-shell-header')).not.toContain(
     'in-data-[slot=app-shell-content]:bg-surface',
   );
+});
+
+test('AppShellPage enters with the page-enter motion, and only fades with reduced motion', () => {
+  const html = renderToStaticMarkup(<AppShellPage className="p-6">Page</AppShellPage>);
+  const tokens = (html.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  expect(html).toContain('data-slot="app-shell-page"');
+  expect(tokens).toEqual(
+    expect.arrayContaining(['animate-page-enter', 'motion-reduce:animate-page-fade', 'p-6']),
+  );
+  expect(pageEnterClassName).toBe('animate-page-enter motion-reduce:animate-page-fade');
+});
+
+test('Only the page moves: main, the header and the content region carry no enter motion', () => {
+  const html = renderToStaticMarkup(
+    <AppShell>
+      <AppShellContent>
+        <AppShellHeader>Header</AppShellHeader>
+        <AppShellMain>
+          <AppShellPage>Page</AppShellPage>
+        </AppShellMain>
+      </AppShellContent>
+    </AppShell>,
+  );
+
+  expect(html.match(/animate-page-enter/g)).toHaveLength(1);
+  expect(html).toMatch(/<main[^>]*><div data-slot="app-shell-page"/);
 });

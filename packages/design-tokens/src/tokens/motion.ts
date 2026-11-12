@@ -111,10 +111,15 @@ export const duration = {
   // `external`, PageHeaderFactLink) moves out in this time with the `out`
   // curve. Only those two use it.
   externalArrow: '220ms',
+  // A page that opens fades in over `pageFade` and rises into place over
+  // `pageRise`, both on the `out` curve. The `page-enter` animation below
+  // uses them.
+  pageFade: '220ms',
+  pageRise: '260ms',
 } as const;
 
-// Named animations — Tailwind `animate-*` utilities. Each key needs a
-// matching entry in `keyframes` below.
+// Named animations — Tailwind `animate-*` utilities. Each keyframe name an
+// animation runs needs a matching entry in `keyframes` below.
 export const animation = {
   shimmer: 'shimmer 1.75s linear infinite',
   // A calm rotation for small in-progress marks (the StatusBadge spinner).
@@ -128,6 +133,13 @@ export const animation = {
   // state that stays live for minutes does not read as urgent. Only
   // LiveIndicator uses it.
   livePulse: 'live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite',
+  // A page that opens: it fades in and rises 6px into place. Two keyframes,
+  // because the fade and the rise end at different times. It runs once,
+  // when the element mounts. AppShellPage uses it; a consumer with its own
+  // layout puts it on the element it keys to the route.
+  pageEnter: `page-fade ${duration.pageFade} ${easing.out}, page-rise ${duration.pageRise} ${easing.out}`,
+  // The same page enter with reduced motion: the fade only.
+  pageFade: `page-fade ${duration.pageFade} ${easing.out}`,
 } as const;
 
 // Keyframe steps for the animations above, generated as top-level
@@ -152,5 +164,13 @@ export const keyframes = {
     '0%': { transform: 'scale(1)', opacity: '0.45' },
     '70%': { transform: 'scale(2.6)', opacity: '0' },
     '100%': { transform: 'scale(2.6)', opacity: '0' },
+  },
+  // The page enter: each step only sets where the page starts, so it ends on
+  // its own styles. The 6px rise is the v3 look's page distance.
+  pageFade: {
+    from: { opacity: '0' },
+  },
+  pageRise: {
+    from: { transform: 'translateY(6px)' },
   },
 } as const;
