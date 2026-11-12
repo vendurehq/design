@@ -239,11 +239,14 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 <Button variant="default">Save</Button>
 <Button variant="secondary">Cancel</Button>
 <Button variant="destructive">Delete</Button>
+<Button variant="destructive-outline">Tear down…</Button>
 <Button variant="outline">Edit</Button>
 <Button variant="ghost">More</Button>
 ```
 
 Button's `default` variant uses the neutral `primary` slot, not Vendure blue. Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`. For a deliberate identity moment, use `variant="brand"`.
+
+Destructive actions come in two weights. On the page, use the quiet `variant="destructive-outline"`: the outline button with a red label and icon, and a red tint on hover and press. A danger zone that is always on screen stays calm, and a disabled one does not read as an alarm. In the confirm, use the solid `variant="destructive"`: it is the press that does the damage.
 
 A disabled button that must say why takes `disabled` with `focusableWhenDisabled` and a Tooltip that gives the reason. Base UI then renders `aria-disabled="true"` instead of the native attribute: the button keeps its tab stop and the pointer, so the tooltip opens, and it ignores the click and every key but Tab. It looks like a native disabled button in every variant: half opacity, no shadow, a not-allowed cursor, no hover or press change. A raw `aria-disabled="true"` gets the same look; ignoring the click is then up to you. Use plain `disabled` when the page already shows why.
 

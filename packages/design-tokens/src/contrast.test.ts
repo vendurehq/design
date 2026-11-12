@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import { githubLightReplacements } from '../../ui/src/lib/syntax-colors.ts';
 import {
   alertTint,
@@ -294,6 +295,12 @@ const alertDarkMix = pick(
   alertTint,
   /dark:\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,transparent\)\]/,
 );
+// The quiet destructive Button: red label on the card, and on hover a fill of
+// destructive mixed into the card. The share is read from button.tsx.
+const quietDestructiveHoverMix = pick(
+  readFileSync(new URL('../../ui/src/components/atoms/button.tsx', import.meta.url), 'utf8'),
+  /\[--destructive-outline-hover:color-mix\(in_oklab,var\(--card\),var\(--destructive\)_(\d+)%\)\]/,
+);
 const alertFill = (themeName: string, tone: string) =>
   themeName === 'dark'
     ? `color-mix(in oklab, ${tone} ${alertDarkMix}%, transparent)`
@@ -374,6 +381,22 @@ for (const [themeName, theme] of Object.entries(themes)) {
         ),
       ).toBeGreaterThanOrEqual(MIN_CONTRAST);
       expect(contrastOf(theme, 'brand-text', 'muted', 'card')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    });
+
+    // Button variant="destructive-outline": the label at rest (card) and on
+    // hover (destructive mixed into the card).
+    test('destructive-text on the quiet destructive Button, rest and hover >= 4.5', () => {
+      expect(contrastOf(theme, 'destructive-text', 'card', 'card')).toBeGreaterThanOrEqual(
+        MIN_CONTRAST,
+      );
+      expect(
+        contrastOfValues(
+          theme,
+          'var(--destructive-text)',
+          `color-mix(in oklab, var(--destructive) ${quietDestructiveHoverMix}%, var(--card))`,
+          'card',
+        ),
+      ).toBeGreaterThanOrEqual(MIN_CONTRAST);
     });
 
     for (const surface of surfaces) {

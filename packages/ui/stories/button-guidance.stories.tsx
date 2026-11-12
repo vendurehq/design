@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Trash2 } from 'lucide-react';
 import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
@@ -61,7 +61,7 @@ function Example({
 }
 
 const VARIANTS: {
-  variant: 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link';
+  variant: 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'destructive-outline' | 'link';
   label: string;
   use: string;
 }[] = [
@@ -84,7 +84,12 @@ const VARIANTS: {
   {
     variant: 'destructive',
     label: 'Delete',
-    use: 'Irreversible or removing actions. Its own weight so it is never a slip.',
+    use: 'The confirm of an irreversible or removing action, inside its dialog. Its own weight so it is never a slip.',
+  },
+  {
+    variant: 'destructive-outline',
+    label: 'Tear down…',
+    use: 'A dangerous action the page shows at rest, such as a danger zone. It opens the confirm.',
   },
   {
     variant: 'link',
@@ -274,6 +279,46 @@ export const DisabledWithAReason: Story = {
               />
               <TooltipContent>There is no earlier deployment to roll back to.</TooltipContent>
             </Tooltip>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── quiet on the page, solid in the confirm ──────────────────────────────────
+
+export const QuietOnThePage: Story = {
+  name: '6 · Quiet on the page, solid in the confirm',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="A danger zone is quiet until you act"
+        intro='A section that lists dangerous actions shows them all the time. Give those buttons variant="destructive-outline": the outline button with a red label. The page stays calm while nothing is wrong, and a disabled one does not read as an alarm. The solid destructive variant is for the confirm inside the dialog, the one press that does the damage.'
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example verdict="do" caption="Quiet on the page. The dialog it opens confirms with the solid red button.">
+            <Button variant="destructive-outline">
+              <Trash2 data-icon="inline-start" />
+              Tear down…
+            </Button>
+            <Button variant="destructive-outline" disabled>
+              <Trash2 data-icon="inline-start" />
+              Delete…
+            </Button>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Solid red at rest. The section is the loudest thing on the page while nothing is wrong."
+          >
+            <Button variant="destructive">
+              <Trash2 data-icon="inline-start" />
+              Tear down…
+            </Button>
+            <Button variant="destructive" disabled>
+              <Trash2 data-icon="inline-start" />
+              Delete…
+            </Button>
           </Example>
         </div>
       </Section>
