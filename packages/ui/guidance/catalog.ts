@@ -177,6 +177,31 @@ export const uiGuidance = [
     related: ['confirm-dialog', 'page-header'],
   },
   {
+    id: 'chart',
+    title: 'Chart',
+    summary: 'Give every shape a chart draws an accessible name, from the config where Chart can.',
+    sourceStory: 'chart-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Every image shape has a name',
+        body: 'recharts draws pie slices, radial bars, scatter points, funnel steps, treemap cells and sankey nodes as images. An image without a name fails the accessibility check.',
+      },
+      {
+        title: 'Key colours to the config',
+        body: 'Chart names a shape from its `name`, else from the label of the config key in its colour (`var(--color-card)`). Give each series and slice a config entry with a `label`, and use `var(--color-<key>)` for its fill.',
+      },
+      {
+        title: 'Add the value on the shape',
+        body: 'Chart does not know the value a shape stands for. Put an `aria-label` such as `Card: 540` on the `Cell` or the shape when the name must carry the value. A name set by the consumer always wins.',
+      },
+      {
+        title: 'A table or text carries the data too',
+        body: 'Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.',
+      },
+    ],
+    related: ['stat-card'],
+  },
+  {
     id: 'chip',
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
