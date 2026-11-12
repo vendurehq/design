@@ -51,11 +51,11 @@ function DialogCloseButton({ className }: { className?: string }) {
   return (
     <DialogPrimitive.Close
       data-slot="dialog-close"
-      // top-4 centres the 28px button on the title's first line.
+      // top-4.5 centres the 28px button on the 24px first line of the title.
       render={
         <Button
           variant="ghost"
-          className={cn("absolute top-4 end-3.5", className)}
+          className={cn("absolute top-4.5 end-3.5", className)}
           size="icon-sm"
         />
       }
@@ -201,7 +201,7 @@ function DialogTitle({
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "text-style-section-title",
+        "text-style-dialog-title",
         icon != null && "flex items-center gap-2.5",
         className
       )}

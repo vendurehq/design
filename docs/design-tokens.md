@@ -124,7 +124,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - **Font weights**: `--font-weight-normal`, `--font-weight-medium`, `--font-weight-semibold`, `--font-weight-bold` — Tailwind `font-*` utilities
 - **Letter spacing**: `--tracking-tighter`, `--tracking-tight`, `--tracking-normal`, `--tracking-wide` — Tailwind `tracking-*` utilities
 - **Text styles**: named type compositions (font, size, weight, tracking, leading, line breaking — no color), applied as a single utility class:
-  - `text-style-page-title` (22px), `text-style-section-title` (16px, section and dialog titles), `text-style-card-title` (14px, popover and compact state titles; `CardTitle` sets its title at 13px in `foreground-secondary`) — heading font
+  - `text-style-page-title` (22px on a 26px line), `text-style-section-title` (16px, section, sheet and empty-state titles), `text-style-dialog-title` (16px on a 24px line, dialog titles), `text-style-card-title` (14px, popover and compact state titles; `CardTitle` sets its title at 13px in `foreground-secondary`) — heading font
   - `text-style-body` — body font
   - `text-style-caption` — small print
   - `text-style-code` — mono font
