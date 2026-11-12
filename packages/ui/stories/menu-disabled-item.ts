@@ -5,7 +5,7 @@ import { expect, userEvent, waitFor } from 'storybook/test';
  * then checks that the disabled item takes no fill under the pointer or the
  * arrow keys. `open` replaces the default click on `trigger`.
  */
-export async function checkDisabledItemHasNoFill(trigger: HTMLElement, open?: () => Promise<void>) {
+export async function checkDisabledItemHasNoFill(trigger: HTMLElement, open?: () => Promise<unknown>) {
   const user = userEvent.setup({ pointerEventsCheck: 0 });
   if (open) await open();
   else await userEvent.click(trigger);
