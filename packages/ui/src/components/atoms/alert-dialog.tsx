@@ -7,6 +7,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
@@ -14,7 +15,7 @@ function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
 
 function AlertDialogTrigger({ ...props }: AlertDialogPrimitive.Trigger.Props) {
   return (
-    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+    <AlertDialogPrimitive.Trigger {...triggerSlot("alert-dialog-trigger", props.render)} {...props} />
   )
 }
 

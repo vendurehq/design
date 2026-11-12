@@ -69,9 +69,10 @@ const fields = {
       </InputGroup>
     ),
   },
-  DatePicker: { slot: 'popover-trigger', element: <DatePicker /> },
-  DateRangePicker: { slot: 'popover-trigger', element: <DateRangePicker /> },
-  DateTimePicker: { slot: 'popover-trigger', element: <DateTimePicker /> },
+  // The pickers' popover trigger is a Button, which keeps its own slot.
+  DatePicker: { slot: 'button', element: <DatePicker /> },
+  DateRangePicker: { slot: 'button', element: <DateRangePicker /> },
+  DateTimePicker: { slot: 'button', element: <DateTimePicker /> },
 } satisfies Record<string, { slot: string; element: React.ReactElement }>;
 
 export type FieldName = keyof typeof fields;

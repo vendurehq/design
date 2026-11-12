@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import * as React from 'react';
 import { Label } from '../src/components/atoms/label.tsx';
 import { MultiSelect } from '../src/components/molecules/multi-select.tsx';
@@ -228,5 +229,15 @@ export const Invalid: Story = {
         )}
       </LabelledField>
     );
+  },
+};
+
+/** Ends with the list open, so the accessibility check scans it. */
+export const Open: Story = {
+  tags: ['!autodocs'],
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Fruits' }));
+    await waitFor(() => expect(within(document.body).getByRole('listbox', { name: 'Fruits' })).toBeVisible());
   },
 };

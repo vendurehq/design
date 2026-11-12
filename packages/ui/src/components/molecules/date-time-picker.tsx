@@ -44,6 +44,9 @@ function DateTimePicker({
   ...props
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false);
+  // The calendar popup is a dialog, named by its trigger.
+  const generatedId = React.useId();
+  const triggerId = id ?? generatedId;
   const { locale } = useFormatSettings();
   const selected = parseInstant(value);
   const timeValue = selected
@@ -80,7 +83,7 @@ function DateTimePicker({
         <PopoverTrigger
           render={
             <Button
-              id={id}
+              id={triggerId}
               type="button"
               variant="ghost"
               disabled={disabled}
@@ -98,7 +101,7 @@ function DateTimePicker({
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
           <Calendar
             {...calendarProps}
             mode="single"

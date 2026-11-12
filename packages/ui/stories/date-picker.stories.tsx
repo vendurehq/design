@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useState } from 'react';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 import {
@@ -72,5 +73,15 @@ export const RangeWithPresets: Story = {
         </p>
       </div>
     );
+  },
+};
+
+/** Ends with the calendar open, so the accessibility check scans it. */
+export const Open: Story = {
+  tags: ['!autodocs'],
+  render: DateOnly.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getAllByRole('button')[0] as HTMLElement);
+    await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Pick a date' })).toBeVisible());
   },
 };
