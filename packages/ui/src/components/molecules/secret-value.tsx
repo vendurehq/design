@@ -7,8 +7,8 @@ import {
   type CopyButtonProps,
 } from '@vendure-io/ui/components/molecules/copyable-text';
 import { chipChromeClass, chipIconButtonClass } from '@vendure-io/ui/components/molecules/id-chip';
+import { VisibilityIcon } from '@vendure-io/ui/components/molecules/visibility-icon';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import type * as React from 'react';
 import { useReducer, useRef } from 'react';
 
@@ -165,7 +165,7 @@ function SecretValue({
           else void reveal();
         }}
       >
-        {loading ? <Spinner /> : revealed ? <EyeOffIcon /> : <EyeIcon />}
+        {loading ? <Spinner /> : <VisibilityIcon visible={!revealed} />}
       </Button>
       {copyable ? (
         <CopyButton
