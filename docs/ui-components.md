@@ -90,6 +90,8 @@ behavior you need instead of rebuilding it from atoms.
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`
 
+> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
+
 ### Data Display
 `avatar`, `calendar`, `carousel`, `chart`, `kbd`, `table`
 
