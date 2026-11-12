@@ -29,6 +29,14 @@ import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
 // Primary, outline and destructive sit on shadow-control, a 1px lift off the
 // surface; a disabled button drops it. Inside a ButtonGroup the group carries
 // the shadow and the edge, so an outline child keeps its border off on hover.
+// A disabled button that keeps its tab stop and tooltip carries
+// aria-disabled="true", set by Base UI for `disabled focusableWhenDisabled`
+// or by hand. It looks like a native disabled button: half opacity, no
+// shadow, no press scale, and every hover rule is undone while it is
+// aria-disabled (`aria-disabled:hover:` restates the rest fill, text and icon
+// strength), so a consumer's own `hover:` class keeps working on an enabled
+// button. It keeps its pointer events, so its tooltip opens, and shows a
+// not-allowed cursor. Only Base UI's prop also ignores the click.
 // Reduced motion turns the press off with `scale: none`, not `1`: any other
 // value makes the button the containing block of its ::after, so a stretched
 // ::after shrinks to the button mid-press and the click misses. A button that
@@ -60,35 +68,35 @@ const smallIconClickArea = [
 ]
 
 const buttonVariants = cva(
-  [contentInsetPull, "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_var(--transition-duration-button-icon-turn)_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180"],
+  [contentInsetPull, "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive rounded-xl border border-transparent bg-clip-padding text-sm font-medium aria-invalid:ring-3 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] inline-flex items-center justify-center whitespace-nowrap [transition:background-color_var(--transition-duration-quick)_var(--ease-default),border-color_var(--transition-duration-quick)_var(--ease-default),color_var(--transition-duration-quick)_var(--ease-default),opacity_var(--transition-duration-quick)_var(--ease-default),box-shadow_var(--transition-duration-quick)_var(--ease-default),scale_var(--transition-duration-moderate)_var(--ease-press)] active:scale-[0.97] motion-reduce:active:scale-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none aria-disabled:opacity-50 aria-disabled:shadow-none aria-disabled:cursor-not-allowed aria-disabled:active:scale-none [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none cursor-pointer [&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default),rotate_var(--transition-duration-button-icon-turn)_var(--ease-out)] motion-reduce:[&>svg]:[transition:opacity_var(--transition-duration-moderate)_var(--ease-default)] aria-expanded:[&>svg.lucide-chevron-down]:rotate-180"],
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-control [--primary-hover:color-mix(in_oklab,var(--primary),var(--background)_14%)] hover:bg-(--primary-hover) aria-expanded:bg-(--primary-hover)",
+          "bg-primary text-primary-foreground shadow-control [--primary-hover:color-mix(in_oklab,var(--primary),var(--background)_14%)] hover:bg-(--primary-hover) aria-expanded:bg-(--primary-hover) aria-disabled:hover:bg-primary",
         // Identity/marketing CTA only ("Start free trial", "Upgrade to Cloud"):
         // a deliberate brand moment, not a louder `default` primary. Brand is a
         // signature, not a wallpaper; see Button guidance before reaching for it.
-        brand: "bg-brand text-brand-foreground shadow-control hover:bg-brand/80",
+        brand: "bg-brand text-brand-foreground shadow-control hover:bg-brand/80 aria-disabled:hover:bg-brand",
         outline:
-          [outlineEdge, outlineEdgeHover, "bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]"],
+          [outlineEdge, outlineEdgeHover, "bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-disabled:hover:bg-card"],
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground aria-disabled:hover:bg-secondary",
         ghost:
-          "text-foreground-secondary hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "text-foreground-secondary hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground aria-disabled:hover:bg-transparent aria-disabled:hover:text-foreground-secondary",
         // Solid: destructive-foreground on destructive holds 4.5:1 in both
         // modes (checked in @vendure-io/design-tokens). Hover mixes toward
         // destructive-900, a shade darker in both modes.
         destructive:
-          "bg-destructive text-destructive-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-expanded:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)]",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-destructive text-destructive-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-expanded:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-disabled:hover:bg-destructive",
+        link: "text-primary underline-offset-4 hover:underline aria-disabled:hover:no-underline",
       },
       size: {
         default:
-          "h-8.5 gap-1.75 px-3.25 [--content-inset:calc(var(--spacing)*3.25+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*9+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        xs: "h-6 gap-1 rounded-lg px-2 text-xs [--content-inset:calc(var(--spacing)*2+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*6+1px)] [&_svg:not([class*='size-'])]:size-3 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        sm: "h-7 gap-1.75 px-2.5 text-xs [--content-inset:calc(var(--spacing)*2.5+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*8.25+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
-        lg: "h-10 gap-2 px-4 [--content-inset:calc(var(--spacing)*4+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*10+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+          "h-8.5 gap-1.75 px-3.25 [--content-inset:calc(var(--spacing)*3.25+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*9+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-disabled:hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        xs: "h-6 gap-1 rounded-lg px-2 text-xs [--content-inset:calc(var(--spacing)*2+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*6+1px)] [&_svg:not([class*='size-'])]:size-3 [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-disabled:hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        sm: "h-7 gap-1.75 px-2.5 text-xs [--content-inset:calc(var(--spacing)*2.5+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*8.25+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-disabled:hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
+        lg: "h-10 gap-2 px-4 [--content-inset:calc(var(--spacing)*4+1px)] has-data-[icon=inline-start]:[--content-inset:calc(var(--spacing)*10+1px)] [&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85 aria-disabled:hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-55 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-85",
         icon: "size-8.5",
         "icon-xs": [
           "size-6 rounded-lg [&_svg:not([class*='size-'])]:size-3 [--button-box:--spacing(6)]",
@@ -103,7 +111,7 @@ const buttonVariants = cva(
       {
         variant: "default",
         size: ["default", "xs", "sm", "lg"],
-        className: "[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75",
+        className: "[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75 hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75 aria-disabled:hover:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75 aria-expanded:[&>svg:not([role=status]):not([class*='opacity-'])]:opacity-75",
       },
     ],
     defaultVariants: {

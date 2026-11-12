@@ -61,10 +61,10 @@ describe('Button v3 look', () => {
     expect(buttonTokens(<Button>Save</Button>)).toContain('disabled:shadow-none');
   });
 
-  test('outline hover steps the edge up to input, except inside a group or when invalid', () => {
+  test('outline hover steps the edge up to input, except inside a group, when invalid or aria-disabled', () => {
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain(
-      '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-input',
+      '[&:not([data-slot=button-group]>*,[aria-invalid=true],[aria-disabled=true])]:hover:border-input',
     );
   });
 
@@ -190,5 +190,59 @@ describe('ButtonLabelSwap', () => {
     expect(tokens).toContain('overflow-x-clip');
     expect(tokens).toContain('whitespace-nowrap');
     expect(tokens).toContain('[--label-swap-shift:calc(var(--spacing)*1)]');
+  });
+});
+
+describe('Button aria-disabled', () => {
+  // The real hover and press are checked in the DisabledWithReason story
+  // (hoverText with keepsLook in the story test runner).
+  test('disabled with focusableWhenDisabled keeps the tab stop and renders aria-disabled', () => {
+    const html = renderToStaticMarkup(
+      <Button disabled focusableWhenDisabled>
+        Deploy
+      </Button>,
+    );
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('data-disabled=""');
+    expect(html).not.toMatch(/ disabled=""/);
+  });
+
+  test('looks like native disabled, with a not-allowed cursor and no press', () => {
+    const tokens = buttonTokens(<Button aria-disabled>Deploy</Button>);
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        'aria-disabled:opacity-50',
+        'aria-disabled:shadow-none',
+        'aria-disabled:cursor-not-allowed',
+        'aria-disabled:active:scale-none',
+      ]),
+    );
+    expect(tokens).not.toContain('aria-disabled:pointer-events-none');
+  });
+
+  test('every variant undoes its hover fill while aria-disabled', () => {
+    const rest = {
+      default: 'aria-disabled:hover:bg-primary',
+      brand: 'aria-disabled:hover:bg-brand',
+      outline: 'aria-disabled:hover:bg-card',
+      secondary: 'aria-disabled:hover:bg-secondary',
+      ghost: 'aria-disabled:hover:bg-transparent',
+      destructive: 'aria-disabled:hover:bg-destructive',
+      link: 'aria-disabled:hover:no-underline',
+    } as const;
+    for (const [variant, token] of Object.entries(rest)) {
+      expect(buttonTokens(<Button variant={variant as keyof typeof rest}>Deploy</Button>)).toContain(token);
+    }
+    expect(buttonTokens(<Button variant="ghost">Deploy</Button>)).toContain(
+      'aria-disabled:hover:text-foreground-secondary',
+    );
+  });
+
+  test('a decorative icon keeps its rest strength on hover', () => {
+    const icon = "[&>svg:not([role=status]):not([class*='opacity-'])]";
+    expect(buttonTokens(<Button variant="outline">Deploy</Button>)).toContain(`aria-disabled:hover:${icon}:opacity-55`);
+    const primary = buttonTokens(<Button>Deploy</Button>);
+    expect(primary).toContain(`aria-disabled:hover:${icon}:opacity-75`);
+    expect(primary).not.toContain(`aria-disabled:hover:${icon}:opacity-55`);
   });
 });

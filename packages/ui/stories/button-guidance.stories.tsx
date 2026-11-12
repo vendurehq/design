@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 
 /**
  * Guidance, not props. Which Button variant carries which weight, and the one
@@ -229,6 +230,50 @@ export const SplitButton: Story = {
               </Button>
             </ButtonGroup>
             <Button>Save draft</Button>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── disabled with a reason ───────────────────────────────────────────────────
+
+export const DisabledWithAReason: Story = {
+  name: '5 · Disabled with a reason',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="A disabled button that must say why keeps its focus"
+        intro='Use disabled when the page already shows why the action is off. When the user needs the reason, add focusableWhenDisabled and a Tooltip that gives it: the button renders aria-disabled="true", keeps its tab stop and the pointer, and ignores the click. It looks the same as disabled. A raw aria-disabled="true" looks the same too, but then ignoring the click is up to you.'
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example verdict="do" caption="The tooltip says why, on hover and on keyboard focus.">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button variant="outline" disabled focusableWhenDisabled>
+                    Roll back
+                  </Button>
+                }
+              />
+              <TooltipContent>There is no earlier deployment to roll back to.</TooltipContent>
+            </Tooltip>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A natively disabled button gets no hover and no focus, so its tooltip never opens."
+          >
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button variant="outline" disabled>
+                    Roll back
+                  </Button>
+                }
+              />
+              <TooltipContent>There is no earlier deployment to roll back to.</TooltipContent>
+            </Tooltip>
           </Example>
         </div>
       </Section>

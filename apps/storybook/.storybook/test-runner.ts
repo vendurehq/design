@@ -64,8 +64,39 @@ async function pressOneText(page: Page, press: TextPress) {
  * tooltip must be open, and it must contain `expectTooltip`. A tooltip from
  * the last text that stays open over this one fails the check: the pointer
  * then lands on that tooltip, not on the text.
+ *
+ * `keepsLook` is for a disabled button that keeps its tooltip
+ * (`aria-disabled`): at rest it must be at half opacity with a not-allowed
+ * cursor, and neither the hover nor a press may change its fill, edge,
+ * shadow, opacity or scale.
  */
-type TextHover = { text: string; expectTooltip: string };
+type TextHover = { text: string; expectTooltip: string; keepsLook?: boolean };
+
+async function controlLook(page: Page, text: string) {
+  return page
+    .locator('#storybook-root')
+    .getByText(text, { exact: true })
+    .locator('xpath=ancestor-or-self::*[self::button or @role="button"][1]')
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        background: style.backgroundColor,
+        border: style.borderColor,
+        shadow: style.boxShadow,
+        opacity: style.opacity,
+        scale: style.scale,
+        cursor: style.cursor,
+      };
+    });
+}
+
+function sameLook(text: string, step: string, rest: object, now: object) {
+  if (JSON.stringify(rest) !== JSON.stringify(now)) {
+    throw new Error(
+      `hoverText: "${text}" changed its look on ${step}: ${JSON.stringify(rest)} → ${JSON.stringify(now)}`,
+    );
+  }
+}
 
 async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
   const list = hovers ? [hovers].flat() : [];
@@ -74,6 +105,12 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
   for (const hover of list) {
     const box = await root.getByText(hover.text, { exact: true }).boundingBox();
     if (!box) throw new Error(`hoverText: "${hover.text}" is not visible`);
+    const rest = hover.keepsLook ? await controlLook(page, hover.text) : undefined;
+    if (rest && (rest.opacity !== '0.5' || rest.cursor !== 'not-allowed')) {
+      throw new Error(
+        `hoverText: "${hover.text}" does not look disabled at rest: ${JSON.stringify(rest)}`,
+      );
+    }
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
     await page
       .waitForFunction(
@@ -94,6 +131,15 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
           `hoverText: over "${hover.text}", expected one tooltip with "${hover.expectTooltip}", found ${JSON.stringify(open)}`,
         );
       });
+    if (rest) {
+      // Wait out the 120ms colour transition before reading the hover look.
+      await page.waitForTimeout(300);
+      sameLook(hover.text, 'hover', rest, await controlLook(page, hover.text));
+      await page.mouse.down();
+      await page.waitForTimeout(300);
+      sameLook(hover.text, 'press', rest, await controlLook(page, hover.text));
+      await page.mouse.up();
+    }
   }
   await page.mouse.move(0, 0);
   await page.locator('[data-slot=tooltip-content]').first().waitFor({ state: 'detached' });
