@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import type * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Toggle } from './toggle.tsx';
@@ -67,4 +68,38 @@ describe('ToggleGroupItem pressed state', () => {
       expect(tokens).not.toContain('aria-pressed:bg-muted');
     });
   }
+});
+
+describe('Toggle aria-disabled', () => {
+  // The real hover and press are checked in the Toggle DisabledWithReason
+  // story (hoverText with keepsLook in the story test runner).
+  const tokens = (element: React.ReactElement) =>
+    classTokens(renderToStaticMarkup(element).match(/<button[^>]*>/)?.[0] ?? '');
+
+  test('looks like disabled and keeps its pointer events', () => {
+    const classes = tokens(<Toggle aria-disabled aria-label="Bold" />);
+    expect(classes).toEqual(expect.arrayContaining(['aria-disabled:opacity-50', 'aria-disabled:cursor-not-allowed']));
+    expect(classes).not.toContain('aria-disabled:pointer-events-none');
+  });
+
+  test('undoes the hover to the rest look, pressed or not', () => {
+    const classes = tokens(<Toggle aria-disabled aria-label="Bold" />);
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        'aria-disabled:hover:bg-transparent',
+        'aria-disabled:hover:text-current',
+        'aria-disabled:aria-pressed:hover:bg-accent',
+        'aria-disabled:aria-pressed:hover:text-foreground',
+      ]),
+    );
+  });
+
+  test('a ToggleGroup item takes the same rules', () => {
+    const html = renderToStaticMarkup(
+      <ToggleGroup>
+        <ToggleGroupItem value="bold" aria-disabled aria-label="Bold" />
+      </ToggleGroup>,
+    );
+    expect(classTokens(html.match(/<button[^>]*>/)?.[0] ?? '')).toContain('aria-disabled:hover:bg-transparent');
+  });
 });
