@@ -152,6 +152,14 @@ export const animation = {
   matchFlash: 'match-flash 1.4s ease-out',
 } as const;
 
+// The match flash colour: `--match-flash-color` when the consumer sets it,
+// else the brand indicator.
+const matchFlashColor = 'var(--match-flash-color, var(--brand-indicator))';
+const matchFlashStep = {
+  boxShadow: `inset 2px 0 0 ${matchFlashColor}`,
+  backgroundColor: `color-mix(in oklab, ${matchFlashColor} 22%, transparent)`,
+};
+
 // Keyframe steps for the animations above, generated as top-level
 // `@keyframes` blocks alongside the theme.
 export const keyframes = {
@@ -186,9 +194,7 @@ export const keyframes = {
   // The flash holds its bar and its 22% fill for the first 30%, then fades
   // to the line's own styles.
   matchFlash: {
-    '0%, 30%': {
-      boxShadow: 'inset 2px 0 0 var(--match-flash-color, var(--brand-indicator))',
-      background: 'color-mix(in oklab, var(--match-flash-color, var(--brand-indicator)) 22%, transparent)',
-    },
+    '0%': matchFlashStep,
+    '30%': matchFlashStep,
   },
 } as const;

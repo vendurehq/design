@@ -253,10 +253,32 @@ const themeBlock = [
   ...animationLines,
 ].join('\n');
 
+// A keyframe declaration longer than Biome's width puts each argument of its
+// function on its own line, as Biome formats it: `color-mix(\n in oklab, …\n)`.
+function wrapDeclaration(prop: string, value: string): string {
+  const line = `    ${prop}: ${value};`;
+  const call = value.match(/^([a-z-]+)\((.*)\)$/);
+  if (line.length <= LINE_WIDTH || !call) return line;
+  const args: string[] = [];
+  let depth = 0;
+  let start = 0;
+  const inner = call[2] ?? '';
+  for (let i = 0; i < inner.length; i++) {
+    if (inner[i] === '(') depth++;
+    else if (inner[i] === ')') depth--;
+    else if (inner[i] === ',' && depth === 0) {
+      args.push(inner.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  args.push(inner.slice(start).trim());
+  return `    ${prop}: ${call[1]}(\n${args.map((arg) => `      ${arg}`).join(',\n')}\n    );`;
+}
+
 // @keyframes blocks for the --animate-* theme entries above.
 function buildKeyframes(name: string, steps: Record<string, Record<string, string>>): string {
   const stepBlocks = Object.entries(steps).map(([stepName, props]) => {
-    const lines = Object.entries(props).map(([prop, value]) => `    ${kebabCase(prop)}: ${value};`);
+    const lines = Object.entries(props).map(([prop, value]) => wrapDeclaration(kebabCase(prop), value));
     return `  ${stepName} {\n${lines.join('\n')}\n  }`;
   });
   return `@keyframes ${kebabCase(name)} {\n${stepBlocks.join('\n')}\n}`;

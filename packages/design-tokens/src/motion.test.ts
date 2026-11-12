@@ -51,9 +51,10 @@ describe('Match flash', () => {
   });
 
   test('holds a bar and a 22% fill for 30%, then fades, and moves nothing', () => {
-    const step = keyframes.matchFlash['0%, 30%'];
-    expect(step.boxShadow).toBe('inset 2px 0 0 var(--match-flash-color, var(--brand-indicator))');
-    expect(step.background).toContain('22%');
-    expect(Object.keys(step)).not.toContain('transform');
+    const { '0%': start, '30%': hold } = keyframes.matchFlash;
+    expect(hold).toEqual(start);
+    expect(start.boxShadow).toBe('inset 2px 0 0 var(--match-flash-color, var(--brand-indicator))');
+    expect(start.backgroundColor).toContain('22%');
+    expect(Object.keys(start)).not.toContain('transform');
   });
 });

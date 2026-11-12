@@ -324,9 +324,21 @@
 }
 
 @keyframes match-flash {
-  0%, 30% {
+  0% {
     box-shadow: inset 2px 0 0 var(--match-flash-color, var(--brand-indicator));
-    background: color-mix(in oklab, var(--match-flash-color, var(--brand-indicator)) 22%, transparent);
+    background-color: color-mix(
+      in oklab,
+      var(--match-flash-color, var(--brand-indicator)) 22%,
+      transparent
+    );
+  }
+  30% {
+    box-shadow: inset 2px 0 0 var(--match-flash-color, var(--brand-indicator));
+    background-color: color-mix(
+      in oklab,
+      var(--match-flash-color, var(--brand-indicator)) 22%,
+      transparent
+    );
   }
 }
 
