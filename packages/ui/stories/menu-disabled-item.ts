@@ -17,8 +17,9 @@ export async function checkDisabledItemHasNoFill(trigger: HTMLElement, open?: ()
     return element as HTMLElement;
   };
   const fill = (element: HTMLElement) => getComputedStyle(element).backgroundColor;
-  const none = 'rgba(0, 0, 0, 0)';
   await waitFor(() => expect(item('Add member')).toBeVisible());
+  // An item at rest has no fill: that is the look a disabled item keeps.
+  const none = fill(item('Settings'));
   const disabled = item('Add member');
   expect(disabled).toHaveAttribute('data-disabled');
 
