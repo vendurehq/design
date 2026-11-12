@@ -261,7 +261,19 @@ Never use plain coloured text for a status, and never put a chip in the first
 or the last column.
 
 In the icon-and-label form the icon keeps its tone colour for every state,
-green for success included. The label stays neutral.
+green for success included. The label stays neutral. Give each group of
+states its own icon shape (pass `icon` for a state whose shape says more), so
+the column reads without colour.
+
+`progress` and its spinner are only for work that runs right now and ends in
+seconds or minutes: a build, a deploy. A state that lasts hours or days, such
+as a shipped order, gets a still icon and a neutral tone:
+
+```tsx
+<StatusBadge appearance="icon" tone="neutral" icon={<TruckIcon />}>
+  Shipped
+</StatusBadge>
+```
 
 `detail` adds a second line under the label of `appearance="icon"`, with the
 one time that matters for the state. In a `DataTable` the row is 46px.

@@ -8,7 +8,8 @@ import type * as React from 'react';
 
 // The sortable header control rendered inside a `<TableHead>`. When the column
 // can't sort it degrades to plain text — the header stays a passive label, no
-// button, no affordance it can't honour. The `aria-sort` state lives on the
+// button, no affordance it can't honour. Both take their size, weight and
+// colour from the `<TableHead>`. The `aria-sort` state lives on the
 // enclosing `<TableHead>` (set by `data-table.tsx`), not here.
 
 interface DataTableColumnHeaderProps<TData, TValue>
@@ -26,7 +27,7 @@ function DataTableColumnHeader<TData, TValue>({
   ...props
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
-    return <span className={cn('font-medium', className)}>{children}</span>;
+    return <span className={className}>{children}</span>;
   }
 
   const sorted = column.getIsSorted();
@@ -44,7 +45,8 @@ function DataTableColumnHeader<TData, TValue>({
       // Pulls back by the button's own `--content-inset` (its padding and its
       // 1px border), so the label starts where a plain header label would.
       className={cn(
-        '-ms-(--content-inset) h-8 gap-1.5 data-[slot=data-table-column-header]:px-2.5',
+        // The label takes the header's colour; hover still darkens it.
+        '-ms-(--content-inset) h-8 gap-1.5 text-inherit data-[slot=data-table-column-header]:px-2.5',
         className,
       )}
       {...props}
