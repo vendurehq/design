@@ -66,6 +66,8 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 **Neutral chroma.** Every semantic neutral, surfaces and text, takes the chroma of the `neutral` step nearest in lightness: 0.004 from `neutral-300` up, 0.005 for `neutral-400` to `neutral-600`, 0.007 from `neutral-700` down. Pure white has no chroma. The neutrals keep their own lightness where no step fits; only the chroma is shared, so text and surfaces carry the same faint cool bias as the ramp. `semantic-sources.test.ts` checks the rule.
 
+**Hand-typed values.** A semantic colour is a token reference, a ramp step or a mix of those. The exceptions are listed in `semantic-sources.test.ts`, each with its reason. Most are contrast-tuned: the nearest step fails a named test in `contrast.test.ts` (light `muted-foreground`, `destructive-text`, `info-text` and `control-border`; dark `muted-foreground` and `destructive-text`). Light `warning-text` and `warning-indicator` sit on hues with no ramp. Dark `success-text` and `warning-text` pass at their nearest step but read visibly duller there. Light `foreground-secondary` and dark `foreground` sit close to a step and have not moved yet.
+
 **Semantic colors** (slots, light/dark mode aware via CSS variables):
 
 - `background`, `foreground` — Page background and primary text
@@ -106,7 +108,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `critical` renders with the `destructive-*` slots.
 - `progress` renders with the `info` slots plus a spinner.
 
-**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`, and on the `muted`, `secondary` and `accent` fills over each tier. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.41:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
+**Tone text.** Use `{tone}-text` for tone-colored text set directly on a surface, for example a status word, a delta, a field error or a destructive menu item (`text-destructive-text`). The `{tone}-text` slots are saturated values chosen to sit beside the brand blue, not steps of the tone ramps. `info-text` is on the brand hue. Each passes 4.5:1 on `background`, `surface`, `surface-raised` and `overlay`, and on the `muted`, `secondary` and `accent` fills over each tier. Use `{tone}-subtle-foreground` for text on the matching `{tone}-subtle` fill; it also passes 4.5:1 on every surface tier, but it is darker in light mode. The solid slots (`destructive`, `success`, `warning`, `info`) are fills for `{tone}-foreground` text and are not safe as text: dark `destructive` is 3.07:1 on `overlay`, dark `success` is 2.69:1 on a card, and light `warning` is 3.25:1 on white.
 
 **Contrast contract.** `src/contrast.test.ts` holds these minimums in both modes:
 

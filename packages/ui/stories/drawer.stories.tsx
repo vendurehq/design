@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 
@@ -57,4 +58,14 @@ export const Left: Story = {
       </DrawerContent>
     </Drawer>
   ),
+};
+
+/** Ends with the drawer open, so the accessibility check scans it. */
+export const Open: Story = {
+  tags: ['!autodocs'],
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Drawer' }));
+    await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Move Goal' })).toBeVisible());
+  },
 };

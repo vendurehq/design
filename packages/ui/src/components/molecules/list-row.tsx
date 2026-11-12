@@ -25,7 +25,7 @@ import type * as React from 'react';
 // the link takes `data-list-row-control`. The class names stay literal so
 // Tailwind can scan them.
 const LIFT_CONTROLS =
-  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10';
+  '[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative [&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-list-row-control]):not([data-slot=list-row-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10';
 
 // A row the user just added (`enter="new"`) enters once: its height opens from 0
 // so the rows below glide down, then its content fades in from a 3px blur.

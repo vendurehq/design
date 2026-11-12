@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, GripVerticalIcon, MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { flexRender } from '@tanstack/react-table';
 import { Fragment, useMemo, useState } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
@@ -1933,6 +1933,71 @@ export const SelectAllRipple50: Story = {
   play: playSelectAllRipple,
 };
 
+// A press on the select-all checkbox prepares its click in the frames before
+// the release: the ripple's start and the row cursor. The rows do not change
+// until the click. A release without a click puts both back. A pointer click
+// takes the full ripple; Space takes the quick one.
+export const SelectAllPressPrepares: Story = {
+  name: 'Select all ripple · press prepares the click',
+  render: () => <RippleTable count={10} />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const table = canvasElement.querySelector('table[data-slot=table]') as HTMLElement;
+    const box = () => canvas.getByRole('checkbox', { name: 'Select all rows' });
+    const selectedRows = () => canvasElement.querySelectorAll('tbody tr[data-state=selected]').length;
+
+    await step('a press prepares the ripple and the cursor, and selects nothing', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).toHaveAttribute('data-select-ripple', 'select'));
+      await expect(table).toHaveAttribute('data-selecting-cursor');
+      await expect(selectedRows()).toBe(0);
+    });
+
+    await step('a release without a click puts both back', async () => {
+      fireEvent.pointerUp(window);
+      await waitFor(() => expect(table).not.toHaveAttribute('data-select-ripple'));
+      await expect(table).not.toHaveAttribute('data-selecting-cursor');
+    });
+
+    await step('a press and its click select all, with the same ripple', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).toHaveAttribute('data-selecting-cursor'));
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+      fireEvent.pointerUp(box());
+      box().click();
+      await waitFor(() => expect(selectedRows()).toBe(10));
+      await expect(table).toHaveAttribute('data-select-ripple', 'select');
+      await expect(table).toHaveAttribute('data-selecting-cursor');
+      // A pointer click takes the full ripple (normal, 200ms), not the
+      // keyboard's: the last of 10 rows starts after 100ms.
+      await expect(table).not.toHaveAttribute('data-select-ripple-quick');
+      const starts = rippleStarts(canvasElement);
+      await expect(starts[0]).toBe(0);
+      await expect(Math.max(...starts)).toBeGreaterThan(100);
+      await expect(Math.max(...starts)).toBeLessThanOrEqual(200);
+    });
+
+    await step('a press and its click clear all, and the cursor follows', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).not.toHaveAttribute('data-selecting-cursor'));
+      fireEvent.pointerUp(box());
+      box().click();
+      await waitFor(() => expect(selectedRows()).toBe(0));
+      await expect(table).not.toHaveAttribute('data-selecting-cursor');
+    });
+
+    await step('Space selects all with the quick ripple (fast, 100ms)', async () => {
+      box().focus();
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(selectedRows()).toBe(10));
+      await expect(table).toHaveAttribute('data-select-ripple-quick');
+      await expect(Math.max(...rippleStarts(canvasElement))).toBeLessThanOrEqual(100);
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(selectedRows()).toBe(0));
+    });
+  },
+};
+
 // Rows the consumer renders through `renderRow` take the same ripple from
 // `ctx.ripple`: the same order from the top, within the same 200ms and 100ms.
 // Each row sets its own inline `transform` and `opacity`, as a draggable row
@@ -2371,6 +2436,17 @@ export const ClickSelectsCustomRows: Story = {
 
     await step('the rows are the custom rows', async () => {
       await expect(canvasElement.querySelectorAll('[data-custom-row]')).toHaveLength(variants.length);
+    });
+
+    await step('the row controls of a custom row sit above its link', async () => {
+      const row = rowOf(2);
+      const chip = row.querySelector('[data-slot=id-chip]') as Element;
+      const copy = row.querySelector('[data-slot=id-chip] button') as Element;
+      const product = within(row).getByRole('link', { name: 'Laptop' });
+      await expect(chip.contains(hitAt(copy))).toBe(true);
+      await expect(hitAt(product)).toBe(product);
+      await expect(handleOf(2).contains(hitAt(handleOf(2)))).toBe(true);
+      await expect(getComputedStyle(row).cursor).toBe('pointer');
     });
 
     await step('while a row is selected, a click on another row selects it', async () => {

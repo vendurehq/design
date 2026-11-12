@@ -16,6 +16,7 @@ import {
   DataTableRowLink,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { IdChip } from '../src/components/molecules/id-chip.tsx';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 
 const meta = {
   title: 'Atoms/General/Button',
@@ -101,6 +102,61 @@ export const Loading: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true, children: 'Disabled' },
+};
+
+const DISABLED_WITH_REASON = [
+  { variant: 'default', label: 'Deploy', reason: 'A build is running. Deploy again when it ends.' },
+  { variant: 'outline', label: 'Roll back', reason: 'There is no earlier deployment to roll back to.' },
+  { variant: 'ghost', label: 'Restart', reason: 'The environment is asleep.' },
+] as const;
+
+function DisabledWithReasonRow() {
+  return (
+    <TooltipProvider>
+      <div className="flex gap-3">
+        {DISABLED_WITH_REASON.map(({ variant, label, reason }) => (
+          <Tooltip key={variant}>
+            <TooltipTrigger
+              render={
+                <Button variant={variant} disabled focusableWhenDisabled>
+                  {label}
+                </Button>
+              }
+            />
+            <TooltipContent>{reason}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+/**
+ * A disabled button that says why. `disabled` with `focusableWhenDisabled`
+ * renders `aria-disabled="true"` in place of the native attribute: the button
+ * keeps its tab stop and the pointer, so the tooltip opens, and Base UI ignores
+ * the click and every key but Tab. It looks like a native disabled button:
+ * half opacity, no shadow, a not-allowed cursor, and no hover or press change.
+ * The test runner hovers and presses each one with a real mouse and checks
+ * that the look holds and the tooltip opens.
+ */
+export const DisabledWithReason: Story = {
+  parameters: {
+    hoverText: DISABLED_WITH_REASON.map(({ label, reason }) => ({
+      text: label,
+      expectTooltip: reason,
+      keepsLook: true,
+    })),
+  },
+  render: () => <DisabledWithReasonRow />,
+};
+
+/** The same buttons in light and dark. Pinned to the light page theme. */
+export const DisabledWithReasonLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>{() => <DisabledWithReasonRow />}</LightAndDark>
+  ),
 };
 
 // Passing `render` swaps the underlying element for an anchor. The Button

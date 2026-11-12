@@ -118,14 +118,18 @@ function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'di
 // links, Tooltip triggers and the copy chips (IdChip, AnonymizedToken,
 // CopyableText: the whole chip stays the copy target, so their inner button
 // stays static). The select checkbox is already positioned above it. Any other element that must stay
-// clickable above the link takes `data-table-row-control`. The class names
-// stay literal so Tailwind can scan them.
+// clickable above the link takes `data-table-row-control`. The rules sit on
+// the table, not on the built-in row, so a row from `renderRow` gets them too.
+// The class names stay literal so Tailwind can scan them.
 const LINKED_ROW_CLASS = cn(
-  'has-data-[slot=data-table-row-link]:relative has-data-[slot=data-table-row-link]:cursor-pointer',
+  '[&_tr:has([data-slot=data-table-row-link])]:relative [&_tr:has([data-slot=data-table-row-link])]:cursor-pointer',
   // While rows are selected, a click selects: the row does not look like a link.
-  'in-data-selecting:cursor-default!',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
+  // Keyed on its own attribute, which a press on the select-all checkbox sets
+  // before the click (useSelectAllRipple): the cursor is inherited, so its
+  // change restyles every cell of every row.
+  '[&[data-selecting-cursor]_tr]:cursor-default!',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
   // Product, rendered by the same link component) is a plain link above it,
   // underlined on hover, without a chevron.
@@ -326,7 +330,7 @@ const bulkRowOpen = {
 // control inside the row counts: an ancestor of the table that matches (an app
 // shell's `<main tabindex="-1">`, the skip link target) is not a row control.
 const ROW_CONTROL_SELECTOR =
-  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
 
 // The click area of a select checkbox is its whole cell: the full height of
 // the row, from the table's start edge to where the leading cell's content
@@ -336,7 +340,7 @@ const ROW_CONTROL_SELECTOR =
 // and the focus ring stay on the checkbox. The checkbox's own enlarged hit
 // area is turned off here, since it reached past the gutter into the content.
 const SELECT_AREA_CLASS =
-  'absolute inset-y-0 left-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+  'absolute inset-y-0 start-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
 const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 
 // Select all and clear all from the header checkbox ripple down the page: the
@@ -412,13 +416,34 @@ function rippleTiming(index: number, count: number): React.CSSProperties {
  * restarts from zero. Reduced motion: no ripple, the rows change together.
  * Any other selection change (a row click) ends the ripple first, so it is
  * not delayed.
+ *
+ * It also owns `data-selecting-cursor`, the row cursor while rows are
+ * selected. A press on the select-all checkbox prepares the click in the
+ * frames between press and release, where nothing else happens: it sets the
+ * ripple's start and the row cursor the click will need. The click then
+ * changes only the rows' selection. The pointer is on the header meanwhile,
+ * so no row shows its cursor early. A press that ends without a click puts
+ * both back. A click without a prepared frame (Space, a fast synthetic click)
+ * does the same work in its own frame.
  */
-function useSelectAllRipple(tableRef: React.RefObject<HTMLTableElement | null>) {
+function useSelectAllRipple(
+  tableRef: React.RefObject<HTMLTableElement | null>,
+  /** Whether rows are selected, as of the last render. */
+  selectingRef: React.RefObject<boolean>,
+) {
   const reduceMotion = useReducedMotion();
   const reduceMotionRef = React.useRef(reduceMotion);
   reduceMotionRef.current = reduceMotion;
   const timer = React.useRef<number | undefined>(undefined);
+  const prepared = React.useRef<SelectAllPrep | null>(null);
   React.useEffect(() => () => window.clearTimeout(timer.current), []);
+  // Every commit puts the cursor in line with the selection, unless a press
+  // is waiting for its click.
+  React.useLayoutEffect(() => {
+    if (prepared.current == null) {
+      tableRef.current?.toggleAttribute('data-selecting-cursor', selectingRef.current);
+    }
+  });
   return React.useMemo(() => {
     const end = () => {
       window.clearTimeout(timer.current);
@@ -427,28 +452,105 @@ function useSelectAllRipple(tableRef: React.RefObject<HTMLTableElement | null>) 
       delete element.dataset.selectRipple;
       delete element.dataset.selectRippleQuick;
     };
-    const toggleAll = <TData,>(table: TanStackTable<TData>, value: boolean, quick: boolean) => {
+    const setRipple = (element: HTMLElement, value: boolean, quick: boolean) => {
+      element.dataset.selectRipple = value ? 'select' : 'clear';
+      if (quick) element.dataset.selectRippleQuick = '';
+      else delete element.dataset.selectRippleQuick;
+    };
+    // `quick` asks for the keyboard's ripple. A click after a pointer press is
+    // never quick: Base UI hands the checkbox's click over as its hidden
+    // input's click, with detail 0, which reads as the keyboard.
+    const toggleAll = <TData,>(table: TanStackTable<TData>, value: boolean, keyboard: boolean) => {
+      const prep = prepared.current;
+      prepared.current = null;
+      const quick = keyboard && prep == null;
       const element = tableRef.current;
       if (!element || reduceMotionRef.current) {
         end();
         table.toggleAllPageRowsSelected(value);
         return;
       }
-      const running = element.dataset.selectRipple != null;
-      element.dataset.selectRipple = value ? 'select' : 'clear';
-      if (quick) element.dataset.selectRippleQuick = '';
-      else delete element.dataset.selectRippleQuick;
-      // A fresh select ripple: let the rows take their start (the bar at the
-      // top edge) before the selection changes, or they would transition from
-      // their middle. A running ripple is not flushed: its rows retarget from
-      // where they are.
-      if (!running) void element.offsetHeight;
+      // Prepared for this click, and a frame has shown the start: nothing to
+      // flush. Otherwise a fresh select ripple lets the rows take their start
+      // (the bar at the top edge) before the selection changes, or they would
+      // transition from their middle. A running ripple is not flushed: its
+      // rows retarget from where they are.
+      const ready = prep?.shown === true && prep.value === value;
+      const running = !ready && element.dataset.selectRipple != null;
+      setRipple(element, value, quick);
+      if (!ready && !running) void element.offsetHeight;
       table.toggleAllPageRowsSelected(value);
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(end, SELECT_RIPPLE_SETTLE_MS);
     };
-    return { toggleAll, end };
-  }, [tableRef]);
+    // A press on the select-all checkbox: `value` is what its click will set,
+    // `selectingAfter` whether rows stay selected after it.
+    const prepare = (value: boolean, selectingAfter: boolean) => {
+      const element = tableRef.current;
+      if (!element || prepared.current != null) return;
+      const prep: SelectAllPrep = {
+        value,
+        shown: false,
+        ripple: element.dataset.selectRipple,
+      };
+      prepared.current = prep;
+      // After the frame that shows the press, so the press stays quick.
+      requestAnimationFrame(() =>
+        window.setTimeout(() => {
+          if (prepared.current !== prep) return;
+          element.toggleAttribute('data-selecting-cursor', selectingAfter);
+          if (!reduceMotionRef.current && prep.ripple == null) setRipple(element, value, false);
+          requestAnimationFrame(() =>
+            window.setTimeout(() => {
+              if (prepared.current === prep) prep.shown = true;
+            }),
+          );
+        }),
+      );
+      // The click, if there is one, comes in the same task as the release.
+      const release = () => {
+        window.removeEventListener('pointerup', release, true);
+        window.removeEventListener('pointercancel', release, true);
+        window.setTimeout(() => {
+          if (prepared.current !== prep) return;
+          prepared.current = null;
+          if (prep.ripple == null) {
+            delete element.dataset.selectRipple;
+            delete element.dataset.selectRippleQuick;
+          }
+          element.toggleAttribute('data-selecting-cursor', selectingRef.current);
+        });
+      };
+      window.addEventListener('pointerup', release, true);
+      window.addEventListener('pointercancel', release, true);
+    };
+    return { toggleAll, end, prepare };
+  }, [tableRef, selectingRef]);
+}
+
+type SelectAllPrep = {
+  value: boolean;
+  /** A frame has shown the prepared start since the press. */
+  shown: boolean;
+  /** A running ripple at the press; without one, a press with no click removes the prepared start. */
+  ripple: string | undefined;
+};
+
+/**
+ * A press on the select-all checkbox: its click selects the whole page unless
+ * all of it is selected, and rows stay selected after it unless it clears the
+ * last of them (rows selected on other pages stay).
+ */
+function prepareSelectAll<TData>(
+  table: TanStackTable<TData>,
+  ripple: { prepare: (value: boolean, selectingAfter: boolean) => void },
+) {
+  const value = !table.getIsAllPageRowsSelected();
+  const pageIds = new Set(table.getRowModel().rows.map((row) => row.id));
+  const otherPages = getSelectedRowIds(table.getState().rowSelection).some(
+    (id) => !pageIds.has(id),
+  );
+  ripple.prepare(value, value || otherPages);
 }
 
 /** A checkbox toggled with Space: a keyboard event, or a click with no pointer (detail 0). */
@@ -598,7 +700,8 @@ function DataTable<TData>({
   // The last row a click selected or deselected: the start of a Shift+click range.
   const selectionAnchor = React.useRef<string | null>(null);
   const tableRef = React.useRef<HTMLTableElement>(null);
-  const selectAllRipple = useSelectAllRipple(tableRef);
+  const selectingRef = React.useRef(false);
+  const selectAllRipple = useSelectAllRipple(tableRef, selectingRef);
   const displayProps = React.useRef({ l, rowActions });
   displayProps.current = { l, rowActions };
   const hasRowSelection = rowSelection != null;
@@ -625,6 +728,7 @@ function DataTable<TData>({
                 aria-hidden
                 data-slot="data-table-select-area"
                 className={SELECT_AREA_CLASS}
+                onPointerDown={() => prepareSelectAll(table, selectAllRipple)}
                 onClick={() =>
                   selectAllRipple.toggleAll(table, !table.getIsAllPageRowsSelected(), false)
                 }
@@ -643,12 +747,13 @@ function DataTable<TData>({
                       indeterminate={
                         table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
                       }
+                      onPointerDown={() => prepareSelectAll(table, selectAllRipple)}
                       onCheckedChange={(checked, details) =>
                         selectAllRipple.toggleAll(table, checked, fromKeyboard(details.event))
                       }
                       aria-label={displayProps.current.l.selectAllRows}
                       className={cn(
-                        'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
+                        'absolute top-1/2 start-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
                         SELECT_CHECKBOX_HIT_CLASS,
                       )}
                     />
@@ -694,7 +799,7 @@ function DataTable<TData>({
                 }}
                 aria-label={displayProps.current.l.selectRow(row.index)}
                 className={cn(
-                  'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
+                  'absolute top-1/2 start-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
                   SELECT_CHECKBOX_HIT_CLASS,
                   SELECT_RIPPLE_CHECKBOX_CLASS,
                 )}
@@ -806,20 +911,20 @@ function DataTable<TData>({
   };
   const columnClass = (id: string): string | undefined => {
     const generated = generatedColumn(id);
-    // `pl-0!`: the select cell is the first child, so CardTable's edge-cell
+    // `ps-0!`: the select cell is the first child, so CardTable's edge-cell
     // padding would otherwise widen the zero-width cell and push the whole
     // gutter arrangement out; important because CardTable's descendant rule
     // out-specifies a plain utility on the cell.
-    if (generated === 'select') return 'relative w-0 p-0 pl-0!';
+    if (generated === 'select') return 'relative w-0 p-0 ps-0!';
     // Every other cell adds its column's indent (`--column-indent`, see
     // `columnIndents`) to its start padding. CardTable's edge-cell padding
     // adds it too.
-    if (id === leadingColumnId) return 'pl-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+    if (id === leadingColumnId) return 'ps-[calc(var(--spacing)*8+var(--column-indent,0px))]';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
     // row; `align-middle` on the cell keeps it centred.
     return cn(
-      'pl-[calc(var(--spacing)*2+var(--column-indent,0px))]',
+      'ps-[calc(var(--spacing)*2+var(--column-indent,0px))]',
       generated === 'actions' && 'py-0',
     );
   };
@@ -927,6 +1032,7 @@ function DataTable<TData>({
   // back instead of jumping.
   const selecting =
     rowSelection != null && getSelectedRowIds(table.getState().rowSelection).length > 0;
+  selectingRef.current = selecting;
   const showBulk = selecting && bulkActions != null;
 
   // While rows are selected, a plain click on a row selects or deselects it
@@ -1112,7 +1218,7 @@ function DataTable<TData>({
       <CardTable>
         <Table
           ref={tableRef}
-          className={cn(ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
+          className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
         >
           <TableHeader>
@@ -1187,7 +1293,7 @@ function DataTable<TData>({
                   const selectProps = rowSelectProps(row);
                   const rowNode = (
                     <TableRow
-                      className={cn('group/row', LINKED_ROW_CLASS, ripple.className)}
+                      className={cn('group/row', ripple.className)}
                       style={ripple.style}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       {...selectProps}

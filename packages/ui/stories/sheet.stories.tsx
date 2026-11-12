@@ -162,3 +162,13 @@ export const TallForm: Story = {
     await userEvent.keyboard('{Escape}');
   },
 };
+
+/** Ends with the sheet open, so the accessibility check scans it. */
+export const Open: Story = {
+  tags: ['!autodocs'],
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Sheet (Right)' }));
+    await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Edit Profile' })).toBeVisible());
+  },
+};

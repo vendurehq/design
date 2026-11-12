@@ -61,6 +61,9 @@ function DateRangePicker({
   ...props
 }: DateRangePickerProps) {
   const [open, setOpen] = React.useState(false);
+  // The calendar popup is a dialog, named by its trigger.
+  const generatedId = React.useId();
+  const triggerId = generatedId;
   const { locale } = useFormatSettings();
   const selected: DateRange = {
     from: parseCalendarDate(value?.from),
@@ -89,6 +92,7 @@ function DateRangePicker({
         <PopoverTrigger
           render={
             <Button
+              id={triggerId}
               type="button"
               variant="ghost"
               disabled={disabled}
@@ -106,7 +110,7 @@ function DateRangePicker({
             {selected.from ? formatDateRangeLabel(selected.from, selected.to, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
           <div className={cn('flex', presets.length > 0 && 'divide-x')}>
             {presets.length > 0 ? (
               <div className="flex w-40 flex-col gap-1 p-2">

@@ -189,9 +189,31 @@ describe('DataTableRowLink', () => {
 
   test('the link stretches over the row, which stacks its controls above it', () => {
     const markup = html(<DataTable rows={rows} columns={linkedColumns} />);
+    const table = markup.match(/<table[^>]*>/)?.[0] ?? '';
     expect(markup).toContain('after:absolute after:inset-0');
-    expect(markup).toContain('has-data-[slot=data-table-row-link]:relative');
-    expect(markup).toContain('has-data-[slot=data-table-row-link]:[&amp;_:is(a,button');
+    expect(table).toContain('[&amp;_tr:has([data-slot=data-table-row-link])]:relative');
+    expect(table).toContain('[&amp;_tr:has([data-slot=data-table-row-link])_:is(a,button');
+  });
+
+  // The rules sit on the table, so a row the consumer renders itself (a
+  // draggable row) gets them without taking a class from the table.
+  test('a row from renderRow needs no class for its controls to stack above the link', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={linkedColumns}
+        renderRow={(row) => (
+          <tr data-custom-row="">
+            {row.getVisibleCells().map((cell) => (
+              <td key={cell.id}>{cell.getValue() as string}</td>
+            ))}
+          </tr>
+        )}
+      />,
+    );
+    const table = markup.match(/<table[^>]*>/)?.[0] ?? '';
+    expect(markup).toContain('data-custom-row=""');
+    expect(table).toContain('[&amp;_tr:has([data-slot=data-table-row-link])_:is(a,button');
   });
 });
 
@@ -256,8 +278,8 @@ describe('DataTable loading state', () => {
     expect(body).not.toContain('select-override');
     expect(count(body, /data-slot="data-table-skeleton-line"/g)).toBe(4);
     expect(count(body, /class="[^"]*size-8/g)).toBe(2);
-    expect(count(body, /relative w-0 p-0 pl-0!/g)).toBe(2);
-    expect(count(body, /class="[^"]*pl-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
+    expect(count(body, /relative w-0 p-0 ps-0!/g)).toBe(2);
+    expect(count(body, /class="[^"]*ps-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
     expect(count(body, /class="[^"]*py-0/g)).toBe(2);
   });
 
@@ -451,8 +473,8 @@ describe('DataTable row selection (controlled source of truth)', () => {
           rowSelection={{ value, onChange: () => {} }}
         />,
       ).match(/<table[^>]*>/)?.[0] ?? '';
-    expect(table({})).not.toContain('data-selecting');
-    expect(table({ '1': true })).toContain('data-selecting=""');
+    expect(table({})).not.toContain(' data-selecting=');
+    expect(table({ '1': true })).toContain(' data-selecting=""');
   });
 
   test('partial page selection renders a distinct mixed select-all indicator', () => {
@@ -495,7 +517,7 @@ describe('DataTable column visibility (controlled source of truth)', () => {
     const trigger = markup.slice(
       markup.lastIndexOf('<button', markup.indexOf('data-slot="data-table-view-options"')),
     );
-    expect(trigger).toContain('ml-auto');
+    expect(trigger).toContain('ms-auto');
   });
 
   test('a column set false hides its header and cells', () => {
@@ -631,7 +653,7 @@ describe('DataTable context actions', () => {
     expect(markup).toContain('Brazil');
     expect(markup).not.toContain('Open row actions');
     // Every row became a context-menu trigger.
-    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2);
+    expect(count(markup, /data-context-menu-trigger=""/g)).toBe(2);
   });
 
   test('contextActions composes with rowActions (button column AND right-click)', () => {
@@ -645,7 +667,7 @@ describe('DataTable context actions', () => {
       />,
     );
     expect(markup).toContain('Open row actions'); // rowActions column still present
-    expect(count(markup, /data-slot="context-menu-trigger"/g)).toBe(2); // rows are triggers
+    expect(count(markup, /data-context-menu-trigger=""/g)).toBe(2); // rows are triggers
   });
 });
 
@@ -867,9 +889,9 @@ describe('DataTable renderRow cell classes', () => {
         }}
       />,
     );
-    expect(seen.select).toContain('relative w-0 p-0 pl-0!');
-    expect(seen.name).toContain('pl-[calc(var(--spacing)*8');
-    expect(seen.code).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.select).toContain('relative w-0 p-0 ps-0!');
+    expect(seen.name).toContain('ps-[calc(var(--spacing)*8');
+    expect(seen.code).toContain('ps-[calc(var(--spacing)*2');
     expect(seen.code).not.toContain('*8');
   });
 
@@ -888,7 +910,7 @@ describe('DataTable renderRow cell classes', () => {
         }}
       />,
     );
-    expect(seen.name).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.name).toContain('ps-[calc(var(--spacing)*2');
   });
 });
 

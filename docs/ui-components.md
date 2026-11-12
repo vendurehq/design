@@ -73,6 +73,8 @@ behavior you need instead of rebuilding it from atoms.
 ### Forms & Inputs
 `button`, `button-group`, `checkbox`, `combobox`, `field`, `input`, `input-group`, `input-otp`, `label`, `native-select`, `radio-group`, `select`, `slider`, `switch`, `textarea`, `toggle`, `toggle-group`
 
+> **Toggle.** A disabled toggle that must say why takes `aria-disabled` in place of `disabled`, with a Tooltip that gives the reason. It keeps its tab stop and the pointer, so the tooltip opens. It looks like a disabled toggle, pressed or not: half opacity, a not-allowed cursor, no hover change. Base UI's Toggle has no `focusableWhenDisabled`, so blocking the press is your job: `onPressedChange={(_, details) => details.cancel()}`. That also stops a ToggleGroup from changing its value. Use plain `disabled` when the page already shows why.
+
 > **Labelling Checkbox, RadioGroup and Switch:** Base UI puts the `id` on a hidden input, not on the visible control. Because of this, `<Label htmlFor>` does not give the control an accessible name. Set `aria-label` on the control, or `aria-labelledby` with the `id` of the visible label. This note stays until a component fix lands.
 
 ### Feedback
@@ -82,6 +84,8 @@ behavior you need instead of rebuilding it from atoms.
 `command`, `context-menu`, `dialog`, `drawer`, `dropdown-menu`, `hover-card`, `menubar`, `popover`, `sheet`, `tooltip`
 
 > **Drawer.** The Drawer is built on the Base UI drawer, like every other overlay. Compose its parts with the `render` prop (`<DrawerTrigger render={<Button />}>`); there is no `asChild`. Set the side with `swipeDirection` (`down` by default, or `up`, `left`, `right`), and show the drag handle with `showSwipeHandle`. Add `body { position: relative; }` to your global styles so the overlay covers the viewport on iOS Safari. Coming from 1.x or an earlier 2.0.0 beta: replace `asChild` with `render`, replace `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`), and add `showSwipeHandle` where you want the handle.
+
+> **Triggers and `data-slot`.** A trigger (`TooltipTrigger`, `PopoverTrigger`, `HoverCardTrigger`, `DropdownMenuTrigger`, `DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `DrawerTrigger`, `CollapsibleTrigger`, `ContextMenuTrigger`) always marks its element with `data-<slot>`, for example `data-tooltip-trigger`. It sets `data-slot="<slot>"` only when it renders a plain element: no `render`, a render function, or an HTML element such as `<span>`. A component passed as `render` keeps its own slot: `<TooltipTrigger render={<Button />}>` renders `data-slot="button"` and `data-tooltip-trigger`. Select a trigger by `[data-tooltip-trigger]`, not by `[data-slot=tooltip-trigger]`.
 
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`
@@ -203,6 +207,8 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 ```
 
 Button's `default` variant uses the neutral `primary` slot, not Vendure blue. Use it for the single primary action of a view — **one primary per view**: everything else should be `secondary`, `outline`, or `ghost`. For a deliberate identity moment, use `variant="brand"`.
+
+A disabled button that must say why takes `disabled` with `focusableWhenDisabled` and a Tooltip that gives the reason. Base UI then renders `aria-disabled="true"` instead of the native attribute: the button keeps its tab stop and the pointer, so the tooltip opens, and it ignores the click and every key but Tab. It looks like a native disabled button in every variant: half opacity, no shadow, a not-allowed cursor, no hover or press change. A raw `aria-disabled="true"` gets the same look; ignoring the click is then up to you. Use plain `disabled` when the page already shows why.
 
 The small icon sizes `icon-xs` (24px) and `icon-sm` (28px) have a 40 × 40px click area around the icon. It is an invisible `::before`, so the button keeps its visible size. Next to another control the area keeps the button's own width, so neighbours never share a point. Inside an InputGroup and in the copy chips it is off. Do not give these buttons a `::before` of your own. Keep a positioned scroll container at least 8px from such a button, or the area adds to the scroll width.
 

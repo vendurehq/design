@@ -30,7 +30,8 @@ export const DoNotSetAlign: Story = {
           <div className="flex justify-end">
             <Popover defaultOpen>
               <PopoverTrigger render={<Button variant="outline" />}>No align</PopoverTrigger>
-              <PopoverContent>
+              {/* A popover without a PopoverTitle needs a name of its own. */}
+              <PopoverContent aria-label="No align">
                 <PopoverDescription>It lines up with the trigger&apos;s right edge and stays inside the card.</PopoverDescription>
               </PopoverContent>
             </Popover>
@@ -41,7 +42,7 @@ export const DoNotSetAlign: Story = {
           <div className="flex justify-end">
             <Popover defaultOpen>
               <PopoverTrigger render={<Button variant="outline" />}>align=&quot;start&quot;</PopoverTrigger>
-              <PopoverContent align="start">
+              <PopoverContent align="start" aria-label="Align start">
                 <PopoverDescription>Pinned to the trigger&apos;s left edge, it runs past the card on the right.</PopoverDescription>
               </PopoverContent>
             </Popover>

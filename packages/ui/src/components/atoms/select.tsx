@@ -9,8 +9,29 @@ import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 
-const Select = SelectPrimitive.Root
+/**
+ * The trigger of the nearest Select. Base UI names the trigger but not the
+ * list, so SelectContent reads the trigger's name from here and gives it to
+ * the list.
+ */
+const SelectTriggerContext = React.createContext<{
+  trigger: HTMLElement | null
+  setTrigger: (trigger: HTMLElement | null) => void
+} | null>(null)
+
+function Select<Value, Multiple extends boolean | undefined = false>(
+  props: SelectPrimitive.Root.Props<Value, Multiple>
+) {
+  const [trigger, setTrigger] = React.useState<HTMLElement | null>(null)
+  const context = React.useMemo(() => ({ trigger, setTrigger }), [trigger])
+  return (
+    <SelectTriggerContext.Provider value={context}>
+      <SelectPrimitive.Root {...props} />
+    </SelectTriggerContext.Provider>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -36,12 +57,15 @@ function SelectTrigger({
   className,
   size = "default",
   children,
+  ref,
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: "sm" | "default"
 }) {
+  const triggerRef = useRegisteredRef(ref, React.useContext(SelectTriggerContext)?.setTrigger)
   return (
     <SelectPrimitive.Trigger
+      ref={triggerRef}
       data-slot="select-trigger"
       data-size={size}
       className={cn(
@@ -241,6 +265,7 @@ function SelectContent({
   )
 
   const dir = usePopupDir()
+  const trigger = React.useContext(SelectTriggerContext)?.trigger ?? null
   return (
     <SelectPrimitive.Portal key={childrenKey}>
       <SelectPrimitive.Positioner
@@ -257,10 +282,17 @@ function SelectContent({
           data-align-trigger={alignItemWithTrigger}
           className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, growFromTriggerMotion, className)}
           ref={popupRef}
+          // A closing list is gone for assistive technology: its trigger no
+          // longer points at it, and it takes no input while it fades out.
+          render={(popupProps, state) => (
+            <div {...popupProps} aria-hidden={state.open ? popupProps["aria-hidden"] : true} />
+          )}
           {...props}
         >
           <SelectScrollUpButton />
-          <SelectPrimitive.List className="p-1.25">{children}</SelectPrimitive.List>
+          <SelectPrimitive.List className="p-1.25" {...nameFrom(trigger, { orSelf: true })}>
+            {children}
+          </SelectPrimitive.List>
           <SelectScrollDownButton />
         </SelectPrimitive.Popup>
       </SelectPrimitive.Positioner>

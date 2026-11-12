@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   Menubar,
   MenubarCheckboxItem,
@@ -108,4 +109,14 @@ export const Default: Story = {
       </MenubarMenu>
     </Menubar>
   ),
+};
+
+/** Ends with the File menu open, so the accessibility check scans it. */
+export const Open: Story = {
+  tags: ['!autodocs'],
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('menuitem', { name: 'File' }));
+    await waitFor(() => expect(within(document.body).getByRole('menuitem', { name: /New Tab/ })).toBeVisible());
+  },
 };

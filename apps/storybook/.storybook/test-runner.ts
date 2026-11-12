@@ -4,7 +4,9 @@ import { getStoryContext } from '@storybook/test-runner';
 import { configureAxe, getViolations, injectAxe } from 'axe-playwright';
 
 // Violations at these impact levels fail the build. `minor`/`moderate` findings
-// are logged but non-blocking, matching axe-core's own severity scale.
+// are logged but non-blocking, matching axe-core's own severity scale. One of
+// them is `region` (moderate): it fires on every popup, because a portal sits
+// outside the page's landmarks by design. It stays below the blocking level.
 const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
 const THEMES = ['light', 'dark'] as const;
 
@@ -64,8 +66,40 @@ async function pressOneText(page: Page, press: TextPress) {
  * tooltip must be open, and it must contain `expectTooltip`. A tooltip from
  * the last text that stays open over this one fails the check: the pointer
  * then lands on that tooltip, not on the text.
+ *
+ * `keepsLook` is for a disabled button that keeps its tooltip
+ * (`aria-disabled`): at rest it must be at half opacity with a not-allowed
+ * cursor, and neither the hover nor a press may change its fill, text, edge,
+ * shadow, opacity or scale.
  */
-type TextHover = { text: string; expectTooltip: string };
+type TextHover = { text: string; expectTooltip: string; keepsLook?: boolean };
+
+async function controlLook(page: Page, text: string) {
+  return page
+    .locator('#storybook-root')
+    .getByText(text, { exact: true })
+    .locator('xpath=ancestor-or-self::*[self::button or @role="button"][1]')
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        background: style.backgroundColor,
+        color: style.color,
+        border: style.borderColor,
+        shadow: style.boxShadow,
+        opacity: style.opacity,
+        scale: style.scale,
+        cursor: style.cursor,
+      };
+    });
+}
+
+function sameLook(text: string, step: string, rest: object, now: object) {
+  if (JSON.stringify(rest) !== JSON.stringify(now)) {
+    throw new Error(
+      `hoverText: "${text}" changed its look on ${step}: ${JSON.stringify(rest)} → ${JSON.stringify(now)}`,
+    );
+  }
+}
 
 async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
   const list = hovers ? [hovers].flat() : [];
@@ -74,6 +108,12 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
   for (const hover of list) {
     const box = await root.getByText(hover.text, { exact: true }).boundingBox();
     if (!box) throw new Error(`hoverText: "${hover.text}" is not visible`);
+    const rest = hover.keepsLook ? await controlLook(page, hover.text) : undefined;
+    if (rest && (rest.opacity !== '0.5' || rest.cursor !== 'not-allowed')) {
+      throw new Error(
+        `hoverText: "${hover.text}" does not look disabled at rest: ${JSON.stringify(rest)}`,
+      );
+    }
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
     await page
       .waitForFunction(
@@ -94,6 +134,15 @@ async function hoverText(page: Page, hovers?: TextHover | TextHover[]) {
           `hoverText: over "${hover.text}", expected one tooltip with "${hover.expectTooltip}", found ${JSON.stringify(open)}`,
         );
       });
+    if (rest) {
+      // Wait out the 120ms colour transition before reading the hover look.
+      await page.waitForTimeout(300);
+      sameLook(hover.text, 'hover', rest, await controlLook(page, hover.text));
+      await page.mouse.down();
+      await page.waitForTimeout(300);
+      sameLook(hover.text, 'press', rest, await controlLook(page, hover.text));
+      await page.mouse.up();
+    }
   }
   await page.mouse.move(0, 0);
   await page.locator('[data-slot=tooltip-content]').first().waitFor({ state: 'detached' });
@@ -293,12 +342,13 @@ async function pressOpen(page: Page, press?: { text: string; expectFocus: string
 
 /**
  * Waits until the story has finished drawing, so axe reads the same page every
- * run. Two things must hold together:
- * - No animation or transition in the story root is still running (the Web
+ * run. It watches the whole <body>, so a popup in a portal (a menu, a dialog,
+ * a toast) counts as part of the story. Two things must hold together:
+ * - No animation or transition on the page is still running (the Web
  *   Animations API). Endless animations (a spinner) and paused ones never
- *   finish, so they are ignored. Transitions on <html> and <body> count too, as
- *   axe reads their colours.
- * - The story root has not changed for `quietMs`. This covers animations that
+ *   finish, so they are ignored. Transitions on <html> count too, as axe reads
+ *   their colours.
+ * - The body has not changed for `quietMs`. This covers animations that
  *   script drives frame by frame, such as recharts, which the first check
  *   cannot see. Pass 0 to check only the animations.
  * It loops, because a finished animation can start the next one. A story that
@@ -311,8 +361,7 @@ const QUIET_MS = 250;
 async function settle(page: Page, quietMs: number) {
   const stillMoving = await page.evaluate(
     async ([cap, quiet]) => {
-      const root = document.querySelector('#storybook-root');
-      if (!root) return [];
+      const root = document.body;
       // Two frames first, so an animation that starts after the last commit
       // (an exit, say) is already running when it is looked for.
       for (let frame = 0; frame < 2; frame++) {
@@ -424,9 +473,12 @@ const config: TestRunnerConfig = {
       // The theme switch starts colour transitions and nothing else.
       await settle(page, 0);
 
+      // The scan covers the whole body: popups render in portals, outside the
+      // story root, and a popup the play function leaves open is part of the
+      // story. Storybook's own docs container is hidden in story mode.
       const violations = await getViolations(
         page,
-        '#storybook-root',
+        { include: [['body']], exclude: [['#storybook-docs']] },
         storyContext.parameters?.a11y?.config,
       );
       const blocking = violations.filter((violation) =>

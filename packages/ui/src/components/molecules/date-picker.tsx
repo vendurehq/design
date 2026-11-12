@@ -51,6 +51,9 @@ function DatePicker({
   ...props
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
+  // The calendar popup is a dialog, named by its trigger.
+  const generatedId = React.useId();
+  const triggerId = id ?? generatedId;
   const { locale } = useFormatSettings();
   const selected = parseCalendarDate(value);
   const minDate = parseCalendarDate(min);
@@ -71,7 +74,7 @@ function DatePicker({
         <PopoverTrigger
           render={
             <Button
-              id={id}
+              id={triggerId}
               type="button"
               variant="ghost"
               disabled={disabled}
@@ -89,7 +92,7 @@ function DatePicker({
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
           <Calendar
             {...calendarProps}
             mode="single"
