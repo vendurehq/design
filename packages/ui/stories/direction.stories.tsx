@@ -431,6 +431,15 @@ function SubMenus({ dir }: { dir: Dir }) {
 }
 
 /**
+ * Right-clicks the middle of an element. Without coordinates the pointer sits
+ * at the viewport's top-left corner, and a context menu opens there.
+ */
+function rightClickCentre(el: HTMLElement) {
+  const box = el.getBoundingClientRect();
+  return userEvent.pointer({ keys: '[MouseRight]', target: el, coords: { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 } });
+}
+
+/**
  * Opens the sub-menu of each menu and checks that it opens toward the end
  * side (left in right to left) and that the trigger's chevron points that way.
  */
@@ -439,7 +448,7 @@ async function expectSubMenus(canvasElement: HTMLElement, dir: Dir) {
   const canvas = within(canvasElement);
   const menus = [
     { name: `Dropdown, ${label}`, open: (el: HTMLElement) => userEvent.click(el) },
-    { name: `Context, ${label}`, open: (el: HTMLElement) => userEvent.pointer({ keys: '[MouseRight]', target: el }) },
+    { name: `Context, ${label}`, open: rightClickCentre },
     { name: `Menubar, ${label}`, open: (el: HTMLElement) => userEvent.click(el) },
   ];
   for (const menu of menus) {
