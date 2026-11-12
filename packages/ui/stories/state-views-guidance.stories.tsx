@@ -416,12 +416,12 @@ export const IllustrationUsage: Story = {
 };
 
 export const CompactForSmallPanels: Story = {
-  name: '5 · Compact for small panels',
+  name: '5 · Compact with an icon inside a card',
   render: () => (
     <div className="text-foreground max-w-4xl p-1">
       <Section
-        title="Compact inside a small panel; full state for a region"
-        intro="Use size compact inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps the title, the description and at most one action, drops the illustration, and sits flush. An icon is optional and renders bare."
+        title="Compact with an icon inside a card; full size for a page or a list"
+        intro="Inside a card, a secondary panel or a side column, use size compact with an icon: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps the title, the description and at most one action, and sits flush."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example

@@ -363,8 +363,19 @@ import { NoInvoicesIllustration } from "@vendure-io/ui/components/molecules/illu
 
 Every illustration takes `className` and `size` (width in px, default 160; the
 height keeps the 4:3 ratio). Use one illustration for the whole empty or error
-region. In a table row, list item or card inside a populated view, set
-`illustration={null}` and pass an `icon`.
+region: a whole page or a whole list. Inside a card, a secondary panel or a
+side column, use the compact size with an icon instead. It shows a faint 28px
+icon above the title and no illustration:
+
+```tsx
+import { KeyRoundIcon } from "lucide-react";
+
+<EmptyState
+  size="compact"
+  icon={<KeyRoundIcon />}
+  title="No emergency boot token was issued for this project."
+/>;
+```
 
 | Illustration | Use it for | Not for |
 | --- | --- | --- |

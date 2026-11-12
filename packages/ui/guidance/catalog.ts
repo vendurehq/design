@@ -920,8 +920,8 @@ export const uiGuidance = [
         body: 'When EmptyState or ErrorState replaces a table body, it renders flush within the table container: neither draws a box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.',
       },
       {
-        title: 'Compact for small panels',
-        body: 'Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush. An icon is optional and renders bare, as in the full state.',
+        title: 'Compact with an icon inside a card',
+        body: 'Inside a card, a secondary panel or a side column, use size="compact" with the icon prop: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps a title, a description and at most one action, and sits flush.',
       },
       {
         title: 'Errors own the failure',
