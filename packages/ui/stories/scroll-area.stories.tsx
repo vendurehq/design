@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, waitFor } from 'storybook/test';
 import { ScrollArea, ScrollBar } from '../src/components/atoms/scroll-area.tsx';
+import { useScrolled } from '../src/hooks/use-scrolled.ts';
 
 const meta = {
   title: 'Atoms/General/ScrollArea',
@@ -101,4 +103,53 @@ export const FocusRing: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+const logLines = Array.from({ length: 40 }, (_, i) => ({
+  time: `12:04:${String(i).padStart(2, '0')}`,
+  message: i % 9 === 4 ? 'Worker job finished in 212ms' : 'GET /shop-api 200 18ms',
+}));
+
+function ScrolledHeaderLog() {
+  const scrolled = useScrolled<HTMLDivElement>();
+  return (
+    <div
+      ref={scrolled}
+      data-testid="scrolled-log"
+      className="bg-card h-72 w-96 overflow-y-auto rounded-xl border text-xs"
+    >
+      <div className="bg-card text-muted-foreground in-data-scrolled:shadow-scrolled sticky top-0 z-10 flex gap-6 px-4 py-2 font-medium">
+        <span className="w-16">Time</span>
+        <span>Message</span>
+      </div>
+      {logLines.map((line) => (
+        <div key={line.time} className="flex gap-6 px-4 py-0.5 font-mono">
+          <span className="text-muted-foreground w-16">{line.time}</span>
+          <span>{line.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * A scroll area of your own with a sticky header. `useScrolled` sets
+ * `data-scrolled` on the container while rows sit under the header, and the
+ * header takes `in-data-scrolled:shadow-scrolled`: a 1px rule in the `input`
+ * colour. At the top the header has no rule. Scroll the log to see it.
+ */
+export const ScrolledHeader: Story = {
+  render: () => <ScrolledHeaderLog />,
+  play: async ({ canvasElement }) => {
+    const log = canvasElement.querySelector<HTMLElement>('[data-testid="scrolled-log"]');
+    if (!log) throw new Error('log not rendered');
+    const header = log.firstElementChild as HTMLElement;
+    await expect(log).not.toHaveAttribute('data-scrolled');
+    await expect(getComputedStyle(header).boxShadow).toBe('none');
+    log.scrollTop = 40;
+    await waitFor(() => expect(log).toHaveAttribute('data-scrolled'));
+    await expect(getComputedStyle(header).boxShadow).not.toBe('none');
+    log.scrollTop = 0;
+    await waitFor(() => expect(log).not.toHaveAttribute('data-scrolled'));
+  },
 };
