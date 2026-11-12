@@ -13,4 +13,5 @@ export const outlineEdge = 'border-border';
 export const outlineEdgeRing = 'inset-ring-border';
 
 /** Hover: the edge steps up to `input`. Not inside a ButtonGroup (the group owns the edge) and not while invalid. */
-export const outlineEdgeHover = '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-input';
+export const outlineEdgeHover =
+  '[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-input';
