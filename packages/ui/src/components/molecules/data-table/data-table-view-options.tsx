@@ -40,11 +40,11 @@ function DataTableViewOptions<TData>({
 
   return (
     <DropdownMenu>
-      {/* `ml-auto` pins the trigger to the end of the controls row, so it reads
+      {/* `ms-auto` pins the trigger to the end of the controls row, so it reads
           as a table setting even when no search input fills the row. */}
       <DropdownMenuTrigger
         data-slot="data-table-view-options"
-        className="ml-auto"
+        className="ms-auto"
         render={
           <Button variant="outline">
             <SlidersHorizontalIcon />
