@@ -6,7 +6,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@vendure-io/ui/components/atoms/input-group';
-import { Eye, EyeOff } from 'lucide-react';
+import { VisibilityIcon } from '@vendure-io/ui/components/molecules/visibility-icon';
 import * as React from 'react';
 
 export interface PasswordInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
@@ -37,7 +37,7 @@ function PasswordInput({
           onClick={() => setShowPassword((prev) => !prev)}
           aria-label={showPassword ? hidePasswordLabel : showPasswordLabel}
         >
-          {showPassword ? <EyeOff /> : <Eye />}
+          <VisibilityIcon visible={!showPassword} />
         </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>

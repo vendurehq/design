@@ -104,6 +104,8 @@ behavior you need instead of rebuilding it from atoms.
 #### Forms & selection
 `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
 
+> **VisibilityIcon.** An eye for a show/hide toggle: `<VisibilityIcon visible={isVisible} />`. When `visible` turns false a line draws across the eye and cuts it; when it turns true the line draws back out. It does not animate on first render, and with reduced motion the change is instant. It sizes and colours like a lucide icon. It is decorative, so label the button or menu item that holds it. An `opacity-*` class on it (to dim a hidden state) fades on the line's timing. PasswordInput and SecretValue use it.
+
 #### Date & number entry/display
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
