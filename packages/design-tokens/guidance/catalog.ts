@@ -50,7 +50,7 @@ export const tokenGuidance = [
       },
       {
         title: 'Brand marks are non-text',
-        body: 'Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It is a brand scale step for non-text marks (about 3:1 in light mode, a little less on the canvas), not text at 4.5:1. The focus ring is brand too.',
+        body: 'Use brand-indicator for the active navigation icon, a selected-item marker, or a link mark. It is a brand scale step for non-text marks (about 3:1 in light mode, a little less on the canvas), not text at 4.5:1. The focus ring is brand too. For text in the brand colour, such as a link name on hover, use brand-text: a brand scale step that reads at 4.5:1 on every tier and on a hovered or selected row. info-text is for information status only.',
       },
       {
         title: 'Warning marks are never the only cue',
