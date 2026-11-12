@@ -2,7 +2,7 @@ import { brand, destructive, info, neutral, success, surfaces, viz, warning } fr
 
 export const lightTheme = {
   background: surfaces[972],
-  foreground: 'oklch(0.173 0.007 231)',
+  foreground: neutral[900],
   // Secondary text: descriptions, table values, inactive navigation. Sits
   // between `foreground` and `muted-foreground`. Not the text on a
   // `secondary` fill; that is `secondary-foreground`.
@@ -48,7 +48,7 @@ export const lightTheme = {
   'muted-foreground': 'oklch(0.505 0.005 231)',
   // Placeholder text: fainter than `muted-foreground`, a hint and not content.
   // Below 4.5:1, so never for text a user must read.
-  'faint-foreground': 'oklch(0.707 0.005 231)',
+  'faint-foreground': neutral[400],
   accent: 'color-mix(in oklab, var(--foreground) 8.5%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
@@ -88,7 +88,7 @@ export const lightTheme = {
   // and `accent` fills over each tier: a status word in a hovered row stays
   // legible. Brighter than the `{tone}-subtle-foreground` slots, which are
   // tuned for the subtle fills.
-  'success-text': 'oklch(0.491 0.127 154)',
+  'success-text': success[600],
   'warning-text': 'oklch(0.519 0.146 49)',
   'destructive-text': 'oklch(0.53 0.193 24)',
   'info-text': 'oklch(0.501 0.112 236)',
@@ -152,7 +152,7 @@ export const darkTheme = {
   // up in even increments above it.
   background: neutral[900],
   foreground: 'oklch(0.956 0.004 231)',
-  'foreground-secondary': 'oklch(0.838 0.004 231)',
+  'foreground-secondary': neutral[200],
   // Dark mode expresses the page tiers through lightness. `surface` sits
   // halfway between the canvas and the raised tier. `overlay` points at
   // `surface-raised`, as in the v3 look: the overlay shadow's 1px edge and
@@ -176,19 +176,19 @@ export const darkTheme = {
   // dark tier, a hovered and a selected row included.
   'brand-text': brand[500],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
-  'secondary-foreground': 'oklch(0.95 0.004 231)',
+  'secondary-foreground': neutral[100],
   // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.
   muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.005 231)',
-  'faint-foreground': 'oklch(0.522 0.005 231)',
+  'faint-foreground': neutral[500],
   accent: 'color-mix(in oklab, var(--foreground) 9.5%, transparent)',
-  'accent-foreground': 'oklch(0.95 0.004 231)',
-  // Between destructive-500 and destructive-400 on the destructive hue.
-  // destructive-500 is 3.07:1 on the raised and overlay tiers, at the
-  // floor; 400 fails 4.5:1 for white text on the fill. This lightness holds both.
-  destructive: 'oklch(0.575 0.2 25)',
-  'destructive-foreground': 'oklch(0.98 0.01 25)',
+  'accent-foreground': neutral[100],
+  // The same step as light mode. It holds 3:1 (non-text) on the raised and
+  // overlay tiers by a thin margin; destructive-400 fails 4.5:1 for the
+  // light text on the fill.
+  destructive: destructive[500],
+  'destructive-foreground': destructive[50],
   // Subtle backgrounds are 40% alpha so they sit on any surface tier instead
   // of only matching the canvas.
   'destructive-subtle': `color-mix(in oklab, ${destructive[900]} 40%, transparent)`,
@@ -221,7 +221,7 @@ export const darkTheme = {
   'warning-indicator': 'var(--warning-text)',
   // Brighter than dark `muted-foreground` (0.715), so a neutral chip sits
   // level with the other tones. Holds 4.5:1 on every surface tier.
-  'neutral-text': 'oklch(0.745 0.004 231)',
+  'neutral-text': neutral[300],
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
