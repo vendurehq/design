@@ -44,11 +44,11 @@ describe('Toggle pressed state', () => {
     expect(tokens).not.toContain('aria-pressed:bg-muted');
   });
 
-  test('outline variant keeps the input border when pressed', () => {
+  test('outline variant keeps the outline edge when pressed', () => {
     const tokens = classTokens(
       pressedButton(renderToStaticMarkup(<Toggle variant="outline" defaultPressed>B</Toggle>)),
     );
-    expect(tokens).toContain('border-input');
+    expect(tokens).toContain('border-border');
     expect(tokens.filter((token) => /pressed:border-/.test(token))).toEqual([]);
   });
 });

@@ -27,7 +27,8 @@ describe('Drawer', () => {
     const trigger = slotTag(html, 'drawer-trigger');
     expect(trigger.startsWith('<button')).toBe(true);
     // Button's outline variant classes reach the trigger element.
-    expect(trigger).toContain('border-input bg-card');
+    expect(trigger).toContain('border-border');
+    expect(trigger).toContain('bg-card');
     expect(trigger).not.toContain('render=');
     expect(html.match(/<button/g)?.length).toBe(2);
   });

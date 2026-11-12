@@ -3,6 +3,7 @@ import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { outlineEdgeRing } from "@vendure-io/ui/lib/outline-edge"
 import { Separator } from "@vendure-io/ui/components/atoms/separator"
 
 // The v3 look: the group draws one outer edge and its children draw none.
@@ -23,7 +24,7 @@ const buttonGroupVariants = cva(
           "[&>[data-slot]:not([data-slot=button-group])]:rounded-none [&>[data-slot]:not([data-slot]~*)]:rounded-t-xl! [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-xl! flex-col",
       },
       variant: {
-        default: "bg-card inset-ring inset-ring-input shadow-control",
+        default: ["bg-card inset-ring shadow-control", outlineEdgeRing],
         // A primary split button: a main action and a menu trigger on one
         // primary fill. Use default Buttons inside. Children clip their fill
         // to the border box so a hovered segment fills edge to edge.
