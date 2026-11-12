@@ -879,7 +879,7 @@ export const uiGuidance = [
       },
       {
         title: 'An area with its own navigation is a second level',
-        body: 'Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area\'s name). Set `level` from the route. Do not nest the area\'s pages as a sub-list, and do not add a second sidebar.',
+        body: "Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.",
       },
     ],
   },
