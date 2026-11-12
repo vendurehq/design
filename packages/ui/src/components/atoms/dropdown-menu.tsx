@@ -138,7 +138,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon className="ms-auto" />
+      <ChevronRightIcon className="ms-auto rtl:rotate-180" />
     </MenuPrimitive.SubmenuTrigger>
   )
 }
@@ -146,7 +146,8 @@ function DropdownMenuSubTrigger({
 function DropdownMenuSubContent({
   align = "start",
   alignOffset = -5,
-  side = "right",
+  // Logical: the sub-menu opens to the left in a right-to-left layout.
+  side = "inline-end",
   sideOffset = 0,
   className,
   ...props

@@ -118,14 +118,15 @@ function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'di
 // links, Tooltip triggers and the copy chips (IdChip, AnonymizedToken,
 // CopyableText: the whole chip stays the copy target, so their inner button
 // stays static). The select checkbox is already positioned above it. Any other element that must stay
-// clickable above the link takes `data-table-row-control`. The class names
-// stay literal so Tailwind can scan them.
+// clickable above the link takes `data-table-row-control`. The rules sit on
+// the table, not on the built-in row, so a row from `renderRow` gets them too.
+// The class names stay literal so Tailwind can scan them.
 const LINKED_ROW_CLASS = cn(
-  'has-data-[slot=data-table-row-link]:relative has-data-[slot=data-table-row-link]:cursor-pointer',
+  '[&_tr:has([data-slot=data-table-row-link])]:relative [&_tr:has([data-slot=data-table-row-link])]:cursor-pointer',
   // While rows are selected, a click selects: the row does not look like a link.
-  'in-data-selecting:cursor-default!',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
-  'has-data-[slot=data-table-row-link]:[&_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
+  '[&[data-selecting]_tr]:cursor-default!',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
   // Product, rendered by the same link component) is a plain link above it,
   // underlined on hover, without a chevron.
@@ -1112,7 +1113,7 @@ function DataTable<TData>({
       <CardTable>
         <Table
           ref={tableRef}
-          className={cn(ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
+          className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
         >
           <TableHeader>
@@ -1187,7 +1188,7 @@ function DataTable<TData>({
                   const selectProps = rowSelectProps(row);
                   const rowNode = (
                     <TableRow
-                      className={cn('group/row', LINKED_ROW_CLASS, ripple.className)}
+                      className={cn('group/row', ripple.className)}
                       style={ripple.style}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       {...selectProps}
