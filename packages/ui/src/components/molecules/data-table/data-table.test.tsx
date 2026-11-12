@@ -278,8 +278,8 @@ describe('DataTable loading state', () => {
     expect(body).not.toContain('select-override');
     expect(count(body, /data-slot="data-table-skeleton-line"/g)).toBe(4);
     expect(count(body, /class="[^"]*size-8/g)).toBe(2);
-    expect(count(body, /relative w-0 p-0 pl-0!/g)).toBe(2);
-    expect(count(body, /class="[^"]*pl-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
+    expect(count(body, /relative w-0 p-0 ps-0!/g)).toBe(2);
+    expect(count(body, /class="[^"]*ps-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
     expect(count(body, /class="[^"]*py-0/g)).toBe(2);
   });
 
@@ -517,7 +517,7 @@ describe('DataTable column visibility (controlled source of truth)', () => {
     const trigger = markup.slice(
       markup.lastIndexOf('<button', markup.indexOf('data-slot="data-table-view-options"')),
     );
-    expect(trigger).toContain('ml-auto');
+    expect(trigger).toContain('ms-auto');
   });
 
   test('a column set false hides its header and cells', () => {
@@ -889,9 +889,9 @@ describe('DataTable renderRow cell classes', () => {
         }}
       />,
     );
-    expect(seen.select).toContain('relative w-0 p-0 pl-0!');
-    expect(seen.name).toContain('pl-[calc(var(--spacing)*8');
-    expect(seen.code).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.select).toContain('relative w-0 p-0 ps-0!');
+    expect(seen.name).toContain('ps-[calc(var(--spacing)*8');
+    expect(seen.code).toContain('ps-[calc(var(--spacing)*2');
     expect(seen.code).not.toContain('*8');
   });
 
@@ -910,7 +910,7 @@ describe('DataTable renderRow cell classes', () => {
         }}
       />,
     );
-    expect(seen.name).toContain('pl-[calc(var(--spacing)*2');
+    expect(seen.name).toContain('ps-[calc(var(--spacing)*2');
   });
 });
 

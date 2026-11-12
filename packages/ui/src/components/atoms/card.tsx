@@ -170,14 +170,14 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
 //   must carry its band border (border-b / border-t), otherwise the table
 //   sits directly against the band's content.
 // - The edge-cell selector ((0,2,1)) out-specifies a plain padding utility on
-//   the cell ((0,1,0)): a `pl-*`/`pr-*` on a first/last cell silently loses —
-//   override with the important modifier (`pl-0!`) when a cell must opt out.
+//   the cell ((0,1,0)): a `ps-*`/`pe-*` on a first/last cell silently loses —
+//   override with the important modifier (`ps-0!`) when a cell must opt out.
 function CardTable({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-table"
       className={cn(
-        "-my-(--card-gap) [&_tr>*:first-child]:pl-[calc(var(--card-ps)+var(--column-indent,0px))] [&_tr>*:last-child]:pr-(--card-px)",
+        "-my-(--card-gap) [&_tr>*:first-child]:ps-[calc(var(--card-ps)+var(--column-indent,0px))] [&_tr>*:last-child]:pe-(--card-px)",
         className
       )}
       {...props}
