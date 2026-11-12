@@ -103,6 +103,20 @@ behavior you need instead of rebuilding it from atoms.
 #### Application structure
 `app-shell`, `page-header`, `skip-link`, `arrow-link`, `search-trigger`
 
+> **AppShellPage.** The page inside `AppShellMain`. When it mounts, the page fades in over 220ms and rises 6px into place over 260ms on the `out` curve; with reduced motion it only fades. The sidebar and the header stay still. It is a CSS animation that runs once on mount, so a re-render or a query that refetches does not replay it. Give it a `key` that changes with the route; with TanStack Router, the pathname (a change of search params keeps the page):
+>
+> ```tsx
+> const pathname = useLocation({ select: (location) => location.pathname });
+>
+> <AppShellMain>
+>   <AppShellPage key={pathname}>
+>     <Outlet />
+>   </AppShellPage>
+> </AppShellMain>
+> ```
+>
+> A layout without AppShell (the Dashboard) gets the same motion from `pageEnterClassName` (`animate-page-enter motion-reduce:animate-page-fade`) on its own wrapper, keyed the same way. Only opacity and transform move, so nothing shifts and the page takes clicks while it settles.
+
 > **SearchTrigger.** The search field at the end of the top bar: a button that looks like a 28px field, with a search icon, the word "Search" and the shortcut (⌘K on Apple platforms, Ctrl K elsewhere). Its accessible name is "Search (command palette)", and it announces a dialog. It only shows the shortcut: open the palette in `onClick` and bind the same key yourself. `shortcutKey` sets the letter (`null` for none). `collapse` shrinks it to an icon button: below 768px by default (`md`), `never` or `always`.
 >
 > ```tsx

@@ -13,7 +13,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
     theme: {
       shadow: ['control', 'overlay'],
       ease: ['default', 'spring', 'drawer', 'drawer-content', 'height', 'press', 'soft'],
-      animate: ['shimmer', 'spin-slow', 'progress-sweep', 'live-pulse'],
+      animate: ['shimmer', 'spin-slow', 'progress-sweep', 'live-pulse', 'page-enter', 'page-fade'],
     },
     classGroups: {
       duration: [
