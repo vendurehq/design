@@ -126,14 +126,25 @@ describe('ListRow', () => {
       'border-t',
       'first:border-t-0',
       'text-xs',
+      'leading-3',
       'font-semibold',
-      'text-muted-foreground',
+      // A step above the 12px muted row meta: the day reads as the group.
+      'text-foreground-secondary',
+      // 16px above, 6px below: a 34px heading, nearer its rows than the rule above.
+      'pt-4',
+      'pb-1.5',
       'ps-4.5',
     ]) {
       expect(heading).toContain(token);
     }
     const row = slotTag(renderToStaticMarkup(<ListRow />), 'list-row');
     expect(row).toContain('[[data-slot=list-row-group-heading]+&amp;]:border-t-0');
+  });
+
+  test('the meta line is 18px high, so a two-line row is 60px', () => {
+    const meta = slotTag(renderToStaticMarkup(<ListRowMeta>Pushed</ListRowMeta>), 'list-row-meta');
+    expect(meta).toContain('text-xs');
+    expect(meta).toContain('leading-4.5');
   });
 
   test('a row that "Show older" adds fades up after the one above it', () => {
