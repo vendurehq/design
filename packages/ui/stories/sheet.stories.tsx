@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { expectInsidePadding } from './overlay-bounds.ts';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -114,6 +115,38 @@ const shippingFields = [
 ];
 
 /** A form taller than the viewport scrolls inside; a field reached with Tab lands clear of the pinned header and footer. */
+/** A row wider than the sheet stays inside the 16px inset of its parts. */
+export const WideRow: Story = {
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>Filter</SheetTrigger>
+      <SheetContent side="right" className="data-[side=right]:w-80">
+        <SheetHeader>
+          <SheetTitle>Filter by created date</SheetTitle>
+        </SheetHeader>
+        <div className="px-4">
+          <div className="flex gap-2">
+            <Button variant="outline" className="shrink-0">is equal to</Button>
+            <Button variant="outline" className="min-w-0 flex-1 justify-start">
+              <span className="truncate">Pick a date and time for the start of the range</span>
+            </Button>
+            <Input type="time" aria-label="Time" className="w-28 shrink-0" />
+          </div>
+        </div>
+        <SheetFooter>
+          <SheetClose render={<Button />}>Apply filter</SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Filter' }));
+    const sheet = await within(document.body).findByRole('dialog');
+    await Promise.all(sheet.getAnimations().map((animation) => animation.finished));
+    await expectInsidePadding(sheet, 16);
+  },
+};
+
 export const TallForm: Story = {
   render: () => (
     <Sheet>
