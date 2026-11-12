@@ -43,6 +43,8 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'tooltip-resize',
             'progress-fill',
             'row-enter',
+            'row-swap-out',
+            'row-swap-delay',
             'popup-fade',
             'popup-resize',
             'sidebar-pill',
