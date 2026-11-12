@@ -3,6 +3,15 @@ import { type ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ChartLineIcon,
+  CloudIcon,
+  CreditCardIcon,
+  DatabaseIcon,
+  FolderIcon,
+  GaugeIcon,
+  GitBranchIcon,
+  RocketIcon,
+  ScrollTextIcon,
+  VariableIcon,
   ChevronRightIcon,
   FolderTreeIcon,
   HomeIcon,
@@ -31,7 +40,11 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
   SidebarInset,
+  SidebarLevels,
+  SidebarLevel,
+  SidebarLevelBack,
 } from '../src/components/atoms/sidebar.tsx';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import {
   Collapsible,
   CollapsibleContent,
@@ -781,4 +794,156 @@ export const DashboardNavigation: Story = {
       </SidebarProvider>
     );
   },
+};
+
+const rootNav = [
+  { title: 'Projects', icon: FolderIcon },
+  { title: 'Team', icon: UsersIcon },
+  { title: 'Billing', icon: CreditCardIcon },
+];
+const cloudNav = [
+  { title: 'Overview', icon: GaugeIcon },
+  { title: 'Deployments', icon: RocketIcon },
+  { title: 'Logs', icon: ScrollTextIcon },
+  { title: 'Variables', icon: VariableIcon },
+  { title: 'Database', icon: DatabaseIcon },
+];
+
+/** A menu of pages with the default pill. */
+function PageMenu({
+  pages,
+  current,
+  go,
+}: {
+  pages: { title: string; icon: typeof HomeIcon }[];
+  current: string;
+  go: (page: string) => void;
+}) {
+  return (
+    <SidebarMenu>
+      {pages.map((page) => (
+        <SidebarMenuItem key={page.title}>
+          <SidebarMenuButton isActive={page.title === current} onClick={() => go(page.title)} tooltip={page.title}>
+            <page.icon />
+            <span>{page.title}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
+/** A Console-like sidebar whose Cloud item opens a second level. */
+function TwoLevelSidebar({ defaultOpen = true, dir = 'ltr' }: { defaultOpen?: boolean; dir?: 'ltr' | 'rtl' }) {
+  // The level follows the page, as it would follow the route.
+  const [current, setCurrent] = useState('Projects');
+  const level = cloudNav.some((page) => page.title === current) || current === 'Source' ? 'cloud' : 'root';
+  return (
+    <DirectionProvider direction={dir}>
+      <div dir={dir}>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir}>
+            <SidebarHeader>
+              <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
+                <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
+                  V
+                </div>
+                <span className="truncate text-sm font-semibold">Vendure Console</span>
+              </div>
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarLevels level={level}>
+                <SidebarLevel value="root" aria-label="Console">
+                  <SidebarGroup>
+                    <PageMenu pages={rootNav} current={current} go={setCurrent} />
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton onClick={() => setCurrent('Overview')} tooltip="Cloud">
+                          <CloudIcon />
+                          <span>Cloud</span>
+                          <ChevronRightIcon className="ms-auto rtl:rotate-180" />
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroup>
+                </SidebarLevel>
+                <SidebarLevel value="cloud" aria-label="Cloud">
+                  <SidebarGroup>
+                    <SidebarLevelBack onClick={() => setCurrent('Projects')} tooltip="Back to Console">
+                      Cloud
+                    </SidebarLevelBack>
+                    <PageMenu pages={cloudNav} current={current} go={setCurrent} />
+                  </SidebarGroup>
+                  <SidebarGroup>
+                    <SidebarGroupLabel>Project</SidebarGroupLabel>
+                    <PageMenu pages={[{ title: 'Source', icon: GitBranchIcon }]} current={current} go={setCurrent} />
+                  </SidebarGroup>
+                </SidebarLevel>
+              </SidebarLevels>
+            </SidebarContent>
+          </Sidebar>
+          <SidebarInset>
+            <header className="flex h-13 items-center gap-2 border-b px-3">
+              <SidebarTrigger />
+              <span className="text-sm font-medium">{current}</span>
+            </header>
+            <div className="flex-1 p-5">
+              <p className="text-muted-foreground text-sm">Main content area</p>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
+    </DirectionProvider>
+  );
+}
+
+/**
+ * A sidebar with two levels. Cloud opens its own level: the new level slides
+ * in from the end side and starts with a back row, a chevron and the area's
+ * name. The back row slides the first level back in from the start side. Each
+ * level has its own pill, which never slides from one level to the other.
+ * Focus moves to the new level's first item, and back to Cloud on the way
+ * back. The consumer controls the level; here it follows the current page.
+ */
+export const TwoLevels: Story = {
+  name: 'Two levels',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const level = (value: string) =>
+      canvasElement.querySelector<HTMLElement>(`[data-slot="sidebar-level"][data-value="${value}"]`)!;
+    expect(level('root')).toHaveAttribute('data-state', 'active');
+    expect(level('cloud')).toHaveAttribute('data-state', 'after');
+    expect(level('cloud')).toHaveAttribute('inert');
+
+    const cloud = canvas.getByRole('button', { name: 'Cloud' });
+    await userEvent.click(cloud);
+    await waitFor(() => expect(level('cloud')).toHaveAttribute('data-state', 'active'));
+    expect(level('root')).toHaveAttribute('data-state', 'before');
+    expect(level('root')).toHaveAttribute('inert');
+    const back = within(level('cloud')).getByRole('button', { name: 'Cloud' });
+    await waitFor(() => expect(back).toHaveFocus());
+
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(level('root')).toHaveAttribute('data-state', 'active'));
+    await waitFor(() => expect(cloud).toHaveFocus());
+  },
+  render: () => <TwoLevelSidebar />,
+};
+
+/**
+ * The two levels on the icon rail. The back row shows only its chevron;
+ * hover it for its label. Press the trigger (or Ctrl/Cmd+B) to expand.
+ */
+export const TwoLevelsIconRail: Story = {
+  name: 'Two levels on the icon rail',
+  parameters: { layout: 'fullscreen' },
+  render: () => <TwoLevelSidebar defaultOpen={false} />,
+};
+
+/** Right to left: going deeper slides in from the left, the back chevron points right. */
+export const TwoLevelsRightToLeft: Story = {
+  name: 'Two levels, right to left',
+  parameters: { layout: 'fullscreen' },
+  render: () => <TwoLevelSidebar dir="rtl" />,
 };

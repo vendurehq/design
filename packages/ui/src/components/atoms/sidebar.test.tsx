@@ -8,6 +8,9 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarInset,
+  SidebarLevel,
+  SidebarLevelBack,
+  SidebarLevels,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -300,5 +303,56 @@ describe('One active icon', () => {
     expect(slotTokens(html, 'sidebar-menu-sub-button')).toContain(
       'data-active:[&>svg]:text-brand-indicator',
     );
+  });
+});
+
+describe('SidebarLevels', () => {
+  function levels(level: string) {
+    return renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarLevels level={level}>
+          <SidebarLevel value="root">Root</SidebarLevel>
+          <SidebarLevel value="cloud">
+            <SidebarLevelBack>Cloud</SidebarLevelBack>
+          </SidebarLevel>
+        </SidebarLevels>
+      </SidebarProvider>,
+    );
+  }
+  const level = (html: string, value: string) =>
+    html.match(new RegExp(`<div[^>]*data-value="${value}"[^>]*>`))?.[0] ?? '';
+
+  test('shows the controlled level; a deeper level waits at the end side, inert', () => {
+    const html = levels('root');
+    expect(level(html, 'root')).toContain('data-state="active"');
+    expect(level(html, 'root')).not.toContain('inert');
+    expect(level(html, 'cloud')).toContain('data-state="after"');
+    expect(level(html, 'cloud')).toContain('inert');
+  });
+
+  test('a level before the shown one waits at the start side', () => {
+    const html = levels('cloud');
+    expect(level(html, 'root')).toContain('data-state="before"');
+    expect(level(html, 'cloud')).toContain('data-state="active"');
+  });
+
+  test('slides 40px in 300ms on the drawer curve, and only fades under reduced motion', () => {
+    const tokens = slotTokens(levels('root'), 'sidebar-level');
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        'data-[state=after]:translate-x-10',
+        'rtl:data-[state=after]:-translate-x-10',
+        'data-[state=before]:-translate-x-10',
+        'motion-reduce:translate-x-0!',
+        'motion-reduce:blur-none!',
+      ]),
+    );
+    expect(tokens.join(' ')).toContain('translate_var(--transition-duration-slow)_var(--ease-drawer)');
+  });
+
+  test('the back row is a menu button with a chevron that flips right to left', () => {
+    const html = levels('cloud');
+    expect(html).toContain('data-sidebar="level-back"');
+    expect(html).toMatch(/lucide-chevron-left[^"]*rtl:rotate-180|rtl:rotate-180[^"]*lucide-chevron-left/);
   });
 });
