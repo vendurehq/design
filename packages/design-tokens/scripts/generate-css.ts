@@ -119,10 +119,28 @@ await Bun.write(resolve(cssDir, 'variables.css'), variablesCss);
 const shadcnDistDir = dirname(Bun.resolveSync('shadcn', __dirname));
 const shadcnCssPath = resolve(shadcnDistDir, 'tailwind.css');
 const shadcnPkg = await Bun.file(resolve(shadcnDistDir, '../package.json')).json();
+// The state variants (data-open, data-closed, data-checked, data-unchecked,
+// data-active) also match the Radix `data-state` value. Base UI sets the
+// data-* attribute itself, and nothing sets these `data-state` values, so the
+// branch is dropped: a `group-` or `has-` rule built on it makes every change
+// of `data-state` (a table row's `selected`) restyle the whole subtree.
+const radixStateBranches = ['open', 'closed', 'checked', 'unchecked', 'active'];
+function dropRadixStateBranches(css: string): string {
+  return radixStateBranches.reduce((out, state) => {
+    const branch = `  &:where([data-state="${state}"]),\n`;
+    if (out.split(branch).length !== 2) {
+      throw new Error(`shadcn tailwind.css: expected one data-state="${state}" branch; the vendored file changed`);
+    }
+    return out.replace(branch, '');
+  }, css);
+}
+
 const shadcnCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '/*',
-  ` * Vendored verbatim from shadcn@${shadcnPkg.version}'s tailwind.css. It defines`,
+  ` * Vendored from shadcn@${shadcnPkg.version}'s tailwind.css, without the Radix`,
+  ' * data-state branch of the data-open, data-closed, data-checked,',
+  ' * data-unchecked and data-active variants. It defines',
   ' * the @custom-variant data-* selectors (data-open, data-horizontal, ...), the',
   ' * no-scrollbar utility, and Base UI-aware accordion keyframes that the',
   ' * base-vega components in @vendure-io/ui rely on. Without it, e.g.',
@@ -131,7 +149,7 @@ const shadcnCss = [
   " * after tw-animate-css so shadcn's accordion keyframes win the cascade.",
   ' */',
   '',
-  await Bun.file(shadcnCssPath).text(),
+  dropRadixStateBranches(await Bun.file(shadcnCssPath).text()),
 ].join('\n');
 
 await Bun.write(resolve(cssDir, 'shadcn.css'), shadcnCss);
