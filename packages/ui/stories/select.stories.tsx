@@ -309,7 +309,6 @@ async function openList(trigger: HTMLElement) {
  * The story ends with the list open, and the accessibility check scans it.
  */
 export const OpenList: Story = {
-  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
   render: () => (
     <Select>
       <SelectTrigger aria-label="Fruit" className="w-[180px]">
@@ -330,7 +329,6 @@ export const OpenList: Story = {
 
 /** With a field label, the open list takes the label's text as its name. */
 export const OpenListFieldLabel: Story = {
-  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
   render: () => (
     <Field className="w-60">
       <FieldLabel htmlFor="select-open-country">Country</FieldLabel>
@@ -358,13 +356,12 @@ export const OpenListFieldLabel: Story = {
  * A list that is closing is hidden from assistive technology at once: its
  * trigger no longer points at it, and it can no longer be used. The list is
  * long, so it scrolls. The play function holds the list in its closing state,
- * so the accessibility check scans it while it closes: a script animation
- * keeps Base UI from unmounting it. (Storybook switches CSS transitions off
+ * so the accessibility check scans it while it closes: a paused script
+ * animation keeps Base UI from unmounting it, and the check's wait skips it. (Storybook switches CSS transitions off
  * when a play function ends in the test runner, so a long transition would
  * not hold it.)
  */
 export const ClosingList: Story = {
-  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
   render: () => (
     <Select defaultValue="country-20" items={COUNTRIES}>
       <SelectTrigger aria-label="Country" className="w-60">
@@ -381,7 +378,7 @@ export const ClosingList: Story = {
   ),
   play: async ({ canvasElement }) => {
     const popup = await openList(within(canvasElement).getByRole('combobox', { name: 'Country' }));
-    popup.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 100_000 });
+    popup.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 100_000 }).pause();
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(popup).toHaveAttribute('data-ending-style'));
     await expect(popup).toHaveAttribute('aria-hidden', 'true');
