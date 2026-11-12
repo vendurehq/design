@@ -110,7 +110,7 @@ behavior you need instead of rebuilding it from atoms.
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
 #### Feedback & identity
-`confirm-dialog`, `state-views/*`, `status-badge`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`
+`confirm-dialog`, `state-views/*`, `status-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`
 
 #### Data display
 `code-block`, `data-table/*`, `list-row`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
@@ -302,6 +302,23 @@ as a shipped order, gets a still icon and a neutral tone:
   Shipped
 </StatusBadge>
 ```
+
+`LiveIndicator` is the mark for a state that stays on: a live log stream, a
+service that runs right now. It is a 7px tone dot (success by default) with a
+soft ring that grows out of it and fades every 2.4s. Under reduced motion only
+the dot shows. The `progress` spinner stays for work that ends; the dot means
+"live":
+
+```tsx
+import { LiveIndicator } from "@vendure-io/ui/components/molecules/live-indicator";
+
+<LiveIndicator>Streaming</LiveIndicator>; // a visible label; the dot is hidden from screen readers
+<LiveIndicator label="Live" />; // the dot alone, with screen-reader text
+<LiveIndicator tone="info" pulse={false}>Streaming</LiveIndicator>; // still, beside a spinner
+```
+
+Leave out both `label` and `children` when the text next to the indicator
+already says the same: the indicator is then hidden from assistive technology.
 
 `detail` adds a second line under the label of `appearance="icon"`, with the
 one time that matters for the state. In a `DataTable` the row is 46px.

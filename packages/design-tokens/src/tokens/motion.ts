@@ -114,6 +114,11 @@ export const animation = {
   // A band crossing an indeterminate Progress bar at a constant speed: the
   // work runs, its length is unknown.
   progressSweep: 'progress-sweep 2.2s linear infinite',
+  // A soft ring that grows out of a live dot and fades, once per 2.4s, on the
+  // `out` curve: fast out of the dot, then a long fade. Slow and quiet, so a
+  // state that stays live for minutes does not read as urgent. Only
+  // LiveIndicator uses it.
+  livePulse: 'live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite',
 } as const;
 
 // Keyframe steps for the animations above, generated as top-level
@@ -131,5 +136,12 @@ export const keyframes = {
   progressSweep: {
     from: { transform: 'translateX(-100%)' },
     to: { transform: 'translateX(250%)' },
+  },
+  // The ring starts at the dot's size and 45% opacity, and is gone at 70%:
+  // the last 30% of each cycle is a rest with the dot alone.
+  livePulse: {
+    '0%': { transform: 'scale(1)', opacity: '0.45' },
+    '70%': { transform: 'scale(2.6)', opacity: '0' },
+    '100%': { transform: 'scale(2.6)', opacity: '0' },
   },
 } as const;
