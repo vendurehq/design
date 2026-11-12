@@ -231,6 +231,7 @@ function BreadcrumbMenu({
               <MenuPrimitive.RadioItem
                 key={option.value}
                 value={option.value}
+                closeOnClick={false}
                 data-slot="breadcrumb-menu-item"
                 className="group/breadcrumb-menu-item focus:bg-muted focus:text-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-checked:text-foreground data-checked:font-semibold data-disabled:pointer-events-none data-disabled:opacity-50"
               >

@@ -124,7 +124,8 @@ export const WithMenu: Story = {
     await userEvent.click(staging);
     await expect(staging).toHaveAttribute('aria-checked', 'true');
     // Picking keeps the menu open, so the check is seen moving.
-    await expect(menu).toBeVisible();
+    await expect(crumb).toHaveAttribute('aria-expanded', 'true');
+    await expect(menu).not.toHaveAttribute('data-closed');
     await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Environment: Staging' })).toBeInTheDocument());
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(crumb).toHaveFocus());
