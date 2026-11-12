@@ -65,7 +65,7 @@ interface ListRowProps extends React.ComponentProps<'div'> {
 }
 
 /**
- * One row of a list: 48px high, or taller with a ListRowMeta line. Content
+ * One row of a list: 48px high, or 60px with a ListRowMeta line. Content
  * starts 18px in and ends 16px from the edge, like a card header. With a
  * ListRowLink inside, the whole row opens the link and takes a `muted` hover
  * fill; keyboard focus on the link draws an inset ring around the row.
@@ -104,9 +104,9 @@ function ListRow({ className, enter, style, ...props }: ListRowProps) {
 }
 
 /**
- * The heading of a group of rows, such as a day ("Today", "Yesterday"). It
- * takes the rule above, so the first row under it drops its own. Renders a
- * `div`; pass `render={<h3 />}` when the groups belong in the page outline.
+ * The heading of a group of rows, such as a day ("Today", "Yesterday"): 34px,
+ * in `foreground-secondary`, a step above the row meta. It takes the rule
+ * above, so the first row under it drops its own. Renders a `div`; pass `render={<h3 />}` when the groups belong in the page outline.
  */
 function ListRowGroupHeading({ className, render, ...props }: useRender.ComponentProps<'div'>) {
   return useRender({
@@ -115,7 +115,7 @@ function ListRowGroupHeading({ className, render, ...props }: useRender.Componen
     props: mergeProps<'div'>(
       {
         className: cn(
-          'border-t border-border pt-3.5 pb-1.5 ps-4.5 pe-4 text-xs leading-4.5 font-semibold text-muted-foreground first:border-t-0',
+          'border-t border-border pt-4 pb-1.5 ps-4.5 pe-4 text-xs leading-3 font-semibold text-foreground-secondary first:border-t-0',
           className,
         ),
       },
@@ -195,7 +195,7 @@ function ListRowMeta({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="list-row-meta"
-      className={cn('truncate text-xs text-muted-foreground', className)}
+      className={cn('truncate text-xs leading-4.5 text-muted-foreground', className)}
       {...props}
     />
   );

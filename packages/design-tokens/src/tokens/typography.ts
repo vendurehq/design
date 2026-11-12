@@ -64,22 +64,32 @@ export const letterSpacing = {
 // leaves the wrap mode alone, so `truncate` and `whitespace-nowrap` still win.
 // Consumed as Tailwind utilities, e.g. `text-style-body`.
 export const textStyles = {
-  // 22px page title.
+  // 22px page title on a 26px line, so content under it lands on whole pixels.
   'page-title': {
     fontFamily: fontFamily.heading,
     fontSize: '1.375rem',
     fontWeight: fontWeight.semibold,
     letterSpacing: '-0.018em',
-    lineHeight: '1.2',
+    lineHeight: '1.625rem',
     textWrapStyle: 'balance',
   },
-  // 16px: section and dialog titles.
+  // 16px: section, sheet and empty-state titles.
   'section-title': {
     fontFamily: fontFamily.heading,
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
     letterSpacing: '-0.01em',
     lineHeight: '1.3',
+    textWrapStyle: 'balance',
+  },
+  // 16px dialog title on a 24px line: the section title with more room
+  // above the description.
+  'dialog-title': {
+    fontFamily: fontFamily.heading,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    letterSpacing: '-0.01em',
+    lineHeight: '1.5rem',
     textWrapStyle: 'balance',
   },
   // 14px: card and panel titles, one step above the 13px body.
