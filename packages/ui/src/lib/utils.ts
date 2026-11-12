@@ -11,7 +11,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 const twMerge = extendTailwindMerge<'text-style'>({
   extend: {
     theme: {
-      shadow: ['control', 'overlay'],
+      shadow: ['control', 'overlay', 'scrolled'],
       ease: ['default', 'spring', 'drawer', 'drawer-content', 'height', 'press', 'soft'],
       animate: ['shimmer', 'spin-slow', 'progress-sweep', 'live-pulse'],
     },

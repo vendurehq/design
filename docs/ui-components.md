@@ -180,6 +180,24 @@ import { DialogPrimitive } from "@vendure-io/ui/lib/base-ui";
 
 ## Hooks
 
+### `useScrolled()`
+
+A ref for a scroll container of your own. It sets `data-scrolled` on the element while its content is scrolled away from the top. A sticky header inside takes `in-data-scrolled:shadow-scrolled`: a 1px rule in the `input` colour, as under the log viewer header in the v3 look. Give the header a background and `z-10` so rows pass under it.
+
+```tsx
+import { useScrolled } from "@vendure-io/ui/hooks/use-scrolled";
+
+function Log({ lines }: { lines: string[] }) {
+  const scrolled = useScrolled<HTMLDivElement>();
+  return (
+    <div ref={scrolled} tabIndex={0} role="region" aria-label="Server log" className="h-72 overflow-y-auto">
+      <div className="bg-card sticky top-0 z-10 in-data-scrolled:shadow-scrolled">Message</div>
+      {lines.map((line) => <div key={line}>{line}</div>)}
+    </div>
+  );
+}
+```
+
 ### `useCopy()`
 
 Writes text to the clipboard and returns a `copied` flag that stays `true` for `timeout` ms (default 2000). `copy()` resolves `true` on success and `false` on failure. It never throws and never shows a toast.
