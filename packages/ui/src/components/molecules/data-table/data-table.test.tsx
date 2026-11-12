@@ -1111,7 +1111,7 @@ describe('DataTable card frame', () => {
     // The bar sits in the table's card slot, over the header row, and the
     // table marks its column labels to fade out under it.
     expect(selected).toMatch(
-      /data-slot="card-table"[^>]*>[^]*data-slot="data-table-bulk-actions"[^]*<table/,
+      /data-slot="card-table"[^>]*>[\s\S]*data-slot="data-table-bulk-actions"[\s\S]*<table/,
     );
     expect(selected).toContain('data-bulk-over-header=""');
 
