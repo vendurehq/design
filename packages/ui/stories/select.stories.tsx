@@ -3,6 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
+import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import {
   Select,
   SelectContent,
@@ -288,4 +289,101 @@ export const Invalid: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+/** Waits until the open list has finished its entry animation. */
+async function openList(trigger: HTMLElement) {
+  await userEvent.click(trigger);
+  const popup = await waitFor(() => {
+    const element = document.querySelector<HTMLElement>('[data-slot=select-content][data-open]');
+    expect(element).not.toBeNull();
+    expect(element?.hasAttribute('data-starting-style')).toBe(false);
+    return element as HTMLElement;
+  });
+  await Promise.all(popup.getAnimations().map((animation) => animation.finished));
+  return popup;
+}
+
+/**
+ * An open list takes the name of its Select: here the trigger's `aria-label`.
+ * The story ends with the list open, and the accessibility check scans it.
+ */
+export const OpenList: Story = {
+  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
+  render: () => (
+    <Select>
+      <SelectTrigger aria-label="Fruit" className="w-[180px]">
+        <SelectValue placeholder="Select a fruit" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="apple">Apple</SelectItem>
+        <SelectItem value="banana">Banana</SelectItem>
+        <SelectItem value="grapes">Grapes</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    await openList(within(canvasElement).getByRole('combobox', { name: 'Fruit' }));
+    await expect(document.querySelector('[role=listbox]')).toHaveAccessibleName('Fruit');
+  },
+};
+
+/** With a field label, the open list takes the label's text as its name. */
+export const OpenListFieldLabel: Story = {
+  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
+  render: () => (
+    <Field className="w-60">
+      <FieldLabel htmlFor="select-open-country">Country</FieldLabel>
+      <Select items={COUNTRIES.slice(0, 5)}>
+        <SelectTrigger id="select-open-country" className="w-full">
+          <SelectValue placeholder="Select a country" />
+        </SelectTrigger>
+        <SelectContent>
+          {COUNTRIES.slice(0, 5).map((country) => (
+            <SelectItem key={country.value} value={country.value}>
+              {country.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Field>
+  ),
+  play: async ({ canvasElement }) => {
+    await openList(within(canvasElement).getByRole('combobox', { name: 'Country' }));
+    await expect(document.querySelector('[role=listbox]')).toHaveAccessibleName('Country');
+  },
+};
+
+/**
+ * A list that is closing is hidden from assistive technology at once: its
+ * trigger no longer points at it, and it can no longer be used. The list is
+ * long, so it scrolls. The play function holds the list in its closing state,
+ * so the accessibility check scans it while it closes: a script animation
+ * keeps Base UI from unmounting it. (Storybook switches CSS transitions off
+ * when a play function ends in the test runner, so a long transition would
+ * not hold it.)
+ */
+export const ClosingList: Story = {
+  parameters: { a11y: { include: ['[data-slot=select-content]'] } },
+  render: () => (
+    <Select defaultValue="country-20" items={COUNTRIES}>
+      <SelectTrigger aria-label="Country" className="w-60">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent alignItemWithTrigger={false}>
+        {COUNTRIES.map((country) => (
+          <SelectItem key={country.value} value={country.value}>
+            {country.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    const popup = await openList(within(canvasElement).getByRole('combobox', { name: 'Country' }));
+    popup.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 100_000 });
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(popup).toHaveAttribute('data-ending-style'));
+    await expect(popup).toHaveAttribute('aria-hidden', 'true');
+  },
 };
