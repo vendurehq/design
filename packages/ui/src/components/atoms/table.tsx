@@ -65,7 +65,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 // wrong place). A MutationObserver covers a row that changes `data-state`
 // without this body re-rendering.
 function syncNextSelectedMarks(body: HTMLTableSectionElement) {
-  for (const row of body.children) {
+  for (let row = body.firstElementChild; row; row = row.nextElementSibling) {
     const mark =
       row.nextElementSibling?.getAttribute("data-state") === "selected"
     if (row.hasAttribute("data-next-selected") !== mark) {
