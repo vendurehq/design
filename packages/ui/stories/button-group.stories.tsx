@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
-import { ChevronDown, Copy, MoreHorizontal, Scissors } from 'lucide-react';
+import { expect, within } from 'storybook/test';
+import { Fragment, type ReactElement, type ReactNode } from 'react';
+import { Bold, ChevronDown, Copy, Italic, MoreHorizontal, Scissors, Underline } from 'lucide-react';
 import {
   ButtonGroup,
   ButtonGroupSeparator,
@@ -13,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 
 const meta = {
   title: 'Atoms/General/ButtonGroup',
@@ -152,4 +154,74 @@ export const LightAndDarkOverview: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+const FORMATS = [
+  { label: 'Bold', icon: Bold },
+  { label: 'Italic', icon: Italic },
+  { label: 'Underline', icon: Underline },
+] as const;
+
+/** The same controls with or without a tooltip on each button. */
+function FormatControls({ tooltips }: { tooltips: boolean }) {
+  const wrap = (label: string, button: ReactElement) =>
+    tooltips ? (
+      <Tooltip key={label}>
+        <TooltipTrigger render={button} />
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    ) : (
+      <Fragment key={label}>{button}</Fragment>
+    );
+  const prefix = tooltips ? 'With tooltip' : 'Plain';
+  return (
+    <div className="flex items-center gap-4" data-testid={tooltips ? 'tooltips' : 'plain'}>
+      <ButtonGroup aria-label={`${prefix} group`}>
+        {FORMATS.map(({ label }) => wrap(label, <Button variant="outline">{label}</Button>))}
+      </ButtonGroup>
+      <div className="flex items-center" aria-label={`${prefix} icons`} role="toolbar">
+        {FORMATS.map(({ label, icon: Icon }) =>
+          wrap(
+            label,
+            <Button variant="ghost" size="icon-sm" aria-label={label}>
+              <Icon />
+            </Button>,
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A Button used as a tooltip trigger keeps its own slot (`data-slot="button"`)
+ * and gains `data-tooltip-trigger`. The group with tooltips and the row of
+ * small icon buttons with tooltips look the same as the plain ones below:
+ * the joined edges and corners, and each icon button's click area.
+ */
+export const WithTooltips: Story = {
+  render: () => (
+    <TooltipProvider>
+      <div className="flex flex-col gap-4">
+        <FormatControls tooltips />
+        <FormatControls tooltips={false} />
+      </div>
+    </TooltipProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const look = (element: Element) => {
+      const style = getComputedStyle(element);
+      const area = getComputedStyle(element, '::before');
+      return [style.borderRadius, style.borderColor, style.boxShadow, style.backgroundClip, area.width, area.height].join(' | ');
+    };
+    const withTips = canvas.getByTestId('tooltips').querySelectorAll('button');
+    const plain = canvas.getByTestId('plain').querySelectorAll('button');
+    expect(withTips).toHaveLength(plain.length);
+    withTips.forEach((button, index) => {
+      expect(button).toHaveAttribute('data-slot', 'button');
+      expect(button).toHaveAttribute('data-tooltip-trigger');
+      expect(look(button)).toBe(look(plain[index] as Element));
+    });
+  },
 };

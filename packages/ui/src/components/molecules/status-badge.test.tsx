@@ -407,7 +407,7 @@ describe('StatusBadge as a tooltip trigger', () => {
           <TooltipContent>Worker restarting since 09:12</TooltipContent>
         </Tooltip>
       </TooltipProvider>,
-    ).match(/<span[^>]*data-slot="tooltip-trigger"[^>]*>/)?.[0] ?? '';
+    ).match(/<span[^>]*data-tooltip-trigger=""[^>]*>/)?.[0] ?? '';
 
   test('a chip is a tab stop with the hover fill and the focus ring', () => {
     const tag = trigger(<StatusBadge tone="warning">Degraded</StatusBadge>);

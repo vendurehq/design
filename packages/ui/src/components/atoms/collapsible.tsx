@@ -1,6 +1,7 @@
 "use client"
 
 import { Collapsible as CollapsiblePrimitive } from "@base-ui/react/collapsible"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
   return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
@@ -8,7 +9,7 @@ function Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {
 
 function CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {
   return (
-    <CollapsiblePrimitive.Trigger data-slot="collapsible-trigger" {...props} />
+    <CollapsiblePrimitive.Trigger {...triggerSlot("collapsible-trigger", props.render)} {...props} />
   )
 }
 
