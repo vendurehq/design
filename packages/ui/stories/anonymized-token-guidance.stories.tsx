@@ -134,7 +134,7 @@ export const ChoosingTheTool: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="The user owns this newly issued registry token. It renders as a blurred prefix/tail preview, sharpens on hover/focus, copies in full on command, and is not exposed through a hover title."
+            caption="The user owns this registry token. It renders as a blurred prefix/tail preview, sharpens on hover/focus, copies in full on command, and is not exposed through a hover title."
           >
             <AnonymizedToken value={SECRET_TOKEN} />
           </Example>

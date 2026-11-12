@@ -75,7 +75,7 @@ const TOOLS: { tool: string; sample: ReactNode; use: string }[] = [
   {
     tool: 'AnonymizedToken',
     sample: <AnonymizedToken value={ACCESS_TOKEN} />,
-    use: 'Secret-like values that are already on the client, such as a newly issued access token. A blurred prefix and tail at rest, sharp on hover or focus.',
+    use: 'Secret-like values that are already on the client. A secret that was just issued and is shown once is an IssuedSecret instead. A blurred prefix and tail at rest, sharp on hover or focus.',
   },
 ];
 

@@ -29,8 +29,9 @@ Render secret-like values as protected, copyable previews rather than exposed te
 - **Reveal only through deliberate interaction:** Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.
 - **Do not render the full value elsewhere:** A protected token loses its purpose if the same secret is also present as visible text, a title, or an accessible label.
 - **Value on the client, not loaded on request:** Use AnonymizedToken when the full value is already on the client. When the server returns the value only on request, use SecretValue.
+- **A secret that was just issued is IssuedSecret:** A new API key, token or initial password is copy-only: use IssuedSecret, which never renders the value. Do not show it as an AnonymizedToken.
 
-Related decisions: `copyable-text`, `id-chip`, `secret-value`.
+Related decisions: `copyable-text`, `id-chip`, `issued-secret`, `secret-value`.
 ## AppShell
 
 Use the shared application anatomy without moving app-owned routing or context into the shell.
@@ -255,6 +256,17 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **A lookup key that names the row is still a chip:** When the lookup key is also the row's name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.
 
 Related decisions: `anonymized-token`, `copyable-text`.
+## IssuedSecret
+
+Hand over a secret that was just issued, such as a new API key, as copy-only: never rendered, with a guard before the dialog closes.
+
+- **Never render the value:** The value is never on screen: no text, no blur, no reveal on hover. One button copies it, or one button per format (the plain value, a .env line). The value shows only when the clipboard write fails, in a read-only field for a copy by hand.
+- **Close before a copy warns once:** Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes.
+- **One primary at a time:** The first copy button is the primary until the first copy. Then Done takes the primary look. Do not add a second primary to the dialog.
+- **Say where each format goes:** Give each format a label that says what it copies and a hint that says where it goes. A hint may show the form with a placeholder, never the secret.
+- **Stored secrets are SecretValue:** A secret the user can load again later, such as an environment variable value, is a SecretValue. IssuedSecret is only for a value the system shows once.
+
+Related decisions: `secret-value`, `anonymized-token`, `confirm-dialog`.
 ## ListHeader
 
 Use list-page chrome without duplicating PageHeader or the DataTable engine.
@@ -274,6 +286,7 @@ Render a short list of entities where each row opens one detail page from any po
 - **The link holds the title only:** The link text is the accessible name of the row. Put who, how many, and how long in ListRowMeta, and state in a StatusBadge in ListRowTrailing.
 - **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.
 - **Hidden actions are never the only way:** ListRowActions appears on hover or focus. Every action in it is also available on the detail page.
+- **One action takes the last value's place:** When a row has one action and ends with a value (a size, a count), put both in a ListRowSwap: the value holds the row end at rest, and the action fades in its place on hover, on focus and on touch screens. Use ListRowActions for a menu or more than one action. Name the action after its row (`Restore to today, 01:00`).
 - **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
 - **Only rows added later animate:** Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.
 
@@ -343,10 +356,11 @@ Show a secret that the server returns only on request as a fixed mask, loaded an
 - **Loaded on request, not on the client:** Use SecretValue when the server returns the value only on request, such as an environment variable value. When the full value is already on the client, use AnonymizedToken.
 - **Reveal is a click, never hover:** Each load is a server read that may be audited. Load and reveal only on a click of the reveal button, never on hover or focus.
 - **The consumer owns the fetch:** Pass loadValue. SecretValue owns the hidden, loading, revealed and error states. Do not fetch every secret up front to fill a value.
+- **A secret shown once is IssuedSecret:** A secret that was just issued and cannot be loaded again, such as a new API key, is copy-only: use IssuedSecret.
 - **Hide clears the value:** Hiding drops the loaded value from state. Copy while hidden loads the value and copies it without revealing it.
 - **The value never goes in a title or label:** The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.
 
-Related decisions: `anonymized-token`, `copyable-text`.
+Related decisions: `anonymized-token`, `copyable-text`, `issued-secret`.
 ## Sidebar
 
 For the current page, exactly one icon in the sidebar takes the active colour: the current item's own icon, or its group's icon.

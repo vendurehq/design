@@ -58,8 +58,12 @@ export const uiGuidance = [
         title: 'Value on the client, not loaded on request',
         body: 'Use AnonymizedToken when the full value is already on the client. When the server returns the value only on request, use SecretValue.',
       },
+      {
+        title: 'A secret that was just issued is IssuedSecret',
+        body: 'A new API key, token or initial password is copy-only: use IssuedSecret, which never renders the value. Do not show it as an AnonymizedToken.',
+      },
     ],
-    related: ['copyable-text', 'id-chip', 'secret-value'],
+    related: ['copyable-text', 'id-chip', 'issued-secret', 'secret-value'],
   },
   {
     id: 'app-shell',
@@ -624,6 +628,36 @@ export const uiGuidance = [
     related: ['anonymized-token', 'copyable-text'],
   },
   {
+    id: 'issued-secret',
+    title: 'IssuedSecret',
+    summary:
+      'Hand over a secret that was just issued, such as a new API key, as copy-only: never rendered, with a guard before the dialog closes.',
+    sourceStory: 'issued-secret-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Never render the value',
+        body: 'The value is never on screen: no text, no blur, no reveal on hover. One button copies it, or one button per format (the plain value, a .env line). The value shows only when the clipboard write fails, in a read-only field for a copy by hand.',
+      },
+      {
+        title: 'Close before a copy warns once',
+        body: 'Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes.',
+      },
+      {
+        title: 'One primary at a time',
+        body: 'The first copy button is the primary until the first copy. Then Done takes the primary look. Do not add a second primary to the dialog.',
+      },
+      {
+        title: 'Say where each format goes',
+        body: 'Give each format a label that says what it copies and a hint that says where it goes. A hint may show the form with a placeholder, never the secret.',
+      },
+      {
+        title: 'Stored secrets are SecretValue',
+        body: 'A secret the user can load again later, such as an environment variable value, is a SecretValue. IssuedSecret is only for a value the system shows once.',
+      },
+    ],
+    related: ['secret-value', 'anonymized-token', 'confirm-dialog'],
+  },
+  {
     id: 'list-header',
     title: 'ListHeader',
     summary: 'Use list-page chrome without duplicating PageHeader or the DataTable engine.',
@@ -674,6 +708,10 @@ export const uiGuidance = [
       {
         title: 'Hidden actions are never the only way',
         body: 'ListRowActions appears on hover or focus. Every action in it is also available on the detail page.',
+      },
+      {
+        title: "One action takes the last value's place",
+        body: 'When a row has one action and ends with a value (a size, a count), put both in a ListRowSwap: the value holds the row end at rest, and the action fades in its place on hover, on focus and on touch screens. Use ListRowActions for a menu or more than one action. Name the action after its row (`Restore to today, 01:00`).',
       },
       {
         title: 'Group rows under a heading, not in a wrapper',
@@ -844,6 +882,10 @@ export const uiGuidance = [
         body: 'Pass loadValue. SecretValue owns the hidden, loading, revealed and error states. Do not fetch every secret up front to fill a value.',
       },
       {
+        title: 'A secret shown once is IssuedSecret',
+        body: 'A secret that was just issued and cannot be loaded again, such as a new API key, is copy-only: use IssuedSecret.',
+      },
+      {
         title: 'Hide clears the value',
         body: 'Hiding drops the loaded value from state. Copy while hidden loads the value and copies it without revealing it.',
       },
@@ -852,7 +894,7 @@ export const uiGuidance = [
         body: 'The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.',
       },
     ],
-    related: ['anonymized-token', 'copyable-text'],
+    related: ['anonymized-token', 'copyable-text', 'issued-secret'],
   },
   {
     id: 'sidebar',
