@@ -23,7 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@vendure-io/ui/components/atoms/tooltip"
-import { PanelLeftIcon } from "lucide-react"
+import { ChevronLeftIcon, PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -844,6 +844,175 @@ function SidebarMenuSubButton({
   })
 }
 
+type SidebarLevelsContextProps = {
+  level: string
+  ready: boolean
+  order: string[]
+}
+
+const SidebarLevelsContext =
+  React.createContext<SidebarLevelsContextProps | null>(null)
+
+/**
+ * Holds the levels of a drill-down sidebar: one `SidebarLevel` per level, as
+ * direct children, in order from the first level to the deepest. Exactly one level shows: the one
+ * whose `value` is `level`. The consumer controls `level` (it follows the
+ * route). Going deeper slides the new level in from the end side and the old
+ * one out to the start side; going back slides the other way. Hidden levels
+ * are inert. When focus was in the sidebar, it moves to the new level's first
+ * item, and on the way back to the item that opened the level.
+ */
+function SidebarLevels({
+  level,
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** The `value` of the `SidebarLevel` that shows. */
+  level: string
+}) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  // The order of the levels says which way to slide.
+  const order = React.Children.toArray(children).flatMap((child) =>
+    React.isValidElement<{ value?: unknown }>(child) &&
+    typeof child.props.value === "string"
+      ? [child.props.value]
+      : []
+  )
+  const orderRef = React.useRef(order)
+  orderRef.current = order
+  const [ready, setReady] = React.useState(false)
+  const previous = React.useRef(level)
+  // The item that opened each level, so going back can return focus to it.
+  const openers = React.useRef(new Map<string, HTMLElement>())
+
+  React.useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true))
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  React.useLayoutEffect(() => {
+    const from = previous.current
+    previous.current = level
+    const root = ref.current
+    if (from === level || !root) {
+      return
+    }
+    const focused = document.activeElement
+    if (!(focused instanceof HTMLElement) || !root.contains(focused)) {
+      return
+    }
+    const deeper =
+      orderRef.current.indexOf(level) > orderRef.current.indexOf(from)
+    const panel = root.querySelector<HTMLElement>(
+      `[data-slot="sidebar-level"][data-value="${CSS.escape(level)}"]`
+    )
+    if (!panel) {
+      return
+    }
+    if (deeper) {
+      openers.current.set(level, focused)
+    }
+    const opener = deeper ? undefined : openers.current.get(from)
+    const target =
+      opener && panel.contains(opener)
+        ? opener
+        : panel.querySelector<HTMLElement>(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+    target?.focus({ preventScroll: true })
+  }, [level])
+
+  // A new value each render is fine: the levels re-render with this one anyway.
+  const value = { level, ready, order }
+
+  return (
+    <SidebarLevelsContext.Provider value={value}>
+      <div
+        ref={ref}
+        data-slot="sidebar-levels"
+        data-sidebar="levels"
+        className={cn("relative min-h-0 flex-1 overflow-hidden", className)}
+        {...props}
+      >
+        {children}
+      </div>
+    </SidebarLevelsContext.Provider>
+  )
+}
+
+/**
+ * One level of `SidebarLevels`. Put its groups and menus inside, and start a
+ * second level with `SidebarLevelBack`. Each level has its own menus, so the
+ * active pill never slides from one level to the other.
+ */
+function SidebarLevel({
+  value,
+  className,
+  ...props
+}: React.ComponentProps<"div"> & {
+  /** Names the level; `SidebarLevels` shows the level whose value is `level`. */
+  value: string
+}) {
+  const context = React.useContext(SidebarLevelsContext)
+  if (!context) {
+    throw new Error("SidebarLevel must be used within SidebarLevels.")
+  }
+  const { level, ready, order } = context
+  const index = order.indexOf(value)
+  const activeIndex = order.indexOf(level)
+  const state =
+    value === level ? "active" : index < activeIndex ? "before" : "after"
+
+  return (
+    <div
+      data-slot="sidebar-level"
+      data-sidebar="level"
+      data-value={value}
+      data-state={state}
+      data-ready={ready ? "" : undefined}
+      inert={state !== "active"}
+      className={cn(
+        "no-scrollbar absolute inset-0 flex min-h-0 flex-col gap-1 overflow-y-auto group-data-[collapsible=icon]:overflow-hidden",
+        "data-[state=before]:-translate-x-10 rtl:data-[state=before]:translate-x-10 data-[state=after]:translate-x-10 rtl:data-[state=after]:-translate-x-10",
+        "data-[state=before]:invisible data-[state=after]:invisible data-[state=before]:opacity-0 data-[state=after]:opacity-0 data-[state=before]:blur-[2px] data-[state=after]:blur-[2px] data-[state=before]:pointer-events-none data-[state=after]:pointer-events-none",
+        "data-ready:[transition:translate_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-normal)_var(--ease-soft),filter_var(--transition-duration-normal)_var(--ease-soft),visibility_0s]",
+        "data-ready:data-[state=before]:[transition:translate_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft),filter_var(--transition-duration-moderate)_var(--ease-soft),visibility_0s_linear_var(--transition-duration-slow)]",
+        "data-ready:data-[state=after]:[transition:translate_var(--transition-duration-slow)_var(--ease-drawer),opacity_var(--transition-duration-moderate)_var(--ease-soft),filter_var(--transition-duration-moderate)_var(--ease-soft),visibility_0s_linear_var(--transition-duration-slow)]",
+        "motion-reduce:translate-x-0! motion-reduce:blur-none!",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * The first row of a second level: a chevron and the area's name. It returns
+ * to the level before; the consumer changes `level` in `onClick` (or renders
+ * a link with `render`). In the icon rail only the chevron shows: give it a
+ * `tooltip` that says where it goes.
+ */
+function SidebarLevelBack({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof SidebarMenuButton>) {
+  return (
+    <SidebarMenuButton
+      data-sidebar="level-back"
+      className={cn(
+        "text-sidebar-accent-foreground mb-2 font-semibold [&>svg:first-child]:opacity-85 [&>svg:first-child]:transition-[opacity,translate] [&>svg:first-child]:duration-normal [&>svg:first-child]:ease-out hover:[&>svg:first-child]:-translate-x-0.5 rtl:hover:[&>svg:first-child]:translate-x-0.5 motion-reduce:hover:[&>svg:first-child]:translate-x-0",
+        className
+      )}
+      {...props}
+    >
+      <ChevronLeftIcon className="rtl:rotate-180" />
+      <span>{children}</span>
+    </SidebarMenuButton>
+  )
+}
+
 export {
   Sidebar,
   SidebarContent,
@@ -855,6 +1024,9 @@ export {
   SidebarHeader,
   SidebarInput,
   SidebarInset,
+  SidebarLevel,
+  SidebarLevelBack,
+  SidebarLevels,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuBadge,

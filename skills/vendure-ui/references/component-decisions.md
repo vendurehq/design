@@ -354,7 +354,8 @@ For the current page, exactly one icon in the sidebar takes the active colour: t
 - **One icon shows the current page:** If the current item has its own icon, only that icon takes the active colour and its group's icon stays neutral. If the current item has no icon, its group's icon takes it. In the icon rail the nested items are hidden, so the group's icon takes it.
 - **Set hasActiveChild on every group that holds the current page:** Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `isActive` on the nested SidebarMenuSubButton as well.
 - **A closed group still lights its icon:** Keep `hasActiveChild` on a group whose nested items are not mounted: its icon is then the one that takes the active colour.
-- **The group gets no fill and no bar:** `hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the fill and the bar. Never set both on one button.
+- **The group gets no fill and no bar:** `hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the sliding pill (or the fill and the bar in a SidebarMenu with `slidingIndicator={false}`). Never set both on one button.
+- **An area with its own navigation is a second level:** Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.
