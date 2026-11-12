@@ -5,6 +5,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { expectInsidePadding } from './overlay-bounds.ts';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -208,6 +209,40 @@ const billingFields = [
  * header and the footer stay in view. Here the footer sits inside the form,
  * as it does when the form submits on Enter.
  */
+/**
+ * A row of fields wider than the dialog. The dialog keeps its width and its
+ * padding: the row gets the width inside the padding, and the date field
+ * shrinks and truncates its text.
+ */
+export const WideRow: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Filter</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Filter by created date</DialogTitle>
+        </DialogHeader>
+        <div className="flex gap-2">
+          <Button variant="outline" className="shrink-0">is equal to</Button>
+          <Button variant="outline" className="min-w-0 flex-1 justify-start">
+            <span className="truncate">Pick a date and time for the start of the range</span>
+          </Button>
+          <Input type="time" aria-label="Time" className="w-28 shrink-0" />
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button />}>Apply filter</DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Filter' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+    await expectInsidePadding(dialog);
+  },
+};
+
 export const TallForm: Story = {
   render: () => (
     <Dialog>

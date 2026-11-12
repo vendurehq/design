@@ -50,6 +50,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '../src/components/atoms/collapsible.tsx';
+import { Avatar, AvatarFallback } from '../src/components/atoms/avatar.tsx';
 
 const meta = {
   title: 'Atoms/Layout/Sidebar',
@@ -794,6 +795,81 @@ export const DashboardNavigation: Story = {
       </SidebarProvider>
     );
   },
+};
+
+/** A header switcher with a wrapped icon and a footer account with an Avatar. */
+function SwitcherAndAccount() {
+  return (
+    <>
+      <Sidebar collapsible="icon">
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" tooltip="Default channel" data-testid="switcher">
+                <span
+                  data-testid="switcher-icon"
+                  className="bg-background flex size-8 shrink-0 items-center justify-center rounded-lg border"
+                >
+                  <PackageIcon />
+                </span>
+                <span data-testid="switcher-label">Default channel</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SlidingMenu tooltips />
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton size="lg" tooltip="Ada Lovelace" data-testid="account">
+                <Avatar data-testid="account-avatar">
+                  <AvatarFallback>AL</AvatarFallback>
+                </Avatar>
+                <span data-testid="account-label">Ada Lovelace</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-13 items-center gap-2 border-b px-3">
+          <SidebarTrigger />
+          <span className="text-sm font-medium">Home</span>
+        </header>
+        <div className="flex-1 p-5">
+          <p className="text-muted-foreground text-sm">Main content area</p>
+        </div>
+      </SidebarInset>
+    </>
+  );
+}
+
+/**
+ * The icon rail hides the label of a menu button, not its media. A header
+ * switcher whose icon sits in a wrapping span, and a footer account with an
+ * Avatar, keep the icon and the avatar in the rail; only the label text fades.
+ * Starts collapsed. Press the trigger (or Ctrl/Cmd+B) to expand.
+ */
+export const IconRailWithAvatarAndWrappedIcon: Story = {
+  name: 'Icon rail with a wrapped icon and an avatar',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const opacity = (id: string) => getComputedStyle(canvas.getByTestId(id)).opacity;
+    await waitFor(() => expect(opacity('switcher-label')).toBe('0'));
+    await waitFor(() => expect(opacity('account-label')).toBe('0'));
+    expect(opacity('switcher-icon')).toBe('1');
+    expect(opacity('account-avatar')).toBe('1');
+  },
+  render: () => (
+    <SidebarProvider defaultOpen={false}>
+      <SwitcherAndAccount />
+    </SidebarProvider>
+  ),
 };
 
 const rootNav = [

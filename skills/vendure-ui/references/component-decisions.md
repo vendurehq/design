@@ -39,6 +39,7 @@ Use the shared application anatomy without moving app-owned routing or context i
 - **Compose one main landmark with Sidebar:** When using the collapsible Sidebar atom, render SidebarInset as a div and keep AppShellMain as the single focusable main landmark.
 - **The consumer owns application state:** Keep routing, navigation data, authentication, permissions, and context switching in the consumer.
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
+- **Search opens the palette from the top bar:** Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.
 
 Related decisions: `page-header`.
 ## ArrowLink
@@ -391,6 +392,7 @@ Map domain states to the six shared tones by consequence for the viewer.
 - **Status comes after the name, never at an edge:** In a table or list the name comes first and the status directly after it. A StatusBadge chip is never in the first or the last column: it would sit against the edge of the list.
 - **A status column is an icon and a label, with the icon in its tone colour:** Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. An orders list shows one line per order with no time under it: a blue icon for an order to fulfil (Payment settled), a grey truck for Shipped, a green check for Delivered, a grey slash for Cancelled and a red icon for a declined payment. Labels are words ("Payment settled"), not code words. Give each group of states its own icon shape, so the column reads without colour. Don't: plain coloured text (appearance="text") in a column, a grey icon for a finished success, a coloured label, or a chip in every row.
 - **A spinner means work that runs right now:** Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.
+- **A live dot means a state that stays on:** Use LiveIndicator, a tone dot with a soft pulsing ring, for a state that stays on rather than ends: a live log stream, a service that runs right now. Keep the progress spinner for work that ends. Pass pulse={false} where a spinner or progress sweep on the same page already moves for the same state. Give the dot a visible label or a label prop, or leave both out when the text beside it says the same.
 - **A chip marks only the exception:** Do: a chip or badge signals importance, so use its colour sparingly: put a chip only on the exception that needs attention, and show nothing for the normal state, when the normal state is far more common. Example: a products list shows no mark on an enabled product and a "Disabled" chip on a disabled one. Don't: a chip on every row, or a chip for the normal state. A table where every row has a status uses the icon and label instead.
 - **The second line holds one time:** Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Write each time once, with no Tooltip around it: <ElapsedTime since={startedAt} tooltip /> for a count, <RelativeTime value={finishedAt} start={startedAt} /> for a finished state (its tooltip shows the range and the duration), and your own word "for" before <RelativeTime value={since} display="duration" /> for a state that continues. Under the label each time is a tab stop and its tooltip opens beside the status block, so the label stays readable and the table needs no Duration or Created column.
 - **The chip brings its own icon:** Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.
@@ -416,6 +418,18 @@ Use the standalone collection footer only when DataTable is not coordinating pag
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## Timeline
+
+Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.
+
+- **Events to read, entities to open:** Use Timeline for a feed of events about one thing: crashes and restarts of a server, the history of an order. Use ListRow when each line is an entity the user opens, such as a deployment.
+- **Quiet normal, loud abnormal:** Most entries stay neutral. Give an entry a tone only for a consequence: success for a deployment that went live, warning for a restart, critical for a failure. When a banner on the page already names the problem, its entries go neutral.
+- **A sentence, then the time:** TimelineTitle is one sentence of what happened. TimelineMeta holds a RelativeTime and, when it matters, who did it. Put a note, an amount or a state change in TimelineDetail, never in the sentence.
+- **Icons name the kind, dots mark the minor:** Give TimelineMarker an icon for the main kinds of entry (shipped, paid, note). Minor entries keep the dot, so the feed shows its main events at a glance.
+- **One link per entry, over the whole entry:** When an entry opens a page, its sentence is a TimelineLink. It covers the whole entry. Buttons in TimelineDetail keep their own click.
+- **Group by day with a heading before each group:** Put a TimelineGroupHeading before each day, then that day's own Timeline. Only entries added while the page is open take enter="new".
+
+Related decisions: `list-row`, `status-badge`, `date-time`.
 ## Tooltip
 
 A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.

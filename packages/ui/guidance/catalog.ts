@@ -84,6 +84,10 @@ export const uiGuidance = [
         title: 'Use one shell per application surface',
         body: 'Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.',
       },
+      {
+        title: 'Search opens the palette from the top bar',
+        body: 'Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.',
+      },
     ],
     related: ['page-header'],
   },
@@ -985,6 +989,10 @@ export const uiGuidance = [
         body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
       },
       {
+        title: 'A live dot means a state that stays on',
+        body: 'Use LiveIndicator, a tone dot with a soft pulsing ring, for a state that stays on rather than ends: a live log stream, a service that runs right now. Keep the progress spinner for work that ends. Pass pulse={false} where a spinner or progress sweep on the same page already moves for the same state. Give the dot a visible label or a label prop, or leave both out when the text beside it says the same.',
+      },
+      {
         title: 'A chip marks only the exception',
         body: 'Do: a chip or badge signals importance, so use its colour sparingly: put a chip only on the exception that needs attention, and show nothing for the normal state, when the normal state is far more common. Example: a products list shows no mark on an enabled product and a "Disabled" chip on a disabled one. Don\'t: a chip on every row, or a chip for the normal state. A table where every row has a status uses the icon and label instead.',
       },
@@ -1036,6 +1044,40 @@ export const uiGuidance = [
       },
     ],
     related: ['data-table', 'list-header'],
+  },
+  {
+    id: 'timeline',
+    title: 'Timeline',
+    summary:
+      'Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.',
+    sourceStory: 'timeline-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Events to read, entities to open',
+        body: 'Use Timeline for a feed of events about one thing: crashes and restarts of a server, the history of an order. Use ListRow when each line is an entity the user opens, such as a deployment.',
+      },
+      {
+        title: 'Quiet normal, loud abnormal',
+        body: 'Most entries stay neutral. Give an entry a tone only for a consequence: success for a deployment that went live, warning for a restart, critical for a failure. When a banner on the page already names the problem, its entries go neutral.',
+      },
+      {
+        title: 'A sentence, then the time',
+        body: 'TimelineTitle is one sentence of what happened. TimelineMeta holds a RelativeTime and, when it matters, who did it. Put a note, an amount or a state change in TimelineDetail, never in the sentence.',
+      },
+      {
+        title: 'Icons name the kind, dots mark the minor',
+        body: 'Give TimelineMarker an icon for the main kinds of entry (shipped, paid, note). Minor entries keep the dot, so the feed shows its main events at a glance.',
+      },
+      {
+        title: 'One link per entry, over the whole entry',
+        body: 'When an entry opens a page, its sentence is a TimelineLink. It covers the whole entry. Buttons in TimelineDetail keep their own click.',
+      },
+      {
+        title: 'Group by day with a heading before each group',
+        body: 'Put a TimelineGroupHeading before each day, then that day\'s own Timeline. Only entries added while the page is open take enter="new".',
+      },
+    ],
+    related: ['list-row', 'status-badge', 'date-time'],
   },
   {
     id: 'tooltip',
