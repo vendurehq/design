@@ -418,6 +418,18 @@ Use the standalone collection footer only when DataTable is not coordinating pag
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## Timeline
+
+Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.
+
+- **Events to read, entities to open:** Use Timeline for a feed of events about one thing: crashes and restarts of a server, the history of an order. Use ListRow when each line is an entity the user opens, such as a deployment.
+- **Quiet normal, loud abnormal:** Most entries stay neutral. Give an entry a tone only for a consequence: success for a deployment that went live, warning for a restart, critical for a failure. When a banner on the page already names the problem, its entries go neutral.
+- **A sentence, then the time:** TimelineTitle is one sentence of what happened. TimelineMeta holds a RelativeTime and, when it matters, who did it. Put a note, an amount or a state change in TimelineDetail, never in the sentence.
+- **Icons name the kind, dots mark the minor:** Give TimelineMarker an icon for the main kinds of entry (shipped, paid, note). Minor entries keep the dot, so the feed shows its main events at a glance.
+- **One link per entry, over the whole entry:** When an entry opens a page, its sentence is a TimelineLink. It covers the whole entry. Buttons in TimelineDetail keep their own click.
+- **Group by day with a heading before each group:** Put a TimelineGroupHeading before each day, then that day's own Timeline. Only entries added while the page is open take enter="new".
+
+Related decisions: `list-row`, `status-badge`, `date-time`.
 ## Tooltip
 
 A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.
