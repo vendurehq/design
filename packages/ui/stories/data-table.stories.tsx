@@ -1702,10 +1702,11 @@ export const SelectionMotion: Story = {
     ];
     const FULL = ['inset(0px 0px calc(50% - 0.5px))', 'inset(calc(50% - 0.5px) 0px 0px)'];
 
-    await step('selecting rows 2 and 4 opens the bulk band', async () => {
+    await step('selecting rows 2 and 4 shows the bulk bar', async () => {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 4' }));
-      await expect(await canvas.findByText('2 selected')).toBeVisible();
+      // It fades in once the column labels it covers have faded out.
+      await waitFor(() => expect(canvas.getByText('2 selected')).toBeVisible());
     });
 
     await step('a selected row shows the whole bar in the brand colour', async () => {
@@ -3004,27 +3005,144 @@ export const BulkBarHoldsTheTable: Story = {
   },
 };
 
-// With a title and no controls row, the bulk bar opens its own row: its height
-// eases open and closed, so the table moves down and back through in-between
-// frames instead of jumping in one.
-export const BulkBarOpensItsRow: Story = {
-  name: 'Bulk bar · opens its own row under a title',
-  render: () => <RippleTable count={10} />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
-    for (const act of ['select', 'clear']) {
-      const tops = await rowTopsDuring(canvasElement, () => userEvent.click(selectAll));
-      const first = tops[0] as number;
-      const total = (tops.at(-1) as number) - first;
-      await expect(Math.abs(total)).toBeGreaterThan(20);
-      // At least one frame shows the table part of the way: it eased, it did
-      // not jump. (A slow machine may skip most frames, so this asks for one.)
-      const between = tops.some((top) => {
-        const progress = (top - first) / total;
-        return progress > 0.02 && progress < 0.98;
-      });
-      await expect({ act, between }).toEqual({ act, between: true });
+/**
+ * Where the column header row is, relative to the story, and where each of its
+ * cells starts, sampled each frame for `ms` after `act`.
+ */
+async function headerRowDuring(
+  canvasElement: HTMLElement,
+  act: () => Promise<void> | void,
+  ms = 500,
+) {
+  const sample = () => {
+    const row = canvasElement.querySelector('thead tr') as HTMLElement;
+    const origin = canvasElement.getBoundingClientRect();
+    return {
+      top: Math.round(row.getBoundingClientRect().top - origin.top),
+      starts: [...row.children].map((cell) =>
+        Math.round(cell.getBoundingClientRect().left - origin.left),
+      ),
+    };
+  };
+  const samples = [sample()];
+  await act();
+  const start = performance.now();
+  while (performance.now() - start < ms) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    samples.push(sample());
+  }
+  return samples;
+}
+
+// Selecting the first row and clearing it move neither the column header row
+// nor any column, in any frame: the bar never pushes the table.
+const playHeaderRowStays: Story['play'] = async ({ canvasElement, step }) => {
+  const canvas = within(canvasElement);
+  const firstRow = canvas.getByRole('checkbox', { name: 'Select row 1' });
+  // A web font that lands mid-sample would move the columns, not the bar.
+  await document.fonts.ready;
+  // A selection restored on the first render starts with the bar showing.
+  const acts =
+    firstRow.getAttribute('aria-checked') === 'true'
+      ? ['clear the restored selection', 'select the first row']
+      : ['select the first row', 'clear it'];
+  for (const act of acts) {
+    await step(act, async () => {
+      const samples = await headerRowDuring(canvasElement, () => userEvent.click(firstRow));
+      // Every distinct frame, as "top | cell starts": one when nothing moved.
+      const frames = [...new Set(samples.map((sample) => `${sample.top} | ${sample.starts}`))];
+      await expect(`${act}: ${frames.join(' → ')}`).toBe(`${act}: ${frames[0]}`);
+    });
+    if (act === 'select the first row') {
+      await waitFor(() => expect(canvas.getByText('1 selected')).toBeVisible());
     }
+  }
+};
+
+// With a controls row, the bulk bar takes its place at exactly its height.
+export const HeaderRowStaysWithToolbar: Story = {
+  name: 'Bulk bar · first selection, toolbar: header row stays',
+  render: RowSelection.render,
+  play: playHeaderRowStays,
+};
+
+function LowToolbarTable({ initialSelection = {} }: { initialSelection?: RowSelectionState }) {
+  const [selection, setSelection] = useState<RowSelectionState>(initialSelection);
+  return (
+      <DataTable<Order>
+        rows={orders}
+        columns={columns}
+        getRowId={(order) => order.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        toolbar={
+          <Button variant="outline" size="sm" className="ms-auto" aria-label="More">
+            <MoreHorizontalIcon />
+          </Button>
+        }
+        bulkActions={({ selectedCount, clearSelection }) => (
+          <>
+            <span className="text-sm font-medium">{selectedCount} selected</span>
+            <Button variant="outline" className="h-8">
+              Actions
+            </Button>
+            <Button variant="ghost" className="h-8" onClick={clearSelection}>
+              Reset selection
+            </Button>
+          </>
+        )}
+      />
+  );
+}
+
+// A controls row lower than the bar (a lone small button, 28px, against a bar
+// of 32px buttons): the bar still takes the row's height, not more.
+export const HeaderRowStaysWithLowToolbar: Story = {
+  name: 'Bulk bar · first selection, low toolbar: header row stays',
+  render: () => <LowToolbarTable />,
+  play: playHeaderRowStays,
+};
+
+// A selection restored on the first render: the bar shows before the controls
+// row has ever been seen, and the band still has the controls row's height.
+export const HeaderRowStaysWithRestoredSelection: Story = {
+  name: 'Bulk bar · restored selection, low toolbar: header row stays',
+  render: () => <LowToolbarTable initialSelection={{ '1': true }} />,
+  play: playHeaderRowStays,
+};
+
+// No header at all: the bar covers the column header row, after the select
+// slot, so the select-all checkbox stays under the pointer.
+export const HeaderRowStaysWithoutHeader: Story = {
+  name: 'Bulk bar · first selection, no header: header row stays',
+  render: SelectionMotion.render,
+  play: async (context) => {
+    await playHeaderRowStays(context);
+    const { canvasElement } = context;
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 1' }));
+    const bar = await canvas.findByText('1 selected');
+    const headerRow = canvasElement.querySelector('thead tr') as HTMLElement;
+    const inside = (outer: DOMRect, inner: DOMRect) =>
+      inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+    await waitFor(() =>
+      expect(inside(headerRow.getBoundingClientRect(), bar.getBoundingClientRect())).toBe(true),
+    );
+    const selectAll = canvas.getByRole('checkbox', { name: 'Select all rows' });
+    const box = selectAll.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    await expect(selectAll.contains(hit)).toBe(true);
+    // The column labels under the bar are hidden, not only covered.
+    await waitFor(() =>
+      expect(getComputedStyle(canvas.getByText('Customer')).visibility).toBe('hidden'),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+    await waitFor(() => expect(canvas.getByText('Customer')).toBeVisible());
   },
+};
+
+// A title and no controls row: the bar covers the column header row too.
+export const HeaderRowStaysUnderTitle: Story = {
+  name: 'Bulk bar · first selection, title only: header row stays',
+  render: () => <RippleTable count={10} />,
+  play: playHeaderRowStays,
 };

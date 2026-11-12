@@ -42,7 +42,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import {
   DataTableBulkActions,
-  useHeldHeight,
   useSelectionCache,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@vendure-io/ui/components/molecules/data-table/data-table-column-header';
@@ -299,28 +298,34 @@ const bandRowFade = {
   transition: { duration: 0.1, ease: 'easeOut' },
 } as const;
 
-// The bulk-only band (a selectable table with no header content) opens and
-// closes its height in --transition-duration-normal (200ms) on --ease-height,
-// while its content takes `bandRowFade`. Reduced motion skips the height.
-const bulkBandOpen = {
-  initial: { height: 0 },
-  animate: { height: 'auto' },
-  exit: { height: 0 },
-  transition: { duration: 0.2, ease: [0.25, 1, 0.5, 1] },
+// The bulk bar enters after what it replaces has faded out: `bandRowFade`
+// after one --transition-duration-fast. It covers the controls row's place, or
+// with no controls row (no header, or a title only) the column header row, so
+// it never opens a row of its own and the table never moves.
+const bulkBarFade = {
+  ...bandRowFade,
+  animate: { ...bandRowFade.animate, transition: { ...bandRowFade.transition, delay: 0.1 } },
 } as const;
 
-// A header with no controls row (a title only) has no row for the bulk bar to
-// replace, so the bar opens its own row: the same height ease as the
-// bulk-only band, and the table moves down as one block. The wrapper pulls the
-// header's gap-4 back with -mt-4 and adds it inside as pt-4, so at height 0
-// the row takes no space. It clips only while it moves, so the bar's focus
-// rings show once it is open.
-const bulkRowOpen = {
-  initial: { height: 0, overflow: 'hidden' },
-  animate: { height: 'auto', transitionEnd: { overflow: 'visible' } },
-  exit: { height: 0, overflow: 'hidden' },
-  transition: bulkBandOpen.transition,
+// The controls row while the bulk bar takes its place: faded out, then hidden;
+// back only after the bar has left.
+const controlsSwap = {
+  hidden: {
+    ...bandRowFade.exit,
+    transition: bandRowFade.transition,
+    transitionEnd: { visibility: 'hidden' },
+  },
+  shown: {
+    ...bandRowFade.animate,
+    visibility: 'visible',
+    transition: { ...bandRowFade.transition, delay: 0.1 },
+  },
 } as const;
+
+// The labels under a covering bulk bar: hidden (so their sort controls leave
+// the tab order) once they have faded out, and back only after the bar left.
+const HEADER_LABEL_UNDER_BULK_CLASS =
+  'transition-[opacity,visibility] duration-fast ease-soft delay-(--transition-duration-fast) in-data-bulk-over-header:invisible in-data-bulk-over-header:opacity-0 in-data-bulk-over-header:delay-0';
 
 // While rows are selected, a click on a row selects it instead of opening it.
 // These elements in a row keep their own click: the same list the linked row
@@ -889,7 +894,6 @@ function DataTable<TData>({
   }, [table]);
 
   const selectionCache = useSelectionCache(table);
-  const reduceMotion = useReducedMotion();
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
@@ -1025,11 +1029,10 @@ function DataTable<TData>({
     filters.showAppliedFilters !== false &&
     table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
-  // Unlike the other zones, the bulk bar exists only while rows are selected,
-  // so it opens the header band on its own only then — a controls-less
-  // selectable table must not render an empty band. That band eases its
-  // height open and closed (see `bulkBandOpen`), so the rows glide down and
-  // back instead of jumping.
+  // The bulk bar exists only while rows are selected. It takes the controls
+  // row's place, or, with no controls row, covers the column header row (see
+  // `bulkBarFade`): it never opens a band of its own, so the table never
+  // moves when the first row is selected or the last one cleared.
   const selecting =
     rowSelection != null && getSelectedRowIds(table.getState().rowSelection).length > 0;
   selectingRef.current = selecting;
@@ -1096,108 +1099,71 @@ function DataTable<TData>({
     onPointerDown: onRowPointerDown,
   });
 
-  const bulkOnlyBand = !showHeader && rowSelection != null && bulkActions != null;
-  const [controlsRowRef, controlsHeight] = useHeldHeight();
+  // No controls row for the bulk bar to replace: it covers the column header row.
+  const bulkOverHeader = !showControls && rowSelection != null && bulkActions != null;
   const bulkRender = showBulk ? bulkActions : undefined;
 
   const bands = (
     <>
-      {bulkOnlyBand && (
-        <MotionConfig reducedMotion="user">
-          <AnimatePresence initial={false}>
-            {showBulk && (
-              // The band and the card gap below it open together: the wrapper
-              // pulls the gap back with a negative margin, and in a card the
-              // header adds it back inside, so at height 0 the band takes no
-              // space. A plain frame keeps its top padding instead.
-              <motion.div
-                key="bulk-band"
-                className="-mb-(--card-gap) overflow-hidden"
-                {...bulkBandOpen}
-                transition={reduceMotion ? { duration: 0 } : bulkBandOpen.transition}
-              >
-                <CardHeader className={cn('border-b', frame !== 'plain' && 'mb-(--card-gap)')}>
-                  <ListHeader>
-                    <motion.div {...bandRowFade}>
-                      <DataTableBulkActions
-                        table={table}
-                        cache={selectionCache}
-                        render={bulkActions}
-                      />
-                    </motion.div>
-                  </ListHeader>
-                </CardHeader>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </MotionConfig>
-      )}
       {showHeader && (
         <CardHeader className="border-b">
           <ListHeader>
             {header}
             {/* Replace-on-select: while rows are selected the bulk bar takes
                 the controls row's place (title and applied-filter chips stay).
-                The swap fades out then in — one --transition-duration-fast
-                (100ms) per phase; mode="wait" keeps the rows sequential so
-                they never stack. Under reduced motion MotionConfig drops the
-                4px rise and keeps the fade. */}
-            {(showControls || (rowSelection != null && bulkActions != null)) && (
+                Both share one grid cell, and the controls row stays mounted
+                (faded, hidden and inert), so the cell keeps the row's height
+                from the first frame, with nothing to measure. The bar is
+                centred in it; -my-1 lets a bar up to 8px taller (a 32px bar
+                over a 28px row) overhang the band's padding instead of growing
+                the band. Only a bar that wraps grows it. The swap fades out
+                then in, one --transition-duration-fast (100ms) per phase.
+                Under reduced motion MotionConfig drops the 4px rise and keeps
+                the fade. */}
+            {showControls && (
               <MotionConfig reducedMotion="user">
-                <AnimatePresence initial={false} mode="wait">
-                  {bulkRender && showControls ? (
-                    // Held at the controls row's last height, so the table
-                    // does not move when the bar takes its place.
-                    <motion.div
-                      key="bulk-actions"
-                      {...bandRowFade}
-                      style={{ minHeight: controlsHeight }}
-                      className="flex flex-col justify-center"
-                    >
-                      <DataTableBulkActions
-                        table={table}
-                        cache={selectionCache}
-                        render={bulkRender}
-                        className={controlsHeight != null ? 'min-h-0' : undefined}
-                      />
-                    </motion.div>
-                  ) : bulkRender ? (
-                    <motion.div
-                      key="bulk-row"
-                      className="-mt-4"
-                      {...bulkRowOpen}
-                      transition={reduceMotion ? { duration: 0 } : bulkRowOpen.transition}
-                    >
-                      <motion.div className="pt-4" {...bandRowFade}>
+                <div className="grid">
+                  <motion.div
+                    className="[grid-area:1/1]"
+                    initial={false}
+                    animate={bulkRender ? controlsSwap.hidden : controlsSwap.shown}
+                    inert={bulkRender ? true : undefined}
+                  >
+                    <ListHeaderControls>
+                      {toolbarNode}
+                      {hasFilterMenu && filters?.columns && (
+                        <DataTableAddFilter
+                          table={table}
+                          columns={filters.columns}
+                          label={l.addFilter}
+                        />
+                      )}
+                      {showViewOptions && (
+                        <DataTableViewOptions
+                          table={table}
+                          triggerLabel={l.columnsTrigger}
+                          heading={l.columnsHeading}
+                        />
+                      )}
+                    </ListHeaderControls>
+                  </motion.div>
+                  <AnimatePresence initial={false}>
+                    {bulkRender && (
+                      <motion.div
+                        key="bulk-actions"
+                        {...bulkBarFade}
+                        className="-my-1 self-center [grid-area:1/1]"
+                      >
                         <DataTableBulkActions
                           table={table}
                           cache={selectionCache}
                           render={bulkRender}
+                          className="min-h-0"
                         />
                       </motion.div>
-                    </motion.div>
-                  ) : showControls ? (
-                    <motion.div key="controls" ref={controlsRowRef} {...bandRowFade}>
-                      <ListHeaderControls>
-                        {toolbarNode}
-                        {hasFilterMenu && filters?.columns && (
-                          <DataTableAddFilter
-                            table={table}
-                            columns={filters.columns}
-                            label={l.addFilter}
-                          />
-                        )}
-                        {showViewOptions && (
-                          <DataTableViewOptions
-                            table={table}
-                            triggerLabel={l.columnsTrigger}
-                            heading={l.columnsHeading}
-                          />
-                        )}
-                      </ListHeaderControls>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
+                    )}
+                  </AnimatePresence>
+                </div>
               </MotionConfig>
             )}
             {showChips && (
@@ -1215,11 +1181,36 @@ function DataTable<TData>({
         </CardHeader>
       )}
 
-      <CardTable>
+      <CardTable className={bulkOverHeader ? 'relative isolate' : undefined}>
+        {bulkOverHeader && (
+          // Over the column header row (h-10, as TableHead), after the select
+          // slot: the bar starts where the leading column's label starts, and
+          // the wrapper lets the pointer through to the select-all checkbox.
+          // First in the DOM, so the bar comes before the rows in tab order.
+          <MotionConfig reducedMotion="user">
+            <AnimatePresence initial={false}>
+              {bulkRender && (
+                <motion.div
+                  key="bulk-over-header"
+                  {...bulkBarFade}
+                  className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-10 items-center ps-8 pe-(--card-px)"
+                >
+                  <DataTableBulkActions
+                    table={table}
+                    cache={selectionCache}
+                    render={bulkRender}
+                    className="pointer-events-auto min-h-0 flex-nowrap"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </MotionConfig>
+        )}
         <Table
           ref={tableRef}
           className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
+          data-bulk-over-header={bulkOverHeader && showBulk ? '' : undefined}
         >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -1233,7 +1224,11 @@ function DataTable<TData>({
                       key={headerCell.id}
                       aria-sort={ariaSort(sorting != null, headerCell.column)}
                       data-column-id={headerCell.column.id}
-                      className={columnClass(headerCell.column.id)}
+                      className={cn(
+                        columnClass(headerCell.column.id),
+                        generatedColumn(headerCell.column.id) !== 'select' &&
+                          HEADER_LABEL_UNDER_BULK_CLASS,
+                      )}
                       style={columnIndentStyle(headerCell.column.id)}
                     >
                       {sorting != null && !headerCell.isPlaceholder ? (

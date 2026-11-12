@@ -15,8 +15,10 @@ import { getSelectedOriginals, getSelectedRowIds } from './data-table-helpers.ts
 // selected original — not just the ones still on screen.
 
 /**
- * Keep the latest border-box height of the controls row, so the bulk bar that
- * replaces it can hold the same height and the table below does not move. A
+ * Keep the latest border-box height of an element. DataTable no longer uses
+ * it (the bulk bar shares the controls row's grid cell); it stays exported
+ * for consumers. Example: hold a bulk bar at the height of the row it
+ * replaces, so the table below does not move. A
  * ResizeObserver follows the row while it shows (it can wrap on a narrow
  * card); the last height stays once the row has left.
  */
@@ -78,8 +80,9 @@ function DataTableBulkActions<TData>({
 
   return (
     // A plain band row, not a box: it takes the controls row's place inside
-    // the header band, so it carries no chrome of its own. min-h-9 matches
-    // the controls row's h-9 inputs so the swap holds the band height steady.
+    // the header band, so it carries no chrome of its own. min-h-9 is the
+    // height of a bar on its own; DataTable sets min-h-0 and takes the height
+    // of the row the bar covers (the controls row or the column header row).
     <div
       data-slot="data-table-bulk-actions"
       className={cn('flex min-h-9 flex-wrap items-center gap-2', className)}
