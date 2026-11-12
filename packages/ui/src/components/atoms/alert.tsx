@@ -3,6 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { alertTint, alertToneVars } from "@vendure-io/ui/lib/tint-recipes"
+import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 
 // Alert is an inline-size container so AlertAction can move under the text when
 // the alert is narrow. A container cannot size to its content: an Alert inside a
@@ -27,7 +28,7 @@ const tonedAlert = alertTint
 // place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
 // keeps the fade. Content padding is 12px inline, 10px block.
 const alertVariants = cva(
-  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-3 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
+  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-3 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] [&:has(>svg:not([data-slot=alert-icon]))>[data-slot=alert-icon]]:hidden w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
   {
     variants: {
       variant: {
@@ -49,18 +50,43 @@ const alertVariants = cva(
   }
 )
 
+// A toned variant shows the icon of its tone, the same shape a StatusBadge of
+// that tone shows. The default variant has no tone and no icon of its own.
+const variantIcons = {
+  destructive: toneIcons.critical,
+  warning: toneIcons.warning,
+  info: toneIcons.info,
+} as const
+
+/**
+ * A toned Alert shows its tone icon unless the caller passes one. An `icon`
+ * prop replaces it, and so does an svg child (the older way): the tone icon is
+ * then hidden. `icon={false}` shows no icon.
+ */
 function Alert({
   className,
   variant,
+  icon,
+  children,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof alertVariants> & {
+    /** Replaces the tone icon. `false` or `null` shows no icon. */
+    icon?: React.ReactNode
+  }) {
+  const ToneIcon = variant && variant !== "default" ? variantIcons[variant] : undefined
+  const shownIcon =
+    icon !== undefined ? icon || null : ToneIcon ? <ToneIcon aria-hidden data-slot="alert-icon" /> : null
   return (
     <div
       data-slot="alert"
       role="alert"
       className={cn(alertVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {shownIcon}
+      {children}
+    </div>
   )
 }
 

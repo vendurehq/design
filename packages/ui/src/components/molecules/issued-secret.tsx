@@ -7,7 +7,6 @@ import { Field, FieldDescription, FieldLabel } from '@vendure-io/ui/components/a
 import { Input } from '@vendure-io/ui/components/atoms/input';
 import { CopyStateIcon, useCopyAction } from '@vendure-io/ui/components/molecules/copyable-text';
 import { cn } from '@vendure-io/ui/lib/utils';
-import { TriangleAlertIcon } from 'lucide-react';
 import type * as React from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 
@@ -206,7 +205,6 @@ function IssuedSecret({
       ) : null}
       {guard.warned ? (
         <Alert data-slot="issued-secret-warning" variant="warning">
-          <TriangleAlertIcon />
           <AlertTitle>{warningTitle}</AlertTitle>
           <AlertDescription>{warningDescription}</AlertDescription>
         </Alert>
