@@ -238,12 +238,11 @@ export const Invalid: Story = {
 /**
  * A list that is closing is hidden from assistive technology at once: the
  * input no longer points at it. The play function holds the list in its
- * closing state with a script animation, so the accessibility check scans it
- * while it closes. (Storybook switches CSS transitions off when a play
+ * closing state with a paused script animation, so the accessibility check
+ * scans it while it closes. (Storybook switches CSS transitions off when a play
  * function ends in the test runner.)
  */
 export const ClosingList: Story = {
-  parameters: { a11y: { include: ['[data-slot=combobox-content]'] } },
   render: () => (
     <Combobox items={frameworks}>
       <ComboboxInput aria-label="Framework" placeholder="Search frameworks..." />
@@ -267,7 +266,7 @@ export const ClosingList: Story = {
       return element as HTMLElement;
     });
     await Promise.all(popup.getAnimations().map((animation) => animation.finished));
-    popup.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 100_000 });
+    popup.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 100_000 }).pause();
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(popup).toHaveAttribute('data-ending-style'));
     await expect(popup).toHaveAttribute('aria-hidden', 'true');
