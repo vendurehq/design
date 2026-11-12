@@ -424,6 +424,14 @@ async function settle(page: Page, quietMs: number) {
 
 const config: TestRunnerConfig = {
   async preVisit(page) {
+    // The runner renders every story of a file in one page, so the browser's
+    // input modality carries over from the story before. After a real mouse
+    // press (pressText, pressRowText, pressOpen …), a focus that script moves
+    // (`userEvent.tab()` calls `focus()`) no longer matches `:focus-visible`,
+    // so a play function that checks a focus style fails or passes by story
+    // order. A real key press puts the page back in keyboard modality, the
+    // state a fresh page starts in. Shift alone types nothing.
+    await page.keyboard.press('Shift');
     await injectAxe(page);
     // Placeholder text is a hint, not content: the v3 look sets it in
     // `faint-foreground`, below 4.5:1. Fields mark it with `data-placeholder`

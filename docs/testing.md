@@ -23,6 +23,20 @@ bunx http-server storybook-static --port 6006 &
 bun run test-storybook -- --url http://127.0.0.1:6006 --ci
 ```
 
+To run the stories of one component, add the story file name after the options. Jest matches it against the stories file path, and the summary counts only those stories:
+
+```bash
+bun run test-storybook -- --url http://127.0.0.1:6006 --ci list-row.stories
+# Test Suites: 1 passed, 1 total
+# Tests:       13 passed, 13 total
+```
+
+- Put the pattern after the options. `bun run test-storybook list-row -- --url …` hands `--url` to Jest, so the runner looks for Storybook on port 6006 and fails.
+- Use a local URL (`127.0.0.1` or `localhost`). For any other host the runner switches to index-json mode. There the test files are generated from story titles (`molecules-listrow.test.js`), so a file-name pattern such as `list-row` matches nothing.
+- `list-row` without `.stories` also runs `list-row-guidance.stories.tsx`.
+
+**Focus styles in a `play` function.** The runner renders every story of a file in one page, one after the other. Before each story it presses Shift. This puts the browser back in keyboard mode. Without it, a real mouse press in an earlier story (`pressText`, `pressRowText`, `pressOpen`) stops a later `userEvent.tab()` from matching `:focus-visible`, and a check of a focus style would pass or fail depending on story order.
+
 ### Opting a story out
 
 Set `parameters.a11y.skip` on the story or its meta:
