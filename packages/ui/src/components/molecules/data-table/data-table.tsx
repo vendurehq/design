@@ -55,6 +55,7 @@ import type {
   DataTableProps,
   DataTableRowCellProps,
   DataTableRowRipple,
+  DataTableRowSelectProps,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
 import {
@@ -155,8 +156,8 @@ const ROW_CHEVRON_SLOT_CLASS =
  * under reduced motion). It is decorative: the link carries the name.
  *
  * While rows are selected, a click on a built-in row selects it, and only
- * the name opens the item. A row from `renderRow` has no click-to-select, so
- * its link keeps covering the row. The link stops stretching over the row and the row-end
+ * the name opens the item. A row from `renderRow` does the same when it
+ * spreads `ctx.selectProps`; without it, its link keeps covering the row. The link stops stretching over the row and the row-end
  * chevron hides. Hovering the row shows a small chevron after the name;
  * hovering or focusing the name colours it and the chevron blue, and the
  * chevron moves 2px toward the end. The blue is `info-text`, the text-safe
@@ -428,6 +429,9 @@ function fromKeyboard(event: Event | undefined): boolean {
     (typeof MouseEvent !== 'undefined' && event instanceof MouseEvent && event.detail === 0)
   );
 }
+
+// How far a press may move before release and still count as a click on the row.
+const ROW_PRESS_SLOP = 4;
 
 function isRowControl(target: Element, row: Element): boolean {
   const control = target.closest(ROW_CONTROL_SELECTOR);
@@ -902,10 +906,29 @@ function DataTable<TData>({
   // which no longer stretches over the row), the keyboard (Enter fires a click
   // with detail 0), Cmd/Ctrl/Alt+click, and the middle button (auxclick). Row controls keep their own click, and a
   // click inside a portal (an open row menu) is not the row's.
+  // A press that starts on a row control (a drag handle) or moves before it is
+  // released is not a click on the row: a drag never selects.
+  const rowPress = React.useRef<{ x: number; y: number; onControl: boolean } | null>(null);
+  const onRowPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    rowPress.current = {
+      x: event.clientX,
+      y: event.clientY,
+      onControl: isRowControl(event.target as Element, event.currentTarget),
+    };
+  };
   const onRowClickCapture = (row: Row<TData>) => (event: React.MouseEvent<HTMLElement>) => {
+    const press = rowPress.current;
+    rowPress.current = null;
     if (!selecting || !row.getCanSelect()) return;
     if (event.button !== 0 || event.detail === 0) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (
+      press != null &&
+      (press.onControl ||
+        Math.hypot(event.clientX - press.x, event.clientY - press.y) > ROW_PRESS_SLOP)
+    ) {
+      return;
+    }
     const target = event.target as Element;
     if (!event.currentTarget.contains(target) || isRowControl(target, event.currentTarget)) return;
     // The name: the row link does not stretch while rows are selected, so a
@@ -927,6 +950,16 @@ function DataTable<TData>({
       event.preventDefault();
     }
   };
+  // Click-to-select for one row: the built-in row spreads it, and `renderRow`
+  // hands the same props over as `ctx.selectProps`.
+  const rowSelectProps = (row: Row<TData>): DataTableRowSelectProps => ({
+    // DataTableRowLink keys its look on this attribute: only the name opens
+    // the item while a click on the row selects it.
+    'data-click-selects': selecting && row.getCanSelect() ? '' : undefined,
+    onClickCapture: onRowClickCapture(row),
+    onMouseDown: onRowMouseDown,
+    onPointerDown: onRowPointerDown,
+  });
 
   const bulkOnlyBand = !showHeader && rowSelection != null && bulkActions != null;
   const [controlsRowRef, controlsHeight] = useHeldHeight();
@@ -1122,17 +1155,13 @@ function DataTable<TData>({
                     className: SELECT_RIPPLE_ROW_CLASS,
                     style: rippleTiming(rowIndex, bodyRows.length),
                   };
+                  const selectProps = rowSelectProps(row);
                   const rowNode = (
                     <TableRow
                       className={cn('group/row', LINKED_ROW_CLASS, ripple.className)}
                       style={ripple.style}
                       data-state={row.getIsSelected() ? 'selected' : undefined}
-                      // While rows are selected a click on this row selects it
-                      // (onRowClickCapture), so only the name opens the item:
-                      // DataTableRowLink keys its look on this attribute.
-                      data-click-selects={selecting && row.getCanSelect() ? '' : undefined}
-                      onClickCapture={onRowClickCapture(row)}
-                      onMouseDown={onRowMouseDown}
+                      {...selectProps}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} {...bodyCellProps(cell.column.id)}>
@@ -1166,6 +1195,7 @@ function DataTable<TData>({
                             defaultRow,
                             ripple,
                             cellProps: bodyCellProps,
+                            selectProps,
                           })
                         : defaultRow}
                     </React.Fragment>

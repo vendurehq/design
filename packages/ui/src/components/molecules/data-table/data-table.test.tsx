@@ -767,6 +767,51 @@ describe('DataTable renderRow ripple', () => {
   });
 });
 
+describe('DataTable renderRow select props', () => {
+  const capture = (value: Record<string, boolean>) => {
+    const seen: { selectProps: Record<string, unknown>; rowProps: Record<string, unknown> }[] = [];
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={{ value, onChange: () => {} }}
+        renderRow={(_row, { defaultRow, selectProps }) => {
+          seen.push({
+            selectProps: selectProps as unknown as Record<string, unknown>,
+            rowProps: (defaultRow as React.ReactElement<Record<string, unknown>>).props,
+          });
+          return defaultRow;
+        }}
+      />,
+    );
+    return seen;
+  };
+
+  test('a custom row gets the same click-to-select handlers and attributes as a built-in row', () => {
+    const seen = capture({ '1': true });
+    expect(seen).toHaveLength(rows.length);
+    for (const { selectProps, rowProps } of seen) {
+      expect(Object.keys(selectProps).sort()).toEqual([
+        'data-click-selects',
+        'onClickCapture',
+        'onMouseDown',
+        'onPointerDown',
+      ]);
+      for (const [key, value] of Object.entries(selectProps)) {
+        expect(rowProps[key]).toBe(value);
+      }
+      expect(selectProps['data-click-selects']).toBe('');
+    }
+  });
+
+  test('with nothing selected, a click on a row does not select: no data-click-selects', () => {
+    for (const { selectProps } of capture({})) {
+      expect(selectProps['data-click-selects']).toBeUndefined();
+    }
+  });
+});
+
 describe('DataTable renderRow cell classes', () => {
   // The class of each body cell of the first row, in order.
   const bodyCellClasses = (markup: string) => {

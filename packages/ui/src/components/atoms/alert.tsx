@@ -9,7 +9,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // The grid has no column gap: the icon carries its own margin, so the empty
 // action column of a narrow alert takes no space.
 // The v3 banner: a toned alert is a faint tint of its tone. In light mode the
-// fill is 7% tone in the card and the border 22% tone in the border colour; in
+// fill is 7% tone in the card and the border 14% tone in the border colour; in
 // dark mode the tone sits over transparent (10% fill, 30% border), because
 // mixed into the cool surface it reads grey. The modes switch the
 // --alert-fill and --alert-border properties, not the utilities, so a
@@ -21,7 +21,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // The `alertTones` block in packages/design-tokens/src/contrast.test.ts
 // copies this recipe: change both together.
 const tonedAlert =
-  "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_22%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
+  "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_14%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
 
 // An alert enters once when it mounts: it fades in and moves 4px down into
 // place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
