@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, waitFor, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
-import { Bold, Check, ChevronRight, Copy, Italic, Loader2, Mail, MoreHorizontal, Pin, Underline } from 'lucide-react';
+import { Bold, Check, ChevronRight, Copy, Italic, Loader2, Mail, MoreHorizontal, Pin, Trash2, Underline } from 'lucide-react';
 import { Button, ButtonLabelSwap } from '../src/components/atoms/button.tsx';
 import { ButtonGroup } from '../src/components/atoms/button-group.tsx';
 import {
@@ -33,6 +33,10 @@ export const Default: Story = {
 
 export const Destructive: Story = {
   args: { variant: 'destructive', children: 'Delete' },
+};
+
+export const DestructiveOutline: Story = {
+  args: { variant: 'destructive-outline', children: 'Tear down…' },
 };
 
 export const Outline: Story = {
@@ -108,6 +112,11 @@ const DISABLED_WITH_REASON = [
   { variant: 'default', label: 'Deploy', reason: 'A build is running. Deploy again when it ends.' },
   { variant: 'outline', label: 'Roll back', reason: 'There is no earlier deployment to roll back to.' },
   { variant: 'ghost', label: 'Restart', reason: 'The environment is asleep.' },
+  {
+    variant: 'destructive-outline',
+    label: 'Delete…',
+    reason: 'The environment has infrastructure. Tear it down first.',
+  },
 ] as const;
 
 function DisabledWithReasonRow() {
@@ -304,7 +313,80 @@ export const DestructiveLightAndDark: Story = {
   ),
 };
 
-const VARIANTS = ['default', 'outline', 'secondary', 'ghost', 'destructive', 'brand', 'link'] as const;
+const TEXT_SIZES = ['lg', 'default', 'sm', 'xs'] as const;
+const ICON_SIZES = ['icon-lg', 'icon', 'icon-sm', 'icon-xs'] as const;
+
+function QuietDestructiveSizes({ disabled }: { disabled?: boolean }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {TEXT_SIZES.map((size) => (
+        <Button key={size} variant="destructive-outline" size={size} disabled={disabled}>
+          <Trash2 data-icon="inline-start" />
+          Tear down…
+        </Button>
+      ))}
+      {ICON_SIZES.map((size) => (
+        <Button
+          key={size}
+          variant="destructive-outline"
+          size={size}
+          disabled={disabled}
+          aria-label={`Delete, ${size}`}
+        >
+          <Trash2 />
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The quiet destructive variant, `destructive-outline`: the outline button
+ * with a red label and icon. Use it for a dangerous action that a page shows
+ * at rest, such as a danger zone. Hover and press tint the fill red; focus
+ * shows the ring. Disabled is half opacity, so it does not read as an alarm.
+ * Every size at rest, then disabled, then a danger zone on a card. The solid
+ * `destructive` stays for the confirm in the dialog. Pinned to the light page
+ * theme so the left panel stays light.
+ */
+export const DestructiveOutlineLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex flex-col gap-4">
+          <QuietDestructiveSizes />
+          <QuietDestructiveSizes disabled />
+          <div className="bg-card divide-y rounded-xl border">
+            {[
+              { title: 'Tear down the environment', action: 'Tear down…', disabled: false },
+              { title: 'Delete the environment', action: 'Delete…', disabled: true },
+            ].map(({ title, action, disabled }) => (
+              <div key={title} className="flex items-center justify-between gap-4 px-4 py-3">
+                <span className="text-sm">{title}</span>
+                <Button variant="destructive-outline" disabled={disabled}>
+                  <Trash2 data-icon="inline-start" />
+                  {action}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </LightAndDark>
+  ),
+};
+
+const VARIANTS = [
+  'default',
+  'outline',
+  'secondary',
+  'ghost',
+  'destructive',
+  'destructive-outline',
+  'brand',
+  'link',
+] as const;
 
 /**
  * Every variant at the default (34px) and sm (28px) sizes, with the matching

@@ -26,8 +26,8 @@ import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
 // full strength, and a Spinner (role="status") is never dimmed.
 // A ChevronDown that opens a menu turns 180° while the menu is open, in
 // 220ms on the strong ease-out; with reduced motion it turns at once.
-// Primary, outline and destructive sit on shadow-control, a 1px lift off the
-// surface; a disabled button drops it. Inside a ButtonGroup the group carries
+// Primary, outline, destructive and destructive-outline sit on shadow-control,
+// a 1px lift off the surface; a disabled button drops it. Inside a ButtonGroup the group carries
 // the shadow and the edge, so an outline child keeps its border off on hover.
 // A disabled button that keeps its tab stop and tooltip carries
 // aria-disabled="true", set by Base UI for `disabled focusableWhenDisabled`
@@ -89,6 +89,13 @@ const buttonVariants = cva(
         // destructive-900, a shade darker in both modes.
         destructive:
           "bg-destructive text-destructive-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-expanded:bg-[color-mix(in_oklab,var(--destructive),var(--destructive-900)_15%)] aria-disabled:hover:bg-destructive",
+        // Quiet destructive: the outline button with a red label and icon,
+        // for a danger zone at rest. Hover and an open menu tint the fill red
+        // (10% destructive into card, an opaque mix, so the label keeps 4.5:1;
+        // checked in @vendure-io/design-tokens). The solid `destructive`
+        // stays for the confirm inside the dialog.
+        "destructive-outline":
+          [outlineEdge, outlineEdgeHover, "bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-destructive-text shadow-control [--destructive-outline-hover:color-mix(in_oklab,var(--card),var(--destructive)_10%)] hover:bg-(--destructive-outline-hover) aria-expanded:bg-(--destructive-outline-hover) aria-disabled:hover:bg-card"],
         link: "text-primary underline-offset-4 hover:underline aria-disabled:hover:no-underline",
       },
       size: {

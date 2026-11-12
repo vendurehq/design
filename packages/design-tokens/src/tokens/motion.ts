@@ -107,6 +107,10 @@ export const duration = {
   // The icon of a Button turns (a chevron on an expanded trigger) in this
   // time with the `out` curve. Only Button uses it.
   buttonIconTurn: '220ms',
+  // The diagonal arrow of a link that opens another site (ArrowLink
+  // `external`, PageHeaderFactLink) moves out in this time with the `out`
+  // curve. Only those two use it.
+  externalArrow: '220ms',
   // A page that opens fades in over `pageFade` and rises into place over
   // `pageRise`, both on the `out` curve. The `page-enter` animation below
   // uses them.

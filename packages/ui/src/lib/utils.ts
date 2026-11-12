@@ -60,6 +60,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'drawer-swipe',
             'alert-enter',
             'button-icon-turn',
+            'external-arrow',
             'page-fade',
             'page-rise',
           ],

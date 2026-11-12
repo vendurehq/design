@@ -51,8 +51,8 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border');
   });
 
-  test('primary, brand, outline and destructive sit on shadow-control; disabled drops it', () => {
-    for (const variant of ['default', 'brand', 'outline', 'destructive'] as const) {
+  test('primary, brand, outline, destructive and destructive-outline sit on shadow-control; disabled drops it', () => {
+    for (const variant of ['default', 'brand', 'outline', 'destructive', 'destructive-outline'] as const) {
       expect(buttonTokens(<Button variant={variant}>Save</Button>)).toContain('shadow-control');
     }
     for (const variant of ['ghost', 'link', 'secondary'] as const) {
@@ -75,6 +75,21 @@ describe('Button v3 look', () => {
     expect(tokens).toContain('bg-destructive');
     expect(tokens).toContain('text-destructive-foreground');
     expect(tokens.filter((token) => /^(bg-destructive\/|text-destructive-subtle)/.test(token))).toEqual([]);
+  });
+
+  // destructive-text on the card and on the hover mix is checked at 4.5:1 in
+  // both modes in @vendure-io/design-tokens (src/contrast.test.ts).
+  test('destructive-outline is the outline button with a red label and a red hover tint', () => {
+    const quiet = buttonTokens(<Button variant="destructive-outline">Tear down</Button>);
+    const outline = buttonTokens(<Button variant="outline">Tear down</Button>);
+    for (const token of ['border-border', 'bg-card', 'shadow-control']) {
+      expect(outline).toContain(token);
+      expect(quiet).toContain(token);
+    }
+    expect(quiet).toContain('text-destructive-text');
+    expect(quiet).toContain('hover:bg-(--destructive-outline-hover)');
+    expect(quiet).not.toContain('bg-destructive');
+    expect(quiet).not.toContain('text-foreground');
   });
 });
 
@@ -228,6 +243,7 @@ describe('Button aria-disabled', () => {
       secondary: 'aria-disabled:hover:bg-secondary',
       ghost: 'aria-disabled:hover:bg-transparent',
       destructive: 'aria-disabled:hover:bg-destructive',
+      'destructive-outline': 'aria-disabled:hover:bg-card',
       link: 'aria-disabled:hover:no-underline',
     } as const;
     for (const [variant, token] of Object.entries(rest)) {
