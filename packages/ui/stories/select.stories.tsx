@@ -169,8 +169,22 @@ async function expectListCoversTrigger(canvasElement: HTMLElement) {
     await expect(Math.abs(box.left - list.left - (list.right - box.right))).toBeLessThan(0.5);
     const value = trigger.querySelector('[data-slot=select-value]') as HTMLElement;
     const selected = popup.querySelector('[data-slot=select-item][data-selected]')?.firstElementChild as HTMLElement;
-    const edge = getComputedStyle(popup).direction === 'rtl' ? 'right' : 'left';
+    const rtl = getComputedStyle(popup).direction === 'rtl';
+    const edge = rtl ? 'right' : 'left';
     await expect(Math.abs(selected.getBoundingClientRect()[edge] - value.getBoundingClientRect()[edge])).toBeLessThan(0.5);
+    // The check mark sits at the end of the row, past the text, and the text
+    // keeps 8px of padding on the start side.
+    const row = selected.parentElement as HTMLElement;
+    const check = (row.lastElementChild as HTMLElement).getBoundingClientRect();
+    const text = selected.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    if (rtl) {
+      await expect(check.right).toBeLessThanOrEqual(text.left);
+      await expect(rowBox.right - text.right).toBeCloseTo(8, 0);
+    } else {
+      await expect(check.left).toBeGreaterThanOrEqual(text.right);
+      await expect(text.left - rowBox.left).toBeCloseTo(8, 0);
+    }
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull());
   }
