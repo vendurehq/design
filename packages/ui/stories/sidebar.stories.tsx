@@ -367,9 +367,7 @@ function ActiveIconMenu({ rule, mode, testId }: { rule: RuleCase; mode: 'expande
           <CollapsibleTrigger render={<SidebarMenuButton hasActiveChild />}>
             <group.icon />
             <span>{group.title}</span>
-            {mode === 'expanded' && (
-              <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
-            )}
+            <ChevronRightIcon className="ms-auto transition-transform group-data-open/collapsible:rotate-90" />
           </CollapsibleTrigger>
           <CollapsibleContent>
             <SidebarMenuSub>
@@ -416,6 +414,13 @@ export const OneActiveIcon: Story = {
               .filter((icon) => getComputedStyle(icon).color === brand && getComputedStyle(icon).opacity === '1')
               .map((icon) => icon.parentElement?.textContent?.trim());
           await waitFor(() => expect(lit()).toEqual([rule.lit[mode]]));
+          // The label of the group button, which has a chevron after it, fades
+          // in the rail like the label of a plain button.
+          for (const title of ['Home', rule.group.title]) {
+            await waitFor(() =>
+              expect(getComputedStyle(within(scope).getByText(title)).opacity).toBe(mode === 'rail' ? '0' : '1'),
+            );
+          }
         }
       }
     }
