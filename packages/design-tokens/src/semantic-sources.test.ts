@@ -1,18 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import * as ramps from './tokens/colors.ts';
+import { neutral } from './tokens/colors.ts';
 import { darkTheme, lightTheme } from './tokens/semantic.ts';
 
 // Every semantic colour is a token reference, a ramp step, or a mix of those.
 // A hand-typed literal must be listed below with its reason. The list only
 // shrinks: an entry whose value no longer needs it fails the test.
 const ALLOWED_LITERALS: Record<string, string> = {
-  'light:background':
-    'between neutral ramp steps; neutral[50] drops muted text on accent to 4.4999 (contrast.test)',
-  'light:foreground':
-    'between neutral[900] and [950], with more chroma than the ramp; the light shadows derive from it',
+  'light:foreground': 'between neutral[900] and [950]; the light shadows derive from it',
   'light:foreground-secondary': 'near neutral[700] (ΔE 0.012); not yet swapped',
-  'light:surface': 'surface tier above the top neutral step; no ramp step fits',
-  'light:surface-raised': 'pure white raised tier; the neutral ramp has no white step',
   'light:muted-foreground':
     'contrast: 4.5:1 on accent, muted and secondary over every tier (contrast.test)',
   'light:faint-foreground':
@@ -26,8 +22,6 @@ const ALLOWED_LITERALS: Record<string, string> = {
     'contrast: 3:1 non-text on every tier; neutral[400] fails (contrast.test)',
   'dark:foreground': 'between neutral ramp steps (ΔE 0.014 to neutral[50]); not yet swapped',
   'dark:foreground-secondary': 'between neutral[200] and [300]; nearest step is visibly off',
-  'dark:surface': 'dark surface tier between neutral[900] and [800]; no ramp step fits',
-  'dark:surface-raised': 'dark raised tier between neutral[900] and [800]; no ramp step fits',
   'dark:secondary-foreground': 'between neutral[50] and [100]; nearest step is visibly off',
   'dark:muted-foreground':
     'contrast: 4.5:1 on accent over surface-raised; neutral[400] fails (contrast.test)',
@@ -90,4 +84,32 @@ describe('semantic colours come from tokens or ramp steps', () => {
       expect(themes[themeName]).toHaveProperty(key);
     }
   });
+});
+
+// A semantic neutral (hue 231, chroma under 0.02) takes the chroma of the
+// neutral step nearest in lightness, so text and surfaces share the ramp's
+// cool bias (docs/design-tokens.md). Pure white has no chroma.
+describe('semantic neutrals use the neutral ramp chroma', () => {
+  const steps = Object.values(neutral).map((value) => {
+    const [, l, c] = value.match(/^oklch\(([\d.]+) ([\d.]+) 231\)$/) as RegExpMatchArray;
+    return { l: Number(l), c: Number(c) };
+  });
+  const literals = [
+    ...Object.entries(ramps.surfaces).map(([step, value]) => [`surfaces[${step}]`, value]),
+    ...Object.entries(themes).flatMap(([themeName, theme]) =>
+      Object.entries(theme as Record<string, string>).map(([key, value]) => [
+        `${themeName}:${key}`,
+        value,
+      ]),
+    ),
+  ];
+  for (const [id, value] of literals) {
+    const match = value?.match(/^oklch\(([\d.]+) ([\d.]+) 231\)$/);
+    if (!match || Number(match[2]) >= 0.02 || Number(match[1]) === 1) continue;
+    test(`${id} has the chroma of its nearest neutral step`, () => {
+      const l = Number(match[1]);
+      const nearest = steps.reduce((a, b) => (Math.abs(b.l - l) < Math.abs(a.l - l) ? b : a));
+      expect(Number(match[2])).toBe(nearest.c);
+    });
+  }
 });

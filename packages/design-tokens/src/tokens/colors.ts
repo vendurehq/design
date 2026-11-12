@@ -28,6 +28,20 @@ export const neutral = {
   950: 'oklch(0.13 0.007 231)',
 } as const;
 
+// The surface tiers: the page, the content pane and the raised card. They sit
+// between neutral steps (light above neutral[50], dark between neutral[900]
+// and [800]), so they are a scale of their own, keyed by lightness × 1000, at
+// the neutral chroma. Pure white has no chroma. The semantic tiers reference
+// these steps; the scale is not emitted as CSS, so use `background`,
+// `surface` and `surface-raised` in components.
+export const surfaces = {
+  1000: 'oklch(1 0 0)',
+  986: 'oklch(0.986 0.004 231)',
+  972: 'oklch(0.972 0.004 231)',
+  238: 'oklch(0.238 0.007 231)',
+  222: 'oklch(0.222 0.007 231)',
+} as const;
+
 export const success = {
   50: 'oklch(0.97 0.02 145)',
   100: 'oklch(0.93 0.04 145)',
