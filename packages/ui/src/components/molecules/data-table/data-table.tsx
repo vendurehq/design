@@ -340,7 +340,7 @@ const ROW_CONTROL_SELECTOR =
 // and the focus ring stay on the checkbox. The checkbox's own enlarged hit
 // area is turned off here, since it reached past the gutter into the content.
 const SELECT_AREA_CLASS =
-  'absolute inset-y-0 left-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+  'absolute inset-y-0 start-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
 const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 
 // Select all and clear all from the header checkbox ripple down the page: the
@@ -755,7 +755,7 @@ function DataTable<TData>({
                       }
                       aria-label={displayProps.current.l.selectAllRows}
                       className={cn(
-                        'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
+                        'absolute top-1/2 start-2 z-10 -translate-y-1/2 opacity-0 group-hover/header-row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100 data-indeterminate:opacity-100',
                         SELECT_CHECKBOX_HIT_CLASS,
                       )}
                     />
@@ -801,7 +801,7 @@ function DataTable<TData>({
                 }}
                 aria-label={displayProps.current.l.selectRow(row.index)}
                 className={cn(
-                  'absolute top-1/2 left-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
+                  'absolute top-1/2 start-2 z-10 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 data-checked:opacity-100',
                   SELECT_CHECKBOX_HIT_CLASS,
                   SELECT_RIPPLE_CHECKBOX_CLASS,
                 )}
@@ -913,20 +913,20 @@ function DataTable<TData>({
   };
   const columnClass = (id: string): string | undefined => {
     const generated = generatedColumn(id);
-    // `pl-0!`: the select cell is the first child, so CardTable's edge-cell
+    // `ps-0!`: the select cell is the first child, so CardTable's edge-cell
     // padding would otherwise widen the zero-width cell and push the whole
     // gutter arrangement out; important because CardTable's descendant rule
     // out-specifies a plain utility on the cell.
-    if (generated === 'select') return 'relative w-0 p-0 pl-0!';
+    if (generated === 'select') return 'relative w-0 p-0 ps-0!';
     // Every other cell adds its column's indent (`--column-indent`, see
     // `columnIndents`) to its start padding. CardTable's edge-cell padding
     // adds it too.
-    if (id === leadingColumnId) return 'pl-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+    if (id === leadingColumnId) return 'ps-[calc(var(--spacing)*8+var(--column-indent,0px))]';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
     // row; `align-middle` on the cell keeps it centred.
     return cn(
-      'pl-[calc(var(--spacing)*2+var(--column-indent,0px))]',
+      'ps-[calc(var(--spacing)*2+var(--column-indent,0px))]',
       generated === 'actions' && 'py-0',
     );
   };
