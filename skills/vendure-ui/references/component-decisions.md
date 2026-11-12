@@ -274,6 +274,7 @@ Render a short list of entities where each row opens one detail page from any po
 - **The link holds the title only:** The link text is the accessible name of the row. Put who, how many, and how long in ListRowMeta, and state in a StatusBadge in ListRowTrailing.
 - **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip, and CopyableText inside the row keep their own click. Another element that must stay hoverable takes `data-list-row-control`.
 - **Hidden actions are never the only way:** ListRowActions appears on hover or focus. Every action in it is also available on the detail page.
+- **One action takes the last value's place:** When a row has one action and ends with a value (a size, a count), put both in a ListRowSwap: the value holds the row end at rest, and the action fades in its place on hover, on focus and on touch screens. Use ListRowActions for a menu or more than one action. Name the action after its row (`Restore to today, 01:00`).
 - **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
 - **Only rows added later animate:** Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.
 

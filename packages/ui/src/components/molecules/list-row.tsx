@@ -237,6 +237,69 @@ function ListRowActions({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+// ListRowSwap stacks its value and its action in one grid cell, so the cell
+// keeps the width of the wider one and nothing in the row moves. The swap is
+// sequenced, not a crossfade: the outgoing one fades in `row-swap-out`, the
+// incoming one fades in `quick` after `row-swap-delay`, both on `soft`, so the
+// value and the action never show at once. The rest state carries the leave
+// timing (the action out first, the value back after it); the shown state
+// carries the enter timing. The action shows while the row is hovered, while
+// anything in the row has keyboard focus and while the action's menu is open;
+// on a touch screen it always shows. Reduced motion swaps at once. The value
+// only fades, so a screen reader still reads it. The class names stay literal
+// so Tailwind can scan them.
+const SWAP_VALUE_CLASS = [
+  'col-start-1 row-start-1 whitespace-nowrap text-foreground-secondary tabular-nums',
+  'transition-opacity duration-quick ease-soft delay-(--transition-duration-row-swap-delay) motion-reduce:transition-none',
+  'group-hover/list-row:opacity-0 group-hover/list-row:duration-row-swap-out group-hover/list-row:delay-0',
+  'group-has-[:focus-visible]/list-row:opacity-0 group-has-[:focus-visible]/list-row:duration-row-swap-out group-has-[:focus-visible]/list-row:delay-0',
+  'group-has-[[aria-expanded=true]]/list-row-swap:opacity-0 group-has-[[aria-expanded=true]]/list-row-swap:duration-row-swap-out group-has-[[aria-expanded=true]]/list-row-swap:delay-0',
+  '[@media(hover:none)]:opacity-0',
+].join(' ');
+
+const SWAP_ACTION_CLASS = [
+  'col-start-1 row-start-1 flex items-center gap-1 opacity-0',
+  'transition-opacity duration-row-swap-out ease-soft motion-reduce:transition-none',
+  'group-hover/list-row:opacity-100 group-hover/list-row:duration-quick group-hover/list-row:delay-(--transition-duration-row-swap-delay)',
+  'group-has-[:focus-visible]/list-row:opacity-100 group-has-[:focus-visible]/list-row:duration-quick group-has-[:focus-visible]/list-row:delay-(--transition-duration-row-swap-delay)',
+  'group-has-[[aria-expanded=true]]/list-row-swap:opacity-100',
+  '[@media(hover:none)]:opacity-100',
+].join(' ');
+
+interface ListRowSwapProps extends React.ComponentProps<'div'> {
+  /** What the cell shows at rest: a size, a count, a time. */
+  value: React.ReactNode;
+  /** The action that takes the value's place: one `sm` Button or a menu trigger. */
+  children: React.ReactNode;
+}
+
+/**
+ * The last value of a row that turns into an action: at rest the cell shows
+ * `value`; while the row is hovered, holds keyboard focus or has the action's
+ * menu open, the value fades out and the action (`children`) fades in its
+ * place. On a touch screen the action always shows. The cell is as wide as
+ * the wider of the two, so nothing in the row moves. Place it last in the
+ * row, after ListRowTrailing. Give the action a name that says which row it
+ * acts on (`aria-label="Restore to today, 01:00"`).
+ */
+function ListRowSwap({ value, children, className, ...props }: ListRowSwapProps) {
+  return (
+    <div
+      data-slot="list-row-swap"
+      className={cn('group/list-row-swap grid shrink-0 items-center justify-items-end', className)}
+      {...props}
+    >
+      {/* `dir="auto"` keeps a Latin value ("1.82 GB") in its own order inside a right-to-left row. */}
+      <span data-slot="list-row-swap-value" dir="auto" className={SWAP_VALUE_CLASS}>
+        {value}
+      </span>
+      <div data-slot="list-row-swap-action" className={SWAP_ACTION_CLASS}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // The row-end chevron of ListRow and of a DataTable row with a row link: one
 // recipe, so the two cannot drift. Hidden at rest; while its row is hovered
 // or holds keyboard focus it fades in and slides 3px toward the end (fade only
@@ -279,7 +342,8 @@ export {
   ListRowLeading,
   ListRowLink,
   ListRowMeta,
+  ListRowSwap,
   ListRowTitle,
   ListRowTrailing,
 };
-export type { ListRowProps };
+export type { ListRowProps, ListRowSwapProps };
