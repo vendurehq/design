@@ -103,3 +103,29 @@ describe('Toggle aria-disabled', () => {
     expect(classTokens(html.match(/<button[^>]*>/)?.[0] ?? '')).toContain('aria-disabled:hover:bg-transparent');
   });
 });
+
+describe('Toggle size and corners match Button', () => {
+  const tokens = (element: React.ReactElement) =>
+    classTokens(renderToStaticMarkup(element).match(/<button[^>]*>/)?.[0] ?? '');
+
+  test('default is 34px with the xl radius, sm is 28px with 12px text', () => {
+    expect(tokens(<Toggle aria-label="Bold" />)).toEqual(expect.arrayContaining(['h-8.5', 'min-w-8.5', 'rounded-xl']));
+    expect(tokens(<Toggle size="sm" aria-label="Bold" />)).toEqual(expect.arrayContaining(['h-7', 'min-w-7', 'text-xs']));
+  });
+
+  test('a ToggleGroup rounds its outer corners with the xl radius', () => {
+    const html = renderToStaticMarkup(
+      <ToggleGroup variant="outline">
+        <ToggleGroupItem value="a">A</ToggleGroupItem>
+        <ToggleGroupItem value="b">B</ToggleGroupItem>
+      </ToggleGroup>,
+    );
+    expect(classTokens(html.match(/<div[^>]*>/)?.[0] ?? '')).toContain('rounded-xl');
+    expect(classTokens(html.match(/<button[^>]*>/)?.[0] ?? '')).toEqual(
+      expect.arrayContaining([
+        'group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-xl',
+        'group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-xl',
+      ]),
+    );
+  });
+});
