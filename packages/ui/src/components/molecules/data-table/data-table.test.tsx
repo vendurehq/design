@@ -1095,7 +1095,7 @@ describe('DataTable card frame', () => {
     expect(markup).toContain('data-slot="data-table-view-options"');
   });
 
-  test('bulk selection alone opens the header band; empty selection leaves no band', () => {
+  test('with no controls row the bulk bar covers the column header row; it opens no band', () => {
     const bulk = (
       <DataTable
         rows={rows}
@@ -1106,8 +1106,14 @@ describe('DataTable card frame', () => {
       />
     );
     const selected = html(bulk);
-    expect(selected).toContain('data-slot="card-header"');
+    expect(selected).not.toContain('data-slot="card-header"');
     expect(selected).toContain('data-slot="data-table-bulk-actions"');
+    // The bar sits in the table's card slot, over the header row, and the
+    // table marks its column labels to fade out under it.
+    expect(selected).toMatch(
+      /data-slot="card-table"[^>]*>[^]*data-slot="data-table-bulk-actions"[^]*<table/,
+    );
+    expect(selected).toContain('data-bulk-over-header=""');
 
     const idle = html(
       <DataTable
@@ -1119,9 +1125,10 @@ describe('DataTable card frame', () => {
       />,
     );
     expect(idle).not.toContain('data-slot="card-header"');
+    expect(idle).not.toContain('data-bulk-over-header=""');
   });
 
-  test('the bulk bar replaces the controls row while rows are selected', () => {
+  test("the bulk bar takes the controls row's place while rows are selected", () => {
     const props = {
       rows,
       columns,
@@ -1133,7 +1140,9 @@ describe('DataTable card frame', () => {
       <DataTable {...props} rowSelection={{ value: { '1': true }, onChange: () => {} }} />,
     );
     expect(selected).toContain('data-slot="data-table-bulk-actions"');
-    expect(selected).not.toContain('data-slot="list-header-controls"');
+    // The controls row stays in the cell, out of reach, so the cell keeps its
+    // height from the first frame.
+    expect(selected).toMatch(/<div[^>]*inert=""[^>]*><div data-slot="list-header-controls"/);
 
     const idle = html(<DataTable {...props} rowSelection={{ value: {}, onChange: () => {} }} />);
     expect(idle).toContain('data-slot="list-header-controls"');
