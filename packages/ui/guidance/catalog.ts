@@ -177,6 +177,31 @@ export const uiGuidance = [
     related: ['confirm-dialog', 'page-header'],
   },
   {
+    id: 'chart',
+    title: 'Chart',
+    summary: 'Give every shape a chart draws an accessible name, from the config where Chart can.',
+    sourceStory: 'chart-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Every image shape has a name',
+        body: 'recharts draws pie slices, radial bars, scatter points, funnel steps, treemap cells and sankey nodes as images. An image without a name fails the accessibility check.',
+      },
+      {
+        title: 'Key colours to the config',
+        body: 'Chart names a shape from its `name`, else from the label of the config key in its colour (`var(--color-card)`). Give each series and slice a config entry with a `label`, and use `var(--color-<key>)` for its fill.',
+      },
+      {
+        title: 'Add the value on the shape',
+        body: 'Chart does not know the value a shape stands for. Put an `aria-label` such as `Card: 540` on the `Cell` or the shape when the name must carry the value. A name set by the consumer always wins.',
+      },
+      {
+        title: 'A table or text carries the data too',
+        body: 'Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.',
+      },
+    ],
+    related: ['stat-card'],
+  },
+  {
     id: 'chip',
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
@@ -382,7 +407,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip. Such a link has no visible name, so while rows are selected its target is the row-end chevron instead.',
       },
       {
         title: 'Cell text lines up with the header',

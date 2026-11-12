@@ -6,6 +6,8 @@ Every merged change to `@vendure-io/ui` is consumer-facing on the next publish, 
 
 Every story is visited with [`@storybook/test-runner`](https://github.com/storybookjs/test-runner) and scanned with [`axe-playwright`](https://github.com/abhinaba-ghosh/axe-playwright) two times: once in light mode and once with the `dark` class on `<html>`. Each reported violation names its theme, for example `[dark] [serious] color-contrast`. The check reports on `serious` or `critical` axe violations; `minor`/`moderate` findings are logged but never counted. Configuration lives in `apps/storybook/.storybook/test-runner.ts`.
 
+**The scan waits for the story to finish drawing.** Before each scan the runner waits until no finite animation or transition in the story root is running, and the story root has not changed for 250 ms (this catches animations that script drives, such as recharts). Endless animations, such as a spinner, are ignored. A story still moving after 5 s fails with the names of the animations, because a scan of it would pass or fail by timing. Do not add a fixed sleep to a story. In a `play` function, wait for the state you assert with `waitFor`.
+
 **Blocking.** A `serious` or `critical` violation in either theme fails the CI job. Fix the markup. Opt a story out (see below) only for a documented false positive.
 
 A story that renders a bare control must still give it an accessible name. Use `aria-label` on icon-only buttons and toggles, and a label connected to every input. Checkbox, RadioGroup and Switch need `aria-label` or `aria-labelledby`, because Base UI puts the `id` on a hidden input.

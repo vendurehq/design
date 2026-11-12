@@ -653,7 +653,10 @@ const playStoredSelection =
       await expect(count()).toHaveTextContent('3 selected');
       // The bar and the action agree on 3, though only the rows of the loaded page
       // (p11) are known after the remount: the action is told the others are missing.
-      await expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible();
+      // The bar eases in after the remount: wait until it shows.
+      await waitFor(() =>
+        expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible(),
+      );
       await userEvent.click(canvas.getByRole('button', { name: 'Archive' }));
       await expect(canvas.getByTestId('bulk-received')).toHaveTextContent(
         'Archived 3 ids (1 loaded, 2 not)',
@@ -1499,6 +1502,81 @@ export const LookupKeyNamesTheRow: Story = {
 };
 
 /**
+ * The same orders while a row is selected. The code is screen-reader text in
+ * the link, so the row has no visible name to click. The chevron at the end of
+ * the row is the target instead: it shows on row hover, turns blue on its own
+ * hover or focus, and its click area is the full row height at the row end. A
+ * click anywhere else selects the row, and the code chip still copies. The
+ * test runner presses the code chip, then the customer of row 3, then the end
+ * of row 2 with a real mouse: the first copies, the second selects row 3, the
+ * third opens order 2.
+ */
+export const LookupKeyWhileSelecting: Story = {
+  parameters: {
+    pressText: { text: '314NGLFNXPVUXEBN', expectButton: 'Copied' },
+    pressSelectsRow: { text: 'Eliezer Kulas', expectChecked: 'Select row 3' },
+    pressRowEnd: { row: 'Hilario Thompson', expectHash: '#/orders/AX3KCVNM39QM6R1A' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({ YVWJLP9HGJHH7EVK: true });
+    return (
+      <DataTable<OrderRow>
+        rows={orderRows}
+        columns={orderRowColumns}
+        getRowId={(order) => order.code}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const link = canvas.getByRole('link', { name: 'AX3KCVNM39QM6R1A' });
+    const tr = link.closest('tr') as HTMLTableRowElement;
+    const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+    clearHash();
+
+    await step('the link has no visible name, and its target is the row end', async () => {
+      await expect(link).toHaveAttribute('data-nameless');
+      const target = getComputedStyle(link, '::after');
+      await expect(target.display).toBe('block');
+      const width = Number.parseFloat(target.width);
+      await expect(width).toBeGreaterThanOrEqual(24);
+      // The full row height, inside the row's 1px bottom border.
+      await expect(Number.parseFloat(target.height)).toBe(tr.getBoundingClientRect().height - 1);
+      const row = tr.getBoundingClientRect();
+      const end = document.elementFromPoint(row.right - 12, row.top + row.height / 2);
+      await expect(end).toBe(link);
+      await expect(getComputedStyle(link).cursor).toBe('pointer');
+    });
+
+    await step('the row-end chevron shows instead of hiding', async () => {
+      const chevron = tr.querySelector('[data-slot=data-table-row-chevron]') as SVGElement;
+      await expect(getComputedStyle(chevron).display).toBe('block');
+    });
+
+    await step('a click on the customer selects the row and opens nothing', async () => {
+      await user.click(hitAt(within(tr).getByText('Hilario Thompson')));
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+      await expect(location.hash).toBe('');
+      await user.click(checkbox);
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
+    });
+
+    await step('the link is a tab stop after the checkbox, and Enter opens the order', async () => {
+      checkbox.focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(link);
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/orders/AX3KCVNM39QM6R1A');
+      clearHash();
+      link.blur();
+    });
+  },
+};
+
+/**
  * Keyboard selection: Space toggles the focused checkbox and focus stays on
  * it, so a keyboard user selects several rows with Space and Tab. The
  * selection and the row actions are passed inline, as most consumers do; the
@@ -1661,25 +1739,20 @@ export const SelectionMotion: Story = {
       });
     });
 
-    // When a row clears, read when each half of its bar starts to lose height
-    // and how long its fade runs, from the transitions the click started.
+    // When a row clears, read when each half of its bar starts to lose height,
+    // how long its fade runs, and whether it stays opaque. Read from the
+    // computed transition, not the running one: a slow machine can finish a
+    // 100ms transition before the first check.
     const clearing = (row: HTMLElement) =>
       ['::before', '::after'].map((part) => {
-        const timing = (property: string) =>
-          document
-            .getAnimations()
-            .filter(
-              (a): a is CSSTransition =>
-                a instanceof CSSTransition &&
-                (a.effect as KeyframeEffect | null)?.target === row &&
-                (a.effect as KeyframeEffect).pseudoElement === part &&
-                a.transitionProperty === property
-            )
-            .map((a) => a.effect?.getTiming())[0];
-        const clip = timing('clip-path');
-        const fade = timing('opacity');
-        const clipText = clip ? `clip after ${clip.delay}ms for ${clip.duration}ms` : 'no clip';
-        return `${clipText}, ${fade ? `fade ${fade.duration}ms` : 'no fade'}`;
+        const style = getComputedStyle(row, part);
+        const properties = style.transitionProperty.split(', ');
+        const ms = (list: string, property: string) => {
+          const value = list.split(', ')[properties.indexOf(property)] ?? '0s';
+          return value.endsWith('ms') ? Number.parseFloat(value) : Number.parseFloat(value) * 1000;
+        };
+        const clip = `clip after ${ms(style.transitionDelay, 'clip-path')}ms for ${ms(style.transitionDuration, 'clip-path')}ms`;
+        return `${clip}, ${style.opacity === '1' ? 'opaque' : `fade ${ms(style.transitionDuration, 'opacity')}ms`}`;
       });
 
     await step('a bar that clears alone fades and narrows out before it loses height', async () => {
@@ -1703,8 +1776,8 @@ export const SelectionMotion: Story = {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
       await waitFor(() =>
         expect(clearing(rows()[2] as HTMLElement)).toEqual([
-          'clip after 0ms for 150ms, no fade',
-          'clip after 0ms for 150ms, no fade',
+          'clip after 0ms for 150ms, opaque',
+          'clip after 0ms for 150ms, opaque',
         ])
       );
     });
