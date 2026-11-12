@@ -1664,54 +1664,32 @@ export const SelectionMotion: Story = {
       });
     });
 
-    // When a row clears, read when each half of its bar starts to lose height
-    // and how long its fade runs, from the transitions the click started. They
-    // last 100 to 150ms, and polling for them can step over them on a loaded
-    // machine. So each one is recorded when it starts (`transitionrun`).
-    let started = new Map<string, { delay: number; duration: number }>();
-    const record = (event: TransitionEvent) => {
-      const animation = document
-        .getAnimations()
-        .find(
-          (a): a is CSSTransition =>
-            a instanceof CSSTransition &&
-            (a.effect as KeyframeEffect | null)?.target === event.target &&
-            (a.effect as KeyframeEffect).pseudoElement === event.pseudoElement &&
-            a.transitionProperty === event.propertyName,
-        );
-      const timing = animation?.effect?.getTiming();
-      if (!(event.target instanceof HTMLElement) || !timing) return;
-      const index = rows().indexOf(event.target);
-      started.set(`${index}${event.pseudoElement}${event.propertyName}`, {
-        delay: Number(timing.delay),
-        duration: Number(timing.duration),
-      });
-    };
-    document.addEventListener('transitionrun', record, true);
+    // When a row clears, read when each half of its bar starts to lose height,
+    // how long its fade runs, and whether it stays opaque. Read from the
+    // computed transition, not the running one: a slow machine can finish a
+    // 100ms transition before the first check.
     const clearing = (row: HTMLElement) =>
       ['::before', '::after'].map((part) => {
-        const key = (property: string) => `${rows().indexOf(row)}${part}${property}`;
-        const clip = started.get(key('clip-path'));
-        const fade = started.get(key('opacity'));
-        const clipText = clip ? `clip after ${clip.delay}ms for ${clip.duration}ms` : 'no clip';
-        return `${clipText}, ${fade ? `fade ${fade.duration}ms` : 'no fade'}`;
+        const style = getComputedStyle(row, part);
+        const properties = style.transitionProperty.split(', ');
+        const ms = (list: string, property: string) => {
+          const value = list.split(', ')[properties.indexOf(property)] ?? '0s';
+          return value.endsWith('ms') ? Number.parseFloat(value) : Number.parseFloat(value) * 1000;
+        };
+        const clip = `clip after ${ms(style.transitionDelay, 'clip-path')}ms for ${ms(style.transitionDuration, 'clip-path')}ms`;
+        return `${clip}, ${style.opacity === '1' ? 'opaque' : `fade ${ms(style.transitionDuration, 'opacity')}ms`}`;
       });
-    const press = async (name: string) => {
-      started = new Map();
-      await userEvent.click(canvas.getByRole('checkbox', { name }));
-    };
 
     await step('a bar that clears alone fades and narrows out before it loses height', async () => {
       // Row 4 has no selected neighbour; row 2 is then the last selected row.
       for (const n of [4, 2]) {
         const row = rows()[n - 1] as HTMLElement;
-        await press(`Select row ${n}`);
-        await waitFor(
-          () =>
-            expect(clearing(row)).toEqual([
-              'clip after 100ms for 0ms, fade 100ms',
-              'clip after 100ms for 0ms, fade 100ms',
-            ]),
+        await userEvent.click(canvas.getByRole('checkbox', { name: `Select row ${n}` }));
+        await waitFor(() =>
+          expect(clearing(row)).toEqual([
+            'clip after 100ms for 0ms, fade 100ms',
+            'clip after 100ms for 0ms, fade 100ms',
+          ])
         );
       }
     });
@@ -1720,15 +1698,13 @@ export const SelectionMotion: Story = {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
       await waitFor(() => expect(clips(rows()[2] as HTMLElement)).toEqual(FULL));
-      await press('Select row 3');
-      await waitFor(
-        () =>
-          expect(clearing(rows()[2] as HTMLElement)).toEqual([
-            'clip after 0ms for 150ms, no fade',
-            'clip after 0ms for 150ms, no fade',
-          ]),
+      await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
+      await waitFor(() =>
+        expect(clearing(rows()[2] as HTMLElement)).toEqual([
+          'clip after 0ms for 150ms, opaque',
+          'clip after 0ms for 150ms, opaque',
+        ])
       );
-      document.removeEventListener('transitionrun', record, true);
     });
   },
 };
