@@ -126,3 +126,37 @@ describe('Field markup', () => {
     expect(html).not.toContain('field-error');
   });
 });
+
+// A choice card tints while its control is checked. The control marks itself
+// with a class only inside a FieldLabel, so a checkbox elsewhere (a DataTable
+// row) never changes a :has() key; a :has() on `data-checked` restyles every
+// DataTable row in Chromium when its checkboxes change.
+describe('FieldLabel choice card', () => {
+  const label = (html: string) => html.match(/<label[^>]*>/)?.[0] ?? '';
+  const box = (html: string) => html.match(/<span[^>]*data-slot="checkbox"[^>]*>/)?.[0] ?? '';
+
+  test('a checked control inside a FieldLabel carries the class the label reads', () => {
+    const checked = renderToStaticMarkup(
+      <FieldLabel>
+        <Field orientation="horizontal">
+          <Checkbox aria-label="Ship" defaultChecked />
+        </Field>
+      </FieldLabel>,
+    );
+    expect(label(checked)).toContain('has-[.choice-checked]:bg-primary/5');
+    expect(label(checked)).not.toContain('has-data-');
+    expect(box(checked)).toContain('choice-checked');
+    const unchecked = renderToStaticMarkup(
+      <FieldLabel>
+        <Checkbox aria-label="Ship" />
+      </FieldLabel>,
+    );
+    expect(box(unchecked)).not.toContain('choice-checked');
+  });
+
+  test('outside a FieldLabel a checked control adds nothing', () => {
+    expect(box(renderToStaticMarkup(<Checkbox aria-label="Ship" defaultChecked />))).not.toContain(
+      'choice-checked',
+    );
+  });
+});

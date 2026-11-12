@@ -34,9 +34,10 @@ describe('TableRow selected state', () => {
 // The container becomes a tab stop only when it overflows (measured in the
 // browser after mount, then tracked with a ResizeObserver), so a server render
 // has no tabindex.
-// The bar grows from where the row touches a selected row. The starting clip
-// of each case comes from sibling selectors, so no JS is involved; the story
-// SelectionMotion checks the computed values in the browser.
+// The bar grows from where the row touches a selected row. The row above is
+// read with a sibling selector, the row below from `data-next-selected`, which
+// TableBody sets; the story SelectionMotion checks the computed values in the
+// browser.
 describe('TableRow selection bar origin', () => {
   test('each neighbour case has its own starting clip', () => {
     const html = renderToStaticMarkup(
@@ -54,12 +55,16 @@ describe('TableRow selection bar origin', () => {
         // A selected row above: from the top.
         '[[data-state=selected]+&]:before:[clip-path:inset(0_0_100%_0)]',
         // A selected row below: from the bottom.
-        '[&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]',
+        'data-next-selected:after:[clip-path:inset(100%_0_0_0)]',
         // Both: each half from its own end.
-        '[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)]',
-        '[[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]',
+        '[[data-state=selected]+&[data-next-selected]]:before:[clip-path:inset(0_0_100%_0)]',
+        '[[data-state=selected]+&[data-next-selected]]:after:[clip-path:inset(100%_0_0_0)]',
       ]),
     );
+    // No :has() on the row state: in Chromium it restyles every row and cell
+    // when a row's selection changes. No custom property on the row either.
+    expect(tokens.some((token) => token.includes(':has('))).toBe(false);
+    expect(tokens.some((token) => /^[^:]*\[--bar-clip/.test(token))).toBe(false);
   });
 });
 

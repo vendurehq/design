@@ -58,9 +58,77 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   )
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+// Marks each row whose next row is selected with `data-next-selected`, for the
+// selected-row bar (see selectedBar). The marks are synced in a layout effect
+// on every commit, so they change in the same task as the selection (a style
+// read before a microtask would see stale marks and start the bar from the
+// wrong place). A MutationObserver covers a row that changes `data-state`
+// without this body re-rendering.
+function syncNextSelectedMarks(body: HTMLTableSectionElement) {
+  for (let row = body.firstElementChild; row; row = row.nextElementSibling) {
+    const mark =
+      row.nextElementSibling?.getAttribute("data-state") === "selected"
+    if (row.hasAttribute("data-next-selected") !== mark) {
+      row.toggleAttribute("data-next-selected", mark)
+    }
+  }
+}
+
+function useNextSelectedMarks(
+  body: React.RefObject<HTMLTableSectionElement | null>
+) {
+  React.useLayoutEffect(() => {
+    if (body.current) {
+      syncNextSelectedMarks(body.current)
+    }
+  })
+  React.useLayoutEffect(() => {
+    const element = body.current
+    if (!element || typeof MutationObserver === "undefined") {
+      return
+    }
+    const observer = new MutationObserver((records) => {
+      if (
+        records.some(
+          (record) =>
+            record.target === element ||
+            record.target.parentElement === element
+        )
+      ) {
+        syncNextSelectedMarks(element)
+      }
+    })
+    observer.observe(element, {
+      childList: true,
+      subtree: true,
+      attributeFilter: ["data-state"],
+    })
+    return () => observer.disconnect()
+  }, [body])
+}
+
+function TableBody({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<"tbody">) {
+  const bodyRef = React.useRef<HTMLTableSectionElement>(null)
+  useNextSelectedMarks(bodyRef)
+  const setRef = React.useCallback(
+    (node: HTMLTableSectionElement | null) => {
+      bodyRef.current = node
+      if (typeof ref === "function") {
+        return ref(node)
+      }
+      if (ref) {
+        ref.current = node
+      }
+    },
+    [ref]
+  )
   return (
     <tbody
+      ref={setRef}
       data-slot="table-body"
       className={cn("[&_tr:last-child]:border-0", className)}
       {...props}
@@ -112,7 +180,13 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 // and then jumps, since a collapsing clip would hide the bar in a few frames.
 // A bar that extends a selected neighbour stays opaque and full width, so the
 // line has no lighter or thinner join, and clears by shrinking toward the
-// neighbour (`--bar-clip-duration`, `--bar-clip-delay`). At rest
+// neighbour (`--bar-clip-duration`, `--bar-clip-delay`, set on the
+// pseudo-elements: on the row they would be inherited by every cell, and a
+// change would restyle the whole row). The row below is read from
+// `data-next-selected`, which TableBody keeps up to date, not with
+// `:has(+[data-state=selected])`: in Chromium any such rule makes a change of
+// `data-state` restyle every row with all its cells, and select all on a long
+// table then drops frames. At rest
 // the bar is the same as without the motion: opacity 1, no scale. Under
 // reduced motion the bar is whole and only fades: the clip jumps on select and
 // waits for the fade on deselect.
@@ -121,16 +195,16 @@ const selectedBar = [
   "after:pointer-events-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 after:bg-brand-indicator",
   "before:[clip-path:inset(50%_0_50%_0)] after:[clip-path:inset(50%_0_50%_0)]",
   "[[data-state=selected]+&]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&]:after:[clip-path:inset(0_0_100%_0)]",
-  "[&:has(+[data-state=selected])]:before:[clip-path:inset(100%_0_0_0)] [&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
-  "[[data-state=selected]+&:has(+[data-state=selected])]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&:has(+[data-state=selected])]:after:[clip-path:inset(100%_0_0_0)]",
+  "data-next-selected:before:[clip-path:inset(100%_0_0_0)] data-next-selected:after:[clip-path:inset(100%_0_0_0)]",
+  "[[data-state=selected]+&[data-next-selected]]:before:[clip-path:inset(0_0_100%_0)] [[data-state=selected]+&[data-next-selected]]:after:[clip-path:inset(100%_0_0_0)]",
   "data-[state=selected]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]! data-[state=selected]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!",
   "before:origin-left after:origin-left rtl:before:origin-right rtl:after:origin-right",
   "motion-safe:before:opacity-0 motion-safe:after:opacity-0 motion-safe:before:[scale:0.5_1] motion-safe:after:[scale:0.5_1]",
   "motion-safe:[[data-state=selected]+&]:before:opacity-100 motion-safe:[[data-state=selected]+&]:after:opacity-100 motion-safe:[[data-state=selected]+&]:before:[scale:none] motion-safe:[[data-state=selected]+&]:after:[scale:none]",
-  "motion-safe:[&:has(+[data-state=selected])]:before:opacity-100 motion-safe:[&:has(+[data-state=selected])]:after:opacity-100 motion-safe:[&:has(+[data-state=selected])]:before:[scale:none] motion-safe:[&:has(+[data-state=selected])]:after:[scale:none]",
+  "motion-safe:data-next-selected:before:opacity-100 motion-safe:data-next-selected:after:opacity-100 motion-safe:data-next-selected:before:[scale:none] motion-safe:data-next-selected:after:[scale:none]",
   "motion-safe:data-[state=selected]:before:opacity-100 motion-safe:data-[state=selected]:after:opacity-100 motion-safe:data-[state=selected]:before:[scale:none] motion-safe:data-[state=selected]:after:[scale:none]",
-  "[--bar-clip-duration:0s] [--bar-clip-delay:var(--transition-duration-fast)]",
-  "[[data-state=selected]+&]:[--bar-clip-duration:var(--transition-duration-moderate)] [[data-state=selected]+&]:[--bar-clip-delay:0s] [&:has(+[data-state=selected])]:[--bar-clip-duration:var(--transition-duration-moderate)] [&:has(+[data-state=selected])]:[--bar-clip-delay:0s]",
+  "before:[--bar-clip-duration:0s] after:[--bar-clip-duration:0s] before:[--bar-clip-delay:var(--transition-duration-fast)] after:[--bar-clip-delay:var(--transition-duration-fast)]",
+  "[[data-state=selected]+&]:before:[--bar-clip-duration:var(--transition-duration-moderate)] [[data-state=selected]+&]:after:[--bar-clip-duration:var(--transition-duration-moderate)] [[data-state=selected]+&]:before:[--bar-clip-delay:0s] [[data-state=selected]+&]:after:[--bar-clip-delay:0s] data-next-selected:before:[--bar-clip-duration:var(--transition-duration-moderate)] data-next-selected:after:[--bar-clip-duration:var(--transition-duration-moderate)] data-next-selected:before:[--bar-clip-delay:0s] data-next-selected:after:[--bar-clip-delay:0s]",
   "before:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] after:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)]",
   "motion-safe:data-[state=selected]:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)] motion-safe:data-[state=selected]:after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)]",
   "motion-reduce:before:opacity-0 motion-reduce:after:opacity-0 motion-reduce:data-[state=selected]:before:opacity-100 motion-reduce:data-[state=selected]:after:opacity-100",

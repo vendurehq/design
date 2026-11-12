@@ -9,7 +9,10 @@ import {
   FieldError,
   FieldContent,
 } from '../src/components/atoms/field.tsx';
+import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { RadioGroup, RadioGroupItem } from '../src/components/atoms/radio-group.tsx';
+import { Switch } from '../src/components/atoms/switch.tsx';
 import {
   InputGroup,
   InputGroupAddon,
@@ -312,5 +315,57 @@ export const FieldLook: Story = {
     await userEvent.tab();
     await waitFor(() => expect(getComputedStyle(name).outlineOffset).toBe('-2px'));
     await expect(getComputedStyle(name).outlineWidth).toBe('2px');
+  },
+};
+
+/**
+ * Choice cards: a FieldLabel around a Field with a checkbox, radio or switch
+ * takes a border, and tints while its control is checked.
+ */
+export const ChoiceCards: Story = {
+  render: () => (
+    <div className="flex max-w-sm flex-col gap-3">
+      <FieldLabel htmlFor="card-checkbox">
+        <Field orientation="horizontal">
+          <Checkbox id="card-checkbox" />
+          <FieldContent>Email me a receipt</FieldContent>
+        </Field>
+      </FieldLabel>
+      <RadioGroup defaultValue="standard">
+        {(['standard', 'express'] as const).map((value) => (
+          <FieldLabel key={value} htmlFor={`card-${value}`}>
+            <Field orientation="horizontal">
+              <RadioGroupItem id={`card-${value}`} value={value} />
+              <FieldContent>{value === 'standard' ? 'Standard delivery' : 'Express delivery'}</FieldContent>
+            </Field>
+          </FieldLabel>
+        ))}
+      </RadioGroup>
+      <FieldLabel htmlFor="card-switch">
+        <Field orientation="horizontal">
+          <Switch id="card-switch" />
+          <FieldContent>Gift wrap</FieldContent>
+        </Field>
+      </FieldLabel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const card = (name: string) => canvas.getByText(name).closest('[data-slot=field-label]') as HTMLElement;
+    // The untinted look, read from a card that starts unchecked.
+    const plain = getComputedStyle(card('Gift wrap')).backgroundColor;
+    const tinted = (name: string) => getComputedStyle(card(name)).backgroundColor !== plain;
+    await expect(tinted('Standard delivery')).toBe(true);
+    await expect(tinted('Express delivery')).toBe(false);
+    await expect(tinted('Email me a receipt')).toBe(false);
+    await expect(tinted('Gift wrap')).toBe(false);
+    // A click anywhere on a card toggles its control.
+    for (const name of ['Email me a receipt', 'Express delivery', 'Gift wrap']) {
+      await userEvent.click(canvas.getByText(name));
+    }
+    await waitFor(() => expect(tinted('Email me a receipt')).toBe(true));
+    await expect(tinted('Express delivery')).toBe(true);
+    await expect(tinted('Standard delivery')).toBe(false);
+    await expect(tinted('Gift wrap')).toBe(true);
   },
 };

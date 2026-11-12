@@ -193,20 +193,43 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+// A FieldLabel around a checkbox, radio or switch (a choice card) tints while
+// the control is checked. The control marks itself with the class
+// `choice-checked` (useFieldLabelCheckedClass), only inside a FieldLabel. The
+// label does not read `data-checked` with :has(): in Chromium any :has() keyed
+// on `data-checked` restyles every row of a DataTable when its checkboxes
+// change, and select all on a long table then drops frames.
+const FieldLabelContext = createContext(false)
+
+/**
+ * For a checkbox, radio or switch: returns the class to add for its checked
+ * state, which a FieldLabel around it reads. Outside a FieldLabel, nothing.
+ */
+function useFieldLabelCheckedClass() {
+  const inFieldLabel = useContext(FieldLabelContext)
+  return (checked: boolean) =>
+    inFieldLabel && checked ? "choice-checked" : undefined
+}
+
 function FieldLabel({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof Label>) {
   return (
-    <Label
-      data-slot="field-label"
-      className={cn(
-        "has-data-checked:bg-primary/5 has-data-checked:border-primary/30 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3",
-        "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
-        className
-      )}
-      {...props}
-    />
+    <FieldLabelContext.Provider value={true}>
+      <Label
+        data-slot="field-label"
+        className={cn(
+          "has-[.choice-checked]:bg-primary/5 has-[.choice-checked]:border-primary/30 dark:has-[.choice-checked]:border-primary/20 dark:has-[.choice-checked]:bg-primary/10 group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3",
+          "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </Label>
+    </FieldLabelContext.Provider>
   )
 }
 
@@ -360,4 +383,5 @@ export {
   fieldDescribedBy,
   mergeFieldControlProps,
   useFieldControlProps,
+  useFieldLabelCheckedClass,
 }
