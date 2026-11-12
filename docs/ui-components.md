@@ -247,7 +247,27 @@ const deploymentStates = defineStateEntries<DeploymentState>({
 ```
 
 Do not attach ramp colors to states. Unknown wire values deliberately fall back
-to neutral and warn once in development.
+to neutral and warn once in development. `labelFor` then shows the state name in
+sentence case words: `ValidatingCustomer` reads "Validating customer".
+
+An entry can carry an `icon` when its shape says more than the tone's own icon.
+`iconFor` returns it, or `undefined` for the tone's icon:
+
+```tsx
+const orderStates = defineStateEntries<OrderState>({
+  Shipped: { tone: "neutral", defaultLabel: "Shipped", icon: <TruckIcon /> },
+  Delivered: { tone: "success", defaultLabel: "Delivered" },
+  // …
+});
+
+<StatusBadge
+  appearance="icon"
+  tone={orderStates.toneFor(order.state)}
+  icon={orderStates.iconFor(order.state)}
+>
+  {orderStates.labelFor(order.state)}
+</StatusBadge>;
+```
 
 `StatusBadge` renders as a chip by default, with the tone's own icon in front
 of the label (`progress` spins). A status that every row of a table shows uses

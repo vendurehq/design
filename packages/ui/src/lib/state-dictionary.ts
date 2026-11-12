@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * The state dictionary — the mechanism that makes the same entity state look
  * the same in every Vendure surface (see CONTEXT.md → "State dictionary").
@@ -21,19 +23,52 @@ export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'critical' | 'pr
 export interface StateEntry {
   tone: Tone;
   defaultLabel: string;
+  /**
+   * A shape that says more than the tone's own icon, e.g. `<TruckIcon />` for
+   * Shipped. Pass it to StatusBadge's `icon` through `iconFor`. Leave it out
+   * for the tone's own icon.
+   */
+  icon?: ReactNode;
 }
 
 /**
  * A declared, exhaustiveness-checked state map plus lookups that tolerate open
- * unions. `toneFor` / `labelFor` accept any string (states arrive from the wire
- * as bare strings) and fall back to `neutral` / the raw state, warning once per
- * unknown state in development so a typo surfaces without spamming a 200-row
- * table.
+ * unions. `toneFor` / `labelFor` / `iconFor` accept any string (states arrive
+ * from the wire as bare strings) and fall back to `neutral` / the state name in
+ * sentence case words ("ValidatingCustomer" → "Validating customer") / no icon,
+ * warning once per unknown state in development so a typo surfaces without
+ * spamming a 200-row table.
  */
 export interface StateMap<S extends string> {
   entries: Record<S, StateEntry>;
   toneFor(state: string): Tone;
   labelFor(state: string): string;
+  /** The entry's own icon, or `undefined` for the tone's icon. */
+  iconFor(state: string): ReactNode | undefined;
+}
+
+/**
+ * A state name from the wire in sentence case words: "ValidatingCustomer",
+ * "VALIDATING_CUSTOMER" and "validating-customer" all read "Validating
+ * customer". An acronym inside a mixed-case name stays: "SSLCheckFailed" reads
+ * "SSL check failed".
+ */
+export function stateNameToWords(state: string): string {
+  const words = state
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z0-9])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/([0-9])([A-Za-z])/g, '$1 $2')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const shouting = state === state.toUpperCase();
+  const sentence = words
+    .map((word) =>
+      !shouting && word.length > 1 && word === word.toUpperCase() ? word : word.toLowerCase(),
+    )
+    .join(' ');
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -71,7 +106,8 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
   return {
     entries,
     toneFor: (state) => resolve(state)?.tone ?? 'neutral',
-    labelFor: (state) => resolve(state)?.defaultLabel ?? state,
+    labelFor: (state) => resolve(state)?.defaultLabel ?? stateNameToWords(state),
+    iconFor: (state) => resolve(state)?.icon,
   };
 }
 
