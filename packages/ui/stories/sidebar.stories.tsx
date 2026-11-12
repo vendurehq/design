@@ -713,7 +713,8 @@ export const DashboardNavigation: Story = {
     const orders = await canvas.findByRole('link', { name: 'Orders' });
     await userEvent.click(orders);
     await waitFor(() => expect(pills().filter((pill) => 'shown' in pill.dataset)).toHaveLength(0));
-    expect(getComputedStyle(orders).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    const quietSub = canvas.getByRole('button', { name: 'Dashboard' });
+    expect(getComputedStyle(orders).backgroundColor).not.toBe(getComputedStyle(quietSub).backgroundColor);
     expect(getComputedStyle(orders, '::before').content).toBe('none');
     const sales = canvas.getByRole('button', { name: 'Sales' }).querySelector('svg')!;
     await waitFor(() => expect(getComputedStyle(sales).color).toBe(color));
