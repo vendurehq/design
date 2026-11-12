@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { CircleAlertIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
+import { CircleAlertIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '../src/components/atoms/alert.tsx';
 import { uiGuidanceById } from '../guidance/catalog.ts';
@@ -89,7 +89,6 @@ export const ChoosingTheVariant: Story = {
             caption="Warning names the risk and the action. The variant tints the fill and border and colours the icon; the title and description stay neutral."
           >
             <Alert variant="warning">
-              <TriangleAlertIcon />
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
@@ -99,7 +98,6 @@ export const ChoosingTheVariant: Story = {
             caption="Info for a fact worth noticing. Nothing is wrong and nothing is required."
           >
             <Alert variant="info">
-              <InfoIcon />
               <AlertTitle>Scheduled maintenance</AlertTitle>
               <AlertDescription>The region is updated on Sunday at 02:00 UTC.</AlertDescription>
             </Alert>
@@ -117,7 +115,6 @@ export const ChoosingTheVariant: Story = {
             caption="A saved-changes notice has no consequence. Warning here makes the real warnings easier to ignore."
           >
             <Alert variant="warning">
-              <TriangleAlertIcon />
               <AlertTitle>Changes saved</AlertTitle>
               <AlertDescription>Your settings were updated.</AlertDescription>
             </Alert>
@@ -137,21 +134,20 @@ export const ChoosingTheVariant: Story = {
 
       <Section
         title="A toned Alert carries its tone icon"
-        intro="The tint is faint, so the icon is the cue that names the tone. The warning tint is never the only cue."
+        intro="The tint is faint, so the icon is the cue that names the tone. The warning tint is never the only cue. A toned Alert shows its tone icon by itself: the same shape as the StatusBadge of that tone. Pass no icon for these tones. Pass one only for a notice that needs another shape, such as a spinner for work in progress."
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <Example verdict="do" caption="The tone icon comes first, in the tone's colour.">
+          <Example verdict="do" caption="No icon passed: the variant shows its tone icon, first, in the tone's colour.">
             <Alert variant="warning">
-              <TriangleAlertIcon />
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
           </Example>
           <Example
             verdict="dont"
-            caption="No icon: the faint tint alone does not say that this is a warning."
+            caption="icon={false}: the faint tint alone does not say that this is a warning."
           >
-            <Alert variant="warning">
+            <Alert variant="warning" icon={false}>
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>

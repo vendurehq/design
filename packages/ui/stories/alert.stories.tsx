@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
-import { AlertCircleIcon, InfoIcon, RefreshCwIcon, TerminalIcon, TriangleAlertIcon } from 'lucide-react';
+import { RefreshCwIcon, RocketIcon, TerminalIcon } from 'lucide-react';
 import { expect, within } from 'storybook/test';
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/atoms/alert.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 
 const meta = {
   title: 'Atoms/Feedback/Alert',
@@ -94,7 +95,6 @@ export const Destructive: Story = {
 export const Warning: Story = {
   render: () => (
     <Alert variant="warning">
-      <TriangleAlertIcon />
       <AlertTitle>Sending limit almost reached</AlertTitle>
       <AlertDescription>
         92 of 100 emails sent today. Upgrade the plan to keep sending.
@@ -106,7 +106,6 @@ export const Warning: Story = {
 export const Info: Story = {
   render: () => (
     <Alert variant="info">
-      <InfoIcon />
       <AlertTitle>Scheduled maintenance</AlertTitle>
       <AlertDescription>
         The region is updated on Sunday between 02:00 and 03:00 UTC.
@@ -134,7 +133,6 @@ export const WithIcon: Story = {
 export const OneLineWithWideAction: Story = {
   render: () => (
     <Alert variant="info">
-      <InfoIcon />
       <AlertDescription>The deployment list is out of date.</AlertDescription>
       <AlertAction>
         <Button variant="ghost" size="sm">
@@ -163,7 +161,6 @@ export const OneLineWithWideAction: Story = {
 export const LongSentenceWithAction: Story = {
   render: () => (
     <Alert variant="warning" className="max-w-xl">
-      <TriangleAlertIcon />
       <AlertDescription>
         The repository has commits that are not deployed yet. Sync the project to fetch the latest
         branches, then start a new deployment from the commit you want to ship.
@@ -187,7 +184,6 @@ export const LongSentenceWithAction: Story = {
 export const TitleDescriptionAction: Story = {
   render: () => (
     <Alert variant="destructive">
-      <AlertCircleIcon />
       <AlertTitle>Deployment failed</AlertTitle>
       <AlertDescription>The build stopped at the install step. Open the build log for details.</AlertDescription>
       <AlertAction>
@@ -210,7 +206,6 @@ export const TitleDescriptionAction: Story = {
 export const TwoActions: Story = {
   render: () => (
     <Alert variant="warning">
-      <TriangleAlertIcon />
       <AlertDescription>The custom domain is not verified. Add the DNS record, then check again.</AlertDescription>
       <AlertAction>
         <Button variant="ghost" size="sm">
@@ -238,7 +233,6 @@ export const TwoActions: Story = {
 export const Narrow: Story = {
   render: () => (
     <Alert variant="info" className="max-w-xs">
-      <InfoIcon />
       <AlertDescription>
         Backup bk_01JDQ8ZK4W7Y3N2M5P6R8T9V0X is ready for the project vendure-demo-storefront.
       </AlertDescription>
@@ -264,20 +258,19 @@ export const Narrow: Story = {
   },
 };
 
-/** Every variant with an action, with and without an icon. */
+/** Every variant with an action: the default variant without an icon, the toned ones with their tone icon. */
 export const ActionVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       {(
         [
-          ['default', null],
-          ['info', <InfoIcon key="icon" />],
-          ['warning', <TriangleAlertIcon key="icon" />],
-          ['destructive', <AlertCircleIcon key="icon" />],
+          'default',
+          'info',
+          'warning',
+          'destructive',
         ] as const
-      ).map(([variant, icon]) => (
+      ).map((variant) => (
         <Alert key={variant} variant={variant}>
-          {icon}
           <AlertDescription>The {variant} alert keeps a wide action on its sentence line.</AlertDescription>
           <AlertAction>
             <Button variant="ghost" size="sm">
@@ -329,7 +322,6 @@ export const DestructiveLightAndDark: Story = {
     <LightAndDark>
       {() => (
         <Alert variant="destructive">
-          <AlertCircleIcon />
           <AlertTitle>Payment failed</AlertTitle>
           <AlertDescription>The card was declined. Ask the customer for another card.</AlertDescription>
         </Alert>
@@ -355,17 +347,14 @@ export const VariantsLightAndDark: Story = {
             <AlertDescription>The CLI can deploy this project too.</AlertDescription>
           </Alert>
           <Alert variant="info">
-            <InfoIcon />
             <AlertTitle>Info</AlertTitle>
             <AlertDescription>The region is updated on Sunday at 02:00 UTC.</AlertDescription>
           </Alert>
           <Alert variant="warning">
-            <TriangleAlertIcon />
             <AlertTitle>Warning</AlertTitle>
             <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
           </Alert>
           <Alert variant="destructive">
-            <AlertCircleIcon />
             <AlertTitle>Destructive</AlertTitle>
             <AlertDescription>The deployment failed. Open the build log.</AlertDescription>
           </Alert>
@@ -373,4 +362,81 @@ export const VariantsLightAndDark: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+const toneOfVariant = { info: 'info', warning: 'warning', destructive: 'critical' } as const;
+
+/**
+ * A toned Alert shows the icon of its tone, the same shape as the StatusBadge
+ * of that tone. Pass no icon for these tones. The default variant has no tone
+ * and shows no icon unless you pass one.
+ */
+export const ToneIcons: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <>
+          {(['info', 'warning', 'destructive'] as const).map((variant) => (
+            <div key={variant} className="flex items-start gap-4">
+              <Alert variant={variant} className="flex-1">
+                <AlertTitle className="capitalize">{variant}</AlertTitle>
+                <AlertDescription>The icon comes from the variant.</AlertDescription>
+              </Alert>
+              <StatusBadge tone={toneOfVariant[variant]} className="shrink-0">
+                {toneOfVariant[variant]}
+              </StatusBadge>
+            </div>
+          ))}
+        </>
+      )}
+    </LightAndDark>
+  ),
+  play: async ({ canvasElement }) => {
+    const rows = canvasElement.querySelectorAll<HTMLElement>('[data-slot=alert]');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const alert of rows) {
+      const badge = alert.parentElement!.querySelector('[data-slot=status-badge-marker] svg');
+      const icon = alert.querySelector('[data-slot=alert-icon]');
+      expect(icon).not.toBeNull();
+      // The same lucide shape: the class names the icon.
+      expect(icon!.getAttribute('class')).toBe(badge!.getAttribute('class'));
+    }
+  },
+};
+
+/**
+ * An icon you pass wins over the tone icon, as an `icon` prop or as an svg
+ * child. `icon={false}` shows no icon.
+ */
+export const PassedIconAndNoIcon: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Alert variant="info" icon={<RocketIcon />}>
+        <AlertTitle>The icon prop</AlertTitle>
+        <AlertDescription>A rocket replaces the info icon.</AlertDescription>
+      </Alert>
+      <Alert variant="info">
+        <TerminalIcon />
+        <AlertTitle>An svg child</AlertTitle>
+        <AlertDescription>The terminal icon replaces the info icon.</AlertDescription>
+      </Alert>
+      <Alert variant="info" icon={false}>
+        <AlertTitle>No icon</AlertTitle>
+        <AlertDescription>The text starts at the padding.</AlertDescription>
+      </Alert>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [prop, child, none] = within(canvasElement).getAllByRole('alert');
+    const visibleIcons = (alert: HTMLElement) =>
+      [...alert.querySelectorAll('svg')].filter((svg) => getComputedStyle(svg).display !== 'none');
+    expect(visibleIcons(prop!).map((svg) => svg.getAttribute('class'))).toEqual([expect.stringContaining('lucide-rocket')]);
+    expect(visibleIcons(child!).map((svg) => svg.getAttribute('class'))).toEqual([expect.stringContaining('lucide-terminal')]);
+    expect(visibleIcons(none!)).toHaveLength(0);
+    // The title lines up with the icon column only when there is an icon.
+    const title = (alert: HTMLElement) => slot(alert, 'alert-title').getBoundingClientRect().left;
+    expect(title(prop!)).toBeCloseTo(title(child!), 0);
+    expect(title(none!)).toBeLessThan(title(prop!));
+  },
 };

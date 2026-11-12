@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { TerminalIcon } from 'lucide-react';
+
+import { toneIcons } from '../../lib/tone-icons.ts';
 import { Alert, AlertAction, AlertDescription } from './alert.tsx';
 
 // An absolutely positioned action covers any sentence that runs under it. The
@@ -68,5 +71,44 @@ describe('Alert entrance', () => {
     expect(t.filter((token) => token.startsWith('starting:') && token.includes('translate'))).toEqual([]);
     expect(t).toContain('duration-alert-enter');
     expect(t).toContain('ease-out');
+  });
+});
+
+// A toned Alert takes the icon of its tone from the map StatusBadge reads, so
+// a tone has one shape in a badge and in an alert.
+describe('Alert icon', () => {
+  const svgs = (html: string) => html.match(/<svg[^>]*>/g) ?? [];
+  const iconOf = (Icon: (typeof toneIcons)['info']) => svgs(renderToStaticMarkup(<Icon />))[0]?.match(/class="([^"]*)"/)?.[1];
+
+  test.each([
+    ['destructive', 'critical'],
+    ['warning', 'warning'],
+    ['info', 'info'],
+  ] as const)('the %s variant shows the %s tone icon', (variant, tone) => {
+    const [icon] = svgs(renderToStaticMarkup(<Alert variant={variant}>Text</Alert>));
+    expect(icon).toContain('data-slot="alert-icon"');
+    expect(icon).toContain('aria-hidden="true"');
+    expect(icon).toContain(`class="${iconOf(toneIcons[tone])}`);
+  });
+
+  test('the default variant shows no icon', () => {
+    expect(svgs(renderToStaticMarkup(<Alert>Text</Alert>))).toHaveLength(0);
+  });
+
+  test('icon replaces the tone icon, and false shows none', () => {
+    const passed = svgs(renderToStaticMarkup(<Alert variant="info" icon={<TerminalIcon />}>Text</Alert>));
+    expect(passed).toHaveLength(1);
+    expect(passed[0]).toContain('lucide-terminal');
+    expect(svgs(renderToStaticMarkup(<Alert variant="info" icon={false}>Text</Alert>))).toHaveLength(0);
+  });
+
+  test('an svg child hides the tone icon', () => {
+    const html = renderToStaticMarkup(
+      <Alert variant="warning">
+        <TerminalIcon />
+        Text
+      </Alert>,
+    );
+    expect(html).toContain('[&amp;:has(&gt;svg:not([data-slot=alert-icon]))&gt;[data-slot=alert-icon]]:hidden');
   });
 });
