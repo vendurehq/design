@@ -15,6 +15,7 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from '../src/components/atoms/menubar.tsx';
+import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 
 const meta = {
   title: 'Atoms/Menus/Menubar',
@@ -195,5 +196,28 @@ export const OpensTowardTheCentre: Story = {
       if (dir === null) root.removeAttribute('dir');
       else root.setAttribute('dir', dir);
     }
+  },
+};
+
+/**
+ * A disabled item never takes the fill: not under the pointer, not under the
+ * arrow keys. The arrow keys still stop on it and show only the focus ring.
+ * Here the disabled item is a checkbox item.
+ */
+export const DisabledItem: Story = {
+  render: () => (
+    <Menubar>
+      <MenubarMenu>
+        <MenubarTrigger>Edit</MenubarTrigger>
+        <MenubarContent>
+          <MenubarItem>Send invite</MenubarItem>
+          <MenubarCheckboxItem disabled>Add member</MenubarCheckboxItem>
+          <MenubarItem>Settings</MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+    </Menubar>
+  ),
+  play: async ({ canvasElement }) => {
+    await checkDisabledItemHasNoFill(within(canvasElement).getByRole('menuitem', { name: 'Edit' }));
   },
 };
