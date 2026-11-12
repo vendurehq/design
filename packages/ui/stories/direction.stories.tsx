@@ -3,12 +3,12 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../src/components/atoms/alert-dialog.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from '../src/components/atoms/combobox.tsx';
-import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
+import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
 import { DirectionProvider, useDirection } from '../src/components/atoms/direction.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../src/components/atoms/dialog.tsx';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '../src/components/atoms/dropdown-menu.tsx';
-import { Menubar, MenubarCheckboxItem, MenubarContent, MenubarMenu, MenubarRadioGroup, MenubarRadioItem, MenubarTrigger } from '../src/components/atoms/menubar.tsx';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '../src/components/atoms/dropdown-menu.tsx';
+import { Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarMenu, MenubarRadioGroup, MenubarRadioItem, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger } from '../src/components/atoms/menubar.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/atoms/hover-card.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '../src/components/atoms/popover.tsx';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
@@ -377,4 +377,108 @@ export const MenuMarksRightToLeft: Story = {
 export const MenuMarksLeftToRight: Story = {
   render: () => <MenuMarks dir="ltr" />,
   play: async ({ canvasElement }) => expectMenuMarks(canvasElement, 'ltr'),
+};
+
+function SubMenus({ dir }: { dir: Dir }) {
+  const label = dir === 'rtl' ? 'right to left' : 'left to right';
+  return (
+    <DirectionProvider direction={dir}>
+      <div dir={dir} className="flex flex-col items-center gap-4 pt-6 pb-64">
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" />}>{`Dropdown, ${label}`}</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Rename</DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Move to</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem>Archive</DropdownMenuItem>
+                <DropdownMenuItem>Drafts</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ContextMenu>
+          <ContextMenuTrigger className="rounded-lg border border-dashed px-4 py-2 text-sm">{`Context, ${label}`}</ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem>Rename</ContextMenuItem>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>Move to</ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                <ContextMenuItem>Archive</ContextMenuItem>
+                <ContextMenuItem>Drafts</ContextMenuItem>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+          </ContextMenuContent>
+        </ContextMenu>
+        <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger>{`Menubar, ${label}`}</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>Rename</MenubarItem>
+              <MenubarSub>
+                <MenubarSubTrigger>Move to</MenubarSubTrigger>
+                <MenubarSubContent>
+                  <MenubarItem>Archive</MenubarItem>
+                  <MenubarItem>Drafts</MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+      </div>
+    </DirectionProvider>
+  );
+}
+
+/**
+ * Opens the sub-menu of each menu and checks that it opens toward the end
+ * side (left in right to left) and that the trigger's chevron points that way.
+ */
+async function expectSubMenus(canvasElement: HTMLElement, dir: Dir) {
+  const label = dir === 'rtl' ? 'right to left' : 'left to right';
+  const canvas = within(canvasElement);
+  const menus = [
+    { name: `Dropdown, ${label}`, open: (el: HTMLElement) => userEvent.click(el) },
+    { name: `Context, ${label}`, open: (el: HTMLElement) => userEvent.pointer({ keys: '[MouseRight]', target: el }) },
+    { name: `Menubar, ${label}`, open: (el: HTMLElement) => userEvent.click(el) },
+  ];
+  for (const menu of menus) {
+    await menu.open(canvas.getByText(menu.name));
+    const trigger = await waitFor(() => {
+      const found = [...document.querySelectorAll<HTMLElement>('[data-open] [role=menuitem]')].find((item) => item.textContent === 'Move to');
+      expect(found).toBeDefined();
+      return found!;
+    });
+    await userEvent.click(trigger);
+    const sub = await waitFor(() => {
+      const found = document.querySelector<HTMLElement>('[data-slot$=sub-content][data-open]');
+      expect(found).not.toBeNull();
+      return found!;
+    });
+    const item = trigger.getBoundingClientRect();
+    const popup = sub.getBoundingClientRect();
+    if (dir === 'rtl') {
+      await expect(popup.right).toBeLessThanOrEqual(item.left + 1);
+    } else {
+      await expect(popup.left).toBeGreaterThanOrEqual(item.right - 1);
+    }
+    // The chevron points the way the sub-menu opens.
+    const chevron = trigger.querySelector('svg') as SVGElement;
+    await expect(getComputedStyle(chevron).rotate).toBe(dir === 'rtl' ? '180deg' : 'none');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(document.querySelectorAll('[data-open] [role=menuitem]')).toHaveLength(0));
+  }
+}
+
+/** Right to left: each sub-menu opens to the left and its chevron points left. */
+export const SubMenusRightToLeft: Story = {
+  render: () => <SubMenus dir="rtl" />,
+  play: async ({ canvasElement }) => expectSubMenus(canvasElement, 'rtl'),
+};
+
+/** Left to right, the same menus: sub-menus open to the right, as before. */
+export const SubMenusLeftToRight: Story = {
+  render: () => <SubMenus dir="ltr" />,
+  play: async ({ canvasElement }) => expectSubMenus(canvasElement, 'ltr'),
 };
