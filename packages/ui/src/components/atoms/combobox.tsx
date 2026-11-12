@@ -4,6 +4,7 @@ import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { statusChipRing } from "@vendure-io/ui/lib/tint-recipes"
 import { fieldSurface, fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
@@ -288,7 +289,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "bg-accent inset-ring inset-ring-[color-mix(in_oklab,var(--neutral-text)_34%,transparent)] text-foreground flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0",
+        "bg-accent [--status-tone:var(--neutral-text)]", statusChipRing, "text-foreground flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0",
         className
       )}
       {...props}
