@@ -1702,10 +1702,11 @@ export const SelectionMotion: Story = {
     ];
     const FULL = ['inset(0px 0px calc(50% - 0.5px))', 'inset(calc(50% - 0.5px) 0px 0px)'];
 
-    await step('selecting rows 2 and 4 opens the bulk band', async () => {
+    await step('selecting rows 2 and 4 shows the bulk bar', async () => {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 2' }));
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 4' }));
-      await expect(await canvas.findByText('2 selected')).toBeVisible();
+      // It fades in once the column labels it covers have faded out.
+      await waitFor(() => expect(canvas.getByText('2 selected')).toBeVisible());
     });
 
     await step('a selected row shows the whole bar in the brand colour', async () => {
@@ -3053,7 +3054,7 @@ const playHeaderRowStays: Story['play'] = async ({ canvasElement, step }) => {
       await expect(`${act}: ${frames.join(' → ')}`).toBe(`${act}: ${frames[0]}`);
     });
     if (act === 'select the first row') {
-      await expect(await canvas.findByText('1 selected')).toBeVisible();
+      await waitFor(() => expect(canvas.getByText('1 selected')).toBeVisible());
     }
   }
 };
