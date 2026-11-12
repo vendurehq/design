@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, GripVerticalIcon, MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { flexRender } from '@tanstack/react-table';
 import { Fragment, useMemo, useState } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardAction, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
@@ -1931,6 +1931,56 @@ export const SelectAllRipple50: Story = {
   name: 'Select all ripple · 50 rows',
   render: () => <RippleTable count={50} />,
   play: playSelectAllRipple,
+};
+
+// A press on the select-all checkbox prepares its click in the frames before
+// the release: the ripple's start and the row cursor. The rows do not change
+// until the click. A release without a click puts both back.
+export const SelectAllPressPrepares: Story = {
+  name: 'Select all ripple · press prepares the click',
+  render: () => <RippleTable count={10} />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const table = canvasElement.querySelector('table[data-slot=table]') as HTMLElement;
+    const box = () => canvas.getByRole('checkbox', { name: 'Select all rows' });
+    const selectedRows = () => canvasElement.querySelectorAll('tbody tr[data-state=selected]').length;
+
+    await step('a press prepares the ripple and the cursor, and selects nothing', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).toHaveAttribute('data-select-ripple', 'select'));
+      await expect(table).toHaveAttribute('data-selecting-cursor');
+      await expect(selectedRows()).toBe(0);
+    });
+
+    await step('a release without a click puts both back', async () => {
+      fireEvent.pointerUp(window);
+      await waitFor(() => expect(table).not.toHaveAttribute('data-select-ripple'));
+      await expect(table).not.toHaveAttribute('data-selecting-cursor');
+    });
+
+    await step('a press and its click select all, with the same ripple', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).toHaveAttribute('data-selecting-cursor'));
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
+      fireEvent.pointerUp(box());
+      box().click();
+      await waitFor(() => expect(selectedRows()).toBe(10));
+      await expect(table).toHaveAttribute('data-select-ripple', 'select');
+      await expect(table).toHaveAttribute('data-selecting-cursor');
+      const starts = rippleStarts(canvasElement);
+      await expect(starts[0]).toBe(0);
+      await expect(Math.max(...starts)).toBeLessThanOrEqual(200);
+    });
+
+    await step('a press and its click clear all, and the cursor follows', async () => {
+      fireEvent.pointerDown(box());
+      await waitFor(() => expect(table).not.toHaveAttribute('data-selecting-cursor'));
+      fireEvent.pointerUp(box());
+      box().click();
+      await waitFor(() => expect(selectedRows()).toBe(0));
+      await expect(table).not.toHaveAttribute('data-selecting-cursor');
+    });
+  },
 };
 
 // Rows the consumer renders through `renderRow` take the same ripple from
