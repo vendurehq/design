@@ -1,11 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { GlobeIcon, InboxIcon, PackageIcon } from 'lucide-react';
+import { GlobeIcon, InboxIcon, KeyRoundIcon, PackageIcon } from 'lucide-react';
+import { expect, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
   Card,
+  CardAction,
   CardContent,
   CardCount,
+  CardDescription,
   CardHeader,
+  CardRow,
   CardRows,
   CardTitle,
 } from '../src/components/atoms/card.tsx';
@@ -186,6 +190,64 @@ export const CompactWithIcon: Story = {
       </CardRows>
     </Card>
   ),
+};
+
+/**
+ * Inside a card or a secondary panel, an empty state is compact with an icon:
+ * a faint 28px icon, then the title. It stays quieter than the card next to it
+ * that has content. The full size with an illustration is for a whole page or
+ * a whole list.
+ */
+export const CompactInCardNextToContent: Story = {
+  render: () => (
+    <div className="grid w-[640px] grid-cols-2 items-start gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Environment</CardTitle>
+          <CardDescription>Production, deployed 2 hours ago.</CardDescription>
+        </CardHeader>
+        <CardRows>
+          {[
+            ['Region', 'eu-central'],
+            ['Runtime', 'Node 22'],
+            ['Replicas', '2'],
+          ].map(([label, value]) => (
+            <CardRow key={label}>
+              <span className="text-muted-foreground flex-1">{label}</span>
+              <span>{value}</span>
+            </CardRow>
+          ))}
+        </CardRows>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Emergency boot</CardTitle>
+          <CardDescription>Start an installation that cannot activate.</CardDescription>
+          <CardAction>
+            <Button variant="outline" size="sm">
+              Issue token
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            size="compact"
+            icon={<KeyRoundIcon />}
+            title="No emergency boot token was issued for this project."
+          />
+        </CardContent>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const state = canvasElement.querySelector<HTMLElement>('[data-slot=empty-state]');
+    await expect(state).not.toBeNull();
+    await expect(state).toHaveAttribute('data-size', 'compact');
+    // The icon, not an illustration, fills the media slot.
+    const icon = state!.querySelector('svg');
+    await expect(icon?.getBoundingClientRect().width).toBe(28);
+    await expect(within(state!).getByText(/No emergency boot token/)).toBeVisible();
+  },
 };
 
 /**

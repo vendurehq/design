@@ -33,6 +33,7 @@ const internal = [
   'lib/popup-direction',
   'lib/popup-motion',
   'hooks/use-active-label-size',
+  'hooks/use-pinned-height',
 ];
 
 describe('package exports', () => {

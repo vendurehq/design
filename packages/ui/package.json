@@ -25,7 +25,8 @@
     "./lib/popup-direction": null,
     "./lib/popup-motion": null,
     "./hooks/*": "./src/hooks/*.ts",
-    "./hooks/use-active-label-size": null
+    "./hooks/use-active-label-size": null,
+    "./hooks/use-pinned-height": null
   },
   "files": [
     "src",

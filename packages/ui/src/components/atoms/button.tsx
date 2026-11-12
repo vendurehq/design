@@ -8,6 +8,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { LabelSwap } from "./label-swap.tsx"
 import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
 import { cn } from "@vendure-io/ui/lib/utils"
+import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
 
 // The v3 look: 34px default and 28px sm, the xl radius, 13px medium text.
 // Every size keeps its side padding with or without a `data-icon` icon;
@@ -70,7 +71,7 @@ const buttonVariants = cva(
         // signature, not a wallpaper; see Button guidance before reaching for it.
         brand: "bg-brand text-brand-foreground shadow-control hover:bg-brand/80",
         outline:
-          "border-input bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control [&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_9.5%)] dark:[&:not([data-slot=button-group]>*,[aria-invalid=true])]:hover:border-[color-mix(in_oklab,var(--input),var(--foreground)_12%)] hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]",
+          [outlineEdge, outlineEdgeHover, "bg-card not-dark:[&:not([data-slot=button-group]>*)]:bg-clip-border text-foreground shadow-control hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-expanded:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)]"],
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:

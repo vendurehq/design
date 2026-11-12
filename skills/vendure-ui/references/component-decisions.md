@@ -371,7 +371,7 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
 - **Tables own their perimeter:** When EmptyState or ErrorState replaces a table body, it renders flush within the table container: neither draws a box by default. Do not add an inset dashed outline; pass bordered only for a drop zone.
-- **Compact for small panels:** Use size="compact" inside a panel smaller than about 240px tall or a side column. Use the full state for a page region or a table body. Compact keeps a title, a description and at most one action, and sits flush. An icon is optional and renders bare, as in the full state.
+- **Compact with an icon inside a card:** Inside a card, a secondary panel or a side column, use size="compact" with the icon prop: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps a title, a description and at most one action, and sits flush.
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.
