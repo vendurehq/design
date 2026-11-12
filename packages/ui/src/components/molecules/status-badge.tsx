@@ -336,8 +336,7 @@ function StatusBadge({
   // and on focus, so it is a tab stop with the focus ring. A chip also takes
   // the hover fill in place of its tone wash. A lone dot stays out of the tab
   // order: it is too small to be a target.
-  const isTrigger =
-    (props as { 'data-slot'?: string })['data-slot'] === 'tooltip-trigger' && appearance !== 'dot';
+  const isTrigger = 'data-tooltip-trigger' in props && appearance !== 'dot';
 
   return useRender({
     defaultTagName: 'span',

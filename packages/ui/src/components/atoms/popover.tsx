@@ -7,6 +7,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />
@@ -17,7 +18,7 @@ function PopoverPortal({ ...props }: PopoverPrimitive.Portal.Props) {
 }
 
 function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+  return <PopoverPrimitive.Trigger {...triggerSlot("popover-trigger", props.render)} {...props} />
 }
 
 /**

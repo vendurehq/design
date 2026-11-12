@@ -7,6 +7,7 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { LabelSwap } from "./label-swap.tsx"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 /** True inside a TooltipProvider, whose delay then applies to each trigger. */
 const InTooltipProvider = React.createContext(false)
@@ -54,7 +55,7 @@ function TooltipTrigger({ delay, ...props }: TooltipPrimitive.Trigger.Props) {
   const inProvider = React.useContext(InTooltipProvider)
   return (
     <TooltipPrimitive.Trigger
-      data-slot="tooltip-trigger"
+      {...triggerSlot("tooltip-trigger", props.render)}
       delay={delay ?? (inProvider ? undefined : TOOLTIP_DELAY)}
       {...props}
     />

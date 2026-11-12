@@ -8,6 +8,7 @@ import { popupMotion } from "../../lib/popup-motion.ts"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
+import { triggerSlot } from "../../lib/trigger-slot.ts"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -18,7 +19,7 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
 }
 
 function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+  return <MenuPrimitive.Trigger {...triggerSlot("dropdown-menu-trigger", props.render)} {...props} />
 }
 
 /**

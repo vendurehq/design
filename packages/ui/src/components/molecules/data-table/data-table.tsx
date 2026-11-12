@@ -125,8 +125,8 @@ const LINKED_ROW_CLASS = cn(
   '[&_tr:has([data-slot=data-table-row-link])]:relative [&_tr:has([data-slot=data-table-row-link])]:cursor-pointer',
   // While rows are selected, a click selects: the row does not look like a link.
   '[&[data-selecting]_tr]:cursor-default!',
-  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
-  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
   // Product, rendered by the same link component) is a plain link above it,
   // underlined on hover, without a chevron.
@@ -327,7 +327,7 @@ const bulkRowOpen = {
 // control inside the row counts: an ancestor of the table that matches (an app
 // shell's `<main tabindex="-1">`, the skip link target) is not a row control.
 const ROW_CONTROL_SELECTOR =
-  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-slot=tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
 
 // The click area of a select checkbox is its whole cell: the full height of
 // the row, from the table's start edge to where the leading cell's content

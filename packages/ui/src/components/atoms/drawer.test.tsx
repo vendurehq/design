@@ -24,8 +24,10 @@ function render(open: boolean) {
 describe('Drawer', () => {
   test('DrawerTrigger renders through the render prop as a single Button', () => {
     const html = render(false);
-    const trigger = slotTag(html, 'drawer-trigger');
+    const trigger = slotTag(html, 'button');
     expect(trigger.startsWith('<button')).toBe(true);
+    // The Button keeps its own slot; the trigger is marked with data-drawer-trigger.
+    expect(trigger).toContain('data-drawer-trigger=""');
     // Button's outline variant classes reach the trigger element.
     expect(trigger).toContain('border-border');
     expect(trigger).toContain('bg-card');
@@ -41,13 +43,13 @@ describe('Drawer', () => {
   });
 
   test('closed state: the trigger has no data-popup-open', () => {
-    const trigger = slotTag(render(false), 'drawer-trigger');
+    const trigger = slotTag(render(false), 'button');
     expect(trigger).not.toContain('data-popup-open');
     expect(trigger).not.toContain('data-state');
   });
 
   test('open state: the trigger has a valueless data-popup-open', () => {
-    const trigger = slotTag(render(true), 'drawer-trigger');
+    const trigger = slotTag(render(true), 'button');
     expect(trigger).toContain('data-popup-open=""');
     expect(trigger).not.toContain('data-state');
   });

@@ -85,6 +85,8 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Drawer.** The Drawer is built on the Base UI drawer, like every other overlay. Compose its parts with the `render` prop (`<DrawerTrigger render={<Button />}>`); there is no `asChild`. Set the side with `swipeDirection` (`down` by default, or `up`, `left`, `right`), and show the drag handle with `showSwipeHandle`. Add `body { position: relative; }` to your global styles so the overlay covers the viewport on iOS Safari. Coming from 1.x or an earlier 2.0.0 beta: replace `asChild` with `render`, replace `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`), and add `showSwipeHandle` where you want the handle.
 
+> **Triggers and `data-slot`.** A trigger (`TooltipTrigger`, `PopoverTrigger`, `HoverCardTrigger`, `DropdownMenuTrigger`, `DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `DrawerTrigger`, `CollapsibleTrigger`, `ContextMenuTrigger`) always marks its element with `data-<slot>`, for example `data-tooltip-trigger`. It sets `data-slot="<slot>"` only when it renders a plain element: no `render`, a render function, or an HTML element such as `<span>`. A component passed as `render` keeps its own slot: `<TooltipTrigger render={<Button />}>` renders `data-slot="button"` and `data-tooltip-trigger`. Select a trigger by `[data-tooltip-trigger]`, not by `[data-slot=tooltip-trigger]`.
+
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`
 
