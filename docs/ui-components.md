@@ -99,7 +99,18 @@ behavior you need instead of rebuilding it from atoms.
 ### Molecules
 
 #### Application structure
-`app-shell`, `page-header`, `skip-link`, `arrow-link`
+`app-shell`, `page-header`, `skip-link`, `arrow-link`, `search-trigger`
+
+> **SearchTrigger.** The search field at the end of the top bar: a button that looks like a 28px field, with a search icon, the word "Search" and the shortcut (⌘K on Apple platforms, Ctrl K elsewhere). Its accessible name is "Search (command palette)", and it announces a dialog. It only shows the shortcut: open the palette in `onClick` and bind the same key yourself. `shortcutKey` sets the letter (`null` for none). `collapse` shrinks it to an icon button: below 768px by default (`md`), `never` or `always`.
+>
+> ```tsx
+> <AppShellHeader>
+>   …
+>   <div className="ml-auto flex items-center gap-1">
+>     <SearchTrigger onClick={() => setPaletteOpen(true)} />
+>   </div>
+> </AppShellHeader>
+> ```
 
 #### Forms & selection
 `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`

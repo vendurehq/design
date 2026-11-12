@@ -23,6 +23,7 @@ import {
   AppShellMain,
   AppShellSidebar,
 } from '../src/components/molecules/app-shell.tsx';
+import { SearchTrigger } from '../src/components/molecules/search-trigger.tsx';
 import { SkipLink } from '../src/components/molecules/skip-link.tsx';
 
 const meta = {
@@ -86,6 +87,16 @@ function Nav() {
         </div>
       ))}
     </AppShellSidebar>
+  );
+}
+
+// The end of the top bar: the search field that opens the command palette
+// (the consumer's handler). Below 768px it shrinks to an icon button.
+function TopBarActions() {
+  return (
+    <div className="ml-auto flex items-center gap-1">
+      <SearchTrigger />
+    </div>
   );
 }
 
@@ -154,6 +165,7 @@ export const Default: Story = {
         <AppShellContent>
           <AppShellHeader>
             <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+            <TopBarActions />
           </AppShellHeader>
           <AppShellMain id="storybook-shell-main">
             <Dashboard />
@@ -236,6 +248,7 @@ export const WithSidebarAtom: Story = {
             <AppShellHeader>
               <SidebarTrigger />
               <span className="text-muted-foreground text-sm">Marketing / Orders</span>
+              <TopBarActions />
             </AppShellHeader>
             <AppShellMain>
               <Dashboard />

@@ -39,6 +39,7 @@ Use the shared application anatomy without moving app-owned routing or context i
 - **Compose one main landmark with Sidebar:** When using the collapsible Sidebar atom, render SidebarInset as a div and keep AppShellMain as the single focusable main landmark.
 - **The consumer owns application state:** Keep routing, navigation data, authentication, permissions, and context switching in the consumer.
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
+- **Search opens the palette from the top bar:** Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.
 
 Related decisions: `page-header`.
 ## ArrowLink
