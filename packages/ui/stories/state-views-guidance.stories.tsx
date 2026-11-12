@@ -444,7 +444,7 @@ export const CompactForSmallPanels: Story = {
           </Example>
           <Example
             verdict="do"
-            caption="An empty list panel names what belongs there and offers one action. The optional icon renders bare, with no chip."
+            caption="An empty card shows a faint icon, names what belongs there and offers one action. The icon renders bare, with no chip."
           >
             <Card className="w-full">
               <CardHeader>
