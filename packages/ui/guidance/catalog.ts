@@ -161,6 +161,10 @@ export const uiGuidance = [
         title: 'Brand is an identity spend, not a louder primary',
         body: 'Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.',
       },
+      {
+        title: 'A disabled button that must say why keeps its focus',
+        body: 'Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'The single primary action of the view.' },
