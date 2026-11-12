@@ -62,7 +62,7 @@ describe('v3 field look', () => {
     if (!['InputGroup', 'ComboboxInput'].includes(name)) {
       test(`${name} starts its text 10px in`, () => {
         const tokens = fieldTokens(name);
-        expect(tokens.includes('px-2.5') || tokens.includes('pl-2.5')).toBe(true);
+        expect(tokens.includes('px-2.5') || tokens.includes('ps-2.5')).toBe(true);
       });
     }
   }
