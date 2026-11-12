@@ -201,9 +201,13 @@ describe('v3 overlay look', () => {
       const code = source(file);
       expect(code).toContain('max-h-[calc(100dvh-2rem)]');
       expect(code).toContain('overflow-y-auto');
-      expect(code).toContain('const pinned = "sticky z-10 -mx-5 bg-overlay px-5"');
-      expect(code).toContain('-top-5 -mt-5 -mb-4');
-      expect(code).toContain('-bottom-5 -mt-4 -mb-5');
+      // One variable sets the padding and the pinned edges' offsets.
+      expect(code).toContain('[--dialog-padding:--spacing(5)] p-(--dialog-padding)');
+      expect(code).toContain(
+        'const pinned = "sticky z-10 -mx-(--dialog-padding) bg-overlay px-(--dialog-padding)"',
+      );
+      expect(code).toContain('-top-(--dialog-padding) -mt-(--dialog-padding) -mb-4');
+      expect(code).toContain('-bottom-(--dialog-padding) -mt-4 -mb-(--dialog-padding)');
     },
   );
 
@@ -215,6 +219,18 @@ describe('v3 overlay look', () => {
     expect(code).toContain('sticky top-0 z-10');
     expect(code).toContain('sticky bottom-0 z-10');
   });
+
+  test.each(['dialog.tsx', 'alert-dialog.tsx', 'sheet.tsx'])(
+    '%s scrolls a focused field clear of the pinned header and footer',
+    (file) => {
+      const code = source(file);
+      expect(code).toContain(
+        '[scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))]',
+      );
+      expect(code).toContain('usePinnedHeight("--pinned-header-height"');
+      expect(code).toContain('usePinnedHeight("--pinned-footer-height"');
+    },
+  );
 
   test('a dialog title takes an 18px icon, neutral at 60% or in its tone', () => {
     const code = source('dialog.tsx');

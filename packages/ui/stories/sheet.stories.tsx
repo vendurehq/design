@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -93,4 +96,69 @@ export const Bottom: Story = {
       </SheetContent>
     </Sheet>
   ),
+};
+
+const shippingFields = [
+  'Recipient',
+  'Company',
+  'Address line 1',
+  'Address line 2',
+  'City',
+  'Postal code',
+  'Region',
+  'Country',
+  'Phone',
+  'Email',
+  'Delivery instructions',
+  'Reference',
+];
+
+/** A form taller than the viewport scrolls inside; a field reached with Tab lands clear of the pinned header and footer. */
+export const TallForm: Story = {
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>Edit shipping address</SheetTrigger>
+      <SheetContent side="right">
+        <SheetHeader>
+          <SheetTitle>Edit shipping address</SheetTitle>
+          <SheetDescription>The carrier label uses this address from the next shipment.</SheetDescription>
+        </SheetHeader>
+        <form className="flex flex-1 flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup className="px-4">
+            {shippingFields.map((label) => {
+              const id = `shipping-${label.toLowerCase().replaceAll(' ', '-')}`;
+              return (
+                <Field key={id}>
+                  <FieldLabel htmlFor={id}>{label}</FieldLabel>
+                  <Input id={id} />
+                </Field>
+              );
+            })}
+          </FieldGroup>
+          <SheetFooter>
+            <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+            <Button type="submit">Save</Button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Edit shipping address' }));
+    const sheet = await within(document.body).findByRole('dialog');
+    await Promise.all(sheet.getAnimations().map((animation) => animation.finished));
+    await expect(sheet.scrollHeight).toBeGreaterThan(sheet.clientHeight);
+    const header = sheet.querySelector('[data-slot=sheet-header]')!;
+    const footer = sheet.querySelector('[data-slot=sheet-footer]')!;
+    const last = within(sheet).getByLabelText('Reference');
+    within(sheet).getByLabelText('Recipient').focus();
+    for (let i = 1; i < shippingFields.length; i++) await userEvent.tab();
+    await expect(last).toHaveFocus();
+    await waitFor(() => {
+      const field = last.getBoundingClientRect();
+      expect(field.top).toBeGreaterThanOrEqual(header.getBoundingClientRect().bottom);
+      expect(field.bottom).toBeLessThanOrEqual(footer.getBoundingClientRect().top);
+    });
+    await userEvent.keyboard('{Escape}');
+  },
 };

@@ -7,6 +7,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -74,13 +75,13 @@ function SheetContent({
   return (
     <SheetPortal>
       <SheetOverlay />
-      {/* A sheet taller than the viewport scrolls inside; SheetHeader and SheetFooter stick to its edges. */}
+      {/* A sheet taller than the viewport scrolls inside; SheetHeader and SheetFooter stick to its edges, and the scroll padding keeps a focused field clear of both. */}
       <SheetPrimitive.Popup
         dir={dir}
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          "group/sheet-content bg-overlay fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain bg-clip-padding text-sm shadow-lg transition-[opacity,translate] duration-normal ease-drawer data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-[side=right]:data-starting-style:translate-x-10 motion-safe:data-[side=right]:data-ending-style:translate-x-10 motion-safe:data-[side=left]:data-starting-style:-translate-x-10 motion-safe:data-[side=left]:data-ending-style:-translate-x-10 motion-safe:data-[side=top]:data-starting-style:-translate-y-10 motion-safe:data-[side=top]:data-ending-style:-translate-y-10 motion-safe:data-[side=bottom]:data-starting-style:translate-y-10 motion-safe:data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:max-h-dvh data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-dvh data-[side=top]:border-b data-[side=left]:sm:max-w-lg data-[side=right]:sm:max-w-lg",
+          "group/sheet-content bg-overlay fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] bg-clip-padding text-sm shadow-lg transition-[opacity,translate] duration-normal ease-drawer data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-[side=right]:data-starting-style:translate-x-10 motion-safe:data-[side=right]:data-ending-style:translate-x-10 motion-safe:data-[side=left]:data-starting-style:-translate-x-10 motion-safe:data-[side=left]:data-ending-style:-translate-x-10 motion-safe:data-[side=top]:data-starting-style:-translate-y-10 motion-safe:data-[side=top]:data-ending-style:-translate-y-10 motion-safe:data-[side=bottom]:data-starting-style:translate-y-10 motion-safe:data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:max-h-dvh data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-dvh data-[side=top]:border-b data-[side=left]:sm:max-w-lg data-[side=right]:sm:max-w-lg",
           className
         )}
         {...props}
@@ -99,11 +100,13 @@ function SheetContent({
 
 // The header and the footer stick to the sheet's edges with its surface behind,
 // so a scrolled body passes under them. Their own 16px padding keeps the body
-// clear of their text.
-function SheetHeader({ className, children, ...props }: React.ComponentProps<"div">) {
+// clear of their text. Each measures its height for the sheet's scroll padding.
+function SheetHeader({ className, children, ref, ...props }: React.ComponentProps<"div">) {
   const showCloseButton = React.useContext(SheetCloseButtonContext)
+  const pinnedRef = usePinnedHeight("--pinned-header-height", "sheet-content", ref)
   return (
     <div
+      ref={pinnedRef}
       data-slot="sheet-header"
       className={cn(
         "bg-overlay sticky top-0 z-10 flex shrink-0 flex-col gap-1.5 p-4",
@@ -117,9 +120,11 @@ function SheetHeader({ className, children, ...props }: React.ComponentProps<"di
   )
 }
 
-function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
+function SheetFooter({ className, ref, ...props }: React.ComponentProps<"div">) {
+  const pinnedRef = usePinnedHeight("--pinned-footer-height", "sheet-content", ref)
   return (
     <div
+      ref={pinnedRef}
       data-slot="sheet-footer"
       className={cn(
         "bg-overlay sticky bottom-0 z-10 mt-auto flex shrink-0 flex-col gap-2 p-4",
