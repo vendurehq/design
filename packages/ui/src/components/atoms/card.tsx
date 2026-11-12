@@ -16,12 +16,13 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // --card-head is the height of a one-line header: 48px, the height of a row,
 // so a header and the rows under it share one rhythm (44px in the sm size).
 // variant="accent" marks the one card that holds the live subject of the
-// page, such as the deployment that is building: the border mixes 38% toward
-// the brand, and a 1.5% brand wash fades out by 55% of the height. The bright
-// brand (brand-500) is the same in both modes. Use it on at most one card per
+// page, such as the deployment that is building: the border mixes toward the
+// brand (38% in dark; 30% in light, where the translucent `border` gives the
+// brand more weight in the mix), and a 1.5% brand wash fades out by 55% of
+// the height. The bright brand (brand-500) is the same in both modes. Use it on at most one card per
 // view, and show state inside it with a bare StatusBadge, not a chip.
 const ACCENT_CARD =
-  "data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))] data-[variant=accent]:bg-[image:linear-gradient(180deg,color-mix(in_oklab,var(--brand-500)_1.5%,transparent),transparent_55%)]"
+  "data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_30%,var(--border))] dark:data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))] data-[variant=accent]:bg-[image:linear-gradient(180deg,color-mix(in_oklab,var(--brand-500)_1.5%,transparent),transparent_55%)]"
 
 function Card({
   className,

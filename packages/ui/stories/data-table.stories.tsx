@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { CircleSlashIcon, MoreHorizontalIcon, SearchIcon, StoreIcon, TruckIcon } from 'lucide-react';
+import { CircleSlashIcon, GripVerticalIcon, MoreHorizontalIcon, SearchIcon, StoreIcon, TruckIcon } from 'lucide-react';
 import { flexRender } from '@tanstack/react-table';
 import { Fragment, useMemo, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
@@ -1695,25 +1695,20 @@ export const SelectionMotion: Story = {
       });
     });
 
-    // When a row clears, read when each half of its bar starts to lose height
-    // and how long its fade runs, from the transitions the click started.
+    // When a row clears, read when each half of its bar starts to lose height,
+    // how long its fade runs, and whether it stays opaque. Read from the
+    // computed transition, not the running one: a slow machine can finish a
+    // 100ms transition before the first check.
     const clearing = (row: HTMLElement) =>
       ['::before', '::after'].map((part) => {
-        const timing = (property: string) =>
-          document
-            .getAnimations()
-            .filter(
-              (a): a is CSSTransition =>
-                a instanceof CSSTransition &&
-                (a.effect as KeyframeEffect | null)?.target === row &&
-                (a.effect as KeyframeEffect).pseudoElement === part &&
-                a.transitionProperty === property
-            )
-            .map((a) => a.effect?.getTiming())[0];
-        const clip = timing('clip-path');
-        const fade = timing('opacity');
-        const clipText = clip ? `clip after ${clip.delay}ms for ${clip.duration}ms` : 'no clip';
-        return `${clipText}, ${fade ? `fade ${fade.duration}ms` : 'no fade'}`;
+        const style = getComputedStyle(row, part);
+        const properties = style.transitionProperty.split(', ');
+        const ms = (list: string, property: string) => {
+          const value = list.split(', ')[properties.indexOf(property)] ?? '0s';
+          return value.endsWith('ms') ? Number.parseFloat(value) : Number.parseFloat(value) * 1000;
+        };
+        const clip = `clip after ${ms(style.transitionDelay, 'clip-path')}ms for ${ms(style.transitionDuration, 'clip-path')}ms`;
+        return `${clip}, ${style.opacity === '1' ? 'opaque' : `fade ${ms(style.transitionDuration, 'opacity')}ms`}`;
       });
 
     await step('a bar that clears alone fades and narrows out before it loses height', async () => {
@@ -1737,8 +1732,8 @@ export const SelectionMotion: Story = {
       await userEvent.click(canvas.getByRole('checkbox', { name: 'Select row 3' }));
       await waitFor(() =>
         expect(clearing(rows()[2] as HTMLElement)).toEqual([
-          'clip after 0ms for 150ms, no fade',
-          'clip after 0ms for 150ms, no fade',
+          'clip after 0ms for 150ms, opaque',
+          'clip after 0ms for 150ms, opaque',
         ])
       );
     });
@@ -2214,6 +2209,154 @@ export const NameOpensWhileSelecting: Story = {
       await expect(checked(2)).toBe(false);
       clearHash();
       nameOf(2).blur();
+    });
+  },
+};
+
+// A reorderable row the consumer renders itself, as the Vendure Dashboard
+// does: a drag handle cell first, its own inline transform, and the table's
+// ripple, cell classes and click-to-select props spread on it.
+const dragColumns: ColumnDef<Variant>[] = [
+  {
+    id: 'drag',
+    header: () => <span className="sr-only">Reorder</span>,
+    cell: ({ row }) => (
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={`Reorder ${row.original.name}`}
+        data-drag-handle=""
+        className="text-muted-foreground hover:text-foreground cursor-move transition-colors"
+      >
+        <GripVerticalIcon className="size-4" />
+      </div>
+    ),
+  },
+  ...variantColumns,
+];
+
+const renderDraggableRow: NonNullable<DataTableProps<Variant>['renderRow']> = (
+  row,
+  { ripple, cellProps, selectProps },
+) => (
+  <TableRow
+    {...selectProps}
+    data-custom-row=""
+    data-state={row.getIsSelected() ? 'selected' : undefined}
+    className={cn('group/row', ripple.className)}
+    style={{ ...ripple.style, transform: 'translate3d(0, 0, 0)' }}
+  >
+    {row.getVisibleCells().map((cell) => (
+      <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </TableCell>
+    ))}
+  </TableRow>
+);
+
+/**
+ * A row rendered through `renderRow` behaves like a built-in row when it
+ * spreads `ctx.selectProps`: while rows are selected a click on the row
+ * selects it, a click on the name opens the item, Shift+click extends the
+ * selection and row controls keep their own action. A press on the drag
+ * handle, or a press that moves before release (a drag), never selects. The
+ * test runner presses the name of row 2 and then its price with a real mouse:
+ * the first opens the item, the second selects the row.
+ */
+export const ClickSelectsCustomRows: Story = {
+  parameters: {
+    pressRowText: { text: 'Laptop 15 inch 8GB', expectHash: '#/variants/2' },
+    pressSelectsRow: { text: '$1,678.80', expectChecked: 'Select row 2' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    return (
+      <DataTable<Variant>
+        rows={variants}
+        columns={dragColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        renderRow={renderDraggableRow}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const checkbox = (n: number) => canvas.getByRole('checkbox', { name: `Select row ${n}` });
+    const checked = (n: number) => checkbox(n).getAttribute('aria-checked') === 'true';
+    const rowOf = (n: number) => checkbox(n).closest('tr') as HTMLTableRowElement;
+    const nameOf = (n: number) =>
+      rowOf(n).querySelector('[data-slot=data-table-row-link]') as HTMLElement;
+    const priceHit = (n: number) =>
+      hitAt(rowOf(n).querySelector('[data-column-id=price]') as Element);
+    const handleOf = (n: number) => rowOf(n).querySelector('[data-drag-handle]') as HTMLElement;
+    // A press at `from` released `by` px further along: what a drag leaves behind.
+    const press = (from: Element, to: Element, by = 0) => {
+      const box = from.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      from.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, clientX: x, clientY: y, button: 0 }),
+      );
+      to.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          clientX: x + by,
+          clientY: y,
+          button: 0,
+          detail: 1,
+        }),
+      );
+    };
+    clearHash();
+
+    await step('the rows are the custom rows', async () => {
+      await expect(canvasElement.querySelectorAll('[data-custom-row]')).toHaveLength(variants.length);
+    });
+
+    await step('while a row is selected, a click on another row selects it', async () => {
+      await user.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      await expect(getComputedStyle(nameOf(3), '::after').display).toBe('none');
+      await user.click(priceHit(3));
+      await waitFor(() => expect(checked(3)).toBe(true));
+      await expect(location.hash).toBe('');
+    });
+
+    await step('a click on the name opens the item and keeps the selection', async () => {
+      await user.click(nameOf(4));
+      await expect(location.hash).toBe('#/variants/4');
+      await expect(checked(4)).toBe(false);
+      clearHash();
+    });
+
+    await step('Shift+click extends the selection from the last clicked row (3)', async () => {
+      await user.keyboard('{Shift>}');
+      await user.click(priceHit(4));
+      await user.keyboard('{/Shift}');
+      await waitFor(() => expect([checked(3), checked(4)]).toEqual([true, true]));
+    });
+
+    await step('a press on the drag handle does not select', async () => {
+      await user.click(handleOf(2));
+      press(handleOf(2), priceHit(2));
+      await expect(checked(2)).toBe(false);
+    });
+
+    await step('a press that moves before release (a drag) does not select', async () => {
+      press(priceHit(2), priceHit(2), 12);
+      await expect(checked(2)).toBe(false);
+      press(priceHit(2), priceHit(2), 3);
+      await waitFor(() => expect(checked(2)).toBe(true));
+    });
+
+    await step('clear the selection for the test runner', async () => {
+      for (const n of [1, 2, 3, 4]) if (checked(n)) await user.click(checkbox(n));
+      await user.click(checkbox(1));
+      await waitFor(() => expect(checked(1)).toBe(true));
+      (document.activeElement as HTMLElement | null)?.blur();
     });
   },
 };
