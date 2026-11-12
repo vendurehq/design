@@ -3,11 +3,12 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../src/components/atoms/alert-dialog.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Combobox, ComboboxContent, ComboboxInput, ComboboxItem, ComboboxList } from '../src/components/atoms/combobox.tsx';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
+import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuTrigger } from '../src/components/atoms/context-menu.tsx';
 import { DirectionProvider, useDirection } from '../src/components/atoms/direction.tsx';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../src/components/atoms/dialog.tsx';
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '../src/components/atoms/drawer.tsx';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../src/components/atoms/dropdown-menu.tsx';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '../src/components/atoms/dropdown-menu.tsx';
+import { Menubar, MenubarCheckboxItem, MenubarContent, MenubarMenu, MenubarRadioGroup, MenubarRadioItem, MenubarTrigger } from '../src/components/atoms/menubar.tsx';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '../src/components/atoms/hover-card.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '../src/components/atoms/popover.tsx';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
@@ -274,4 +275,106 @@ export const ModalsFollowTheProvider: Story = {
       await waitFor(() => expect(document.querySelector(`[data-slot="${slot}"]`)).toBeNull());
     }
   },
+};
+
+type Dir = 'ltr' | 'rtl';
+
+/** A checked checkbox item and a checked radio item in each of the three menus. */
+function MenuMarks({ dir }: { dir: Dir }) {
+  const label = dir === 'rtl' ? 'right to left' : 'left to right';
+  return (
+    <DirectionProvider direction={dir}>
+      <div dir={dir} className="flex items-start gap-6 px-24 pt-6 pb-56">
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" />}>{`Dropdown, ${label}`}</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuCheckboxItem checked>Show grid</DropdownMenuCheckboxItem>
+            <DropdownMenuRadioGroup value="list">
+              <DropdownMenuRadioItem value="list">List view</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ContextMenu>
+          <ContextMenuTrigger className="rounded-lg border border-dashed px-4 py-2 text-sm">{`Context, ${label}`}</ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuCheckboxItem checked>Show grid</ContextMenuCheckboxItem>
+            <ContextMenuRadioGroup value="list">
+              <ContextMenuRadioItem value="list">List view</ContextMenuRadioItem>
+            </ContextMenuRadioGroup>
+          </ContextMenuContent>
+        </ContextMenu>
+        <Menubar>
+          <MenubarMenu>
+            <MenubarTrigger>{`Menubar, ${label}`}</MenubarTrigger>
+            <MenubarContent>
+              <MenubarCheckboxItem checked>Show grid</MenubarCheckboxItem>
+              <MenubarRadioGroup value="list">
+                <MenubarRadioItem value="list">List view</MenubarRadioItem>
+              </MenubarRadioGroup>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
+      </div>
+    </DirectionProvider>
+  );
+}
+
+/** The box of an item's own text, without its mark. */
+function textBox(item: HTMLElement) {
+  const node = [...item.childNodes].reverse().find((child) => child.textContent?.trim() && !(child instanceof HTMLElement && child.classList.contains('absolute')));
+  const range = document.createRange();
+  range.selectNodeContents(node as Node);
+  return range.getBoundingClientRect();
+}
+
+/**
+ * Checks the mark of each checked item: DropdownMenu and ContextMenu put it at
+ * the end of the row, Menubar at the start, in both directions, and the text
+ * keeps its start padding.
+ */
+async function expectMenuMarks(canvasElement: HTMLElement, dir: Dir) {
+  const label = dir === 'rtl' ? 'right to left' : 'left to right';
+  const canvas = within(canvasElement);
+  const menus = [
+    { name: `Dropdown, ${label}`, open: (el: HTMLElement) => userEvent.click(el), markAt: 'end', textStart: 8 },
+    { name: `Context, ${label}`, open: (el: HTMLElement) => userEvent.pointer({ keys: '[MouseRight]', target: el }), markAt: 'end', textStart: 8 },
+    { name: `Menubar, ${label}`, open: (el: HTMLElement) => userEvent.click(el), markAt: 'start', textStart: 32 },
+  ] as const;
+  for (const menu of menus) {
+    await menu.open(canvas.getByText(menu.name));
+    const items = await waitFor(() => {
+      const found = [...document.querySelectorAll<HTMLElement>('[role=menuitemcheckbox][aria-checked=true],[role=menuitemradio][aria-checked=true]')];
+      expect(found).toHaveLength(2);
+      return found;
+    });
+    for (const item of items) {
+      const mark = (item.querySelector('span.absolute') as HTMLElement).getBoundingClientRect();
+      const text = textBox(item);
+      const row = item.getBoundingClientRect();
+      const atEnd = menu.markAt === 'end';
+      if ((dir === 'rtl') === atEnd) {
+        // The mark is left of the text.
+        await expect(mark.right).toBeLessThanOrEqual(text.left);
+      } else {
+        await expect(mark.left).toBeGreaterThanOrEqual(text.right);
+      }
+      const start = dir === 'rtl' ? row.right - text.right : text.left - row.left;
+      // Within the side bearing of the first glyph.
+      await expect(Math.abs(start - menu.textStart)).toBeLessThan(2);
+    }
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(document.querySelectorAll('[role=menuitemcheckbox]')).toHaveLength(0));
+  }
+}
+
+/** Right to left: check and radio marks of the three menus. */
+export const MenuMarksRightToLeft: Story = {
+  render: () => <MenuMarks dir="rtl" />,
+  play: async ({ canvasElement }) => expectMenuMarks(canvasElement, 'rtl'),
+};
+
+/** Left to right, the same menus: the look this change keeps. */
+export const MenuMarksLeftToRight: Story = {
+  render: () => <MenuMarks dir="ltr" />,
+  play: async ({ canvasElement }) => expectMenuMarks(canvasElement, 'ltr'),
 };
