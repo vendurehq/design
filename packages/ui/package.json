@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "lint": "biome check src/ guidance/",
-    "check-types": "tsc --noEmit && tsc --noEmit -p tsconfig.stories.json",
+    "check-types": "tsc --noEmit && tsc --noEmit -p tsconfig.consumer-lib.json && tsc --noEmit -p tsconfig.stories.json",
     "test": "bun test",
     "pack:check": "bun pm pack --dry-run"
   },

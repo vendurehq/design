@@ -55,7 +55,7 @@ const DECORATIVE_SHAPES =
   ".recharts-radial-bar-background-sector, .recharts-treemap-depth-0 > * > * > [role=img]"
 
 function nameChartShapes(root: HTMLElement, config: ChartConfig) {
-  for (const shape of root.querySelectorAll<SVGElement>(CHART_SHAPES)) {
+  for (const shape of Array.from(root.querySelectorAll<SVGElement>(CHART_SHAPES))) {
     if (shape.querySelector("title")) continue
     if (shape.matches(DECORATIVE_SHAPES)) {
       shape.setAttribute("aria-hidden", "true")
