@@ -962,7 +962,7 @@ export const uiGuidance = [
       },
       {
         title: 'Unknown wire values fall back safely',
-        body: 'Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color.',
+        body: 'Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color. An unknown state shows its name in sentence case words ("ValidatingCustomer" reads "Validating customer"), never the code word.',
       },
       {
         title: 'Pick the appearance by the room it has',
