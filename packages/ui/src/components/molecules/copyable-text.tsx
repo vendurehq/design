@@ -55,7 +55,7 @@ function useCopyAction({ timeout, onCopied, onCopyError }: UseCopyActionOptions 
 function CopyStateIcon({ copied, className }: { copied: boolean; className?: string }) {
   const swap =
     'col-start-1 row-start-1 transition-[opacity,scale,filter] duration-moderate ease-out';
-  const out = 'opacity-0 motion-safe:scale-60 motion-safe:blur-[2px]';
+  const out = 'opacity-0 motion-safe:scale-25 motion-safe:blur-[4px]';
   return (
     <span
       aria-hidden
