@@ -541,6 +541,12 @@ import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialo
 </ConfirmDialog>
 ```
 
+`ConfirmDialog` has three variants. Pick by what the confirm costs:
+
+- `default`: a consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus, so Enter confirms.
+- `caution`: a costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog points one way.
+- `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
+
 ### Card
 
 ```tsx
