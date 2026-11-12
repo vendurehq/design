@@ -521,7 +521,9 @@ function EdgeSelect({
  * A short list near an edge of the screen. Over its trigger, with the
  * selected item on the trigger, it would run off the screen: "10" at the
  * bottom puts the four items after it below the edge, "100" at the top puts
- * the four before it above. The list moves up or down just far enough that
+ * the four before it above. With some room left (128px above the bottom),
+ * the list used to show three items and scroll; with less, it opened beside
+ * the trigger. The list moves up or down just far enough that
  * every item shows, still covers its trigger and still grows out of it. It
  * scrolls only when it is taller than the screen.
  */
@@ -533,6 +535,7 @@ export const FitsNearTheEdges: Story = {
       <EdgeSelect label="Bottom" className="bottom-14 left-[calc(50%-3rem)]" defaultValue="10" />
       <EdgeSelect label="Bottom left" className="bottom-14 left-6" defaultValue="10" />
       <EdgeSelect label="Bottom right" className="right-6 bottom-14" defaultValue="10" />
+      <EdgeSelect label="Above the bottom" className="bottom-32 left-[calc(25%-3rem)]" defaultValue="10" />
       <EdgeSelect label="Top" className="top-14 left-[calc(50%-3rem)]" defaultValue="100" />
       <EdgeSelect label="Top left" className="top-14 left-6" defaultValue="100" />
       <EdgeSelect label="Top right" className="top-14 right-6" defaultValue="100" />
@@ -540,7 +543,7 @@ export const FitsNearTheEdges: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    for (const label of ['Bottom', 'Bottom left', 'Bottom right', 'Top', 'Top left', 'Top right']) {
+    for (const label of ['Above the bottom', 'Bottom', 'Bottom left', 'Bottom right', 'Top', 'Top left', 'Top right']) {
       const trigger = canvas.getByRole('combobox', { name: label });
       await userEvent.click(trigger);
       const popup = await waitFor(() => {
