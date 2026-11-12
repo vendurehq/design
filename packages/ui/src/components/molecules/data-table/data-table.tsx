@@ -379,11 +379,11 @@ const SELECT_RIPPLE_ROW_CLASS = cn(
   'in-data-[select-ripple=select]:not-data-[state=selected]:before:[transition:none]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[transition:none]!',
   'in-data-[select-ripple=clear]:not-data-[state=selected]:before:[clip-path:inset(100%_0_0_0)]! in-data-[select-ripple=clear]:not-data-[state=selected]:after:[clip-path:inset(100%_0_0_0)]!',
 );
-// The row checkbox keeps its own transitions (the fill, the mark, the fade in)
-// and only takes the row's delay. The mark still waits `check-mark-delay`
-// after the fill when it checks.
+// The row checkbox keeps its own transitions (the fill, the mark revealed with
+// it, the fade in) and only takes the row's delay. Row checkboxes are never
+// indeterminate, so their mark never swaps and needs no delay.
 const SELECT_RIPPLE_CHECKBOX_CLASS =
-  'in-data-select-ripple:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:before:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:[&_path]:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:data-checked:[&_path]:[transition-delay:calc(var(--row-ripple-delay)+var(--transition-duration-check-mark-delay))]!';
+  'in-data-select-ripple:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:before:[transition-delay:var(--row-ripple-delay)]! in-data-select-ripple:[&>[data-slot=checkbox-indicator]]:[transition-delay:var(--row-ripple-delay)]!';
 // Long enough for the last row to start (`normal`) and finish its slowest
 // transition (the checkbox fill and mark, under 400ms).
 const SELECT_RIPPLE_SETTLE_MS = 700;
