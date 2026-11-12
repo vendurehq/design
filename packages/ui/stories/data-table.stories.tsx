@@ -50,11 +50,10 @@ import {
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import { cn } from '../src/lib/utils.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
+import { type OrderState, orderStates } from './order-states.tsx';
 
 // Realistic commerce data: a page of orders, the canonical DataTable use case in
 // a Vendure surface. `total` is in minor units (cents), rendered through <Money>.
-
-type OrderState = 'PaymentSettled' | 'PaymentAuthorized' | 'Shipped' | 'Delivered' | 'Cancelled';
 
 interface Order {
   id: string;
@@ -65,13 +64,14 @@ interface Order {
   total: number; // minor units (cents)
 }
 
-const STATE_TONE: Record<OrderState, 'success' | 'info' | 'progress' | 'neutral' | 'critical'> = {
-  PaymentSettled: 'success',
-  PaymentAuthorized: 'info',
-  Shipped: 'progress',
-  Delivered: 'neutral',
-  Cancelled: 'critical',
-};
+// The tone, the label and the icon all come from the order state dictionary.
+function OrderStatus({ state }: { state: string }) {
+  return (
+    <StatusBadge appearance="icon" tone={orderStates.toneFor(state)} icon={orderStates.iconFor(state)}>
+      {orderStates.labelFor(state)}
+    </StatusBadge>
+  );
+}
 
 const orders: Order[] = [
   {
@@ -111,7 +111,7 @@ const orders: Order[] = [
     id: '6',
     code: 'ORD-1029',
     customer: 'Barbara Liskov',
-    state: 'PaymentSettled',
+    state: 'PaymentDeclined',
     items: 1,
     total: 3200,
   },
@@ -119,7 +119,7 @@ const orders: Order[] = [
     id: '7',
     code: 'ORD-1030',
     customer: 'Radia Perlman',
-    state: 'Shipped',
+    state: 'PartiallyShipped',
     items: 6,
     total: 41200,
   },
@@ -143,10 +143,7 @@ const columns: ColumnDef<Order>[] = [
   {
     accessorKey: 'state',
     header: 'Status',
-    cell: ({ row }) => {
-      const state = row.original.state;
-      return <StatusBadge tone={STATE_TONE[state]}>{state}</StatusBadge>;
-    },
+    cell: ({ row }) => <OrderStatus state={row.original.state} />,
   },
   {
     accessorKey: 'items',
@@ -330,9 +327,7 @@ const twoLineColumns: ColumnDef<Order>[] = [
   {
     accessorKey: 'state',
     header: 'Status',
-    cell: ({ row }) => (
-      <StatusBadge tone={STATE_TONE[row.original.state]}>{row.original.state}</StatusBadge>
-    ),
+    cell: ({ row }) => <OrderStatus state={row.original.state} />,
   },
   {
     accessorKey: 'total',
@@ -653,7 +648,10 @@ const playStoredSelection =
       await expect(count()).toHaveTextContent('3 selected');
       // The bar and the action agree on 3, though only the rows of the loaded page
       // (p11) are known after the remount: the action is told the others are missing.
-      await expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible();
+      // The bar eases in after the remount: wait until it shows.
+      await waitFor(() =>
+        expect(canvas.getByText('3 selected', { selector: '.font-medium' })).toBeVisible(),
+      );
       await userEvent.click(canvas.getByRole('button', { name: 'Archive' }));
       await expect(canvas.getByTestId('bulk-received')).toHaveTextContent(
         'Archived 3 ids (1 loaded, 2 not)',
@@ -1082,6 +1080,26 @@ export const CellTextAlignment: Story = {
   play: async ({ canvasElement }) => {
     const headers = [...canvasElement.querySelectorAll('thead th')];
     await expect(headers).toHaveLength(alignmentColumns.length);
+    // A plain header label looks the same as a sortable one: only the sort
+    // icon tells them apart.
+    const labelStyle = (header: Element) => {
+      const label = header.querySelector('[data-slot=data-table-column-header]') ?? header;
+      const { fontSize, fontWeight, color } = getComputedStyle(label);
+      return { fontSize, fontWeight, color };
+    };
+    const sortable = headers.find((header) => header.querySelector('button')) as Element;
+    const plain = headers.find((header) => !header.querySelector('button')) as Element;
+    await expect(sortable).toBeDefined();
+    await expect(plain).toBeDefined();
+    for (const header of headers) {
+      await expect(labelStyle(header), header.textContent ?? '').toEqual(labelStyle(sortable));
+    }
+    // Both labels start at the header's padding edge.
+    const labelInset = (header: Element) =>
+      textLeft(header) -
+      header.getBoundingClientRect().left -
+      Number.parseFloat(getComputedStyle(header).paddingLeft);
+    await expect(labelInset(plain)).toBeCloseTo(labelInset(sortable), 0);
     for (const row of canvasElement.querySelectorAll('tbody tr')) {
       const cells = [...row.querySelectorAll('td')];
       for (const [index, cell] of cells.entries()) {
@@ -1447,9 +1465,7 @@ const orderRowColumns: ColumnDef<OrderRow>[] = [
   {
     accessorKey: 'state',
     header: 'State',
-    cell: ({ row }) => (
-      <StatusBadge tone={STATE_TONE[row.original.state]}>{row.original.state}</StatusBadge>
-    ),
+    cell: ({ row }) => <OrderStatus state={row.original.state} />,
   },
   {
     accessorKey: 'total',
@@ -1494,6 +1510,81 @@ export const LookupKeyNamesTheRow: Story = {
 
     await step('a click anywhere else opens the order', async () => {
       await expect(hitAt(row.getByText('Trevor Donnelly'))).toBe(link);
+    });
+  },
+};
+
+/**
+ * The same orders while a row is selected. The code is screen-reader text in
+ * the link, so the row has no visible name to click. The chevron at the end of
+ * the row is the target instead: it shows on row hover, turns blue on its own
+ * hover or focus, and its click area is the full row height at the row end. A
+ * click anywhere else selects the row, and the code chip still copies. The
+ * test runner presses the code chip, then the customer of row 3, then the end
+ * of row 2 with a real mouse: the first copies, the second selects row 3, the
+ * third opens order 2.
+ */
+export const LookupKeyWhileSelecting: Story = {
+  parameters: {
+    pressText: { text: '314NGLFNXPVUXEBN', expectButton: 'Copied' },
+    pressSelectsRow: { text: 'Eliezer Kulas', expectChecked: 'Select row 3' },
+    pressRowEnd: { row: 'Hilario Thompson', expectHash: '#/orders/AX3KCVNM39QM6R1A' },
+  },
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({ YVWJLP9HGJHH7EVK: true });
+    return (
+      <DataTable<OrderRow>
+        rows={orderRows}
+        columns={orderRowColumns}
+        getRowId={(order) => order.code}
+        rowSelection={{ value: selection, onChange: setSelection }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    stubClipboard();
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    const link = canvas.getByRole('link', { name: 'AX3KCVNM39QM6R1A' });
+    const tr = link.closest('tr') as HTMLTableRowElement;
+    const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+    clearHash();
+
+    await step('the link has no visible name, and its target is the row end', async () => {
+      await expect(link).toHaveAttribute('data-nameless');
+      const target = getComputedStyle(link, '::after');
+      await expect(target.display).toBe('block');
+      const width = Number.parseFloat(target.width);
+      await expect(width).toBeGreaterThanOrEqual(24);
+      // The full row height, inside the row's 1px bottom border.
+      await expect(Number.parseFloat(target.height)).toBe(tr.getBoundingClientRect().height - 1);
+      const row = tr.getBoundingClientRect();
+      const end = document.elementFromPoint(row.right - 12, row.top + row.height / 2);
+      await expect(end).toBe(link);
+      await expect(getComputedStyle(link).cursor).toBe('pointer');
+    });
+
+    await step('the row-end chevron shows instead of hiding', async () => {
+      const chevron = tr.querySelector('[data-slot=data-table-row-chevron]') as SVGElement;
+      await expect(getComputedStyle(chevron).display).toBe('block');
+    });
+
+    await step('a click on the customer selects the row and opens nothing', async () => {
+      await user.click(hitAt(within(tr).getByText('Hilario Thompson')));
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'true'));
+      await expect(location.hash).toBe('');
+      await user.click(checkbox);
+      await waitFor(() => expect(checkbox).toHaveAttribute('aria-checked', 'false'));
+    });
+
+    await step('the link is a tab stop after the checkbox, and Enter opens the order', async () => {
+      checkbox.focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(link);
+      await user.keyboard('{Enter}');
+      await expect(location.hash).toBe('#/orders/AX3KCVNM39QM6R1A');
+      clearHash();
+      link.blur();
     });
   },
 };
@@ -2084,7 +2175,7 @@ export const ClickSelectsWhileSelecting: Story = {
  * While rows are selected, the item's name still opens the item: a click on
  * the name opens it, a click anywhere else on the row selects the row.
  * Hovering the row shows a small chevron after the name; hovering or focusing
- * the name colours it and the chevron blue (`info-text`) and moves the
+ * the name colours it and the chevron blue (`brand-text`) and moves the
  * chevron 2px. The chevron takes no space, so the name and the column do not
  * move. With nothing selected the whole row opens the item, as before. The
  * cell that opens the item is the one with `DataTableRowLink` around the name.

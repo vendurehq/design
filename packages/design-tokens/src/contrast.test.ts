@@ -1,4 +1,13 @@
 import { describe, expect, test } from 'bun:test';
+import { githubLightReplacements } from '../../ui/src/lib/syntax-colors.ts';
+import {
+  alertTint,
+  alertToneVars,
+  statusChipFill,
+  statusChipLabel,
+  statusToneText,
+  statusToneVars,
+} from '../../ui/src/lib/tint-recipes.ts';
 import { darkTheme, lightTheme } from './tokens/semantic.ts';
 
 // WCAG contrast contract for the semantic color tokens. Hand-rolled oklch →
@@ -120,6 +129,12 @@ function resolveColor(value: string, theme: Record<string, string>): RGBA {
 
   if (trimmed.startsWith('oklch(')) return parseOklch(trimmed);
 
+  const hexMatch = trimmed.match(/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+  if (hexMatch) {
+    const [r, g, b] = hexMatch.slice(1).map((h) => gammaToLinear(Number.parseInt(h, 16) / 255));
+    return { r: r as number, g: g as number, b: b as number, a: 1 };
+  }
+
   throw new Error(`Cannot resolve color value: ${value}`);
 }
 
@@ -240,44 +255,49 @@ const surfaceTextSlots = [
   'destructive-text',
   'info-text',
   'neutral-text',
+  'brand-text',
 ] as const;
 const toneTextSlots = ['success-text', 'warning-text', 'destructive-text', 'info-text'] as const;
-// The StatusBadge chip recipe, copied from the `statusBadgeVariants` and
-// `toneText` maps in packages/ui/src/components/molecules/status-badge.tsx.
-// Change both together. Fill: 5% of the tone into `muted`. Label: 30% of the
-// tone into `foreground-secondary`. Marker: the tone text slot. `warning`
-// fills from `warning-indicator` and mixes its label 70% from `warning-text`.
-const chipTones: Record<
-  string,
-  { tone: string; label?: string; labelMix?: number; marker?: string }
-> = {
-  neutral: { tone: 'var(--neutral-text)' },
-  info: { tone: 'var(--info-text)' },
-  success: { tone: 'var(--success-text)' },
-  warning: {
-    tone: 'var(--warning-indicator)',
-    label: 'var(--warning-text)',
-    labelMix: 70,
-    marker: 'var(--warning-text)',
-  },
-  critical: { tone: 'var(--destructive-text)' },
-  progress: { tone: 'var(--info-text)' },
-};
-// The toned Alert recipe, copied from `tonedAlert` and `alertVariants` in
-// packages/ui/src/components/atoms/alert.tsx. Change both together. Light:
-// 7% of the tone into `card`. Dark: 10% of the tone over transparent, on the
-// surface tier under the alert. The title is `foreground`, the description
-// `foreground-secondary`, the icon the tone's text slot. `warning` tints from
-// `warning-indicator` and takes its icon from `warning-text`.
-const alertTones: Record<string, { tone: string; icon: string }> = {
-  destructive: { tone: 'var(--destructive-text)', icon: 'var(--destructive-text)' },
-  warning: { tone: 'var(--warning-indicator)', icon: 'var(--warning-text)' },
-  info: { tone: 'var(--info-text)', icon: 'var(--info-text)' },
-};
+// The StatusBadge and Alert recipes, read from the class strings the
+// components use (packages/ui/src/lib/tint-recipes.ts), so the test checks
+// what ships.
+function pick(source: string, pattern: RegExp): string {
+  const match = source.match(pattern);
+  if (!match?.[1]) throw new Error(`Recipe changed shape: ${pattern} not in ${source}`);
+  return match[1];
+}
+const chipFillMix = Number(pick(statusChipFill, /_(\d+)%,var\(--muted\)/));
+const chipLabelMix = Number(pick(statusChipLabel, /--status-label-mix,(\d+)%/));
+const chipTones = Object.fromEntries(
+  Object.entries(statusToneVars).map(([name, vars]) => {
+    const tone = pick(vars, /--status-tone:(var\(--[\w-]+\))/);
+    const label = vars.match(/--status-label-tone:(var\(--[\w-]+\))/)?.[1] ?? tone;
+    const labelMix = Number(vars.match(/--status-label-mix:(\d+)%/)?.[1] ?? chipLabelMix);
+    const marker = `var(--${pick(statusToneText[name as keyof typeof statusToneText], /^text-([\w-]+)$/)})`;
+    return [name, { tone, label, labelMix, marker }];
+  }),
+);
+const alertTones = Object.fromEntries(
+  Object.entries(alertToneVars).map(([name, vars]) => [
+    name,
+    {
+      tone: pick(vars, /--alert-tone:(var\(--[\w-]+\))/),
+      icon: `var(--${pick(vars, /\*:\[svg\]:text-([\w-]+)/)})`,
+    },
+  ]),
+);
+const alertLightMix = pick(
+  alertTint,
+  /(?<!dark:)\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,var\(--card\)\)\]/,
+);
+const alertDarkMix = pick(
+  alertTint,
+  /dark:\[--alert-fill:color-mix\(in_oklab,var\(--alert-tone\)_(\d+)%,transparent\)\]/,
+);
 const alertFill = (themeName: string, tone: string) =>
   themeName === 'dark'
-    ? `color-mix(in oklab, ${tone} 10%, transparent)`
-    : `color-mix(in oklab, ${tone} 7%, var(--card))`;
+    ? `color-mix(in oklab, ${tone} ${alertDarkMix}%, transparent)`
+    : `color-mix(in oklab, ${tone} ${alertLightMix}%, var(--card))`;
 const textPairs = [
   ['card-foreground', 'card'],
   ['popover-foreground', 'popover'],
@@ -338,6 +358,24 @@ for (const [themeName, theme] of Object.entries(themes)) {
       });
     }
 
+    // A brand-coloured name in a table row: on the page, a card, a hovered
+    // row (half the `muted` fill) and a selected row (`muted`) on the card.
+    test('brand-text on the page, a card, a hovered row and a selected row >= 4.5', () => {
+      expect(contrastOf(theme, 'brand-text', 'background', 'background')).toBeGreaterThanOrEqual(
+        MIN_CONTRAST,
+      );
+      expect(contrastOf(theme, 'brand-text', 'card', 'card')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      expect(
+        contrastOfValues(
+          theme,
+          'var(--brand-text)',
+          'color-mix(in oklab, var(--muted) 50%, transparent)',
+          'card',
+        ),
+      ).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      expect(contrastOf(theme, 'brand-text', 'muted', 'card')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    });
+
     for (const surface of surfaces) {
       for (const slot of surfaceTextSlots) {
         test(`${slot} on ${surface} >= 4.5`, () => {
@@ -349,7 +387,7 @@ for (const [themeName, theme] of Object.entries(themes)) {
       // (kbd, avatar fallback, chips) and on the `accent` hover fill (menu
       // items, list rows, command items).
       for (const fill of ['muted', 'secondary', 'accent'] as const) {
-        for (const slot of ['muted-foreground', ...toneTextSlots] as const) {
+        for (const slot of ['muted-foreground', 'brand-text', ...toneTextSlots] as const) {
           test(`${slot} on ${fill} over ${surface} >= 4.5`, () => {
             expect(contrastOf(theme, slot, fill, surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
           });
@@ -399,9 +437,9 @@ for (const [themeName, theme] of Object.entries(themes)) {
     }
 
     for (const [chipTone, recipe] of Object.entries(chipTones)) {
-      const fill = `color-mix(in oklab, ${recipe.tone} 5%, var(--muted))`;
-      const label = `color-mix(in oklab, ${recipe.label ?? recipe.tone} ${recipe.labelMix ?? 30}%, var(--foreground-secondary))`;
-      const marker = recipe.marker ?? recipe.tone;
+      const fill = `color-mix(in oklab, ${recipe.tone} ${chipFillMix}%, var(--muted))`;
+      const label = `color-mix(in oklab, ${recipe.label} ${recipe.labelMix}%, var(--foreground-secondary))`;
+      const marker = recipe.marker;
       for (const surface of surfaces) {
         test(`StatusBadge ${chipTone} label on its chip fill over ${surface} >= 4.5`, () => {
           expect(contrastOfValues(theme, label, fill, surface)).toBeGreaterThanOrEqual(
@@ -431,6 +469,19 @@ for (const [themeName, theme] of Object.entries(themes)) {
             MIN_NON_TEXT_CONTRAST,
           );
         });
+      }
+    }
+
+    // CodeBlock swaps github-light's orange for a darker one; light mode only.
+    if (themeName === 'light') {
+      for (const [from, to] of Object.entries(githubLightReplacements)) {
+        for (const surface of surfaces) {
+          test(`CodeBlock syntax colour ${to} (replaces ${from}) on ${surface} >= 4.5`, () => {
+            expect(
+              contrastOfValues(theme, to, `var(--${surface})`, surface),
+            ).toBeGreaterThanOrEqual(MIN_CONTRAST);
+          });
+        }
       }
     }
 

@@ -152,12 +152,15 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   )
 }
 
+// Every header label has the same size, weight and colour: 12px, medium,
+// muted, the small label of the v3 look. A sortable header (a ghost Button)
+// inherits the colour, so only its sort icon says it sorts.
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "text-muted-foreground h-10 px-2 text-left align-middle text-xs font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}

@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { alertTint, alertToneVars } from "@vendure-io/ui/lib/tint-recipes"
 
 // Alert is an inline-size container so AlertAction can move under the text when
 // the alert is narrow. A container cannot size to its content: an Alert inside a
@@ -18,29 +19,28 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // amber text colour mixes to brown. The title stays foreground and the
 // description foreground-secondary in every variant, because a muted grey on
 // a tinted fill falls below text contrast.
-// The `alertTones` block in packages/design-tokens/src/contrast.test.ts
-// copies this recipe: change both together.
-const tonedAlert =
-  "text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_14%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)"
+// The recipe lives in lib/tint-recipes.ts, which the contrast test in
+// @vendure-io/design-tokens reads.
+const tonedAlert = alertTint
 
 // An alert enters once when it mounts: it fades in and moves 4px down into
 // place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
 // keeps the fade. Content padding is 12px inline, 10px block.
 const alertVariants = cva(
-  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-3 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
+  "@container/alert grid grid-cols-[minmax(0,1fr)] gap-y-0.5 rounded-xl border px-3 py-2.5 text-left text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
   {
     variants: {
       variant: {
         default: "bg-card text-card-foreground *:[svg]:text-current",
         destructive: [
           tonedAlert,
-          "[--alert-tone:var(--destructive-text)] *:[svg]:text-destructive-text",
+          alertToneVars.destructive,
         ],
         warning: [
           tonedAlert,
-          "[--alert-tone:var(--warning-indicator)] *:[svg]:text-warning-text",
+          alertToneVars.warning,
         ],
-        info: [tonedAlert, "[--alert-tone:var(--info-text)] *:[svg]:text-info-text"],
+        info: [tonedAlert, alertToneVars.info],
       },
     },
     defaultVariants: {

@@ -32,6 +32,10 @@ export const lightTheme = {
   // marker, link underlines. A chosen brand step: about 2.8:1 on the canvas
   // and 3:1 on raised tiers. Not for body text and not a fill for text.
   'brand-indicator': brand[600],
+  // Brand as text: a link name on hover or focus. The lightest brand step that
+  // reads as text (4.5:1) on the page, a card, a hovered row and a selected
+  // row; brand[700] drops to 4.1:1 on a selected row.
+  'brand-text': brand[800],
   // Intensity slots are foreground mixes so they hold on any ramp tier; the
   // percentages reproduce the previous absolute values on the default surface.
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
@@ -169,6 +173,9 @@ export const darkTheme = {
   brand: brand[500],
   'brand-foreground': neutral[950],
   'brand-indicator': brand[500],
+  // Brand as text. The brand step itself reads at 6.7:1 or more on every
+  // dark tier, a hovered and a selected row included.
+  'brand-text': brand[500],
   secondary: 'color-mix(in oklab, var(--foreground) 7%, transparent)',
   'secondary-foreground': 'oklch(0.95 0.004 231)',
   // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.

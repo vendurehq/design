@@ -160,11 +160,18 @@ const ROW_CHEVRON_SLOT_CLASS =
  * spreads `ctx.selectProps`; without it, its link keeps covering the row. The link stops stretching over the row and the row-end
  * chevron hides. Hovering the row shows a small chevron after the name;
  * hovering or focusing the name colours it and the chevron blue, and the
- * chevron moves 2px toward the end. The blue is `info-text`, the text-safe
- * step of the brand hue: `brand-indicator` is a mark colour and reads below
+ * chevron moves 2px toward the end. The blue is `brand-text`, the brand
+ * step that reads as text: `brand-indicator` is a mark colour and reads below
  * 3:1 as text on a light selected row. The chevron overlays the
  * cell's padding, so the name and the column do not move. The name stays a
  * tab stop and a link, and its focus ring is drawn around the name.
+ *
+ * A link with no visible text (its children are `sr-only`, as when the cell
+ * shows the item's code as a copy chip) has no name to click. While rows are
+ * selected its target is the row-end chevron: it covers the chevron slot at
+ * the end of the row, the full row height, the chevron stays on row hover and
+ * turns blue on the target's hover or focus, and the focus ring goes around
+ * the slot. A click anywhere else on the row selects it.
  */
 function DataTableRowLink({
   className,
@@ -172,9 +179,19 @@ function DataTableRowLink({
   children,
   ...props
 }: useRender.ComponentProps<'a'>) {
+  // A link whose text is all screen-reader only (a code shown as a copy chip
+  // next to it) has no visible name to click while rows are selected. Then its
+  // target is the row-end chevron instead.
+  const linkRef = React.useRef<HTMLAnchorElement>(null);
+  const [nameless, setNameless] = React.useState(false);
+  React.useLayoutEffect(() => {
+    const link = linkRef.current;
+    if (link) setNameless(link.getBoundingClientRect().width < 1);
+  });
   return useRender({
     defaultTagName: 'a',
     render,
+    ref: linkRef,
     props: mergeProps<'a'>(
       {
         className: cn(
@@ -182,8 +199,13 @@ function DataTableRowLink({
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
           // While rows are selected only the name is the link (see above).
           'in-data-click-selects:after:hidden in-data-click-selects:rounded-sm in-data-click-selects:transition-colors in-data-click-selects:duration-quick in-data-click-selects:ease-soft',
-          'in-data-click-selects:hover:text-info-text in-data-click-selects:focus-visible:text-info-text',
+          'in-data-click-selects:hover:text-brand-text in-data-click-selects:focus-visible:text-brand-text',
           'in-data-click-selects:focus-visible:outline-2 in-data-click-selects:focus-visible:outline-offset-2 in-data-click-selects:focus-visible:outline-ring in-data-click-selects:focus-visible:outline-solid',
+          // Without a visible name, the link covers the row-end chevron slot
+          // instead: the full row height, as wide as the slot. Its focus ring
+          // is drawn around that slot.
+          'in-data-click-selects:data-nameless:after:block in-data-click-selects:data-nameless:after:start-auto in-data-click-selects:data-nameless:after:w-[calc(var(--card-px)+--spacing(7))] in-data-click-selects:data-nameless:after:rounded-md',
+          'in-data-click-selects:data-nameless:focus-visible:outline-none',
           className,
         ),
         children: (
@@ -205,14 +227,21 @@ function DataTableRowLink({
             </span>
             <ListRowChevron
               data-slot="data-table-row-chevron"
-              className="pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden"
+              className={cn(
+                'pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden',
+                // The target of a link without a visible name while rows are
+                // selected: shown on row hover, blue on its own hover or focus.
+                'in-data-click-selects:group-data-nameless/row-link:block in-data-click-selects:group-data-nameless/row-link:transition-[opacity,translate,color]',
+                'in-data-click-selects:group-data-nameless/row-link:group-hover/row-link:text-brand-text in-data-click-selects:group-data-nameless/row-link:group-focus-visible/row-link:text-brand-text',
+              )}
             />
           </>
         ),
       },
       props,
     ),
-    state: { slot: 'data-table-row-link' },
+    // `nameless` renders as `data-nameless` while true.
+    state: { slot: 'data-table-row-link', nameless },
   });
 }
 

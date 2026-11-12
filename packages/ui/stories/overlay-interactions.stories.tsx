@@ -123,9 +123,11 @@ export const TooltipLook: Story = {
     await expect(style.paddingBottom).toBe('7px');
     await expect(style.paddingLeft).toBe('10px');
     await expect(style.lineHeight).toBe('17px');
-    // Opens in 125ms on the CSS `ease` curve (ease-soft).
+    // Opens in 125ms: the fade on the CSS `ease` curve (ease-soft), the scale on the strong ease-out.
     await expect(style.transitionDuration).toBe('0.125s');
-    await expect(style.transitionTimingFunction).toMatch(/^(ease|cubic-bezier\(0\.25, 0\.1, 0\.25, 1\))$/);
+    await expect(style.transitionTimingFunction).toMatch(
+      /^(ease|cubic-bezier\(0\.25, 0\.1, 0\.25, 1\)), cubic-bezier\(0\.19, 1, 0\.22, 1\)$/,
+    );
     // No arrow element inside the popup.
     await expect(tooltip.children.length).toBe(0);
   },
@@ -294,6 +296,8 @@ function trackSelectedLabel(trigger: HTMLElement) {
   let offset = 0;
   let frames = 0;
   let fading = 0;
+  let growing = 0;
+  let uncovered = 0;
   const tick = () => {
     const popup = document.querySelector('[data-slot=select-content]') as HTMLElement | null;
     const label = popup?.querySelector('[data-selected]')?.firstElementChild;
@@ -302,8 +306,26 @@ function trackSelectedLabel(trigger: HTMLElement) {
       const to = textCentre(value);
       offset = Math.max(offset, Math.hypot(from.x - to.x, from.y - to.y));
       frames += 1;
-      const opacity = Number(getComputedStyle(popup).opacity);
+      const style = getComputedStyle(popup);
+      const opacity = Number(style.opacity);
       if (opacity > 0 && opacity < 1) fading += 1;
+      // The visible box is the popup box less the clip-path insets.
+      const sides = (style.clipPath.match(/inset\(([^)]*?)(?: round|\))/)?.[1] ?? '0').split(' ').map(parseFloat);
+      const [top = 0] = sides;
+      const right = sides[1] ?? top;
+      const bottom = sides[2] ?? top;
+      const left = sides[3] ?? right;
+      if ([top, right, bottom, left].some((inset) => inset > 0.5)) growing += 1;
+      const box = popup.getBoundingClientRect();
+      const visible = { top: box.top + top, right: box.right - right, bottom: box.bottom - bottom, left: box.left + left };
+      const target = trigger.getBoundingClientRect();
+      uncovered = Math.max(
+        uncovered,
+        visible.top - target.top,
+        target.right - visible.right,
+        target.bottom - visible.bottom,
+        visible.left - target.left
+      );
     }
     if (running) requestAnimationFrame(tick);
   };
@@ -311,15 +333,16 @@ function trackSelectedLabel(trigger: HTMLElement) {
   return {
     stop() {
       running = false;
-      return { offset, frames, fading };
+      return { offset, frames, fading, growing, uncovered };
     },
   };
 }
 
 /**
- * With room around the trigger, the list sits over it and opens with the popup
- * motion: it fades and scales in and out like the others, with no slide, and
- * grows from the selected label, which stays on the label in the trigger.
+ * With room around the trigger, the list sits over it, covers it and grows out
+ * of it: from the first frame to the last it covers the trigger, it does not
+ * fade, its clip-path grows from the trigger's box and shrinks back into it,
+ * and the selected label stays on the label in the trigger.
  */
 export const SelectAlignedLook: Story = {
   render: () => (
@@ -347,23 +370,22 @@ export const SelectAlignedLook: Story = {
     await userEvent.click(trigger);
     const popup = await findSlot('select-content');
     await waitFor(() => expect(popup.dataset.side).toBe('none'));
-    await expectPopupMotion(popup);
-    // The origin is the middle of the selected label, not 50% of the list width.
-    const label = popup.querySelector('[data-selected]')?.firstElementChild as HTMLElement;
+    await waitFor(() => {
+      const style = getComputedStyle(popup);
+      expect(style.transitionProperty).toBe('opacity, clip-path');
+      expect(style.transitionDuration).toBe('0.16s, 0.2s');
+    });
     await waitFor(() => expect(popup.hasAttribute('data-starting-style')).toBe(false));
-    await waitFor(() => expect(getComputedStyle(popup).scale).toBe('none'));
-    const [originX = NaN, originY = NaN] = getComputedStyle(popup).transformOrigin.split(' ').map(parseFloat);
-    const box = popup.getBoundingClientRect();
-    const middle = textCentre(label);
-    await expect(Math.abs(box.left + originX - middle.x)).toBeLessThan(0.5);
-    await expect(Math.abs(box.top + originY - middle.y)).toBeLessThan(0.5);
+    await Promise.all(popup.getAnimations().map((animation) => animation.finished));
     // Keyboard close animates too.
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(popup.parentElement?.hidden || !popup.isConnected).toBe(true));
-    const { offset, frames, fading } = track.stop();
+    const { offset, frames, fading, growing, uncovered } = track.stop();
     // The list was on screen for the whole motion, not for one frame.
     await expect(frames).toBeGreaterThan(8);
-    await expect(fading).toBeGreaterThan(4);
+    await expect(growing).toBeGreaterThan(4);
+    await expect(fading).toBe(0);
+    await expect(uncovered).toBeLessThan(0.5);
     // The label never left the trigger label.
     await expect(offset).toBeLessThan(0.5);
   },

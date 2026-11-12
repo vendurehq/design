@@ -177,6 +177,31 @@ export const uiGuidance = [
     related: ['confirm-dialog', 'page-header'],
   },
   {
+    id: 'chart',
+    title: 'Chart',
+    summary: 'Give every shape a chart draws an accessible name, from the config where Chart can.',
+    sourceStory: 'chart-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Every image shape has a name',
+        body: 'recharts draws pie slices, radial bars, scatter points, funnel steps, treemap cells and sankey nodes as images. An image without a name fails the accessibility check.',
+      },
+      {
+        title: 'Key colours to the config',
+        body: 'Chart names a shape from its `name`, else from the label of the config key in its colour (`var(--color-card)`). Give each series and slice a config entry with a `label`, and use `var(--color-<key>)` for its fill.',
+      },
+      {
+        title: 'Add the value on the shape',
+        body: 'Chart does not know the value a shape stands for. Put an `aria-label` such as `Card: 540` on the `Cell` or the shape when the name must carry the value. A name set by the consumer always wins.',
+      },
+      {
+        title: 'A table or text carries the data too',
+        body: 'Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.',
+      },
+    ],
+    related: ['stat-card'],
+  },
+  {
     id: 'chip',
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
@@ -382,7 +407,7 @@ export const uiGuidance = [
       },
       {
         title: 'A row that opens an item opens it from any point',
-        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip.',
+        body: 'Wrap the item name in DataTableRowLink (pass href, or render a router link). Its link stretches over the row, so the row has one tab stop and one name, and a chevron appears at the row end on hover or keyboard focus. While rows are selected, a click on the row selects it and only the name opens the item: the name shows a small chevron after it on row hover, and turns blue on hover. DataTableRowLink is the one way to mark the cell that opens the item; it does all of this itself. Do not add a chevron after the name, and do not use a row click handler. Buttons, links, inputs, Tooltip triggers, the select checkbox and copy chips stay clickable above it; mark any other control with data-table-row-control. When the row name is a lookup key, see IdChip: the link holds the key as sr-only text beside a row-reveal chip. Such a link has no visible name, so while rows are selected its target is the row-end chevron instead.',
       },
       {
         title: 'Cell text lines up with the header',
@@ -937,7 +962,7 @@ export const uiGuidance = [
       },
       {
         title: 'Unknown wire values fall back safely',
-        body: 'Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color.',
+        body: 'Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color. An unknown state shows its name in sentence case words ("ValidatingCustomer" reads "Validating customer"), never the code word.',
       },
       {
         title: 'Pick the appearance by the room it has',
@@ -949,7 +974,11 @@ export const uiGuidance = [
       },
       {
         title: 'A status column is an icon and a label, with the icon in its tone colour',
-        body: 'Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. Don\'t: plain coloured text (appearance="text") in a column, a grey icon for a healthy state, or a coloured label.',
+        body: 'Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. An orders list shows one line per order with no time under it: a blue icon for an order to fulfil (Payment settled), a grey truck for Shipped, a green check for Delivered, a grey slash for Cancelled and a red icon for a declined payment. Labels are words ("Payment settled"), not code words. Give each group of states its own icon shape, so the column reads without colour. Don\'t: plain coloured text (appearance="text") in a column, a grey icon for a finished success, a coloured label, or a chip in every row.',
+      },
+      {
+        title: 'A spinner means work that runs right now',
+        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
       },
       {
         title: 'A chip marks only the exception',
