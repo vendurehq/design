@@ -96,7 +96,7 @@ export const tokenGuidance = [
     rules: [
       {
         title: 'Choose a semantic type role',
-        body: 'Use the named page-title, section-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text and keyboard hints 12px (text-xs), and micro text 11px (text-2xs).',
+        body: 'Use the named page-title, section-title, dialog-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text and keyboard hints 12px (text-xs), and micro text 11px (text-2xs).',
       },
       {
         title: 'Raw headings are not globally restyled',

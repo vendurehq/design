@@ -201,7 +201,7 @@ function DialogTitle({
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "text-style-section-title",
+        "text-style-dialog-title",
         icon != null && "flex items-center gap-2.5",
         className
       )}

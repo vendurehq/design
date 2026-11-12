@@ -64,7 +64,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
       // A text style sets family, size, weight, tracking and leading at once.
       'text-style': [
         {
-          'text-style': ['page-title', 'section-title', 'card-title', 'body', 'caption', 'code'],
+          'text-style': ['page-title', 'section-title', 'dialog-title', 'card-title', 'body', 'caption', 'code'],
         },
       ],
     },
