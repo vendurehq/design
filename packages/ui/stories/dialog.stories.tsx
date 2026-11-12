@@ -259,6 +259,16 @@ export const TallForm: Story = {
     dialog.scrollTop = dialog.scrollHeight;
     await waitFor(pinned);
     dialog.scrollTop = 0;
+    // Tab down to the last field: it lands fully clear of the pinned header and footer.
+    const last = within(dialog).getByLabelText('Purchase order reference');
+    within(dialog).getByLabelText('Company name').focus();
+    for (let i = 1; i < billingFields.length; i++) await userEvent.tab();
+    await expect(last).toHaveFocus();
+    await waitFor(() => {
+      const field = last.getBoundingClientRect();
+      expect(field.top).toBeGreaterThanOrEqual(header.getBoundingClientRect().bottom);
+      expect(field.bottom).toBeLessThanOrEqual(footer.getBoundingClientRect().top);
+    });
     // Tab goes from the last field to the footer, and its buttons are in view.
     within(dialog).getByLabelText('Purchase order reference').focus();
     await userEvent.tab();

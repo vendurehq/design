@@ -445,6 +445,35 @@ when they sit inside a `<form>` that wraps the fields. Do not add a
 `max-h-[90vh] overflow-y-auto` cap of your own. `AlertDialog` (and so
 `ConfirmDialog`) and `Sheet` work the same way with their header and footer.
 
+A field that gets focus, by Tab, by a script or by form validation, scrolls
+fully into view, clear of the pinned header and footer. The header and the
+footer measure their own height, so this holds when the title wraps or the
+footer buttons stack. It needs the `DialogHeader` and `DialogFooter`
+components (or the `AlertDialog` and `Sheet` ones). A header or footer of your
+own `div` does not get it.
+
+The padding of `DialogContent` and `AlertDialogContent` is the
+`--dialog-padding` variable, 20px by default. The pinned header and footer
+reach over that padding, so they span the full width of the dialog. For a
+dialog with another padding, set the variable, not a `p-*` class:
+
+```tsx
+{/* No padding: the header, the body and the footer set their own. */}
+<DialogContent className="[--dialog-padding:0px]">
+  <DialogHeader className="px-6 pt-6">…</DialogHeader>
+  …
+  <DialogFooter className="px-6 pb-6">…</DialogFooter>
+</DialogContent>
+
+{/* 32px all round. */}
+<DialogContent className="[--dialog-padding:--spacing(8)]">…</DialogContent>
+```
+
+A `p-0` (or any `p-*`) on `DialogContent` changes the padding but not the
+header and footer offsets. They then sit 20px outside the dialog's edges.
+`SheetContent` has no padding of its own. Its header and footer bring their
+own 16px; pad the body, not `SheetContent`.
+
 ```tsx
 import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialog";
 
