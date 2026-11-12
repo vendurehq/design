@@ -69,7 +69,7 @@ async function pressOneText(page: Page, press: TextPress) {
  *
  * `keepsLook` is for a disabled button that keeps its tooltip
  * (`aria-disabled`): at rest it must be at half opacity with a not-allowed
- * cursor, and neither the hover nor a press may change its fill, edge,
+ * cursor, and neither the hover nor a press may change its fill, text, edge,
  * shadow, opacity or scale.
  */
 type TextHover = { text: string; expectTooltip: string; keepsLook?: boolean };
@@ -83,6 +83,7 @@ async function controlLook(page: Page, text: string) {
       const style = getComputedStyle(element);
       return {
         background: style.backgroundColor,
+        color: style.color,
         border: style.borderColor,
         shadow: style.boxShadow,
         opacity: style.opacity,
