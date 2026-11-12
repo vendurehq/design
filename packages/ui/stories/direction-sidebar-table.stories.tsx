@@ -133,9 +133,9 @@ async function expectStartGaps(root: HTMLElement, dir: Dir) {
   const skuCell = table.querySelector<HTMLElement>('tbody td[data-column-id="sku"]')!;
   const row = table.querySelector<HTMLElement>('tbody tr')!.getBoundingClientRect();
   const checkbox = table.querySelector<HTMLElement>('tbody [role=checkbox]')!.getBoundingClientRect();
-  const nameHeader = textBox(table.querySelector('thead th[data-column-id="name"]') ?? [...table.querySelectorAll('thead th')][1]);
+  const nameHeader = textBox(table.querySelector('thead th[data-column-id="name"]') ?? [...table.querySelectorAll('thead th')][1]!);
   const nameCell = textBox(table.querySelector('tbody a')!);
-  const skuHeader = textBox(table.querySelector('thead th[data-column-id="sku"]') ?? [...table.querySelectorAll('thead th')][2]);
+  const skuHeader = textBox(table.querySelector('thead th[data-column-id="sku"]') ?? [...table.querySelectorAll('thead th')][2]!);
   const skuText = skuCell.querySelector('[data-testid=sku]')!.getBoundingClientRect();
   const gaps = {
     subListLine: fromStart(lineBox, sidebar),
