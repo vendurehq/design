@@ -406,6 +406,13 @@ close it. Pass `showCloseButton` to `DialogContent` when the dialog has no
 Cancel button. `DialogTitle` takes an `icon`, drawn at 18px before the title in
 the foreground at 60%, and a `tone` to colour it for a state.
 
+A dialog is at most the viewport height less 1rem above and below. A taller
+dialog scrolls inside: `DialogHeader` sticks to the top and `DialogFooter` to
+the bottom, so the title, the ✕ and the actions stay in view. They stick also
+when they sit inside a `<form>` that wraps the fields. Do not add a
+`max-h-[90vh] overflow-y-auto` cap of your own. `AlertDialog` (and so
+`ConfirmDialog`) and `Sheet` work the same way with their header and footer.
+
 ```tsx
 import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialog";
 

@@ -3,6 +3,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { RocketIcon, TriangleAlertIcon } from 'lucide-react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -102,9 +104,12 @@ export const WithIcon: Story = {
     await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
     const title = dialog.querySelector('[data-slot=dialog-title]')!;
     const description = dialog.querySelector('[data-slot=dialog-description]')!;
-    const footer = dialog.querySelector('[data-slot=dialog-footer]')!;
+    // The footer box reaches 16px up into the gap to cover a scrolled body, so measure its buttons.
+    const deploy = within(dialog).getByRole('button', { name: 'Deploy' });
     await expect(description.getBoundingClientRect().top - title.getBoundingClientRect().bottom).toBeCloseTo(10, 0);
-    await expect(footer.getBoundingClientRect().top - description.getBoundingClientRect().bottom).toBeCloseTo(20, 0);
+    await expect(deploy.getBoundingClientRect().top - description.getBoundingClientRect().bottom).toBeCloseTo(20, 0);
+    // A short dialog does not scroll.
+    await expect(dialog.scrollHeight).toBe(dialog.clientHeight);
     const icon = dialog.querySelector('[data-slot=dialog-title-icon] svg')!.getBoundingClientRect();
     await expect(icon.width).toBe(18);
     await userEvent.keyboard('{Escape}');
@@ -179,6 +184,89 @@ export const WithCloseButtonLongTitle: Story = {
     const closeCentre = close.top + close.height / 2;
     // Within a pixel: the centred popup lands on half pixels.
     await expect(Math.abs(closeCentre - firstLineCentre)).toBeLessThanOrEqual(1);
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+const billingFields = [
+  'Company name',
+  'Contact name',
+  'Email',
+  'Phone',
+  'Address line 1',
+  'Address line 2',
+  'City',
+  'Postal code',
+  'Region',
+  'Country',
+  'VAT number',
+  'Purchase order reference',
+];
+
+/**
+ * A dialog taller than the viewport stays inside it. The body scrolls; the
+ * header and the footer stay in view. Here the footer sits inside the form,
+ * as it does when the form submits on Enter.
+ */
+export const TallForm: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Edit billing details</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit billing details</DialogTitle>
+          <DialogDescription>These details appear on every invoice from the next billing period.</DialogDescription>
+        </DialogHeader>
+        <form className="grid gap-5" onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup>
+            {billingFields.map((label) => {
+              const id = `billing-${label.toLowerCase().replaceAll(' ', '-')}`;
+              return (
+                <Field key={id}>
+                  <FieldLabel htmlFor={id}>{label}</FieldLabel>
+                  <Input id={id} />
+                </Field>
+              );
+            })}
+          </FieldGroup>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button type="submit">Save</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Edit billing details' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    // Measure after the entrance: its scale changes every rect.
+    await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+    const header = dialog.querySelector('[data-slot=dialog-header]')!;
+    const footer = dialog.querySelector('[data-slot=dialog-footer]')!;
+    // Within a pixel: the centred popup lands on half pixels.
+    const pinned = () => {
+      const box = dialog.getBoundingClientRect();
+      expect(Math.abs(header.getBoundingClientRect().top - box.top)).toBeLessThanOrEqual(1);
+      expect(Math.abs(footer.getBoundingClientRect().bottom - box.bottom)).toBeLessThanOrEqual(1);
+    };
+    // The dialog keeps 1rem from the top and the bottom of the viewport, and scrolls inside.
+    const box = dialog.getBoundingClientRect();
+    await expect(box.top).toBeGreaterThanOrEqual(15);
+    await expect(window.innerHeight - box.bottom).toBeGreaterThanOrEqual(15);
+    await expect(dialog.scrollHeight).toBeGreaterThan(dialog.clientHeight);
+    pinned();
+    dialog.scrollTop = dialog.scrollHeight;
+    await waitFor(pinned);
+    dialog.scrollTop = 0;
+    // Tab goes from the last field to the footer, and its buttons are in view.
+    within(dialog).getByLabelText('Purchase order reference').focus();
+    await userEvent.tab();
+    await userEvent.tab();
+    const save = within(dialog).getByRole('button', { name: 'Save' });
+    await expect(save).toHaveFocus();
+    await expect(save.getBoundingClientRect().bottom).toBeLessThanOrEqual(dialog.getBoundingClientRect().bottom);
+    await waitFor(pinned);
     await userEvent.keyboard('{Escape}');
   },
 };
