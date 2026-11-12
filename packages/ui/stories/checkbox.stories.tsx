@@ -82,12 +82,12 @@ const ITEMS = ['Ship to customer', 'Send invoice', 'Notify warehouse'] as const;
 
 /**
  * Checking animates: the fill closes in around a shrinking circle, corners
- * first, to the middle, then the check mark draws from its short stroke to its
- * long one. Unchecking plays it back, quicker: the mark undraws and the fill
- * opens from the middle out. A press shrinks the box a little. Space toggles with the same
- * motion. "All tasks" goes indeterminate while some tasks are checked, and its
- * line draws the same way; from indeterminate to checked the line undraws as
- * the check draws. Toggle fast: every step reverses from where it is. Under
+ * first, to the middle, and reveals the check mark as it goes: the mark shows
+ * only where the fill already is. Unchecking plays it back, quicker: the fill
+ * opens from the middle out and takes the mark with it. A press shrinks the
+ * box a little. Space toggles with the same motion. "All tasks" goes
+ * indeterminate while some tasks are checked, and the fill reveals its line
+ * the same way. Toggle fast: every step reverses from where it is. Under
  * reduced motion the fill and the mark only fade.
  */
 export const Toggle: Story = {
@@ -130,9 +130,11 @@ export const Toggle: Story = {
     const hole = (name: string) =>
       getComputedStyle(box(name), '::before').getPropertyValue('--checkbox-hole').trim();
     const clip = (name: string) => getComputedStyle(box(name), '::before').clipPath;
+    const indicator = (name: string) =>
+      box(name).querySelector('[data-slot="checkbox-indicator"]') as HTMLElement;
     const check = (name: string) => box(name).querySelector('path[d^="M4"]') as SVGPathElement;
     const line = (name: string) => box(name).querySelector('path[d^="M5"]') as SVGPathElement;
-    const offset = (path: SVGPathElement) => getComputedStyle(path).strokeDashoffset;
+    const shown = (path: SVGPathElement) => getComputedStyle(path).opacity;
     const settled = async (name: string) =>
       waitFor(() => expect(box(name).getAnimations({ subtree: true })).toHaveLength(0));
 
@@ -141,19 +143,36 @@ export const Toggle: Story = {
       await expect(clip('Send invoice')).toMatch(/^shape\(evenodd .* arc to /);
     });
 
-    await step('checking closes the fill in and draws the mark', async () => {
+    await step('the mark is clipped to the fill at every point of the motion', async () => {
       await userEvent.click(box('Send invoice'));
+      const running = box('Send invoice').getAnimations({ subtree: true });
+      await expect(running.length).toBeGreaterThan(0);
+      for (const at of [0, 30, 60, 90]) {
+        for (const animation of running) {
+          animation.pause();
+          animation.currentTime = at;
+        }
+        await expect(getComputedStyle(indicator('Send invoice')).clipPath).toBe(
+          clip('Send invoice'),
+        );
+      }
+      for (const animation of running) animation.finish();
       await settled('Send invoice');
-      await expect(hole('Send invoice')).toBe('0');
-      await expect(offset(check('Send invoice'))).toBe('0px');
-      await expect(offset(line('Send invoice'))).toBe('1px');
     });
 
-    await step('unchecking opens the fill and undraws the mark', async () => {
+    await step('checking closes the fill in and shows the check', async () => {
+      await expect(hole('Send invoice')).toBe('0');
+      await expect(shown(check('Send invoice'))).toBe('1');
+      await expect(shown(line('Send invoice'))).toBe('0');
+    });
+
+    await step('unchecking opens the fill and hides the mark with it', async () => {
       await userEvent.click(box('Send invoice'));
       await settled('Send invoice');
       await expect(hole('Send invoice')).toBe('1');
-      await expect(offset(check('Send invoice'))).toBe('1px');
+      await expect(getComputedStyle(indicator('Send invoice')).clipPath).toBe(
+        clip('Send invoice'),
+      );
     });
 
     await step('Space toggles with the same motion', async () => {
@@ -161,39 +180,37 @@ export const Toggle: Story = {
       await userEvent.keyboard(' ');
       await settled('Send invoice');
       await expect(box('Send invoice')).toHaveAttribute('data-checked');
-      await expect(offset(check('Send invoice'))).toBe('0px');
+      await expect(hole('Send invoice')).toBe('0');
       await userEvent.keyboard(' ');
       await settled('Send invoice');
     });
 
-    await step('a partial selection draws the indeterminate line', async () => {
+    await step('a partial selection shows the indeterminate line', async () => {
       await expect(box('All tasks')).toHaveAttribute('data-indeterminate');
       await settled('All tasks');
       await expect(hole('All tasks')).toBe('0');
-      await expect(offset(line('All tasks'))).toBe('0px');
-      await expect(offset(check('All tasks'))).toBe('1px');
+      await expect(shown(line('All tasks'))).toBe('1');
+      await expect(shown(check('All tasks'))).toBe('0');
     });
 
-    await step('a fast check, uncheck, check reverses from where it is', async () => {
+    await step('a fast check, uncheck reverses from where it is', async () => {
       const name = 'Notify warehouse';
       await userEvent.click(box(name));
-      // Hold the draw halfway, then uncheck: the undraw starts from there.
-      const [draw] = check(name).getAnimations();
-      if (!draw) throw new Error('the check mark has no running draw');
-      draw.pause();
-      draw.currentTime = 90;
-      const halfway = Number.parseFloat(offset(check(name)));
-      await expect(halfway).toBeGreaterThan(0.2);
-      await expect(halfway).toBeLessThan(0.8);
+      // Hold the reveal partway, then uncheck: the reverse is shortened to
+      // the part already played, so it starts from there.
+      const [reveal] = indicator(name).getAnimations();
+      if (!reveal) throw new Error('the mark has no running reveal');
+      reveal.pause();
+      reveal.currentTime = 60;
       await userEvent.click(box(name));
-      const [undraw] = check(name).getAnimations();
-      const [start] = (undraw?.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
-      const from = Number.parseFloat(String(start?.strokeDashoffset));
-      await expect(Math.abs(from - halfway)).toBeLessThan(0.05);
+      const [back] = indicator(name).getAnimations();
+      const duration = Number(back?.effect?.getTiming().duration);
+      await expect(duration).toBeGreaterThan(0);
+      await expect(duration).toBeLessThan(100);
       await userEvent.click(box(name));
       await settled(name);
-      await expect(offset(check(name))).toBe('0px');
       await expect(hole(name)).toBe('0');
+      await expect(shown(check(name))).toBe('1');
     });
   },
 };
