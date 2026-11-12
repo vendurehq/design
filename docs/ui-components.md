@@ -148,8 +148,6 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
 
-> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
-
 ## Utilities
 
 ### `cn()` — Class Merging
