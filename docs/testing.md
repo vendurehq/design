@@ -12,6 +12,8 @@ Every story is visited with [`@storybook/test-runner`](https://github.com/storyb
 
 A story that renders a bare control must still give it an accessible name. Use `aria-label` on icon-only buttons and toggles, and a label connected to every input. Checkbox, RadioGroup and Switch need `aria-label` or `aria-labelledby`, because Base UI puts the `id` on a hidden input.
 
+**Popups.** Popups render in a portal, outside the story root. To scan a popup that the `play` function leaves open, list its selector in `parameters.a11y.include`, for example `{ a11y: { include: ['[data-slot=select-content]'] } }`. In the test runner, Storybook switches CSS transitions off once a `play` function ends, so a story that scans a closing popup holds it with a script animation (`element.animate`); see `ClosingList` in the Select stories.
+
 ### Run locally
 
 ```bash

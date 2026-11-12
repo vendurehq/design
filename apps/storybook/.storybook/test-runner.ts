@@ -470,9 +470,14 @@ const config: TestRunnerConfig = {
       // The theme switch starts colour transitions and nothing else.
       await settle(page, 0);
 
+      // `parameters.a11y.include` adds selectors outside the story root to the
+      // scan, such as a popup that the play function leaves open in a portal.
+      const include: string[] = storyContext.parameters?.a11y?.include ?? [];
       const violations = await getViolations(
         page,
-        '#storybook-root',
+        include.length > 0
+          ? { include: [['#storybook-root'], ...include.map((selector) => [selector])] }
+          : '#storybook-root',
         storyContext.parameters?.a11y?.config,
       );
       const blocking = violations.filter((violation) =>
