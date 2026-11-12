@@ -13,7 +13,15 @@ const twMerge = extendTailwindMerge<'text-style'>({
     theme: {
       shadow: ['control', 'overlay', 'scrolled'],
       ease: ['default', 'spring', 'drawer', 'drawer-content', 'height', 'press', 'soft'],
-      animate: ['shimmer', 'spin-slow', 'progress-sweep', 'live-pulse', 'page-enter', 'page-fade'],
+      animate: [
+        'shimmer',
+        'spin-slow',
+        'progress-sweep',
+        'live-pulse',
+        'page-enter',
+        'page-fade',
+        'match-flash',
+      ],
     },
     classGroups: {
       duration: [
@@ -63,6 +71,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
             'external-arrow',
             'page-fade',
             'page-rise',
+            'page-switch',
           ],
         },
       ],
