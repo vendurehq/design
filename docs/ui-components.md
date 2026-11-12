@@ -190,7 +190,7 @@ import { useScrolled } from "@vendure-io/ui/hooks/use-scrolled";
 function Log({ lines }: { lines: string[] }) {
   const scrolled = useScrolled<HTMLDivElement>();
   return (
-    <div ref={scrolled} className="h-72 overflow-y-auto">
+    <div ref={scrolled} tabIndex={0} role="region" aria-label="Server log" className="h-72 overflow-y-auto">
       <div className="bg-card sticky top-0 z-10 in-data-scrolled:shadow-scrolled">Message</div>
       {lines.map((line) => <div key={line}>{line}</div>)}
     </div>

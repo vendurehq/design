@@ -115,8 +115,12 @@ function ScrolledHeaderLog() {
   return (
     <div
       ref={scrolled}
+      // A region you scroll with the keyboard: Tab to it, then the arrow keys.
+      tabIndex={0}
+      role="region"
+      aria-label="Server log"
       data-testid="scrolled-log"
-      className="bg-card h-72 w-96 overflow-y-auto rounded-xl border text-xs"
+      className="bg-card focus-visible:outline-ring h-72 w-96 overflow-y-auto rounded-xl border text-xs outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-solid"
     >
       <div className="bg-card text-muted-foreground in-data-scrolled:shadow-scrolled sticky top-0 z-10 flex gap-6 px-4 py-2 font-medium">
         <span className="w-16">Time</span>
