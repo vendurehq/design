@@ -95,13 +95,18 @@ describe('v3 overlay look', () => {
     }
   });
 
-  test('a Select list over its trigger takes the popup motion, with no slide and the origin on the selected label', () => {
+  test('a Select list over its trigger grows out of the trigger box, with no slide, scale or fade', () => {
     const code = source('select.tsx');
     expect(code).not.toContain('transition-none');
-    // No side, so no 2px slide, only for side none.
-    expect(code).toContain('motion-safe:data-[side=none]:data-starting-style:translate-y-0');
-    expect(code).toContain('motion-safe:data-[side=none]:data-ending-style:translate-y-0');
-    expect(code).toContain('originOnSelectedLabel');
+    // No side, so no 2px slide and no scale, only for side none.
+    for (const state of ['starting', 'ending']) {
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:translate-y-0`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:scale-100`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:opacity-100`);
+      expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:[clip-path:var(--select-trigger-box)]`);
+    }
+    expect(code).toContain('data-[side=none]:transition-[opacity,clip-path]');
+    expect(code).toContain('growFromTrigger');
   });
 
   test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
@@ -187,7 +192,28 @@ describe('v3 overlay look', () => {
     const code = source('dialog.tsx');
     expect(code).toContain('showCloseButton = false,');
     expect(code).toContain('sm:max-w-110');
-    expect(code).toContain('"flex flex-col gap-2.5"');
+    expect(code).toContain('flex flex-col gap-2.5');
+  });
+
+  test.each(['dialog.tsx', 'alert-dialog.tsx'])(
+    '%s fits the viewport, scrolls inside, and pins its header and footer',
+    (file) => {
+      const code = source(file);
+      expect(code).toContain('max-h-[calc(100dvh-2rem)]');
+      expect(code).toContain('overflow-y-auto');
+      expect(code).toContain('const pinned = "sticky z-10 -mx-5 bg-overlay px-5"');
+      expect(code).toContain('-top-5 -mt-5 -mb-4');
+      expect(code).toContain('-bottom-5 -mt-4 -mb-5');
+    },
+  );
+
+  test('a sheet scrolls inside and pins its header and footer', () => {
+    const code = source('sheet.tsx');
+    expect(code).toContain('overflow-y-auto');
+    expect(code).toContain('data-[side=top]:max-h-dvh');
+    expect(code).toContain('data-[side=bottom]:max-h-dvh');
+    expect(code).toContain('sticky top-0 z-10');
+    expect(code).toContain('sticky bottom-0 z-10');
   });
 
   test('a dialog title takes an 18px icon, neutral at 60% or in its tone', () => {

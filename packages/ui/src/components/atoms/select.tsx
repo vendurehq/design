@@ -62,49 +62,134 @@ function SelectTrigger({
 }
 
 /**
- * Base UI puts the origin of a list placed over its trigger at 50% of the list
- * width and at the height of the selected label. The list is as wide as its
- * widest item, so scaling from 50% moves the label sideways, away from the
- * trigger label under it. Move the origin to the middle of the label: the
- * label then keeps its place while the list opens and closes.
- *
- * The label rect is read through the popup's own scale, so it is the same at
- * any point of the transition. Base UI rewrites its origin variable each time
- * it positions the list, so this runs again on every style change of the popup.
+ * Turns a `box-shadow` value into `drop-shadow()` filters. A 1px ring (no
+ * offset, no blur, a spread) becomes four 1px drop shadows, one per side.
+ * A drop shadow's blur is a standard deviation, half a box-shadow blur, and it
+ * has no spread: a soft shadow with a negative spread takes 0.4 of its blur
+ * and 60% of its colour instead, which matches `shadow-overlay` in light and
+ * dark within a few levels of grey.
  */
-function originOnSelectedLabel(popup: HTMLElement | null) {
+function shadowToFilter(shadow: string) {
+  const outside = /[,\s]+(?![^(]*\))/
+  return shadow
+    .split(/,(?![^(]*\))/)
+    .flatMap((layer) => {
+      const parts = layer.trim().split(outside).filter((part) => part && part !== "inset")
+      const isLength = (part: string) => /^-?[\d.]+(px)?$/.test(part)
+      const [x = 0, y = 0, blur = 0, spread = 0] = parts.filter(isLength).map(parseFloat)
+      const color = parts.filter((part) => !isLength(part)).join(" ")
+      if (!color) return []
+      if (!x && !y && !blur && spread > 0) {
+        return [`${spread}px 0`, `-${spread}px 0`, `0 ${spread}px`, `0 -${spread}px`].map(
+          (offset) => `drop-shadow(${offset} 0 ${color})`
+        )
+      }
+      if (spread < 0) {
+        const lighter = `color-mix(in oklab, ${color} 60%, transparent)`
+        return [`drop-shadow(${x}px ${y}px ${blur * 0.4}px ${lighter})`]
+      }
+      return [`drop-shadow(${x}px ${y}px ${blur / 2}px ${color})`]
+    })
+    .join(" ")
+}
+
+/**
+ * A list that Base UI places over its trigger (`data-side="none"`) covers the
+ * trigger and grows out of it.
+ *
+ * Base UI moves the list so the selected item's text sits on the trigger's
+ * text. The item text is further in than the trigger text, so the list starts
+ * left of the trigger by the difference; at the trigger's width it then ends
+ * inside the trigger, and the trigger's edge and chevron show beside it. The
+ * list is made wider by that difference on both sides, so it overhangs the
+ * trigger evenly.
+ *
+ * `--select-trigger-box` is the trigger's box as a `clip-path` inset of the
+ * list. The list starts and ends clipped to it, so it opens out of the
+ * trigger and closes back into it. A `clip-path` also clips the list's own
+ * shadow, so the positioner draws the edge and the shadow as `drop-shadow`
+ * filters, which follow the clip.
+ *
+ * Base UI positions the list on each open, so this runs on every style
+ * change of the popup.
+ */
+function growFromTrigger(popup: HTMLElement | null) {
   if (!popup) return () => {}
-  let placed = { x: NaN, y: NaN }
+  const positioner = popup.parentElement
+  let placed = ""
   const place = () => {
     if (popup.dataset.side !== "none") {
-      placed = { x: NaN, y: NaN }
-      popup.style.removeProperty("transform-origin")
+      placed = ""
+      popup.style.removeProperty("min-width")
+      popup.style.removeProperty("--select-trigger-box")
+      positioner?.style.removeProperty("filter")
       return
     }
+    // A closing list keeps the box it opened from: a new box would turn the
+    // closing transition towards it.
+    if (popup.hasAttribute("data-ending-style") || popup.hasAttribute("data-closed")) return
+    const list = popup.querySelector<HTMLElement>("[role=listbox]")
+    const trigger = list?.id
+      ? document.querySelector<HTMLElement>(`[aria-controls="${CSS.escape(list.id)}"]`)
+      : null
+    const value = trigger?.querySelector<HTMLElement>("[data-slot=select-value]")
     const item =
       popup.querySelector<HTMLElement>("[data-slot=select-item][data-selected]") ??
       popup.querySelector<HTMLElement>("[data-slot=select-item]")
-    const label = item?.firstElementChild
-    if (!label || !popup.offsetWidth) return
-    const range = document.createRange()
-    range.selectNodeContents(label)
-    const text = range.getBoundingClientRect()
-    const box = popup.getBoundingClientRect()
-    const scale = box.width / popup.offsetWidth
-    if (!text.width || !scale) return
-    const x = (text.left + text.width / 2 - box.left) / scale
-    const y = (text.top + text.height / 2 - box.top) / scale
-    // Writing the origin is a style change, which runs this again: skip a
-    // write that would only repeat the last one by a rounding difference.
-    if (Math.abs(x - placed.x) < 0.1 && Math.abs(y - placed.y) < 0.1) return
-    placed = { x, y }
-    popup.style.transformOrigin = `${x}px ${y}px`
+    const text = item?.firstElementChild
+    if (!trigger || !value || !text || !popup.offsetWidth) return
+    const rtl = getComputedStyle(popup).direction === "rtl"
+    const box = trigger.getBoundingClientRect()
+    const valueBox = value.getBoundingClientRect()
+    const textBox = text.getBoundingClientRect()
+    let popupBox = popup.getBoundingClientRect()
+    const overhang = Math.max(
+      0,
+      rtl
+        ? popupBox.right - textBox.right - (box.right - valueBox.right)
+        : textBox.left - popupBox.left - (valueBox.left - box.left)
+    )
+    const minWidth = `calc(var(--anchor-width) + ${2 * overhang}px)`
+    if (popup.style.minWidth !== minWidth) popup.style.minWidth = minWidth
+    popupBox = popup.getBoundingClientRect()
+    const radius = getComputedStyle(trigger).borderTopLeftRadius
+    const inset = [
+      box.top - popupBox.top,
+      popupBox.right - box.right,
+      popupBox.bottom - box.bottom,
+      box.left - popupBox.left,
+    ]
+      .map((side) => `${Math.round(side * 100) / 100}px`)
+      .join(" ")
+    const clip = `inset(${inset} round ${radius})`
+    // Writing a style is a style change, which runs this again: skip a write
+    // that would only repeat the last one.
+    if (clip === placed) return
+    placed = clip
+    popup.style.setProperty("--select-trigger-box", clip)
+    if (positioner) {
+      positioner.style.filter = shadowToFilter(
+        getComputedStyle(popup).getPropertyValue("--shadow-overlay")
+      )
+    }
   }
   const observer = new MutationObserver(place)
-  observer.observe(popup, { attributes: true, attributeFilter: ["style", "data-side"] })
+  observer.observe(popup, { attributes: true, attributeFilter: ["style", "data-side", "data-closed"] })
   place()
   return () => observer.disconnect()
 }
+
+/**
+ * The motion of a list over its trigger. It has no side, so it drops the
+ * popup's 2px slide and its scale, and keeps its opacity at 1: from the first
+ * frame it covers the trigger. Its `clip-path` grows from the trigger's box
+ * (`--select-trigger-box`) to its own, with the popup's timings: `normal` on
+ * the strong ease-out to open, `quick` on `ease-soft` to close. A transition
+ * starts from where the last one stopped, so a list closed while it opens
+ * turns back from there. Reduced motion keeps only the popup's fade.
+ */
+const growFromTriggerMotion =
+  "data-[side=none]:shadow-none data-[side=none]:transition-[opacity,clip-path] data-[side=none]:[transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal)] data-[side=none]:data-ending-style:duration-quick motion-safe:data-[side=none]:[clip-path:inset(0_round_var(--radius-xl))] motion-safe:data-[side=none]:data-starting-style:[clip-path:var(--select-trigger-box)] motion-safe:data-[side=none]:data-ending-style:[clip-path:var(--select-trigger-box)] motion-safe:data-[side=none]:data-starting-style:opacity-100 motion-safe:data-[side=none]:data-ending-style:opacity-100 motion-safe:data-[side=none]:data-starting-style:scale-100 motion-safe:data-[side=none]:data-ending-style:scale-100 motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0"
 
 // min-w-(--anchor-width) rather than w-(--anchor-width) so the popup can expand beyond the trigger to fit content
 function SelectContent({
@@ -143,7 +228,7 @@ function SelectContent({
 
   const popupRef = React.useCallback(
     (node: HTMLDivElement | null) => {
-      const stop = originOnSelectedLabel(node)
+      const stop = growFromTrigger(node)
       if (typeof ref === "function") ref(node)
       else if (ref) ref.current = node
       return () => {
@@ -170,7 +255,7 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
-          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, "motion-safe:data-[side=none]:data-starting-style:translate-y-0 motion-safe:data-[side=none]:data-ending-style:translate-y-0", className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay relative isolate z-50 max-h-(--available-height) min-w-(--anchor-width) overflow-x-hidden overflow-y-auto rounded-xl", popupMotion, growFromTriggerMotion, className)}
           ref={popupRef}
           {...props}
         >

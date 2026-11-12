@@ -112,6 +112,19 @@ describe('SidebarMenuButton active state', () => {
       'hover:shadow-[0_0_0_1px_var(--sidebar-accent)]',
     ]);
   });
+
+  test('an active sub-item has no bar: the guide line of the sub-list is next to it', () => {
+    const tokens = slotTokens(
+      renderToStaticMarkup(
+        <SidebarProvider>
+          <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
+        </SidebarProvider>,
+      ),
+      'sidebar-menu-sub-button',
+    );
+    expect(tokens.filter((token) => token.includes('before:'))).toEqual([]);
+    expect(tokens).toEqual(expect.arrayContaining(['data-active:bg-sidebar-accent']));
+  });
 });
 
 describe('Sidebar rail', () => {
