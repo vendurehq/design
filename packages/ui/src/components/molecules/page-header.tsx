@@ -1,7 +1,8 @@
-import type { useRender } from '@base-ui/react/use-render';
+import { mergeProps } from '@base-ui/react/merge-props';
+import { useRender } from '@base-ui/react/use-render';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
-import { DirectionLink } from './direction-link.tsx';
+import { DirectionLink, ExternalArrow } from './direction-link.tsx';
 
 // Compound-only, by decision: there is no simple-props sugar and
 // no dual-mode root. Callers assemble the parts, which keeps one way to build a
@@ -97,6 +98,54 @@ function PageHeaderFact({ className, ...props }: React.ComponentProps<'span'>) {
   );
 }
 
+// A fact that opens another site, such as the environment's hostname. At rest
+// it reads like PageHeaderFact. On hover or keyboard focus its text goes from
+// `foreground-secondary` to `foreground`, its leading icon from 45% to full
+// strength in `brand-indicator`, and the trailing diagonal arrow brightens
+// and moves 1.5px out (ExternalArrow, the arrow of ArrowLink `external`).
+// No underline. Colour and opacity ease in `moderate` on `soft`. The class
+// names stay literal so Tailwind can scan them.
+const FACT_LINK_ICON =
+  '[&>svg:not([data-slot=page-header-fact-arrow])]:[transition:color_var(--transition-duration-moderate)_var(--ease-soft),opacity_var(--transition-duration-moderate)_var(--ease-soft)] hover:[&>svg:not([data-slot=page-header-fact-arrow])]:text-brand-indicator hover:[&>svg:not([data-slot=page-header-fact-arrow])]:opacity-100 focus-visible:[&>svg:not([data-slot=page-header-fact-arrow])]:text-brand-indicator focus-visible:[&>svg:not([data-slot=page-header-fact-arrow])]:opacity-100';
+
+/**
+ * A fact that is a link to another site: the environment's hostname, a
+ * repository. Put a leading icon and the text in it, as in PageHeaderFact;
+ * it adds the trailing up-right arrow. Wrap a long value in a
+ * `<span className="truncate">`. Renders an `<a>`; pass `render` for another
+ * element. Set `target` and `rel` yourself when it opens a new tab.
+ */
+function PageHeaderFactLink({
+  className,
+  render,
+  children,
+  ...props
+}: useRender.ComponentProps<'a'>) {
+  return useRender({
+    defaultTagName: 'a',
+    render,
+    props: mergeProps<'a'>(
+      {
+        className: cn(
+          'group/arrow-link inline-flex min-w-0 cursor-pointer items-center gap-1.75 [&>svg]:shrink-0 [&>svg:not([data-slot=page-header-fact-arrow])]:size-4 [&>svg:not([data-slot=page-header-fact-arrow])]:stroke-[1.75] [&>svg:not([data-slot=page-header-fact-arrow])]:opacity-45',
+          'transition-colors duration-moderate ease-soft hover:text-foreground focus-visible:text-foreground',
+          FACT_LINK_ICON,
+          'rounded-md outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+          className,
+        ),
+        children: (
+          <>
+            {children}
+            <ExternalArrow data-slot="page-header-fact-arrow" />
+          </>
+        ),
+      },
+      props,
+    ),
+    state: { slot: 'page-header-fact-link' },
+  });
+}
+
 /** Optional row rendered above the header: holds a PageHeaderBack. */
 function PageHeaderBackRow({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -136,4 +185,5 @@ export {
   PageHeaderBack,
   PageHeaderFacts,
   PageHeaderFact,
+  PageHeaderFactLink,
 };

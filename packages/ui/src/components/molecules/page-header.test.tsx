@@ -9,6 +9,7 @@ import {
   PageHeaderBackRow,
   PageHeaderContent,
   PageHeaderFact,
+  PageHeaderFactLink,
   PageHeaderFacts,
   PageHeaderTitle,
 } from './page-header.tsx';
@@ -112,4 +113,39 @@ test('PageHeaderFacts: 13px secondary text, 18px between facts, icons at 45%', (
   expect(tagTokens(slotTag(html, 'page-header-fact'))).toEqual(
     expect.arrayContaining(['gap-1.75', '[&>svg]:opacity-45', '[&>svg]:size-4']),
   );
+});
+
+test('PageHeaderFactLink: an anchor that reads like a fact and ends with the external arrow', () => {
+  const html = renderToStaticMarkup(
+    <PageHeaderFactLink href="https://acme-shop.vendure.cloud">
+      <svg />
+      acme-shop.vendure.cloud
+    </PageHeaderFactLink>,
+  );
+  expect(html.startsWith('<a')).toBe(true);
+  expect(html).toContain('href="https://acme-shop.vendure.cloud"');
+  const tokens = slotTokens(html, 'page-header-fact-link');
+  expect(tokens).toEqual(
+    expect.arrayContaining([
+      'gap-1.75',
+      'group/arrow-link',
+      'hover:text-foreground',
+      'focus-visible:text-foreground',
+      '[&>svg:not([data-slot=page-header-fact-arrow])]:opacity-45',
+      'hover:[&>svg:not([data-slot=page-header-fact-arrow])]:text-brand-indicator',
+      'focus-visible:[&>svg:not([data-slot=page-header-fact-arrow])]:text-brand-indicator',
+    ]),
+  );
+  expect(tokens.some((token) => token.includes('underline'))).toBe(false);
+  expect(html.indexOf('acme-shop.vendure.cloud<')).toBeLessThan(
+    html.indexOf('data-slot="page-header-fact-arrow"'),
+  );
+  expect(html).toContain('lucide-arrow-up-right');
+});
+
+test('PageHeaderFactLink takes render for a router link', () => {
+  const html = renderToStaticMarkup(
+    <PageHeaderFactLink render={<button type="button" />}>acme</PageHeaderFactLink>,
+  );
+  expect(html.startsWith('<button')).toBe(true);
 });

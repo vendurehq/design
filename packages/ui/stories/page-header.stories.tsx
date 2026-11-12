@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from 'storybook/test';
 import { GitBranchIcon, GlobeIcon, MapPinIcon, PlusIcon } from 'lucide-react';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -11,6 +12,7 @@ import {
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderFact,
+  PageHeaderFactLink,
   PageHeaderFacts,
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
@@ -174,6 +176,58 @@ export const WithFacts: Story = {
           <Button variant="outline">Redeploy</Button>
         </PageHeaderActions>
       </PageHeader>
+    </div>
+  ),
+};
+
+function FactLinkHeader() {
+  return (
+    <PageHeader>
+      <PageHeaderContent className="gap-2">
+        <PageHeaderTitle>Production</PageHeaderTitle>
+        <PageHeaderFacts>
+          <PageHeaderFact>
+            <GitBranchIcon aria-hidden="true" />
+            <span className="font-mono">main</span>
+          </PageHeaderFact>
+          <PageHeaderFactLink href="#acme-shop">
+            <GlobeIcon aria-hidden="true" />
+            <span className="truncate">acme-shop.vendure.cloud</span>
+          </PageHeaderFactLink>
+        </PageHeaderFacts>
+      </PageHeaderContent>
+    </PageHeader>
+  );
+}
+
+/**
+ * A fact that opens another site, such as the hostname. On hover or keyboard
+ * focus its text goes to full foreground, its icon turns brand blue, and the
+ * diagonal arrow brightens and moves 1.5px out. No underline. The play
+ * function checks the icon and the arrow at rest and that the
+ * link is one tab stop.
+ */
+export const WithFactLink: Story = {
+  render: () => <FactLinkHeader />,
+  play: async ({ canvasElement }) => {
+    const link = within(canvasElement).getByRole('link', { name: 'acme-shop.vendure.cloud' });
+    const [icon, arrow] = link.querySelectorAll<SVGElement>(':scope > svg');
+    if (!icon || !arrow) throw new Error('fact link icons not found');
+    await expect(getComputedStyle(icon).opacity).toBe('0.45');
+    await expect(getComputedStyle(arrow).opacity).toBe('0.4');
+    await expect(getComputedStyle(link).textDecorationLine).toBe('none');
+    await userEvent.click(canvasElement.ownerDocument.body);
+    await userEvent.tab();
+    await expect(link).toHaveFocus();
+
+  },
+};
+
+/** Right to left: the fact link's arrow points up-left and moves that way. */
+export const WithFactLinkRightToLeft: Story = {
+  render: () => (
+    <div dir="rtl">
+      <FactLinkHeader />
     </div>
   ),
 };

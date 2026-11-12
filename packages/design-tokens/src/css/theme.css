@@ -257,6 +257,7 @@
   --transition-duration-drawer-swipe: 400ms;
   --transition-duration-alert-enter: 240ms;
   --transition-duration-button-icon-turn: 220ms;
+  --transition-duration-external-arrow: 220ms;
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;
