@@ -228,11 +228,13 @@ const durationLines = Object.entries(duration).map(
   ([key, value]) => `  --transition-duration-${kebabCase(key)}: ${value};`,
 );
 
-// Animation lines — Tailwind animate-* utilities. Each needs a matching
-// @keyframes block, built below.
-const animationLines = Object.entries(animation).map(
-  ([key, value]) => `  --animate-${kebabCase(key)}: ${value};`,
-);
+// Animation lines — Tailwind animate-* utilities. Each keyframe name they run
+// needs a matching @keyframes block, built below. A line longer than Biome's
+// width moves its value to the next line, as Biome formats it.
+const animationLines = Object.entries(animation).map(([key, value]) => {
+  const line = `  --animate-${kebabCase(key)}: ${value};`;
+  return line.length <= LINE_WIDTH ? line : `  --animate-${kebabCase(key)}:\n    ${value};`;
+});
 
 const themeBlock = [
   ...baseColorLines,
