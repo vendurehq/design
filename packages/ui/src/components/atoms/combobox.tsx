@@ -16,8 +16,42 @@ import {
 } from "@vendure-io/ui/components/atoms/input-group"
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 
-const Combobox = ComboboxPrimitive.Root
+/**
+ * The controls of the nearest Combobox. Base UI names the trigger and the
+ * input but not the popup or the list, so ComboboxContent and ComboboxList
+ * take their name from here: the field trigger when there is one (the search
+ * input then sits in the popup), else the input.
+ */
+type ComboboxControls = {
+  trigger: HTMLElement | null
+  input: HTMLElement | null
+  setTrigger: (trigger: HTMLElement | null) => void
+  setInput: (input: HTMLElement | null) => void
+}
+
+const ComboboxControlsContext = React.createContext<ComboboxControls | null>(null)
+
+function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>(
+  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item>
+) {
+  const [trigger, setTrigger] = React.useState<HTMLElement | null>(null)
+  const [input, setInput] = React.useState<HTMLElement | null>(null)
+  const controls = React.useMemo(() => ({ trigger, input, setTrigger, setInput }), [trigger, input])
+  return (
+    <ComboboxControlsContext.Provider value={controls}>
+      <ComboboxPrimitive.Root {...props} />
+    </ComboboxControlsContext.Provider>
+  )
+}
+
+/** The name of the Combobox, for its popup and its list. */
+function useComboboxName() {
+  const controls = React.useContext(ComboboxControlsContext)
+  if (controls?.trigger) return nameFrom(controls.trigger, { orSelf: true })
+  return nameFrom(controls?.input ?? null)
+}
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
@@ -31,12 +65,15 @@ function ComboboxTrigger({
   className,
   size = "default",
   children,
+  ref,
   ...props
 }: ComboboxPrimitive.Trigger.Props & {
   size?: "sm" | "default"
 }) {
+  const triggerRef = useRegisteredRef(ref, React.useContext(ComboboxControlsContext)?.setTrigger)
   return (
     <ComboboxPrimitive.Trigger
+      ref={triggerRef}
       data-slot="combobox-trigger"
       data-size={size}
       className={cn(
@@ -78,6 +115,7 @@ function ComboboxInput({
   showClear = false,
   triggerLabel = "Open options",
   clearLabel = "Clear",
+  ref,
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean
@@ -87,9 +125,11 @@ function ComboboxInput({
   /** Accessible name of the icon-only clear button. */
   clearLabel?: string
 }) {
+  const inputRef = useRegisteredRef(ref, React.useContext(ComboboxControlsContext)?.setInput)
   return (
     <InputGroup className={cn("w-auto", className)}>
       <ComboboxPrimitive.Input
+        ref={inputRef}
         render={<InputGroupInput disabled={disabled} />}
         {...props}
       />
@@ -138,6 +178,7 @@ function ComboboxContent({
     "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
   >) {
   const dir = usePopupDir()
+  const name = useComboboxName()
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
@@ -155,8 +196,14 @@ function ComboboxContent({
           className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
           // A closing list is gone for assistive technology: the input no
           // longer points at it, and it takes no input while it fades out.
+          // With the search input inside it, the popup is a dialog: it takes
+          // the Combobox's name unless it has its own.
           render={(popupProps, state) => (
-            <div {...popupProps} aria-hidden={state.open ? popupProps["aria-hidden"] : true} />
+            <div
+              {...(popupProps.role === "dialog" && !hasName(popupProps) ? name : {})}
+              {...popupProps}
+              aria-hidden={state.open ? popupProps["aria-hidden"] : true}
+            />
           )}
           {...props}
         />
@@ -166,8 +213,10 @@ function ComboboxContent({
 }
 
 function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
+  const name = useComboboxName()
   return (
     <ComboboxPrimitive.List
+      {...(hasName(props) ? {} : name)}
       data-slot="combobox-list"
       className={cn(
         "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
@@ -316,10 +365,13 @@ function ComboboxChip({
 
 function ComboboxChipsInput({
   className,
+  ref,
   ...props
 }: ComboboxPrimitive.Input.Props) {
+  const inputRef = useRegisteredRef(ref, React.useContext(ComboboxControlsContext)?.setInput)
   return (
     <ComboboxPrimitive.Input
+      ref={inputRef}
       data-slot="combobox-chip-input"
       className={cn("min-w-16 flex-1 outline-none", className)}
       {...props}
