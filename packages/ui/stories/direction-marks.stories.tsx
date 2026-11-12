@@ -77,7 +77,8 @@ function Marks({ dir }: { dir: Dir }) {
               <SidebarGroupAction data-testid="group-action" aria-label="Add">
                 <PlusIcon />
               </SidebarGroupAction>
-              <SidebarMenu>
+              {/* Measures the active bar, so this menu keeps it instead of the pill. */}
+              <SidebarMenu slidingIndicator={false}>
                 <SidebarMenuItem>
                   <SidebarMenuButton isActive data-testid="active-button">
                     <HomeIcon />

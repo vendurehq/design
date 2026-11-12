@@ -469,14 +469,14 @@ function SidebarGroupContent({
 
 function SidebarMenu({
   className,
-  slidingIndicator = false,
+  slidingIndicator = true,
   children,
   ...props
 }: React.ComponentProps<"ul"> & {
   /**
-   * Draws the active item's highlight as one pill that slides from item to
-   * item when the active item changes. Off by default: each item then marks
-   * itself with a fill and a leading bar.
+   * Draws the active item's highlight as one raised pill that slides from item
+   * to item when the active item changes. On by default. Set it to false to
+   * have each item mark itself with a fill and a leading bar instead.
    */
   slidingIndicator?: boolean
 }) {
@@ -528,9 +528,21 @@ function SidebarMenuIndicator() {
       ) {
         top += node.offsetTop
       }
+      // A pill that appears (the first active item of this menu, or one
+      // coming back from another menu or a sub-item) fades in place: only a
+      // pill already on show slides to the new item.
+      const appearing = !("shown" in indicator.dataset)
+      if (appearing) {
+        indicator.style.transitionProperty = "opacity"
+      }
       indicator.style.transform = `translateY(${top}px)`
       indicator.style.height = `${active.offsetHeight}px`
       indicator.dataset.shown = ""
+      if (appearing) {
+        // Commit the jump before the slide comes back.
+        void indicator.offsetHeight
+        indicator.style.transitionProperty = ""
+      }
     }
 
     place()
@@ -576,11 +588,13 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
   )
 }
 
-// Hover and active share the sidebar-accent fill, so the active item also gets
-// a sidebar-primary bar on its leading edge. An active SidebarMenuSubButton
-// gets no bar: the guide line of its sub-list already runs next to it. Inside a SidebarMenu with
-// slidingIndicator, the menu's pill marks the active item instead, so the item
-// drops its own fill and bar. The active icon takes brand-indicator.
+// By default the menu's sliding pill marks the active item, so the item drops
+// its own fill and bar. In a SidebarMenu with slidingIndicator={false} (or a
+// button outside a SidebarMenu), hover and active share the sidebar-accent
+// fill, so the active item also gets a sidebar-primary bar on its leading edge.
+// An active SidebarMenuSubButton never gets the pill or a bar: it keeps its
+// fill, and the guide line of its sub-list already runs next to it. The active
+// icon takes brand-indicator.
 //
 // For the current page exactly one icon takes brand-indicator. An active
 // SidebarMenuSubButton lights its own leading icon. A group with
