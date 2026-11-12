@@ -102,7 +102,10 @@ function SearchTrigger({
       className={cn(fieldClass, box, className)}
       {...props}
     >
-      <SearchIcon aria-hidden className="size-3.5 stroke-[1.75] opacity-55 transition-opacity duration-quick ease-soft group-hover/search-trigger:opacity-85" />
+      <SearchIcon
+        aria-hidden
+        className="size-3.5 stroke-[1.75] opacity-55 transition-opacity duration-quick ease-soft group-hover/search-trigger:opacity-85"
+      />
       <span className={cn('truncate', hidden)}>{label}</span>
       {shortcutKey ? (
         <Kbd
