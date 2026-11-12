@@ -457,9 +457,13 @@ function useSelectAllRipple(
       if (quick) element.dataset.selectRippleQuick = '';
       else delete element.dataset.selectRippleQuick;
     };
-    const toggleAll = <TData,>(table: TanStackTable<TData>, value: boolean, quick: boolean) => {
+    // `quick` asks for the keyboard's ripple. A click after a pointer press is
+    // never quick: Base UI hands the checkbox's click over as its hidden
+    // input's click, with detail 0, which reads as the keyboard.
+    const toggleAll = <TData,>(table: TanStackTable<TData>, value: boolean, keyboard: boolean) => {
       const prep = prepared.current;
       prepared.current = null;
+      const quick = keyboard && prep == null;
       const element = tableRef.current;
       if (!element || reduceMotionRef.current) {
         end();
@@ -471,7 +475,7 @@ function useSelectAllRipple(
       // (the bar at the top edge) before the selection changes, or they would
       // transition from their middle. A running ripple is not flushed: its
       // rows retarget from where they are.
-      const ready = prep?.shown === true && prep.value === value && prep.quick === quick;
+      const ready = prep?.shown === true && prep.value === value;
       const running = !ready && element.dataset.selectRipple != null;
       setRipple(element, value, quick);
       if (!ready && !running) void element.offsetHeight;
@@ -480,14 +484,12 @@ function useSelectAllRipple(
       timer.current = window.setTimeout(end, SELECT_RIPPLE_SETTLE_MS);
     };
     // A press on the select-all checkbox: `value` is what its click will set,
-    // `selectingAfter` whether rows stay selected after it, `quick` the ripple
-    // its click will ask for.
-    const prepare = (value: boolean, selectingAfter: boolean, quick: boolean) => {
+    // `selectingAfter` whether rows stay selected after it.
+    const prepare = (value: boolean, selectingAfter: boolean) => {
       const element = tableRef.current;
       if (!element || prepared.current != null) return;
       const prep: SelectAllPrep = {
         value,
-        quick,
         shown: false,
         ripple: element.dataset.selectRipple,
       };
@@ -497,7 +499,7 @@ function useSelectAllRipple(
         window.setTimeout(() => {
           if (prepared.current !== prep) return;
           element.toggleAttribute('data-selecting-cursor', selectingAfter);
-          if (!reduceMotionRef.current && prep.ripple == null) setRipple(element, value, quick);
+          if (!reduceMotionRef.current && prep.ripple == null) setRipple(element, value, false);
           requestAnimationFrame(() =>
             window.setTimeout(() => {
               if (prepared.current === prep) prep.shown = true;
@@ -528,7 +530,6 @@ function useSelectAllRipple(
 
 type SelectAllPrep = {
   value: boolean;
-  quick: boolean;
   /** A frame has shown the prepared start since the press. */
   shown: boolean;
   /** A running ripple at the press; without one, a press with no click removes the prepared start. */
@@ -542,15 +543,14 @@ type SelectAllPrep = {
  */
 function prepareSelectAll<TData>(
   table: TanStackTable<TData>,
-  ripple: { prepare: (value: boolean, selectingAfter: boolean, quick: boolean) => void },
-  quick: boolean,
+  ripple: { prepare: (value: boolean, selectingAfter: boolean) => void },
 ) {
   const value = !table.getIsAllPageRowsSelected();
   const pageIds = new Set(table.getRowModel().rows.map((row) => row.id));
   const otherPages = getSelectedRowIds(table.getState().rowSelection).some(
     (id) => !pageIds.has(id),
   );
-  ripple.prepare(value, value || otherPages, quick);
+  ripple.prepare(value, value || otherPages);
 }
 
 /** A checkbox toggled with Space: a keyboard event, or a click with no pointer (detail 0). */
@@ -728,7 +728,7 @@ function DataTable<TData>({
                 aria-hidden
                 data-slot="data-table-select-area"
                 className={SELECT_AREA_CLASS}
-                onPointerDown={() => prepareSelectAll(table, selectAllRipple, false)}
+                onPointerDown={() => prepareSelectAll(table, selectAllRipple)}
                 onClick={() =>
                   selectAllRipple.toggleAll(table, !table.getIsAllPageRowsSelected(), false)
                 }
@@ -747,9 +747,7 @@ function DataTable<TData>({
                       indeterminate={
                         table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
                       }
-                      // Its click reaches onCheckedChange as the hidden
-                      // input's click, with detail 0: read as quick.
-                      onPointerDown={() => prepareSelectAll(table, selectAllRipple, true)}
+                      onPointerDown={() => prepareSelectAll(table, selectAllRipple)}
                       onCheckedChange={(checked, details) =>
                         selectAllRipple.toggleAll(table, checked, fromKeyboard(details.event))
                       }

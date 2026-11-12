@@ -1935,7 +1935,8 @@ export const SelectAllRipple50: Story = {
 
 // A press on the select-all checkbox prepares its click in the frames before
 // the release: the ripple's start and the row cursor. The rows do not change
-// until the click. A release without a click puts both back.
+// until the click. A release without a click puts both back. A pointer click
+// takes the full ripple; Space takes the quick one.
 export const SelectAllPressPrepares: Story = {
   name: 'Select all ripple · press prepares the click',
   render: () => <RippleTable count={10} />,
@@ -1967,8 +1968,12 @@ export const SelectAllPressPrepares: Story = {
       await waitFor(() => expect(selectedRows()).toBe(10));
       await expect(table).toHaveAttribute('data-select-ripple', 'select');
       await expect(table).toHaveAttribute('data-selecting-cursor');
+      // A pointer click takes the full ripple (normal, 200ms), not the
+      // keyboard's: the last of 10 rows starts after 100ms.
+      await expect(table).not.toHaveAttribute('data-select-ripple-quick');
       const starts = rippleStarts(canvasElement);
       await expect(starts[0]).toBe(0);
+      await expect(Math.max(...starts)).toBeGreaterThan(100);
       await expect(Math.max(...starts)).toBeLessThanOrEqual(200);
     });
 
@@ -1979,6 +1984,16 @@ export const SelectAllPressPrepares: Story = {
       box().click();
       await waitFor(() => expect(selectedRows()).toBe(0));
       await expect(table).not.toHaveAttribute('data-selecting-cursor');
+    });
+
+    await step('Space selects all with the quick ripple (fast, 100ms)', async () => {
+      box().focus();
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(selectedRows()).toBe(10));
+      await expect(table).toHaveAttribute('data-select-ripple-quick');
+      await expect(Math.max(...rippleStarts(canvasElement))).toBeLessThanOrEqual(100);
+      await userEvent.keyboard(' ');
+      await waitFor(() => expect(selectedRows()).toBe(0));
     });
   },
 };
