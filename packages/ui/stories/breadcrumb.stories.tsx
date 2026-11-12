@@ -82,7 +82,7 @@ const environments: BreadcrumbMenuOption[] = [
 ];
 
 function EnvironmentCrumbs({ options = environments, page = 'Overview' }: { options?: BreadcrumbMenuOption[]; page?: string }) {
-  const [value, setValue] = React.useState(options[0].value);
+  const [value, setValue] = React.useState(options[0]?.value ?? '');
   return (
     <Breadcrumb>
       <BreadcrumbList>
