@@ -23,7 +23,8 @@ export function usePinnedHeight<T extends HTMLElement>(
       if (!node || !container) return own;
       const measure = () => container.style.setProperty(property, `${node.offsetHeight}px`);
       measure();
-      const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+      const observer =
+        typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
       observer?.observe(node);
       // React 19 calls the returned cleanup instead of the ref with null.
       return () => {
