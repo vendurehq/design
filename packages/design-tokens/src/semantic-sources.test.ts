@@ -7,33 +7,24 @@ import { darkTheme, lightTheme } from './tokens/semantic.ts';
 // A hand-typed literal must be listed below with its reason. The list only
 // shrinks: an entry whose value no longer needs it fails the test.
 const ALLOWED_LITERALS: Record<string, string> = {
-  'light:foreground': 'between neutral[900] and [950]; the light shadows derive from it',
   'light:foreground-secondary': 'near neutral[700] (ΔE 0.012); not yet swapped',
   'light:muted-foreground':
-    'contrast: 4.5:1 on accent, muted and secondary over every tier (contrast.test)',
-  'light:faint-foreground':
-    'placeholder tier between muted-foreground and the canvas; nearest step is visibly off',
-  'light:success-text': 'tone text, not a ramp step by design (docs/design-tokens.md)',
+    'contrast-tuned; neutral[500] fails "muted-foreground on background >= 4.5" (contrast.test)',
   'light:warning-text': 'tone text on hue 49, which has no ramp',
-  'light:destructive-text': 'tone text; destructive[500] fails 4.5:1 on muted (contrast.test)',
-  'light:info-text': 'tone text; brand[700] fails 4.5:1 on background (contrast.test)',
+  'light:destructive-text':
+    'contrast-tuned; destructive[500] fails "destructive-text on muted over background >= 4.5" (contrast.test)',
+  'light:info-text':
+    'contrast-tuned; brand[700] fails "info-text on background >= 4.5" (contrast.test)',
   'light:warning-indicator': 'hue 72, which has no ramp',
   'light:control-border':
-    'contrast: 3:1 non-text on every tier; neutral[400] fails (contrast.test)',
+    'contrast-tuned; neutral[400] fails "control-border on background >= 3 (non-text)" (contrast.test)',
   'dark:foreground': 'between neutral ramp steps (ΔE 0.014 to neutral[50]); not yet swapped',
-  'dark:foreground-secondary': 'between neutral[200] and [300]; nearest step is visibly off',
-  'dark:secondary-foreground': 'between neutral[50] and [100]; nearest step is visibly off',
   'dark:muted-foreground':
-    'contrast: 4.5:1 on accent over surface-raised; neutral[400] fails (contrast.test)',
-  'dark:faint-foreground': 'placeholder tier; nearest step is visibly off',
-  'dark:accent-foreground': 'between neutral[50] and [100]; nearest step is visibly off',
-  'dark:destructive': 'margin over 3:1 non-text; destructive[500] holds only 3.07',
-  'dark:destructive-foreground':
-    'contrast: destructive[50] gives 4.38 on destructive (contrast.test)',
-  'dark:success-text': 'tone text, 11° off the success ramp by design',
-  'dark:warning-text': 'tone text; warning[300] is visibly darker',
-  'dark:destructive-text': 'tone text; destructive[400] fails 4.5:1 on accent (contrast.test)',
-  'dark:neutral-text': 'tone text, brighter than muted-foreground; nearest step is visibly off',
+    'contrast-tuned; neutral[400] fails "muted-foreground on accent over surface-raised >= 4.5" (contrast.test)',
+  'dark:success-text': 'tone text; success[300] passes but reads visibly duller',
+  'dark:warning-text': 'tone text; warning[300] passes but reads visibly darker and duller',
+  'dark:destructive-text':
+    'contrast-tuned; destructive[400] fails "destructive-text on accent over surface >= 4.5" (contrast.test)',
 };
 
 const themes = { light: lightTheme, dark: darkTheme } as const;
