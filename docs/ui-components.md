@@ -261,7 +261,19 @@ Never use plain coloured text for a status, and never put a chip in the first
 or the last column.
 
 In the icon-and-label form the icon keeps its tone colour for every state,
-green for success included. The label stays neutral.
+green for success included. The label stays neutral. Give each group of
+states its own icon shape (pass `icon` for a state whose shape says more), so
+the column reads without colour.
+
+`progress` and its spinner are only for work that runs right now and ends in
+seconds or minutes: a build, a deploy. A state that lasts hours or days, such
+as a shipped order, gets a still icon and a neutral tone:
+
+```tsx
+<StatusBadge appearance="icon" tone="neutral" icon={<TruckIcon />}>
+  Shipped
+</StatusBadge>
+```
 
 `detail` adds a second line under the label of `appearance="icon"`, with the
 one time that matters for the state. In a `DataTable` the row is 46px.
@@ -405,6 +417,13 @@ The dialog has no ✕ by default. Cancel, Escape and a click on the backdrop
 close it. Pass `showCloseButton` to `DialogContent` when the dialog has no
 Cancel button. `DialogTitle` takes an `icon`, drawn at 18px before the title in
 the foreground at 60%, and a `tone` to colour it for a state.
+
+A dialog is at most the viewport height less 1rem above and below. A taller
+dialog scrolls inside: `DialogHeader` sticks to the top and `DialogFooter` to
+the bottom, so the title, the ✕ and the actions stay in view. They stick also
+when they sit inside a `<form>` that wraps the fields. Do not add a
+`max-h-[90vh] overflow-y-auto` cap of your own. `AlertDialog` (and so
+`ConfirmDialog`) and `Sheet` work the same way with their header and footer.
 
 ```tsx
 import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialog";
@@ -629,6 +648,7 @@ const columns: ColumnDef<Variant>[] = [
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
 - While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` does the same when it spreads `ctx.selectProps`; without it, its link keeps covering the row.
+- A link with no visible text (its children are `sr-only`, as when the cell shows the item's code as a copy chip) has no name to click. While rows are selected its target is the chevron at the end of the row: the link covers the row-end chevron slot, the full row height. The chevron shows on row hover and turns `info-text` blue on the target's hover or focus, and the focus ring goes around the slot. A click anywhere else on the row still selects it.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.

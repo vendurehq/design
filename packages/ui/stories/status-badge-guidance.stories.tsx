@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { CircleSlashIcon, TruckIcon } from 'lucide-react';
 import { Fragment, type ReactNode } from 'react';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
@@ -180,19 +181,26 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Order',
     rows: [
-      { states: 'Created · Draft · AddingItems', tone: 'neutral' },
       {
-        states: 'ArrangingPayment · ArrangingAdditionalPayment',
+        states: 'Created · Draft · AddingItems · ArrangingPayment',
+        tone: 'neutral',
+        note: 'Not started; the customer is still checking out',
+      },
+      {
+        states: 'ArrangingAdditionalPayment',
         tone: 'warning',
         note: 'Blocked on the customer paying',
       },
       { states: 'Modifying', tone: 'warning', note: 'Open until an admin completes it' },
-      { states: 'PaymentAuthorized', tone: 'info', note: 'Money reserved is worth seeing' },
-      { states: 'PaymentSettled', tone: 'success' },
+      {
+        states: 'PaymentAuthorized · PaymentSettled',
+        tone: 'info',
+        note: 'Paid, waiting for fulfilment: the orders to act on',
+      },
       {
         states: 'PartiallyShipped · Shipped · PartiallyDelivered',
-        tone: 'info',
-        note: 'Healthy mid-fulfillment, not inert',
+        tone: 'neutral',
+        note: 'On its way: a still truck icon, never a spinner',
       },
       { states: 'Delivered', tone: 'success' },
       { states: 'Cancelled', tone: 'neutral', note: 'Was red (ruling 1)' },
@@ -216,7 +224,7 @@ const REFERENCE: Domain[] = [
         tone: 'neutral',
         note: 'Pending is system-resolved, not human-blocked (ruling 2)',
       },
-      { states: 'Shipped', tone: 'info' },
+      { states: 'Shipped', tone: 'neutral', note: 'On its way: a still truck icon' },
       { states: 'Delivered', tone: 'success' },
       { states: 'Cancelled', tone: 'neutral' },
     ],
@@ -605,6 +613,31 @@ const ROWS: { name: string; tone: Tone; state: string; time: string }[] = [
   { name: 'legacy-import', tone: 'critical', state: 'Failed', time: '1 hour ago' },
 ];
 
+// An orders list: every order has a state. The do side gives each group its
+// own shape and colours only the orders that ask for the reader; the don't side
+// is a chip in every row, with a spinner on Shipped.
+const ORDERS: {
+  code: string;
+  label: string;
+  tone: Tone;
+  icon?: ReactNode;
+  wire: string;
+  chipTone: Tone;
+}[] = [
+  { code: 'ORD-1024', label: 'Payment settled', tone: 'info', wire: 'PaymentSettled', chipTone: 'success' },
+  { code: 'ORD-1025', label: 'Shipped', tone: 'neutral', icon: <TruckIcon />, wire: 'Shipped', chipTone: 'progress' },
+  { code: 'ORD-1026', label: 'Delivered', tone: 'success', wire: 'Delivered', chipTone: 'neutral' },
+  {
+    code: 'ORD-1027',
+    label: 'Cancelled',
+    tone: 'neutral',
+    icon: <CircleSlashIcon />,
+    wire: 'Cancelled',
+    chipTone: 'critical',
+  },
+  { code: 'ORD-1028', label: 'Payment declined', tone: 'critical', wire: 'PaymentDeclined', chipTone: 'critical' },
+];
+
 const PRODUCTS: { name: string; enabled: boolean; stock: number }[] = [
   { name: 'Laptop 15"', enabled: true, stock: 24 },
   { name: 'USB-C dock', enabled: false, stock: 0 },
@@ -666,7 +699,7 @@ export const Appearance: Story = {
           </Example>
           <Example
             verdict="dont"
-            caption="Plain coloured text in a status column. Colour alone does not read as a status, and it fails without colour vision. Do not grey out the icon of a healthy state either."
+            caption="Plain coloured text in a status column. Colour alone does not read as a status, and it fails without colour vision. Do not grey out the icon of a finished success either."
           >
             <div className="flex w-full flex-col gap-3 text-sm">
               {ROWS.map(({ name, tone, state }) => (
@@ -676,6 +709,45 @@ export const Appearance: Story = {
                     <StatusBadge tone={tone} appearance="text">
                       {state}
                     </StatusBadge>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Example>
+        </div>
+        <h3 className="mb-2 text-sm font-semibold">An order state: one line, a still icon</h3>
+        <p className="text-muted-foreground mb-3 text-xs">
+          A spinner is only for work that runs right now and ends in seconds or minutes, such as a
+          build or a deploy. A state that lasts hours or days, such as Shipped, gets a still icon.
+        </p>
+        <div className="mb-6 grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="An orders list: appearance=&quot;icon&quot; on every row, one line, no time under it (the list has its own date column). Colour only where the state asks for the reader: blue for an order to fulfil, green for delivered, red for a declined payment. Shipped and Cancelled stay grey, and each group has its own shape."
+          >
+            <div className="flex w-full flex-col gap-3 text-sm">
+              {ORDERS.map(({ code, label, tone, icon }) => (
+                <div key={code} className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs">{code}</span>
+                  <span className="w-36">
+                    <StatusBadge tone={tone} appearance="icon" icon={icon}>
+                      {label}
+                    </StatusBadge>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A chip in every row, with the state name as a code word. Five colours give every row the same weight, so the declined payment does not stand out. Shipped spins as if work runs right now."
+          >
+            <div className="flex w-full flex-col gap-3 text-sm">
+              {ORDERS.map(({ code, wire, chipTone }) => (
+                <div key={code} className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-xs">{code}</span>
+                  <span className="w-36">
+                    <StatusBadge tone={chipTone}>{wire}</StatusBadge>
                   </span>
                 </div>
               ))}

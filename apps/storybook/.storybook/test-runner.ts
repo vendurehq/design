@@ -39,7 +39,11 @@ async function pressOneText(page: Page, press: TextPress) {
       );
     });
   const root = page.locator('#storybook-root');
-  const box = await root.getByText(press.text, { exact: true }).boundingBox();
+  // A mouse never presses screen-reader-only text, so skip any `sr-only` copy.
+  const box = await root
+    .getByText(press.text, { exact: true })
+    .and(page.locator(':not(.sr-only)'))
+    .boundingBox();
   if (!box) throw new Error(`pressText: "${press.text}" is not visible`);
   const url = page.url();
   if (press.reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -185,6 +189,26 @@ async function pressSelectsRow(page: Page, press?: { text: string; expectChecked
 }
 
 /**
+ * `parameters.pressRowEnd` presses the end of the table row that holds the
+ * text `row` with a real mouse: 12px in from the row's end edge, in the slot
+ * of the row-end chevron, at the middle of the row. The URL hash must become
+ * `expectHash`.
+ */
+async function pressRowEnd(page: Page, press?: { row: string; expectHash: string }) {
+  if (!press) return;
+  const root = page.locator('#storybook-root');
+  const box = await root.locator('tr', { hasText: press.row }).boundingBox();
+  if (!box) throw new Error(`pressRowEnd: no row with "${press.row}" is visible`);
+  await page.evaluate(() => history.replaceState(null, '', location.pathname + location.search));
+  await page.mouse.click(box.x + box.width - 12, box.y + box.height / 2);
+  const hash = await page.evaluate(() => location.hash);
+  await page.evaluate(() => history.replaceState(null, '', location.pathname + location.search));
+  if (hash !== press.expectHash) {
+    throw new Error(`pressRowEnd: expected ${press.expectHash}, the press opened "${hash}"`);
+  }
+}
+
+/**
  * `parameters.pressSelectCell` presses the four corners of a DataTable
  * selection slot with a real mouse: the full row height, from the table's
  * start edge to where the next cell's content starts. Each press must toggle
@@ -200,7 +224,8 @@ async function pressSelectCell(page: Page, press?: { checkbox: string; header?: 
       const cell = box.closest('td,th') as HTMLElement;
       const next = cell.nextElementSibling as HTMLElement;
       const row = cell.getBoundingClientRect();
-      const content = next.getBoundingClientRect().left + Number.parseFloat(getComputedStyle(next).paddingLeft);
+      const content =
+        next.getBoundingClientRect().left + Number.parseFloat(getComputedStyle(next).paddingLeft);
       const table = (cell.closest('table') as HTMLElement).getBoundingClientRect();
       return { left: table.left, right: content, top: row.top, bottom: row.bottom };
     });
@@ -217,14 +242,19 @@ async function pressSelectCell(page: Page, press?: { checkbox: string; header?: 
       await page
         .waitForFunction(
           ([label, was]) =>
-            document.querySelector(`[role=checkbox][aria-label="${label}"]`)?.getAttribute('aria-checked') !== was,
+            document
+              .querySelector(`[role=checkbox][aria-label="${label}"]`)
+              ?.getAttribute('aria-checked') !== was,
           [name, before] as const,
           { timeout: 1000 },
         )
         .catch(() => {
-          throw new Error(`pressSelectCell: a press at (${Math.round(x as number)}, ${Math.round(y as number)}) did not toggle "${name}"`);
+          throw new Error(
+            `pressSelectCell: a press at (${Math.round(x as number)}, ${Math.round(y as number)}) did not toggle "${name}"`,
+          );
         });
-      if (page.url() !== url) throw new Error(`pressSelectCell: the press navigated to ${page.url()}`);
+      if (page.url() !== url)
+        throw new Error(`pressSelectCell: the press navigated to ${page.url()}`);
     }
   }
 }
@@ -242,19 +272,105 @@ async function pressOpen(page: Page, press?: { text: string; expectFocus: string
   const box = await root.getByText(press.text, { exact: true }).boundingBox();
   if (!box) throw new Error(`pressOpen: "${press.text}" is not visible`);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  const focused = page.locator('body').getByRole('button', { name: press.expectFocus, exact: true });
-  await page.waitForFunction(
-    (name) => document.activeElement?.textContent?.trim() === name,
-    press.expectFocus,
-    { timeout: 2000 },
-  ).catch(() => {
-    throw new Error(`pressOpen: "${press.expectFocus}" did not take focus`);
-  });
+  const focused = page
+    .locator('body')
+    .getByRole('button', { name: press.expectFocus, exact: true });
+  await page
+    .waitForFunction(
+      (name) => document.activeElement?.textContent?.trim() === name,
+      press.expectFocus,
+      { timeout: 2000 },
+    )
+    .catch(() => {
+      throw new Error(`pressOpen: "${press.expectFocus}" did not take focus`);
+    });
   const outline = await focused.evaluate((button) => getComputedStyle(button).outlineStyle);
   if (outline !== 'solid') {
     throw new Error(`pressOpen: "${press.expectFocus}" has focus but no ring (outline ${outline})`);
   }
   await page.keyboard.press('Escape');
+}
+
+/**
+ * Waits until the story has finished drawing, so axe reads the same page every
+ * run. Two things must hold together:
+ * - No animation or transition in the story root is still running (the Web
+ *   Animations API). Endless animations (a spinner) and paused ones never
+ *   finish, so they are ignored. Transitions on <html> and <body> count too, as
+ *   axe reads their colours.
+ * - The story root has not changed for `quietMs`. This covers animations that
+ *   script drives frame by frame, such as recharts, which the first check
+ *   cannot see. Pass 0 to check only the animations.
+ * It loops, because a finished animation can start the next one. A story that
+ * is still moving after `SETTLE_CAP_MS` fails: scanning it would pass or fail
+ * by timing.
+ */
+const SETTLE_CAP_MS = 5000;
+const QUIET_MS = 250;
+
+async function settle(page: Page, quietMs: number) {
+  const stillMoving = await page.evaluate(
+    async ([cap, quiet]) => {
+      const root = document.querySelector('#storybook-root');
+      if (!root) return [];
+      // Two frames first, so an animation that starts after the last commit
+      // (an exit, say) is already running when it is looked for.
+      for (let frame = 0; frame < 2; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      const running = () =>
+        document.getAnimations().filter((animation) => {
+          const target = (animation.effect as KeyframeEffect | null)?.target;
+          if (!target || !(root.contains(target) || target.contains(root))) return false;
+          if (animation.playState === 'finished' || animation.playState === 'paused') return false;
+          return Number.isFinite(animation.effect?.getComputedTiming().endTime ?? Number.POSITIVE_INFINITY);
+        });
+      let lastChange = performance.now();
+      const observer = new MutationObserver(() => {
+        lastChange = performance.now();
+      });
+      observer.observe(root, { subtree: true, childList: true, attributes: true, characterData: true });
+      const deadline = performance.now() + cap;
+      try {
+        for (;;) {
+          const batch = running();
+          const left = deadline - performance.now();
+          if (left <= 0) {
+            return batch.length > 0
+              ? batch.map((animation) => {
+                  const name =
+                    animation instanceof CSSAnimation
+                      ? animation.animationName
+                      : animation instanceof CSSTransition
+                        ? animation.transitionProperty
+                        : 'animation';
+                  return `${((animation.effect as KeyframeEffect).target as Element).tagName.toLowerCase()} ${name}`;
+                })
+              : ['the page kept changing'];
+          }
+          if (batch.length > 0) {
+            await Promise.race([
+              Promise.allSettled(batch.map((animation) => animation.finished)),
+              new Promise((resolve) => setTimeout(resolve, left)),
+            ]);
+            lastChange = performance.now();
+            continue;
+          }
+          const idle = performance.now() - lastChange;
+          if (idle >= quiet) return [];
+          await new Promise((resolve) => setTimeout(resolve, Math.min(quiet - idle, left)));
+        }
+      } finally {
+        observer.disconnect();
+      }
+    },
+    [SETTLE_CAP_MS, quietMs] as const,
+  );
+  if (stillMoving.length > 0) {
+    throw new Error(
+      `The story is still moving after ${SETTLE_CAP_MS}ms, so the accessibility scan would depend on timing: ${stillMoving.join(', ')}`,
+    );
+  }
 }
 
 const config: TestRunnerConfig = {
@@ -274,7 +390,10 @@ const config: TestRunnerConfig = {
     await configureAxe(page, {
       rules: [
         { id: 'color-contrast', selector: '*:not([data-placeholder])' },
-        { id: 'aria-hidden-focus', selector: '[aria-hidden="true"]:not([data-base-ui-focus-guard])' },
+        {
+          id: 'aria-hidden-focus',
+          selector: '[aria-hidden="true"]:not([data-base-ui-focus-guard])',
+        },
       ],
     });
   },
@@ -285,6 +404,7 @@ const config: TestRunnerConfig = {
     await pressNear(page, storyContext.parameters?.pressNear);
     await pressRowText(page, storyContext.parameters?.pressRowText);
     await pressSelectsRow(page, storyContext.parameters?.pressSelectsRow);
+    await pressRowEnd(page, storyContext.parameters?.pressRowEnd);
     await pressSelectCell(page, storyContext.parameters?.pressSelectCell);
     await pressOpen(page, storyContext.parameters?.pressOpen);
 
@@ -298,20 +418,11 @@ const config: TestRunnerConfig = {
     // class on <html>, so set the same class here, then wait for the color
     // transitions to finish before axe reads the computed colors.
     const failures: string[] = [];
+    await settle(page, QUIET_MS);
     for (const theme of THEMES) {
-      await page.evaluate(async (dark) => {
-        document.documentElement.classList.toggle('dark', dark);
-        // Every animation that ends: transitions, keyframes and Web Animations
-        // (the bulk bar's exit). Infinite ones such as spinners never finish.
-        // Two frames first, so an exit that starts after the last commit counts.
-        for (let frame = 0; frame < 2; frame++) {
-          await new Promise((resolve) => requestAnimationFrame(resolve));
-        }
-        const finite = document
-          .getAnimations()
-          .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
-        await Promise.allSettled(finite.map((animation) => animation.finished));
-      }, theme === 'dark');
+      await page.evaluate((dark) => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+      // The theme switch starts colour transitions and nothing else.
+      await settle(page, 0);
 
       const violations = await getViolations(
         page,
