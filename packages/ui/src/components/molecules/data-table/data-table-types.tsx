@@ -282,7 +282,10 @@ export interface DataTableProps<TData> {
   toolbar?: React.ReactNode | ((table: Table<TData>) => React.ReactNode);
   /**
    * Replaces the controls row inside the header band while selection is
-   * non-empty (title and applied-filter chips stay). Only meaningful with
+   * non-empty, at the row's height (title and applied-filter chips stay).
+   * Without a controls row it covers the column header row instead. Either
+   * way the table does not move. Keep the bar one line of `h-8` or smaller
+   * controls, so it fits the 40px header row. Only meaningful with
    * `rowSelection` wired.
    */
   bulkActions?: (ctx: DataTableBulkActionContext<TData>) => React.ReactNode;

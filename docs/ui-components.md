@@ -612,7 +612,7 @@ import {
 
 ### DataTable bulk actions
 
-`bulkActions` renders the bar that replaces the controls while rows are selected. Its context describes the selection:
+`bulkActions` renders the bar that replaces the controls while rows are selected. It takes the controls row's height; a table without a controls row shows it over the column header row. The table does not move either way, so keep the bar to one line of controls no taller than `h-8`. Its context describes the selection:
 
 ```tsx
 <DataTable
