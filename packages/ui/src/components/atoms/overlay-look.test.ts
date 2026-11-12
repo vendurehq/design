@@ -178,9 +178,20 @@ describe('v3 overlay look', () => {
   test('destructive menu items hover with a 10% destructive tint in both themes', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
-      expect(code).toContain('data-[variant=destructive]:focus:bg-destructive/10');
+      expect(code).toContain('data-[variant=destructive]:not-data-disabled:focus:bg-destructive/10');
       expect(code).not.toContain('dark:data-[variant=destructive]:focus:bg-destructive/20');
     }
+  });
+
+  test('a disabled menu, select or combobox item never takes the fill', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx']) {
+      const code = source(file);
+      expect(code).not.toMatch(/(?<!not-data-disabled:)focus:bg-/);
+      expect(code).toContain('not-data-disabled:focus:bg-muted');
+    }
+    const combobox = source('combobox.tsx');
+    expect(combobox).not.toMatch(/(?<!not-data-disabled:)data-highlighted:bg-/);
+    expect(combobox).toContain('not-data-disabled:data-highlighted:bg-muted');
   });
 
   test('destructive menu items read in destructive-text', () => {
