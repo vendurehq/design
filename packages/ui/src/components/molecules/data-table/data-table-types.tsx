@@ -323,6 +323,9 @@ export interface DataTableProps<TData> {
    * never drift from the table's own. `ctx.selectProps` (see
    * {@link DataTableRowSelectProps}) gives the row click-to-select while rows
    * are selected; a row without it keeps opening the item from anywhere on it.
+   * A row with a `DataTableRowLink` needs nothing more: the table raises its
+   * buttons, links, inputs and copy chips above the stretched link, as it does
+   * on a built-in row.
    */
   renderRow?: (
     row: Row<TData>,
