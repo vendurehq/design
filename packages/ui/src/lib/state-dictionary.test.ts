@@ -40,10 +40,53 @@ describe('defineStateEntries', () => {
     expect(commonStates.labelFor('DISABLED')).toBe('Disabled');
   });
 
-  test('unmapped state falls back to neutral and the raw label', () => {
+  test('unmapped state falls back to neutral and its name in words', () => {
     const warn = spyOn(console, 'warn').mockImplementation(() => {});
     expect(commonStates.toneFor('nonsense')).toBe('neutral');
-    expect(commonStates.labelFor('nonsense')).toBe('nonsense');
+    expect(commonStates.labelFor('nonsense')).toBe('Nonsense');
+    warn.mockRestore();
+  });
+
+  test('an unmapped state name turns into sentence case words', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    const cases: [string, string][] = [
+      ['ValidatingCustomer', 'Validating customer'],
+      ['PaymentSettled', 'Payment settled'],
+      ['awaitingReview', 'Awaiting review'],
+      ['VALIDATING_CUSTOMER', 'Validating customer'],
+      ['validating-customer', 'Validating customer'],
+      ['on_hold', 'On hold'],
+      ['SSLCheckFailed', 'SSL check failed'],
+      ['Step2Done', 'Step 2 done'],
+      ['', ''],
+    ];
+    for (const [state, label] of cases) {
+      expect(commonStates.labelFor(state)).toBe(label);
+    }
+    warn.mockRestore();
+  });
+
+  test('the words fallback still warns once in development', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    const map = defineStateEntries({ ok: { tone: 'success', defaultLabel: 'Ok' } });
+    expect(map.labelFor('ValidatingCustomer')).toBe('Validating customer');
+    map.labelFor('ValidatingCustomer');
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  test('iconFor returns the icon of an entry, and nothing for an entry without one', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+    const truck = { type: 'svg', props: {}, key: null };
+    const map = defineStateEntries({
+      Shipped: { tone: 'neutral', defaultLabel: 'Shipped', icon: truck },
+      Delivered: { tone: 'success', defaultLabel: 'Delivered' },
+    });
+    expect(map.iconFor('Shipped')).toBe(truck);
+    expect(map.iconFor('SHIPPED')).toBe(truck);
+    expect(map.iconFor('Delivered')).toBeUndefined();
+    expect(map.iconFor('Unknown')).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 

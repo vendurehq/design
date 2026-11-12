@@ -247,7 +247,7 @@ const keyframesCss = Object.entries(keyframes)
   .join('\n\n');
 
 // text-style-* utilities — named type compositions (font, size, weight,
-// tracking, leading). Type only, no color.
+// tracking, leading, line breaking). Type only, no color.
 function buildTextStyleUtility(name: string, props: Record<string, string>): string {
   const lines = Object.entries(props).map(([prop, value]) => `  ${kebabCase(prop)}: ${value};`);
   return `@utility text-style-${name} {\n${lines.join('\n')}\n}`;

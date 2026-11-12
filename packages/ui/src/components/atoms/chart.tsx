@@ -55,7 +55,7 @@ const DECORATIVE_SHAPES =
   ".recharts-radial-bar-background-sector, .recharts-treemap-depth-0 > * > * > [role=img]"
 
 function nameChartShapes(root: HTMLElement, config: ChartConfig) {
-  for (const shape of root.querySelectorAll<SVGElement>(CHART_SHAPES)) {
+  for (const shape of Array.from(root.querySelectorAll<SVGElement>(CHART_SHAPES))) {
     if (shape.querySelector("title")) continue
     if (shape.matches(DECORATIVE_SHAPES)) {
       shape.setAttribute("aria-hidden", "true")
@@ -259,7 +259,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "border-border/50 bg-background grid min-w-32 items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+        "bg-popover text-popover-foreground grid min-w-32 items-start gap-1.5 rounded-xl px-2.5 py-1.5 text-xs shadow-overlay",
         className
       )}
     >

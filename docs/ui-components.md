@@ -247,7 +247,27 @@ const deploymentStates = defineStateEntries<DeploymentState>({
 ```
 
 Do not attach ramp colors to states. Unknown wire values deliberately fall back
-to neutral and warn once in development.
+to neutral and warn once in development. `labelFor` then shows the state name in
+sentence case words: `ValidatingCustomer` reads "Validating customer".
+
+An entry can carry an `icon` when its shape says more than the tone's own icon.
+`iconFor` returns it, or `undefined` for the tone's icon:
+
+```tsx
+const orderStates = defineStateEntries<OrderState>({
+  Shipped: { tone: "neutral", defaultLabel: "Shipped", icon: <TruckIcon /> },
+  Delivered: { tone: "success", defaultLabel: "Delivered" },
+  // …
+});
+
+<StatusBadge
+  appearance="icon"
+  tone={orderStates.toneFor(order.state)}
+  icon={orderStates.iconFor(order.state)}
+>
+  {orderStates.labelFor(order.state)}
+</StatusBadge>;
+```
 
 `StatusBadge` renders as a chip by default, with the tone's own icon in front
 of the label (`progress` spins). A status that every row of a table shows uses
@@ -676,8 +696,8 @@ const columns: ColumnDef<Variant>[] = [
 
 - The link's `::after` covers the row. The row has one tab stop, named by the link text, and keyboard focus draws an inset ring around the row.
 - A chevron appears at the end of the row while it is hovered or holds keyboard focus. It fades in and slides 3px toward the end; under reduced motion it only fades. Do not add a chevron after the name.
-- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `info-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` does the same when it spreads `ctx.selectProps`; without it, its link keeps covering the row.
-- A link with no visible text (its children are `sr-only`, as when the cell shows the item's code as a copy chip) has no name to click. While rows are selected its target is the chevron at the end of the row: the link covers the row-end chevron slot, the full row height. The chevron shows on row hover and turns `info-text` blue on the target's hover or focus, and the focus ring goes around the slot. A click anywhere else on the row still selects it.
+- While rows are selected, a click on the row selects it, and only the name opens the item. The link stops covering the row. Hovering the row shows a small chevron after the name; hovering or focusing the name turns it and the chevron `brand-text` blue, and the chevron moves 2px toward the end. The chevron takes no space, so the name and the column do not move. The name stays a tab stop and a link; Enter opens it, and Shift+click on it extends the selection. `DataTableRowLink` does this itself: it is the one way to mark the cell that opens the item. A row you render through `renderRow` does the same when it spreads `ctx.selectProps`; without it, its link keeps covering the row.
+- A link with no visible text (its children are `sr-only`, as when the cell shows the item's code as a copy chip) has no name to click. While rows are selected its target is the chevron at the end of the row: the link covers the row-end chevron slot, the full row height. The chevron shows on row hover and turns `brand-text` blue on the target's hover or focus, and the focus ring goes around the slot. A click anywhere else on the row still selects it.
 - Buttons, links, inputs, Tooltip triggers, the select checkbox and the copy chips (`IdChip`, `AnonymizedToken`, `CopyableText`) stay above the link and keep their own action. Mark any other control with `data-table-row-control`.
 - When the row's name is also its lookup key (an order code), put the key in the link as `sr-only` text and show it beside the link as `<IdChip reveal="row" truncate="none">`. The row keeps one link named by the key; a click on the chip copies, a click anywhere else opens the item.
 - Only the first `DataTableRowLink` of a row stretches. One in a later cell (a variant's Product) is a plain link above it.

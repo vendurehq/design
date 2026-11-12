@@ -6,6 +6,7 @@ import {
   formatRelative,
   formatRelativeDuration,
 } from '@vendure-io/ui/lib/format-relative';
+import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 // Relative: `time-tooltip` is internal.
 import { TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
@@ -140,6 +141,7 @@ function RelativeTime({
     'data-slot': 'relative-time',
     dateTime: date.toISOString(),
     ...props,
+    className: cn('tabular-nums', props.className),
     'aria-describedby': describedBy,
   };
 

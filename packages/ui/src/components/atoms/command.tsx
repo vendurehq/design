@@ -63,7 +63,7 @@ function CommandDialog({
       <DialogContent
         data-command-palette=""
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-palette-exit data-ending-style:ease-soft motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-palette-tint motion-reduce:ease-soft",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-palette-exit data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-palette-tint motion-reduce:ease-soft",
           className
         )}
         showCloseButton={showCloseButton}

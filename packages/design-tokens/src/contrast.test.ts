@@ -255,6 +255,7 @@ const surfaceTextSlots = [
   'destructive-text',
   'info-text',
   'neutral-text',
+  'brand-text',
 ] as const;
 const toneTextSlots = ['success-text', 'warning-text', 'destructive-text', 'info-text'] as const;
 // The StatusBadge and Alert recipes, read from the class strings the
@@ -357,6 +358,24 @@ for (const [themeName, theme] of Object.entries(themes)) {
       });
     }
 
+    // A brand-coloured name in a table row: on the page, a card, a hovered
+    // row (half the `muted` fill) and a selected row (`muted`) on the card.
+    test('brand-text on the page, a card, a hovered row and a selected row >= 4.5', () => {
+      expect(contrastOf(theme, 'brand-text', 'background', 'background')).toBeGreaterThanOrEqual(
+        MIN_CONTRAST,
+      );
+      expect(contrastOf(theme, 'brand-text', 'card', 'card')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      expect(
+        contrastOfValues(
+          theme,
+          'var(--brand-text)',
+          'color-mix(in oklab, var(--muted) 50%, transparent)',
+          'card',
+        ),
+      ).toBeGreaterThanOrEqual(MIN_CONTRAST);
+      expect(contrastOf(theme, 'brand-text', 'muted', 'card')).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    });
+
     for (const surface of surfaces) {
       for (const slot of surfaceTextSlots) {
         test(`${slot} on ${surface} >= 4.5`, () => {
@@ -368,7 +387,7 @@ for (const [themeName, theme] of Object.entries(themes)) {
       // (kbd, avatar fallback, chips) and on the `accent` hover fill (menu
       // items, list rows, command items).
       for (const fill of ['muted', 'secondary', 'accent'] as const) {
-        for (const slot of ['muted-foreground', ...toneTextSlots] as const) {
+        for (const slot of ['muted-foreground', 'brand-text', ...toneTextSlots] as const) {
           test(`${slot} on ${fill} over ${surface} >= 4.5`, () => {
             expect(contrastOf(theme, slot, fill, surface)).toBeGreaterThanOrEqual(MIN_CONTRAST);
           });

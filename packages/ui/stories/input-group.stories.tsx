@@ -9,7 +9,8 @@ import {
 } from '../src/components/atoms/input-group.tsx';
 import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
 import { Search, Copy } from 'lucide-react';
-import { expect } from 'storybook/test';
+import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 const meta = {
   title: 'Atoms/Forms/InputGroup',
@@ -87,6 +88,78 @@ export const WithTextarea: Story = {
       </InputGroupAddon>
     </InputGroup>
   ),
+};
+
+/**
+ * The button shows only when there is something to send. Empty, or only
+ * spaces, and it is gone: hidden, inert and out of the tab order. The first
+ * character brings it in from the bottom-right corner (`moderate`, `out`: it
+ * fades, scales from 0.9 and loses a 2px blur). Clearing the field sends it
+ * away faster (`fast`, `soft`). The key hint arrives and leaves with it. With
+ * reduced motion, only the fade stays. Cmd or Ctrl + Enter sends.
+ */
+export const SubmitOnContent: Story = {
+  render: function SubmitOnContentStory() {
+    const [value, setValue] = useState('');
+    const canSend = value.trim().length > 0;
+    const send = () => {
+      if (canSend) setValue('');
+    };
+    return (
+      <InputGroup>
+        <InputGroupTextarea
+          aria-label="Message"
+          placeholder="Write your message..."
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) send();
+          }}
+        />
+        <InputGroupAddon align="block-end">
+          <span
+            data-slot="submit-reveal"
+            data-hidden={!canSend}
+            inert={!canSend}
+            aria-hidden={!canSend}
+            className="ms-auto flex origin-bottom-right items-center gap-2 transition-[opacity,scale,filter] duration-moderate ease-out data-[hidden=true]:scale-90 data-[hidden=true]:opacity-0 data-[hidden=true]:blur-[2px] data-[hidden=true]:duration-fast data-[hidden=true]:ease-soft motion-reduce:transition-opacity motion-reduce:data-[hidden=true]:scale-100 motion-reduce:data-[hidden=true]:blur-none"
+          >
+            <KbdGroup>
+              <Kbd>⌘</Kbd>
+              <Kbd>↵</Kbd>
+            </KbdGroup>
+            <InputGroupButton variant="default" onClick={send}>
+              Send
+            </InputGroupButton>
+          </span>
+        </InputGroupAddon>
+      </InputGroup>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const field = canvas.getByRole('textbox', { name: 'Message' });
+    const reveal = () => canvasElement.querySelector<HTMLElement>('[data-slot=submit-reveal]')!;
+    await step('empty: no button to reach', async () => {
+      await expect(reveal()).toHaveAttribute('data-hidden', 'true');
+      await expect(reveal()).toHaveAttribute('inert');
+      await expect(canvas.queryByRole('button', { name: 'Send' })).toBeNull();
+    });
+    await step('only spaces: still hidden', async () => {
+      await userEvent.type(field, '   ');
+      await expect(reveal()).toHaveAttribute('data-hidden', 'true');
+    });
+    await step('a character brings the button in', async () => {
+      await userEvent.type(field, 'Hi');
+      await waitFor(() => expect(canvas.getByRole('button', { name: 'Send' })).toBeVisible());
+      await expect(reveal()).toHaveAttribute('data-hidden', 'false');
+    });
+    await step('clearing the field takes it away again', async () => {
+      await userEvent.clear(field);
+      await expect(reveal()).toHaveAttribute('data-hidden', 'true');
+      await expect(canvas.queryByRole('button', { name: 'Send' })).toBeNull();
+    });
+  },
 };
 
 export const WithTextAddon: Story = {
