@@ -46,7 +46,12 @@ jobs:
         run: cd apps/storybook && bun run build
 
       - name: Install Playwright browsers
-        run: cd apps/storybook && bunx playwright install --with-deps chromium
+        run: |
+          cd apps/storybook
+          if ! bunx playwright install --with-deps chromium; then
+            echo "::warning::System package install failed. Installing the browser only; the runner image has Chromium's system libraries."
+            bunx playwright install chromium
+          fi
 
       - name: Serve Storybook static build
         run: |
