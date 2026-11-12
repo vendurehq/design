@@ -62,6 +62,10 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 **Ramps** (raw material, the same in both modes): `brand-*`, `neutral-*`, `success-*`, `warning-*`, `destructive-*`, `info-*` (50 to 950), and `viz-1` to `viz-5`. Theme mapping uses ramps. Components use slots.
 
+**Surface steps.** The surface tiers sit between neutral steps (light above `neutral-50`, dark between `neutral-900` and `neutral-800`), so they have a small scale of their own, `surfaces` in `colors.ts`, keyed by lightness × 1000: 1000 (white), 986 and 972 in light mode, 238 and 222 in dark mode. `background`, `surface` and `surface-raised` reference it. It is not emitted as CSS; components use the slots.
+
+**Neutral chroma.** Every semantic neutral, surfaces and text, takes the chroma of the `neutral` step nearest in lightness: 0.004 from `neutral-300` up, 0.005 for `neutral-400` to `neutral-600`, 0.007 from `neutral-700` down. Pure white has no chroma. The neutrals keep their own lightness where no step fits; only the chroma is shared, so text and surfaces carry the same faint cool bias as the ramp. `semantic-sources.test.ts` checks the rule.
+
 **Semantic colors** (slots, light/dark mode aware via CSS variables):
 
 - `background`, `foreground` — Page background and primary text

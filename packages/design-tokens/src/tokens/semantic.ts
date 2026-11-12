@@ -1,18 +1,18 @@
-import { brand, destructive, info, neutral, success, viz, warning } from './colors.js';
+import { brand, destructive, info, neutral, success, surfaces, viz, warning } from './colors.js';
 
 export const lightTheme = {
-  background: 'oklch(0.972 0.003 231)',
-  foreground: 'oklch(0.173 0.011 231)',
+  background: surfaces[972],
+  foreground: 'oklch(0.173 0.007 231)',
   // Secondary text: descriptions, table values, inactive navigation. Sits
   // between `foreground` and `muted-foreground`. Not the text on a
   // `secondary` fill; that is `secondary-foreground`.
-  'foreground-secondary': 'oklch(0.38 0.014 231)',
+  'foreground-secondary': 'oklch(0.38 0.007 231)',
   // Surface ramp. Light mode holds an even near-white ramp (canvas to surface
   // to pure white) so nested tiers stay distinct: a light-gray canvas, an
   // off-white content pane, and white raised cards. Overlays share the
   // raised fill and separate by the overlay shadow, not lightness.
-  surface: 'oklch(0.986 0.002 231)',
-  'surface-raised': 'oklch(1 0 0)',
+  surface: surfaces[986],
+  'surface-raised': surfaces[1000],
   overlay: 'var(--surface-raised)',
   inset: 'color-mix(in oklab, black 5%, transparent)',
   // Backdrop behind modal overlays (dialog, alert dialog, sheet, drawer).
@@ -45,10 +45,10 @@ export const lightTheme = {
   // Darker than the plain surface needs: muted text also sits on the `muted`
   // and `secondary` fills (kbd, avatar fallback, chips) and on the `accent`
   // hover fill (menu and list rows), and holds 4.5:1 there.
-  'muted-foreground': 'oklch(0.505 0.013 231)',
+  'muted-foreground': 'oklch(0.505 0.005 231)',
   // Placeholder text: fainter than `muted-foreground`, a hint and not content.
   // Below 4.5:1, so never for text a user must read.
-  'faint-foreground': 'oklch(0.707 0.012 231)',
+  'faint-foreground': 'oklch(0.707 0.005 231)',
   accent: 'color-mix(in oklab, var(--foreground) 8.5%, transparent)',
   'accent-foreground': neutral[900],
   destructive: destructive[500],
@@ -152,14 +152,14 @@ export const darkTheme = {
   // The canvas is lifted off black so the raised and overlay tiers can step
   // up in even increments above it.
   background: neutral[900],
-  foreground: 'oklch(0.956 0.005 231)',
-  'foreground-secondary': 'oklch(0.838 0.01 231)',
+  foreground: 'oklch(0.956 0.004 231)',
+  'foreground-secondary': 'oklch(0.838 0.004 231)',
   // Dark mode expresses the page tiers through lightness. `surface` sits
   // halfway between the canvas and the raised tier. `overlay` points at
   // `surface-raised`, as in the v3 look: the overlay shadow's 1px edge and
   // drop separate floating content, not a lighter fill.
-  surface: 'oklch(0.222 0.012 231)',
-  'surface-raised': 'oklch(0.238 0.013 231)',
+  surface: surfaces[222],
+  'surface-raised': surfaces[238],
   overlay: 'var(--surface-raised)',
   inset: 'color-mix(in oklab, black 40%, transparent)',
   scrim: 'color-mix(in oklab, black 45%, transparent)',
@@ -181,8 +181,8 @@ export const darkTheme = {
   // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.
   muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
-  'muted-foreground': 'oklch(0.715 0.014 231)',
-  'faint-foreground': 'oklch(0.522 0.015 231)',
+  'muted-foreground': 'oklch(0.715 0.005 231)',
+  'faint-foreground': 'oklch(0.522 0.005 231)',
   accent: 'color-mix(in oklab, var(--foreground) 9.5%, transparent)',
   'accent-foreground': 'oklch(0.95 0.004 231)',
   // Between destructive-500 and destructive-400 on the destructive hue.
@@ -222,7 +222,7 @@ export const darkTheme = {
   'warning-indicator': 'var(--warning-text)',
   // Brighter than dark `muted-foreground` (0.715), so a neutral chip sits
   // level with the other tones. Holds 4.5:1 on every surface tier.
-  'neutral-text': 'oklch(0.745 0.013 231)',
+  'neutral-text': 'oklch(0.745 0.004 231)',
   // Same 10% alpha recipe as light mode: the 500-step hues carry enough chroma
   // to read as tint on the dark surface ramp without drowning the token colors.
   'code-highlight': `color-mix(in oklab, ${info[500]} 10%, transparent)`,
