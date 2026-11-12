@@ -19,7 +19,10 @@ const toggleVariants = cva(
   // or not, so a consumer's own `hover:` class keeps working on an enabled
   // toggle. Ignoring the press is the consumer's job: cancel it in
   // `onPressedChange`.
-  "hover:text-foreground aria-pressed:bg-accent aria-pressed:text-foreground aria-pressed:hover:bg-accent data-pressed:bg-accent data-pressed:text-foreground data-pressed:hover:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-md text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4 group/toggle hover:bg-muted inline-flex items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:hover:bg-transparent aria-disabled:hover:text-current aria-disabled:aria-pressed:hover:bg-accent aria-disabled:aria-pressed:hover:text-foreground aria-disabled:data-pressed:hover:bg-accent aria-disabled:data-pressed:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  // Sizes and corners match Button, so a toggle sits level with the buttons,
+  // ButtonGroup and fields next to it: 34px default and 28px sm (12px text),
+  // the xl radius.
+  "hover:text-foreground aria-pressed:bg-accent aria-pressed:text-foreground aria-pressed:hover:bg-accent data-pressed:bg-accent data-pressed:text-foreground data-pressed:hover:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-invalid:focus-visible:outline-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive gap-1 rounded-xl text-sm font-medium transition-[color,box-shadow] [&_svg:not([class*='size-'])]:size-4 group/toggle hover:bg-muted inline-flex items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:hover:bg-transparent aria-disabled:hover:text-current aria-disabled:aria-pressed:hover:bg-accent aria-disabled:aria-pressed:hover:text-foreground aria-disabled:data-pressed:hover:bg-accent aria-disabled:data-pressed:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -27,8 +30,8 @@ const toggleVariants = cva(
         outline: [outlineEdge, "hover:bg-muted border bg-transparent"],
       },
       size: {
-        default: "h-9 min-w-9 px-2",
-        sm: "h-8 min-w-8 px-1.5",
+        default: "h-8.5 min-w-8.5 px-2",
+        sm: "h-7 min-w-7 px-1.5 text-xs",
         lg: "h-10 min-w-10 px-2.5",
       },
     },
