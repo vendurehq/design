@@ -2373,6 +2373,17 @@ export const ClickSelectsCustomRows: Story = {
       await expect(canvasElement.querySelectorAll('[data-custom-row]')).toHaveLength(variants.length);
     });
 
+    await step('the row controls of a custom row sit above its link', async () => {
+      const row = rowOf(2);
+      const chip = row.querySelector('[data-slot=id-chip]') as Element;
+      const copy = row.querySelector('[data-slot=id-chip] button') as Element;
+      const product = within(row).getByRole('link', { name: 'Laptop' });
+      await expect(chip.contains(hitAt(copy))).toBe(true);
+      await expect(hitAt(product)).toBe(product);
+      await expect(handleOf(2).contains(hitAt(handleOf(2)))).toBe(true);
+      await expect(getComputedStyle(row).cursor).toBe('pointer');
+    });
+
     await step('while a row is selected, a click on another row selects it', async () => {
       await user.click(checkbox(1));
       await waitFor(() => expect(checked(1)).toBe(true));
