@@ -258,6 +258,7 @@
   --animate-shimmer: shimmer 1.75s linear infinite;
   --animate-spin-slow: spin-slow 1.6s linear infinite;
   --animate-progress-sweep: progress-sweep 2.2s linear infinite;
+  --animate-live-pulse: live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite;
 }
 
 @keyframes shimmer {
@@ -284,12 +285,27 @@
   }
 }
 
+@keyframes live-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  70% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
 @utility text-style-page-title {
   font-family: "Inter Variable", "Inter", system-ui, sans-serif;
   font-size: 1.375rem;
   font-weight: 600;
   letter-spacing: -0.018em;
-  line-height: 1.2;
+  line-height: 1.625rem;
   text-wrap-style: balance;
 }
 
@@ -299,6 +315,15 @@
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.3;
+  text-wrap-style: balance;
+}
+
+@utility text-style-dialog-title {
+  font-family: "Inter Variable", "Inter", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.5rem;
   text-wrap-style: balance;
 }
 

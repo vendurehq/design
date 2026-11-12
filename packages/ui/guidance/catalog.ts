@@ -985,6 +985,10 @@ export const uiGuidance = [
         body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
       },
       {
+        title: 'A live dot means a state that stays on',
+        body: 'Use LiveIndicator, a tone dot with a soft pulsing ring, for a state that stays on rather than ends: a live log stream, a service that runs right now. Keep the progress spinner for work that ends. Pass pulse={false} where a spinner or progress sweep on the same page already moves for the same state. Give the dot a visible label or a label prop, or leave both out when the text beside it says the same.',
+      },
+      {
         title: 'A chip marks only the exception',
         body: 'Do: a chip or badge signals importance, so use its colour sparingly: put a chip only on the exception that needs attention, and show nothing for the normal state, when the normal state is far more common. Example: a products list shows no mark on an enabled product and a "Disabled" chip on a disabled one. Don\'t: a chip on every row, or a chip for the normal state. A table where every row has a status uses the icon and label instead.',
       },

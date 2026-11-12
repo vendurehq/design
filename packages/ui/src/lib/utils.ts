@@ -13,7 +13,7 @@ const twMerge = extendTailwindMerge<'text-style'>({
     theme: {
       shadow: ['control', 'overlay'],
       ease: ['default', 'spring', 'drawer', 'drawer-content', 'height', 'press', 'soft'],
-      animate: ['shimmer', 'spin-slow', 'progress-sweep'],
+      animate: ['shimmer', 'spin-slow', 'progress-sweep', 'live-pulse'],
     },
     classGroups: {
       duration: [
@@ -64,7 +64,15 @@ const twMerge = extendTailwindMerge<'text-style'>({
       // A text style sets family, size, weight, tracking and leading at once.
       'text-style': [
         {
-          'text-style': ['page-title', 'section-title', 'card-title', 'body', 'caption', 'code'],
+          'text-style': [
+            'page-title',
+            'section-title',
+            'dialog-title',
+            'card-title',
+            'body',
+            'caption',
+            'code',
+          ],
         },
       ],
     },
