@@ -216,7 +216,7 @@ describe('v3 overlay look', () => {
       expect(source(file)).toContain('menuItemDisabled,');
     }
     const recipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
-    expect(recipe).toContain('cn(menuItemDisabled,');
+    expect(recipe).toMatch(/cn\(\s*menuItemDisabled,/);
     expect(recipe).toContain('data-disabled:*:[filter:opacity(50%)]');
   });
 
