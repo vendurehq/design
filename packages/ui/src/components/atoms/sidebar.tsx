@@ -205,9 +205,13 @@ function Sidebar({
     )
   }
 
+  // The sidebar's flex order follows its physical side, not its place in the
+  // markup, so the gap that keeps its width sits on the same side as the
+  // fixed container: at the start of the line for the start side, at the end
+  // for the end side, in either direction.
   return (
     <div
-      className="group peer text-sidebar-foreground hidden md:block"
+      className="group peer text-sidebar-foreground hidden md:block data-[side=left]:order-first data-[side=left]:rtl:order-last data-[side=right]:order-last data-[side=right]:rtl:order-first"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}

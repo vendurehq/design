@@ -199,7 +199,10 @@ function IdChip({
       data-reveal={reveal === 'row' ? 'row' : undefined}
       className={chipChromeClass(copyable, cn(reveal === 'row' && ROW_REVEAL_CLASS, className))}
     >
-      <span className="truncate">{text}</span>
+      {/* An id reads left to right in a right-to-left page too; the chip itself follows the page. */}
+      <span dir="ltr" className="truncate">
+        {text}
+      </span>
       {copyable ? (
         <CopyButton
           value={value}
@@ -232,7 +235,9 @@ function IdChip({
   return (
     <Tooltip disableHoverablePopup>
       <TooltipTrigger render={chip} />
-      <TooltipContent className="font-mono">{value}</TooltipContent>
+      <TooltipContent className="font-mono">
+        <span dir="ltr">{value}</span>
+      </TooltipContent>
     </Tooltip>
   );
 }

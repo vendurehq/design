@@ -139,12 +139,17 @@ function SecretValue({
         // `whitespace-normal` lets the value wrap inside a `whitespace-nowrap`
         // parent such as a TableCell, so a long value grows the row in height
         // instead of widening the table.
-        <code data-slot="secret-value-value" className="min-w-0 break-all whitespace-normal">
+        // A secret reads left to right in a right-to-left page too.
+        <code
+          data-slot="secret-value-value"
+          dir="ltr"
+          className="min-w-0 break-all whitespace-normal"
+        >
           {state.value}
         </code>
       ) : (
         <>
-          <code data-slot="secret-value-value" aria-hidden="true">
+          <code data-slot="secret-value-value" dir="ltr" aria-hidden="true">
             {MASK}
           </code>
           <span className="sr-only">{hiddenLabel}</span>
