@@ -1558,7 +1558,7 @@ export const LookupKeyWhileSelecting: Story = {
       const width = Number.parseFloat(target.width);
       await expect(width).toBeGreaterThanOrEqual(24);
       // The full row height, inside the row's 1px bottom border.
-      await expect(Number.parseFloat(target.height)).toBe(tr.getBoundingClientRect().height - 1);
+      await expectPx(Number.parseFloat(target.height), tr.getBoundingClientRect().height - 1);
       const row = tr.getBoundingClientRect();
       const end = document.elementFromPoint(row.right - 12, row.top + row.height / 2);
       await expect(end).toBe(link);
