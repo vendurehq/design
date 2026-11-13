@@ -184,3 +184,33 @@ describe('Outline surface', () => {
     );
   });
 });
+
+// The outline Toggle sits on the outline Button's surface, so it takes the
+// outline Button's hover too: the same fill and the same edge step. Pressed
+// plus hover keeps the accent tint (the pressed hover tokens above).
+describe('outline Toggle hover', () => {
+  const hoverTokens = (tag: string) => classTokens(tag).filter((token) => /(^|:)hover:(bg|border)-/.test(token));
+  const firstButton = (html: string) => html.match(/<button[^>]*>/)?.[0] ?? '';
+
+  test('takes the outline Button hover fill and edge', async () => {
+    const { Button } = await import('./button.tsx');
+    const button = hoverTokens(firstButton(renderToStaticMarkup(<Button variant="outline">B</Button>)));
+    const toggle = hoverTokens(firstButton(renderToStaticMarkup(<Toggle variant="outline">B</Toggle>)));
+    expect(button.length).toBeGreaterThan(0);
+    for (const token of button) expect(toggle).toContain(token);
+    expect(toggle).not.toContain('hover:bg-muted');
+  });
+
+  test('a joined ToggleGroup item keeps the group edge on hover', () => {
+    const html = renderToStaticMarkup(
+      <ToggleGroup variant="outline" spacing={0}>
+        <ToggleGroupItem value="a">A</ToggleGroupItem>
+      </ToggleGroup>,
+    );
+    const item = html.match(/<button[^>]*data-slot="toggle-group-item"[^>]*>/)?.[0] ?? '';
+    expect(item).toContain('data-spacing="0"');
+    // The edge step skips a joined item: the group owns the edge.
+    const edge = classTokens(item).find((token) => token.endsWith(':hover:border-input'));
+    expect(edge).toContain("[data-slot=toggle-group-item][data-spacing='0']");
+  });
+});
