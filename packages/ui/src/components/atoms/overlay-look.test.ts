@@ -114,7 +114,9 @@ describe('v3 overlay look', () => {
 
   test('a Select list over its trigger grows out of the trigger box, with no slide, scale or fade', () => {
     const code = source('select.tsx');
-    expect(code).not.toContain('transition-none');
+    // select.tsx itself: the menu-item recipe that `source` appends has a
+    // reduced-motion `transition-none` for the menu check.
+    expect(readFileSync(join(import.meta.dir, 'select.tsx'), 'utf8')).not.toContain('transition-none');
     // No side, so no 2px slide and no scale, only for side none.
     for (const state of ['starting', 'ending']) {
       expect(code).toContain(`motion-safe:data-[side=none]:data-${state}-style:translate-y-0`);
@@ -205,10 +207,18 @@ describe('v3 overlay look', () => {
       // Every focus or highlight rule skips a disabled item.
       expect(code).not.toMatch(/[\s"](focus|data-highlighted):/);
       expect(code).not.toMatch(/not-data-\[variant=destructive\]:(focus|data-highlighted):/);
-      // The item dims its text, not itself: an opacity on the item would fade the ring too.
+      // The item dims its content, not itself: an opacity on the item would fade the ring too.
       expect(code).not.toContain('data-disabled:opacity-50');
       expect(code).toMatch(/data-disabled:text-[\w-]+\/50/);
     }
+    // Every item dims its content through the one shared rule, so a child
+    // with its own colour (a status dot, a detail) dims too.
+    for (const file of ['context-menu.tsx', 'menubar.tsx', 'select.tsx', 'combobox.tsx']) {
+      expect(source(file)).toContain('menuItemDisabled,');
+    }
+    const recipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
+    expect(recipe).toContain('cn(menuItemDisabled,');
+    expect(recipe).toContain('data-disabled:[&>:not(svg)]:opacity-50');
   });
 
   // BreadcrumbMenu and the DropdownMenu items share one item recipe, and every

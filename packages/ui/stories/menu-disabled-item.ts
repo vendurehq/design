@@ -95,3 +95,41 @@ export async function checkDisabledItemHasNoFill(trigger: HTMLElement, open?: ()
   await waitFor(() => expect(fill(item('Settings'))).not.toBe(none));
   await user.keyboard('{Escape}');
 }
+
+/** The opacity an element shows with, after its own and its ancestors' up to `stop`. */
+function shownOpacity(element: Element, stop: Element) {
+  let opacity = 1;
+  for (let node: Element | null = element; node && node !== stop.parentElement; node = node.parentElement) {
+    opacity *= Number(getComputedStyle(node).opacity);
+  }
+  return opacity;
+}
+
+/**
+ * How strong a part of an item shows: its fill if it has one (a status dot),
+ * else its text colour, times every opacity up to the item.
+ */
+function strength(element: Element, item: Element) {
+  const style = getComputedStyle(element);
+  const fill = rgba(style.backgroundColor).a;
+  return (fill > 0 ? fill : rgba(style.color).a) * shownOpacity(element, item);
+}
+
+/**
+ * A disabled item dims every part of its content to the same strength: its
+ * own text and each child (a status dot, a label, a detail, a shortcut) shows
+ * at half the strength of the same part in an enabled item of the same shape.
+ * The item itself keeps full opacity, so its focus ring does not dim.
+ */
+export async function checkDisabledContentDims(disabled: HTMLElement, enabled: HTMLElement) {
+  await expect(disabled).toHaveAttribute('data-disabled');
+  await expect(getComputedStyle(disabled).opacity).toBe('1');
+  const parts = (item: HTMLElement) => [...item.children].filter((child) => child.tagName !== 'svg');
+  const [off, on] = [parts(disabled), parts(enabled)];
+  await expect(off.length).toBe(on.length);
+  await expect(rgba(getComputedStyle(disabled).color).a / rgba(getComputedStyle(enabled).color).a).toBeCloseTo(0.5, 1);
+  for (const [index, part] of off.entries()) {
+    const ratio = strength(part, disabled) / strength(on[index] as Element, enabled);
+    await expect(ratio, `part ${index + 1} (${part.textContent || part.className}) shows at ${ratio}`).toBeCloseTo(0.5, 1);
+  }
+}

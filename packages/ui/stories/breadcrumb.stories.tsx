@@ -4,6 +4,7 @@ import * as React from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import { checkCheckedRowLook } from './menu-checked-row.ts';
+import { checkDisabledContentDims } from './menu-disabled-item.ts';
 import { DropdownMenuItem, DropdownMenuSeparator } from '../src/components/atoms/dropdown-menu.tsx';
 import {
   Breadcrumb,
@@ -175,6 +176,9 @@ export const WithMenuDisabledOption: Story = {
     const menu = await within(document.body).findByRole('menu');
     const staging = within(menu).getByRole('menuitemradio', { name: /Staging/ });
     await expect(staging).toHaveAttribute('data-disabled');
+    // The dot, the label and "Non-production" all dim to half, like the row
+    // below with the same parts.
+    await checkDisabledContentDims(staging, within(menu).getByRole('menuitemradio', { name: /Checkout preview/ }));
     await userEvent.click(staging, { pointerEventsCheck: 0 });
     await expect(staging).toHaveAttribute('aria-checked', 'false');
     await userEvent.keyboard('{Escape}');

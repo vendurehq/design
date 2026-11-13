@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@vendure-io/ui/components/atoms/dropdown-menu"
 import { CheckIcon } from "lucide-react"
-import { menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
+import { menuItemDisabled, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
@@ -128,7 +128,8 @@ function MenubarCheckboxItem({
       data-slot="menubar-checkbox-item"
       data-inset={inset}
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pe-2 ps-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        menuItemDisabled,
+        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pe-2 ps-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       checked={checked}
@@ -164,8 +165,9 @@ function MenubarRadioItem({
       data-slot="menubar-radio-item"
       data-inset={inset}
       className={cn(
+        menuItemDisabled,
         menuRadioItem,
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pe-2 ps-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pe-2 ps-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

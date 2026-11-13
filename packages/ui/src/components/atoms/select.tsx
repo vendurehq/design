@@ -4,6 +4,7 @@ import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { menuItemDisabled } from "../../lib/menu-item.tsx"
 import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
@@ -378,7 +379,8 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm text-foreground-secondary data-selected:text-foreground outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-selected:data-disabled:text-foreground/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>:first-child>svg:not([class*='opacity-'])]:opacity-55 [&>:first-child>svg:not([class*='opacity-'])]:transition-opacity [&>:first-child>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>:first-child>svg:not([class*='opacity-'])]:opacity-85 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        menuItemDisabled,
+        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm text-foreground-secondary data-selected:text-foreground outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:text-foreground-secondary/50 data-selected:data-disabled:text-foreground/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>:first-child>svg:not([class*='opacity-'])]:opacity-55 [&>:first-child>svg:not([class*='opacity-'])]:transition-opacity [&>:first-child>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>:first-child>svg:not([class*='opacity-'])]:opacity-85 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
