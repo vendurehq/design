@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SparklesIcon } from 'lucide-react';
+import { expect, waitFor, within } from 'storybook/test';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
+import { expectPx } from './pixel.ts';
 import { CodeBlock, CodeBlockAction } from '../src/components/molecules/code-block.tsx';
 
 const CONFIG_SNIPPET = `import { VendureConfig } from '@vendure/core';
@@ -242,5 +245,37 @@ export const CopyFeedback: Story = {
       // surface the failure through your own toast/logging
       void error;
     },
+  },
+};
+
+/**
+ * Right to left: the header mirrors (the filename at the start, the copy
+ * button at the end), but code always reads left to right. Its lines start
+ * at the left edge and the scroll starts there too.
+ */
+export const RightToLeft: Story = {
+  args: { filename: 'vendure-config.ts' },
+  render: (args) => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl" className="w-[420px]">
+        <CodeBlock {...args} />
+      </div>
+    </DirectionProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const block = canvasElement.querySelector('[data-slot=code-block]') as HTMLElement;
+    await waitFor(() => expect(block.querySelector('pre .line')).not.toBeNull());
+    const pre = block.querySelector('pre') as HTMLElement;
+    await expect(getComputedStyle(pre).direction).toBe('ltr');
+    // The first line starts at the left of the code area, inside its 16px padding.
+    const area = (pre.closest('[data-slot=scroll-area]') ?? pre) as HTMLElement;
+    const line = pre.querySelector('.line') as HTMLElement;
+    const range = document.createRange();
+    range.selectNodeContents(line);
+    await expectPx(range.getBoundingClientRect().left - area.getBoundingClientRect().left, 16);
+    // The header still mirrors: the filename sits right of the copy button.
+    const copy = within(block).getByRole('button', { name: /copy/i });
+    const name = within(block).getByText('vendure-config.ts');
+    await expect(name.getBoundingClientRect().left).toBeGreaterThan(copy.getBoundingClientRect().right);
   },
 };
