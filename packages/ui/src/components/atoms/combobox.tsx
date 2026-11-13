@@ -263,6 +263,11 @@ function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
   )
 }
 
+// The input keeps focus and the list moves a virtual highlight
+// (`data-highlighted`), so `focus-visible` never fires on an option. An
+// enabled option shows the highlight as the muted fill. A disabled one takes
+// no fill: the arrow keys still stop on it, and it shows the focus ring at
+// full strength instead, as a disabled menu item does under the arrow keys.
 function ComboboxItem({
   className,
   children,
@@ -274,7 +279,7 @@ function ComboboxItem({
       className={cn(
         menuItemDisabled,
         menuCheckItem,
-        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground data-disabled:data-highlighted:outline-solid data-disabled:data-highlighted:outline-2 data-disabled:data-highlighted:-outline-offset-2 data-disabled:data-highlighted:outline-ring not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

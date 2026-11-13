@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import { checkCheckMark } from './menu-checked-row.ts';
-import { checkDisabledContentDims } from './menu-disabled-item.ts';
+import { checkDisabledContentDims, ringContrast } from './menu-disabled-item.ts';
 import {
   Combobox,
   ComboboxChip,
@@ -88,7 +88,8 @@ const actions = [
 /**
  * A disabled option shows its text at half strength and cannot be picked.
  * The arrow keys still stop on it: focus stays in the input, and the option
- * takes `data-highlighted` without the fill.
+ * takes `data-highlighted` without the fill. It shows the focus ring instead,
+ * at full strength, so the user still sees where the highlight is.
  */
 export const DisabledItem: Story = {
   render: () => (
@@ -122,11 +123,16 @@ export const DisabledItem: Story = {
     await waitFor(() => expect(disabled).toHaveAttribute('data-highlighted'));
     await expect(input).toHaveFocus();
     await expect(getComputedStyle(disabled).backgroundColor).toBe(none);
+    await expect(getComputedStyle(disabled).outlineStyle).toBe('solid');
+    await expect(ringContrast(disabled)).toBeGreaterThanOrEqual(3);
     await userEvent.keyboard('{Enter}');
     await expect(input).toHaveValue('');
     await userEvent.keyboard('{ArrowDown}');
     await waitFor(() => expect(option('Settings')).toHaveAttribute('data-highlighted'));
     await waitFor(() => expect(getComputedStyle(option('Settings')).backgroundColor).not.toBe(none));
+    // The ring leaves with the highlight; an enabled option shows the fill only.
+    await expect(getComputedStyle(disabled).outlineStyle).toBe('none');
+    await expect(getComputedStyle(option('Settings')).outlineStyle).toBe('none');
     // The pointer: no fill, and a click does not pick it.
     await userEvent.click(disabled, { pointerEventsCheck: 0 });
     await expect(getComputedStyle(disabled).backgroundColor).toBe(none);
