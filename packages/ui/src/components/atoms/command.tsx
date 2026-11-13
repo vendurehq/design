@@ -518,7 +518,7 @@ function CommandItem({
         data-checked={isChecked(props["data-checked" as keyof typeof props]) ? "" : undefined}
         className={cn(
           menuCheckItem,
-          "ms-auto flex size-4 shrink-0 items-center justify-center group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden"
+          "ms-auto flex shrink-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden"
         )}
       >
         <MenuCheck />
