@@ -61,6 +61,8 @@ Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provid
 
 A Sidebar's `side` is physical too, as for Sheet and Drawer: it does not mirror. Give it `side="right"` in right-to-left, so it sits at the start of the line, and keep `side="left"` in left-to-right. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side.
 
+A CodeBlock keeps its code left to right in a right-to-left page: the lines start at the left and scroll from there. Its header mirrors with the page.
+
 ## Available Components
 
 Components are split by provenance: atoms track a shadcn upstream; molecules are
@@ -393,7 +395,7 @@ Leave out both `label` and `children` when the text next to the indicator
 already says the same: the indicator is then hidden from assistive technology.
 
 `detail` adds a second line under the label of `appearance="icon"`, with the
-one time that matters for the state. In a `DataTable` the row is 46px.
+one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
 <StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>

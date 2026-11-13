@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import { checkCheckMark } from './menu-checked-row.ts';
+import { checkDisabledContentDims } from './menu-disabled-item.ts';
 import {
   Combobox,
   ComboboxChip,
@@ -75,6 +76,61 @@ export const Default: Story = {
     await expect(getComputedStyle(option).borderTopLeftRadius).toBe('6px');
     // The icon button is a native <button>, and Base UI is told so.
     await expect(console.error).not.toHaveBeenCalledWith(expect.stringContaining('nativeButton'));
+  },
+};
+
+const actions = [
+  { value: 'invite', label: 'Send invite' },
+  { value: 'member', label: 'Add member', disabled: true },
+  { value: 'settings', label: 'Settings' },
+];
+
+/**
+ * A disabled option shows its text at half strength and cannot be picked.
+ * The arrow keys still stop on it: focus stays in the input, and the option
+ * takes `data-highlighted` without the fill.
+ */
+export const DisabledItem: Story = {
+  render: () => (
+    <Combobox items={actions}>
+      <ComboboxInput aria-label="Action" placeholder="Search actions..." />
+      <ComboboxContent>
+        <ComboboxList>
+          {(action: (typeof actions)[number]) => (
+            <ComboboxItem key={action.value} value={action} disabled={action.disabled}>
+              {action.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole('combobox', { name: 'Action' });
+    await userEvent.click(input);
+    const body = within(document.body);
+    const option = (name: string) => body.getByRole('option', { name });
+    await waitFor(() => expect(body.getAllByRole('option')).toHaveLength(3));
+    const disabled = option('Add member');
+    await expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    await checkDisabledContentDims(disabled, option('Settings'));
+    const none = getComputedStyle(option('Settings')).backgroundColor;
+    // The arrow keys stop on it, with no fill; Enter does not pick it.
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(option('Send invite')).toHaveAttribute('data-highlighted'));
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(disabled).toHaveAttribute('data-highlighted'));
+    await expect(input).toHaveFocus();
+    await expect(getComputedStyle(disabled).backgroundColor).toBe(none);
+    await userEvent.keyboard('{Enter}');
+    await expect(input).toHaveValue('');
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(option('Settings')).toHaveAttribute('data-highlighted'));
+    await waitFor(() => expect(getComputedStyle(option('Settings')).backgroundColor).not.toBe(none));
+    // The pointer: no fill, and a click does not pick it.
+    await userEvent.click(disabled, { pointerEventsCheck: 0 });
+    await expect(getComputedStyle(disabled).backgroundColor).toBe(none);
+    await expect(input).toHaveValue('');
   },
 };
 

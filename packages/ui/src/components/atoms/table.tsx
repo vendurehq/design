@@ -242,12 +242,16 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   )
 }
 
+// A body row is at least 48px (`h-12`), the same as a ListRow and a CardRow.
+// On a table cell `height` is a minimum (`min-height` does nothing there), so
+// taller content (a thumbnail, two lines) still grows the row. The column
+// header row stays 40px (TableHead).
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0",
+        "h-12 p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pe-0",
         className
       )}
       {...props}
