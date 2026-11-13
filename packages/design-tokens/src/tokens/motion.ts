@@ -18,6 +18,10 @@ export const easing = {
   // The CSS `ease` curve: a light ease for small colour, opacity and blur
   // changes, and for quick exits.
   soft: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  // The CSS `ease-out` curve: a long, even fade of a highlight. Weaker than
+  // `out` on purpose, so the flash does not drop away at once. Only the
+  // match flash uses it.
+  flash: 'cubic-bezier(0, 0, 0.58, 1)',
   // The content of a Drawer fading while a nested drawer opens over it: a
   // near-linear start with a small overshoot at the end. Only Drawer uses it.
   drawerContent: 'cubic-bezier(0.45, 1.005, 0, 1.005)',
@@ -127,6 +131,12 @@ export const duration = {
   // animation below uses them.
   pageReloadFade: '240ms',
   pageReloadSettle: '280ms',
+  // One run of the live ring: it grows and fades, then rests. The
+  // `live-pulse` animation below repeats it. Only LiveIndicator uses it.
+  livePulse: '2.4s',
+  // The match flash holds, then fades, in this time on the `flash` curve.
+  // The `match-flash` animation below uses it.
+  matchFlash: '1.4s',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each keyframe name an
@@ -143,7 +153,7 @@ export const animation = {
   // `out` curve: fast out of the dot, then a long fade. Slow and quiet, so a
   // state that stays live for minutes does not read as urgent. Only
   // LiveIndicator uses it.
-  livePulse: 'live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite',
+  livePulse: `live-pulse ${duration.livePulse} ${easing.out} infinite`,
   // A page that opens: it fades in and rises 6px into place. Two keyframes,
   // because the fade and the rise end at different times. It runs once,
   // when the element mounts. AppShellPage uses it; a consumer with its own
@@ -166,7 +176,7 @@ export const animation = {
   // it also runs with reduced motion. A consumer sets `--match-flash-color`
   // to flash in another tone (an error line); the default is the brand
   // indicator. The match keeps its own static highlight after the flash.
-  matchFlash: 'match-flash 1.4s ease-out',
+  matchFlash: `match-flash ${duration.matchFlash} ${easing.flash}`,
 } as const;
 
 // The match flash colour: `--match-flash-color` when the consumer sets it,
