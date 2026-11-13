@@ -129,13 +129,22 @@ export const AfterCopy: Story = {
   },
 };
 
-/** A close before the copy: the warning shows, and "Close without copying" replaces Done. */
+/**
+ * A close before the copy: the warning shows, and "Close without copying"
+ * replaces Done as a `destructive-outline` button. The copy button stays the
+ * one filled button.
+ */
 export const CloseWarning: Story = {
   play: async () => {
     const body = within(await dialog());
     await userEvent.click(body.getByRole('button', { name: 'Done' }));
     await waitFor(async () => expect(await body.findByText('The API key is not copied')).toBeVisible());
     await waitFor(() => expect(body.getByRole('button', { name: 'Close without copying' })).toBeVisible());
+    // The quiet destructive button: a red label on the card fill.
+    await expect(body.getByRole('button', { name: 'Close without copying' })).toHaveClass(
+      'text-destructive-text',
+      'bg-card',
+    );
   },
 };
 

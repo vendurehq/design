@@ -384,7 +384,9 @@ for (const [themeName, theme] of Object.entries(themes)) {
     });
 
     // Button variant="destructive-outline": the label at rest (card) and on
-    // hover (destructive mixed into the card).
+    // hover (destructive mixed into the card). The button paints its own card
+    // fill, so this also covers it on a dialog (IssuedSecret's "Close without
+    // copying").
     test('destructive-text on the quiet destructive Button, rest and hover >= 4.5', () => {
       expect(contrastOf(theme, 'destructive-text', 'card', 'card')).toBeGreaterThanOrEqual(
         MIN_CONTRAST,

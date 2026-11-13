@@ -262,7 +262,7 @@ Related decisions: `anonymized-token`, `copyable-text`.
 Hand over a secret that was just issued, such as a new API key, as copy-only: never rendered, with a guard before the dialog closes.
 
 - **Never render the value:** The value is never on screen: no text, no blur, no reveal on hover. One button copies it, or one button per format (the plain value, a .env line). The value shows only when the clipboard write fails, in a read-only field for a copy by hand.
-- **Close before a copy warns once:** Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes.
+- **Close before a copy warns once:** Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes. It is a destructive-outline button, so the copy button stays the one filled button.
 - **One primary at a time:** The first copy button is the primary until the first copy. Then Done takes the primary look. Do not add a second primary to the dialog.
 - **Say where each format goes:** Give each format a label that says what it copies and a hint that says where it goes. A hint may show the form with a placeholder, never the secret.
 - **Stored secrets are SecretValue:** A secret the user can load again later, such as an environment variable value, is a SecretValue. IssuedSecret is only for a value the system shows once.
