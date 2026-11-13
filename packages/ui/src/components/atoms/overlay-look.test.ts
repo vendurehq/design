@@ -209,7 +209,6 @@ describe('v3 overlay look', () => {
       expect(code).not.toMatch(/not-data-\[variant=destructive\]:(focus|data-highlighted):/);
       // The item dims its content, not itself: an opacity on the item would fade the ring too.
       expect(code).not.toContain('data-disabled:opacity-50');
-      expect(code).toMatch(/data-disabled:text-[\w-]+\/50/);
     }
     // Every item dims its content through the one shared rule, so a child
     // with its own colour (a status dot, a detail) dims too.
@@ -218,7 +217,7 @@ describe('v3 overlay look', () => {
     }
     const recipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
     expect(recipe).toContain('cn(menuItemDisabled,');
-    expect(recipe).toContain('data-disabled:[&>:not(svg)]:opacity-50');
+    expect(recipe).toContain('data-disabled:*:[filter:opacity(50%)]');
   });
 
   // BreadcrumbMenu and the DropdownMenu items share one item recipe, and every
