@@ -113,7 +113,7 @@ describe('Toggle size and corners match Button', () => {
     expect(tokens(<Toggle size="sm" aria-label="Bold" />)).toEqual(expect.arrayContaining(['h-7', 'min-w-7', 'text-xs']));
   });
 
-  test('a ToggleGroup rounds its outer corners with the xl radius', () => {
+  test('a ToggleGroup rounds its outer corners with the xl radius, on logical sides', () => {
     const html = renderToStaticMarkup(
       <ToggleGroup variant="outline">
         <ToggleGroupItem value="a">A</ToggleGroupItem>
@@ -123,10 +123,15 @@ describe('Toggle size and corners match Button', () => {
     expect(classTokens(html.match(/<div[^>]*>/)?.[0] ?? '')).toContain('rounded-xl');
     expect(classTokens(html.match(/<button[^>]*>/)?.[0] ?? '')).toEqual(
       expect.arrayContaining([
-        'group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-xl',
-        'group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-xl',
+        'group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-s-xl',
+        'group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-e-xl',
+        'group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-s-0',
+        'group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-s',
       ]),
     );
+    // A physical side would stay put in right to left; the story
+    // Direction joined groups checks the mirrored corners in a browser.
+    expect(html).not.toMatch(/(rounded|border)-[lr]-|border-[lr]\b/);
   });
 });
 

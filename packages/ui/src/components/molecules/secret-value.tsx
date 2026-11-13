@@ -182,7 +182,7 @@ function SecretValue({
         <span
           data-slot="secret-value-error"
           role="alert"
-          className="text-destructive-subtle-foreground pr-1 font-sans"
+          className="text-destructive-subtle-foreground pe-1 font-sans"
         >
           {loadErrorMessage}
         </span>

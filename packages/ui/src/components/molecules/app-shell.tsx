@@ -34,7 +34,7 @@ function AppShellSidebar({ className, ...props }: React.ComponentProps<'aside'>)
     <aside
       data-slot="app-shell-sidebar"
       className={cn(
-        'bg-sidebar text-sidebar-foreground border-sidebar-border flex w-58 shrink-0 flex-col gap-1 border-r px-2.5 py-3',
+        'bg-sidebar text-sidebar-foreground border-sidebar-border flex w-58 shrink-0 flex-col gap-1 border-e px-2.5 py-3',
         className,
       )}
       {...props}
@@ -67,7 +67,7 @@ function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>)
     <header
       data-slot="app-shell-header"
       className={cn(
-        'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pr-5 pl-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
+        'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pe-5 ps-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
         className,
       )}
       {...props}

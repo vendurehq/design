@@ -155,11 +155,11 @@ describe('v3 field look', () => {
 
   test('InputOTP slots sit on the group fill, 34px square, split by a hairline, ringed inside when active', () => {
     const tokens = slotTokens(otpHtml, 'input-otp-slot');
-    for (const token of ['size-8.5', 'border-l', 'border-border', 'first:border-l-0', 'data-[active=true]:-outline-offset-2', 'data-[active=true]:outline-ring']) {
+    for (const token of ['size-8.5', 'border-s', 'border-border', 'first:border-s-0', 'data-[active=true]:-outline-offset-2', 'data-[active=true]:outline-ring']) {
       expect(tokens).toContain(token);
     }
     // No fill or outer border of its own: the group draws the field.
-    for (const token of ['bg-muted', 'border-y', 'border-r', 'first:border-l', 'aria-invalid:border-destructive']) {
+    for (const token of ['bg-muted', 'border-y', 'border-e', 'first:border-s', 'border-l', 'border-r', 'aria-invalid:border-destructive']) {
       expect(tokens).not.toContain(token);
     }
   });
