@@ -35,7 +35,7 @@ function MachineText() {
           הפעילו את השרת עם <InlineCode>--watch</InlineCode> כדי לטעון מחדש.
         </p>
         <p data-testid="keys">
-          לחצו <Kbd>Ctrl+O</Kbd> כדי לפתוח הזמנה.
+          לחצו <Kbd>⌘K</Kbd> כדי לפתוח הזמנה.
         </p>
         <div data-testid="id">
           <IdChip value="ord_7f3a-01" copyLabel="העתקת מזהה" copiedLabel="המזהה הועתק" />
@@ -76,7 +76,9 @@ export const MachineTextRightToLeft: Story = {
       canvas.getByTestId(testId).querySelector(selector) as HTMLElement;
 
     await expectLeftToRight(inside('prose', '[data-slot=inline-code]'));
-    await expectLeftToRight(inside('keys', '[data-slot=kbd]'));
+    // The key box follows the page, so its logical margins still point to the end; its text is left to right.
+    await expect(getComputedStyle(inside('keys', '[data-slot=kbd]')).direction).toBe('rtl');
+    await expectLeftToRight(inside('keys', '[data-slot=kbd] > span'));
     // The chip follows the page; only its value is left to right.
     const chip = inside('id', '[data-slot=id-chip]');
     await expect(getComputedStyle(chip).direction).toBe('rtl');

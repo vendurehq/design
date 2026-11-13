@@ -63,7 +63,7 @@ A Sidebar's `side` is physical too, as for Sheet and Drawer: it does not mirror.
 
 A CodeBlock keeps its code left to right in a right-to-left page: the lines start at the left and scroll from there. Its header mirrors with the page.
 
-Machine text reads left to right in a right-to-left page too, so an id like `ord_7f3a-01` or a flag like `--watch` keeps the order of its punctuation. InlineCode, Kbd, the value of IdChip and SecretValue, and the field IssuedSecret shows when the clipboard fails all set `dir="ltr"`. Only the value turns: labels and buttons around it follow the page.
+Machine text reads left to right in a right-to-left page too, so an id like `ord_7f3a-01` or a flag like `--watch` keeps the order of its punctuation. InlineCode, the text of Kbd, the value of IdChip and SecretValue, and the field IssuedSecret shows when the clipboard fails all set `dir="ltr"`. Only the value turns: labels and buttons around it follow the page.
 
 ## Available Components
 
