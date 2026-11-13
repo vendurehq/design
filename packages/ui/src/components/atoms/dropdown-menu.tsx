@@ -5,11 +5,11 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
-import { ChevronRightIcon, CheckIcon } from "lucide-react"
+import { ChevronRightIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
-import { menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
+import { menuCheckItem, menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -184,7 +184,7 @@ function DropdownMenuCheckboxItem({
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        menuItem, "not-data-disabled:focus:**:text-accent-foreground pe-8",
+        menuItem, menuCheckItem, "not-data-disabled:focus:**:text-accent-foreground pe-8",
         className
       )}
       checked={checked}
@@ -194,10 +194,7 @@ function DropdownMenuCheckboxItem({
         className="pointer-events-none absolute end-2 flex items-center justify-center"
         data-slot="dropdown-menu-checkbox-item-indicator"
       >
-        <MenuPrimitive.CheckboxItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
-          <CheckIcon
-          />
-        </MenuPrimitive.CheckboxItemIndicator>
+        <MenuCheck />
       </span>
       {children}
     </MenuPrimitive.CheckboxItem>

@@ -20,8 +20,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@vendure-io/ui/components/atoms/dropdown-menu"
-import { CheckIcon } from "lucide-react"
-import { menuItemDisabled, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
+import { menuCheckItem, menuItemDisabled, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
@@ -129,6 +128,7 @@ function MenubarCheckboxItem({
       data-inset={inset}
       className={cn(
         menuItemDisabled,
+        menuCheckItem,
         "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg pe-2 ps-8 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
@@ -136,10 +136,7 @@ function MenubarCheckboxItem({
       {...props}
     >
       <span className="pointer-events-none absolute start-2 flex size-4 items-center justify-center [&_svg:not([class*='size-'])]:size-4">
-        <MenuPrimitive.CheckboxItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
-          <CheckIcon
-          />
-        </MenuPrimitive.CheckboxItemIndicator>
+        <MenuCheck />
       </span>
       {children}
     </MenuPrimitive.CheckboxItem>

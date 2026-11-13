@@ -1002,7 +1002,7 @@ function SidebarLevelBack({
     <SidebarMenuButton
       data-sidebar="level-back"
       className={cn(
-        "text-sidebar-accent-foreground mb-2 font-semibold [&>svg:first-child]:opacity-85 [&>svg:first-child]:transition-[opacity,translate] [&>svg:first-child]:duration-normal [&>svg:first-child]:ease-out hover:[&>svg:first-child]:-translate-x-0.5 rtl:hover:[&>svg:first-child]:translate-x-0.5 motion-reduce:hover:[&>svg:first-child]:translate-x-0",
+        "text-sidebar-accent-foreground mb-2 font-semibold [&>svg:first-child]:transition-[opacity,translate] [&>svg:first-child]:duration-normal [&>svg:first-child]:ease-out hover:[&>svg:first-child]:-translate-x-0.5 rtl:hover:[&>svg:first-child]:translate-x-0.5 motion-reduce:hover:[&>svg:first-child]:translate-x-0",
         className
       )}
       {...props}
