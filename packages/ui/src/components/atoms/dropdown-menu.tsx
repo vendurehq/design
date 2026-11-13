@@ -109,7 +109,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        menuItem, "data-[variant=destructive]:text-destructive-text data-[variant=destructive]:not-data-disabled:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground group/dropdown-menu-item data-[variant=destructive]:data-disabled:text-destructive-text/50 data-[variant=destructive]:data-disabled:*:[svg]:text-destructive-text/50",
+        menuItem, "data-[variant=destructive]:text-destructive-text data-[variant=destructive]:not-data-disabled:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground group/dropdown-menu-item",
         className
       )}
       {...props}

@@ -4,6 +4,7 @@ import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { menuItemDisabled } from "../../lib/menu-item.tsx"
 import { statusChipRing } from "@vendure-io/ui/lib/tint-recipes"
 import { fieldSurface, fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
@@ -271,7 +272,8 @@ function ComboboxItem({
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:text-popover-foreground/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
+        menuItemDisabled,
+        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

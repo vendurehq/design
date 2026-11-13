@@ -95,3 +95,51 @@ export async function checkDisabledItemHasNoFill(trigger: HTMLElement, open?: ()
   await waitFor(() => expect(fill(item('Settings'))).not.toBe(none));
   await user.keyboard('{Escape}');
 }
+
+/** The opacity an element shows with: its own and its ancestors' up to `stop`, `filter: opacity()` included. */
+function shownOpacity(element: Element, stop: Element) {
+  let opacity = 1;
+  for (let node: Element | null = element; node && node !== stop.parentElement; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    opacity *= Number(style.opacity);
+    for (const [, value = '1', percent] of style.filter.matchAll(/opacity\(([\d.]+)(%?)\)/g)) {
+      opacity *= Number(value) / (percent ? 100 : 1);
+    }
+  }
+  return opacity;
+}
+
+/**
+ * How strong a part of an item shows: its fill if it has one (a status dot),
+ * else its text colour, times every opacity up to the item.
+ */
+function strength(element: Element, item: Element) {
+  const style = getComputedStyle(element);
+  const fill = rgba(style.backgroundColor).a;
+  // An icon strokes in its colour; text paints in its text fill colour.
+  const ink = element instanceof SVGElement ? style.color : style.webkitTextFillColor;
+  return (fill > 0 ? fill : rgba(ink).a) * shownOpacity(element, item);
+}
+
+/**
+ * A disabled item dims every part of its content to the same strength: its
+ * own text and each child (a status dot, a label, a detail, an icon) shows
+ * at half the strength of the same part in an enabled item of the same shape.
+ * The item itself keeps full opacity, so its focus ring does not dim.
+ */
+export async function checkDisabledContentDims(disabled: HTMLElement, enabled: HTMLElement) {
+  await expect(disabled).toHaveAttribute('data-disabled');
+  await expect(getComputedStyle(disabled).opacity).toBe('1');
+  const parts = (item: HTMLElement) => [...item.children].filter((child) => getComputedStyle(child).display !== 'none');
+  const [off, on] = [parts(disabled), parts(enabled)];
+  await expect(off.length).toBe(on.length);
+  // The item's own text paints in its text fill colour.
+  const text = (item: HTMLElement) => rgba(getComputedStyle(item).webkitTextFillColor).a;
+  await expect(text(disabled) / text(enabled)).toBeCloseTo(0.5, 1);
+  for (const [index, part] of off.entries()) {
+    // A part hidden in both rows (the check of an unchecked row) has nothing to compare.
+    if (strength(on[index] as Element, enabled) === 0) continue;
+    const ratio = strength(part, disabled) / strength(on[index] as Element, enabled);
+    await expect(ratio, `part ${index + 1} (${part.textContent || part.className}) shows at ${ratio}`).toBeCloseTo(0.5, 1);
+  }
+}

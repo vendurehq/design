@@ -81,7 +81,7 @@ export const tokenGuidance = [
       },
       {
         title: 'A disabled menu item never looks highlighted',
-        body: 'A disabled item in a dropdown menu, context menu, menubar, select or combobox shows its text and icon at half strength. Under hover or focus it takes no fill and its text and icon do not change, so it never looks like the item a click will pick. The arrow keys still stop on it and draw the focus ring at full strength: the item dims its text, not itself.',
+        body: 'A disabled item in a dropdown menu, context menu, menubar, select or combobox shows all its content at half strength: text, icon, status dot, detail, shortcut and check, each with its own colour. Under hover or focus it takes no fill and its text and icon do not change, so it never looks like the item a click will pick. The arrow keys still stop on it and draw the focus ring at full strength: the item dims its content, not itself.',
       },
       {
         title: 'A scrolled header gets a rule',

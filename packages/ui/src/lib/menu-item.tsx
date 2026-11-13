@@ -1,21 +1,35 @@
 import { cn } from './utils.ts';
 
 /**
+ * A disabled item of any menu, Select or Combobox dims all its content to
+ * half strength, not itself: an opacity on the item would dim its focus
+ * ring too, and the arrow keys still stop on it with the ring at full
+ * strength. The item's own text paints at half its colour
+ * (`-webkit-text-fill-color`, so its children do not take it). Every child
+ * shows at half through `filter: opacity()`, which stacks on the child's own
+ * opacity: a status dot, a detail, a shortcut, an icon and a check each dim
+ * by the same half from their rest look, whatever colour they bring.
+ */
+export const menuItemDisabled =
+  'data-disabled:pointer-events-none data-disabled:[-webkit-text-fill-color:color-mix(in_oklab,currentColor_50%,transparent)] data-disabled:*:[-webkit-text-fill-color:currentColor] data-disabled:*:[filter:opacity(50%)]';
+
+/**
  * The item of a dropdown menu, and of every menu built on it (Menubar,
  * BreadcrumbMenu). Under the pointer or the arrow keys an item takes the
  * muted fill, its text darkens and its icon strengthens. A disabled item
- * takes none of that: it dims its text, not itself, so the arrow keys still
- * show its focus ring at full strength.
+ * takes none of that and dims its content (`menuItemDisabled`).
  */
-export const menuItem =
-  "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85";
+export const menuItem = cn(
+  menuItemDisabled,
+  "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+);
 
 /**
  * The checked row of a radio group in a menu: semibold text in the
  * foreground colour, and a `MenuCheck`. The item needs `group/menu-radio`.
  */
 export const menuRadioItem =
-  'group/menu-radio data-checked:text-foreground data-checked:font-semibold data-checked:data-disabled:text-foreground/50';
+  'group/menu-radio data-checked:text-foreground data-checked:font-semibold';
 
 /**
  * The check of a checked radio row draws in: a path with pathLength 1 and a
