@@ -10,7 +10,12 @@ import { fieldNames, fieldTokens } from '../../test/fields';
 // parts render in a portal or need a browser, so most checks read the source;
 // the fields render, so the checks read the classes they end up with.
 
-const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
+// A menu that takes the shared item recipe is read together with it.
+const menuItemRecipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
+const source = (file: string) => {
+  const code = readFileSync(join(import.meta.dir, '..', file), 'utf8');
+  return code.includes('lib/menu-item.tsx') ? `${code}\n${menuItemRecipe}` : code;
+};
 
 const OUTSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:outline-offset-2'];
 const INSET = ['focus-visible:outline-solid', 'focus-visible:outline-2', 'focus-visible:-outline-offset-2'];

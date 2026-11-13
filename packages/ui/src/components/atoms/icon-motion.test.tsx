@@ -8,7 +8,12 @@ import { Skeleton } from './skeleton.tsx';
 import { Spinner } from './spinner.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
 
-const source = (file: string) => readFileSync(join(import.meta.dir, '..', file), 'utf8');
+// A menu that takes the shared item recipe is read together with it.
+const menuItemRecipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
+const source = (file: string) => {
+  const code = readFileSync(join(import.meta.dir, '..', file), 'utf8');
+  return code.includes('lib/menu-item.tsx') ? `${code}\n${menuItemRecipe}` : code;
+};
 
 const BUTTON_ICON = "[&>svg:not([role=status]):not([class*='opacity-'])]";
 const ITEM_ICON = "[&>svg:not([class*='opacity-'])]";

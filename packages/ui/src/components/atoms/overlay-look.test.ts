@@ -8,7 +8,12 @@ import { join } from 'node:path';
 // A popup that takes the shared popup recipe is checked there, on the
 // transition it computes, so a class that overrides the recipe fails.
 
-const source = (file: string) => readFileSync(join(import.meta.dir, file), 'utf8');
+// A menu that takes the shared item recipe is read together with it.
+const menuItemRecipe = readFileSync(join(import.meta.dir, '../../lib/menu-item.tsx'), 'utf8');
+const source = (file: string) => {
+  const code = readFileSync(join(import.meta.dir, file), 'utf8');
+  return code.includes('lib/menu-item.tsx') ? `${code}\n${menuItemRecipe}` : code;
+};
 const recipe = readFileSync(join(import.meta.dir, '../../lib/popup-motion.ts'), 'utf8');
 const stories = readFileSync(join(import.meta.dir, '../../../stories/overlay-interactions.stories.tsx'), 'utf8');
 
@@ -184,7 +189,7 @@ describe('v3 overlay look', () => {
   });
 
   test('a disabled menu, select or combobox item never takes the fill', () => {
-    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx']) {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx', 'breadcrumb.tsx']) {
       const code = source(file);
       expect(code).not.toMatch(/(?<!not-data-disabled:)focus:bg-/);
       expect(code).toContain('not-data-disabled:focus:bg-muted');
@@ -195,7 +200,7 @@ describe('v3 overlay look', () => {
   });
 
   test('a focused disabled item keeps its text and icon, and its focus ring at full strength', () => {
-    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx', 'combobox.tsx']) {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx', 'combobox.tsx', 'breadcrumb.tsx']) {
       const code = source(file);
       // Every focus or highlight rule skips a disabled item.
       expect(code).not.toMatch(/[\s"](focus|data-highlighted):/);
@@ -204,6 +209,27 @@ describe('v3 overlay look', () => {
       expect(code).not.toContain('data-disabled:opacity-50');
       expect(code).toMatch(/data-disabled:text-[\w-]+\/50/);
     }
+  });
+
+  // BreadcrumbMenu and the DropdownMenu items share one item recipe, and every
+  // radio item in a menu marks its checked row as BreadcrumbMenu does:
+  // semibold text in the foreground colour and a 14px check that draws in.
+  test('BreadcrumbMenu items and menu radio items share the item recipe and the checked look', () => {
+    const breadcrumb = readFileSync(join(import.meta.dir, 'breadcrumb.tsx'), 'utf8');
+    expect(breadcrumb).toContain('className={cn(menuItem, menuRadioItem)}');
+    expect(breadcrumb).toContain('<MenuCheck />');
+    expect(readFileSync(join(import.meta.dir, 'dropdown-menu.tsx'), 'utf8')).toMatch(/menuItem, menuRadioItem/);
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx']) {
+      const code = readFileSync(join(import.meta.dir, file), 'utf8');
+      const radio = code.slice(code.search(/function \w+RadioItem\(/));
+      const body = radio.slice(0, radio.indexOf('\n}\n'));
+      expect(body).toContain('menuRadioItem');
+      expect(body).toContain('<MenuCheck />');
+      expect(body).not.toContain('RadioItemIndicator');
+    }
+    expect(menuItemRecipe).toContain('data-checked:text-foreground data-checked:font-semibold');
+    expect(menuItemRecipe).toContain('size-3.5');
+    expect(menuItemRecipe).toContain('group-data-checked/menu-radio:opacity-90');
   });
 
   test('destructive menu items read in destructive-text', () => {

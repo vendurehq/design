@@ -22,6 +22,7 @@
     "./components/molecules/time-tooltip": null,
     "./lib/*": "./src/lib/*.ts",
     "./lib/control-name": null,
+    "./lib/menu-item": null,
     "./lib/popup-align": null,
     "./lib/popup-direction": null,
     "./lib/popup-motion": null,

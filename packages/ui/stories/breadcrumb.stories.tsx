@@ -3,6 +3,7 @@ import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
+import { checkCheckedRowLook } from './menu-checked-row.ts';
 import { DropdownMenuItem, DropdownMenuSeparator } from '../src/components/atoms/dropdown-menu.tsx';
 import {
   Breadcrumb,
@@ -127,6 +128,7 @@ export const WithMenu: Story = {
     await expect(crumb).toHaveAttribute('aria-expanded', 'true');
     await expect(menu).not.toHaveAttribute('data-closed');
     await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Environment: Staging' })).toBeInTheDocument());
+    await checkCheckedRowLook(menu);
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(crumb).toHaveFocus());
   },
@@ -154,6 +156,27 @@ export const WithMenuKeyboard: Story = {
     await waitFor(() => expect(within(menu).getAllByRole('menuitemradio')[0]).toHaveFocus());
     await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
     await waitFor(() => expect(within(canvasElement).getByRole('button', { name: 'Environment: Checkout preview' })).toBeInTheDocument());
+  },
+};
+
+/**
+ * An option with `disabled` shows at half strength and cannot be picked. The
+ * arrow keys still stop on it, with only the focus ring.
+ */
+export const WithMenuDisabledOption: Story = {
+  render: () => (
+    <EnvironmentCrumbs
+      options={environments.map((option) => (option.value === 'staging' ? { ...option, disabled: true } : option))}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Environment: Production' }));
+    const menu = await within(document.body).findByRole('menu');
+    const staging = within(menu).getByRole('menuitemradio', { name: /Staging/ });
+    await expect(staging).toHaveAttribute('data-disabled');
+    await userEvent.click(staging, { pointerEventsCheck: 0 });
+    await expect(staging).toHaveAttribute('aria-checked', 'false');
+    await userEvent.keyboard('{Escape}');
   },
 };
 
