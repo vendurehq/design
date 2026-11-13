@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@vendure-io/ui/components/atoms/button';
-import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
 import { DirectionProvider } from '@vendure-io/ui/components/atoms/direction';
+import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
