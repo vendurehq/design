@@ -940,8 +940,8 @@ function DataTable<TData>({
   // content sets itself still wins. The cell resets the variable, so a plain
   // wrapper element does not inherit one.
   // A cell with a two-line status (StatusBadge `appearance="icon"` with a
-  // `detail`) drops to 6px vertical padding, so its 33px block makes a 46px
-  // row.
+  // `detail`) drops to 6px vertical padding, so its 33px block fits the 48px
+  // row minimum and the row stays 48px, the same as a one-line row.
   const bodyCellClass =
     '[--content-inset:0px] [:where(&>:first-child)]:-ms-(--content-inset) has-[[data-slot=status-badge][data-detail]]:py-1.5';
 

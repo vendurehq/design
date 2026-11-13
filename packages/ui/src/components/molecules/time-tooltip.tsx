@@ -27,8 +27,8 @@ const focusRing =
  * itself, so the focus ring stays on the time.
  *
  * Under a status label (a StatusBadge `detail`), the tooltip is anchored to the
- * whole status block and opens at its inline end, centred on it. A row is 46px
- * high and a two-line tooltip 48px, so it covers only the cells after the
+ * whole status block and opens at its inline end, centred on it. A row is 48px
+ * high, as a two-line tooltip, so it covers only the cells after the
  * status in the same row: the label and the time stay readable, and so do the
  * rows above and below. Without room at the end it flips to the start.
  * Anywhere else it opens above the time, as every tooltip does.

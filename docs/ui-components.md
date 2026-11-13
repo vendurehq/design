@@ -391,7 +391,7 @@ Leave out both `label` and `children` when the text next to the indicator
 already says the same: the indicator is then hidden from assistive technology.
 
 `detail` adds a second line under the label of `appearance="icon"`, with the
-one time that matters for the state. In a `DataTable` the row is 46px.
+one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
 <StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
