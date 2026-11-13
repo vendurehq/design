@@ -39,15 +39,16 @@ const fieldClass = [
 
 // Collapsed: a 28px ghost icon button, the size of the SidebarTrigger next
 // to it on a narrow top bar. The label and the shortcut leave the box; the
-// accessible name stays.
+// accessible name stays. `ps-0 pe-0`, not `px-0`: tailwind-merge does not
+// let `px-0` override the field's `ps-*`/`pe-*`.
 const collapsed = {
-  box: 'w-7 justify-center bg-transparent px-0 inset-ring-0 hover:bg-muted',
+  box: 'w-7 justify-center bg-transparent ps-0 pe-0 inset-ring-0 hover:bg-muted',
   hidden: 'hidden',
 };
 
 const collapseClasses: Record<SearchTriggerCollapse, { box: string; hidden: string }> = {
   md: {
-    box: 'max-md:w-7 max-md:justify-center max-md:bg-transparent max-md:px-0 max-md:inset-ring-0 max-md:hover:bg-muted',
+    box: 'max-md:w-7 max-md:justify-center max-md:bg-transparent max-md:ps-0 max-md:pe-0 max-md:inset-ring-0 max-md:hover:bg-muted',
     hidden: 'max-md:hidden',
   },
   never: { box: '', hidden: '' },
