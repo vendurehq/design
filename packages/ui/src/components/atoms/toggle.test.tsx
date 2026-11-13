@@ -184,3 +184,58 @@ describe('Outline surface', () => {
     );
   });
 });
+
+// The outline Toggle sits on the outline Button's surface, so it takes the
+// outline Button's hover too: the same fill and the same edge step. Pressed
+// plus hover keeps the accent tint (the pressed hover tokens above).
+describe('outline Toggle hover', () => {
+  const hoverTokens = (tag: string) => classTokens(tag).filter((token) => /(^|:)hover:(bg|border)-/.test(token));
+  const firstButton = (html: string) => html.match(/<button[^>]*>/)?.[0] ?? '';
+
+  test('takes the outline Button hover fill and edge', async () => {
+    const { Button } = await import('./button.tsx');
+    const button = hoverTokens(firstButton(renderToStaticMarkup(<Button variant="outline">B</Button>)));
+    const toggle = hoverTokens(firstButton(renderToStaticMarkup(<Toggle variant="outline">B</Toggle>)));
+    expect(button.length).toBeGreaterThan(0);
+    for (const token of button) expect(toggle).toContain(token);
+    expect(toggle).not.toContain('hover:bg-muted');
+  });
+
+  test('a joined ToggleGroup item keeps the group edge on hover', () => {
+    const html = renderToStaticMarkup(
+      <ToggleGroup variant="outline" spacing={0}>
+        <ToggleGroupItem value="a">A</ToggleGroupItem>
+      </ToggleGroup>,
+    );
+    const item = html.match(/<button[^>]*data-slot="toggle-group-item"[^>]*>/)?.[0] ?? '';
+    expect(item).toContain('data-spacing="0"');
+    // The edge step skips a joined item: the group owns the edge.
+    const edge = classTokens(item).find((token) => token.endsWith(':hover:border-input'));
+    expect(edge).toContain("[data-slot=toggle-group-item][data-spacing='0']");
+  });
+});
+
+// A toggle draws its icon as a Button does: 55% at rest, 85% under the
+// pointer, a 1.75 stroke, and 14px in the small size.
+describe('Toggle icon', () => {
+  const tokens = (node: React.ReactElement) => classTokens((renderToStaticMarkup(node).match(/<button[^>]*>/)?.[0] ?? '').replaceAll('&gt;', '>'));
+  const icon = "[&>svg:not([role=status]):not([class*='opacity-'])]";
+
+  test('takes the Button icon strength and stroke', async () => {
+    const { Button } = await import('./button.tsx');
+    const button = tokens(<Button variant="outline">B</Button>);
+    for (const variant of ['default', 'outline'] as const) {
+      const toggle = tokens(<Toggle variant={variant}>B</Toggle>);
+      for (const token of [`${icon}:opacity-55`, `hover:${icon}:opacity-85`, "[&_svg:not([class*='stroke-'])]:stroke-[1.75]"]) {
+        expect(button).toContain(token);
+        expect(toggle).toContain(token);
+      }
+    }
+  });
+
+  test('is 14px in the small size and 16px otherwise', () => {
+    expect(tokens(<Toggle size="sm">B</Toggle>)).toContain("[&_svg:not([class*='size-'])]:size-3.5");
+    expect(tokens(<Toggle size="sm">B</Toggle>)).not.toContain("[&_svg:not([class*='size-'])]:size-4");
+    expect(tokens(<Toggle>B</Toggle>)).toContain("[&_svg:not([class*='size-'])]:size-4");
+  });
+});

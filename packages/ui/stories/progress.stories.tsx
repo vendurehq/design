@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
 import { expect, waitFor, within } from 'storybook/test';
+import { expectPx } from './pixel.ts';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import {
   Progress,
@@ -158,17 +159,29 @@ export const Steps: Story = {
   render: () => (
     <div className="grid w-[640px] grid-flow-col auto-cols-fr gap-1.5">
       {steps.map((step) => (
-        <Progress key={step.label} tone={step.tone} value={step.value} aria-label={step.label}>
+        <Progress key={step.label} tone={step.tone} value={step.value} aria-label={step.label} className="gap-2">
           <div className="order-last flex flex-col gap-0.5">
             <span className={step.value === 0 ? 'text-muted-foreground text-sm font-semibold' : 'text-sm font-semibold'}>
               {step.label}
             </span>
-            <span className="text-muted-foreground text-xs tabular-nums">{step.detail}</span>
+            <span className="text-muted-foreground text-xs leading-4.5 tabular-nums">{step.detail}</span>
           </div>
         </Progress>
       ))}
     </div>
   ),
+  // As in the v3 look: the label 8px under the bar, an 18px detail line, a
+  // 52px step.
+  play: async ({ canvasElement }) => {
+    const step = canvasElement.querySelector<HTMLElement>('[data-slot="progress"]');
+    const track = step?.querySelector<HTMLElement>('[data-slot="progress-track"]');
+    const label = step?.querySelector<HTMLElement>('span');
+    const detail = label?.nextElementSibling;
+    if (!step || !track || !label || !detail) throw new Error('Step parts not rendered');
+    await expectPx(label.getBoundingClientRect().top - track.getBoundingClientRect().bottom, 8, 'bar to label');
+    await expectPx(detail.getBoundingClientRect().height, 18, 'detail line');
+    await expectPx(step.getBoundingClientRect().height, 52, 'step');
+  },
 };
 
 /** The sweep's translateX in px at a point in its loop, or null when there is no sweep. */

@@ -64,7 +64,7 @@ describe('Button v3 look', () => {
   test('outline hover steps the edge up to input, except inside a group, when invalid or aria-disabled', () => {
     const tokens = buttonTokens(<Button variant="outline">Cancel</Button>);
     expect(tokens).toContain(
-      '[&:not([data-slot=button-group]>*,[aria-invalid=true],[aria-disabled=true])]:hover:border-input',
+      "[&:not([data-slot=button-group]>*,[data-slot=toggle-group-item][data-spacing='0'],[aria-invalid=true],[aria-disabled=true])]:hover:border-input",
     );
   });
 

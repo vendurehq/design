@@ -200,6 +200,12 @@ export const TitleDescriptionAction: Story = {
     expectActionBesideText(alert);
     expectActionInsideAlert(alert);
     expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+    // The description starts right under the title line, as in the v3 look.
+    await expectPx(
+      slot(alert, 'alert-description').getBoundingClientRect().top - slot(alert, 'alert-title').getBoundingClientRect().bottom,
+      0,
+      'title to description',
+    );
   },
 };
 

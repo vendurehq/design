@@ -191,6 +191,11 @@ export const CompactWithIcon: Story = {
       </CardRows>
     </Card>
   ),
+  // The compact title sits on a whole-pixel 21px line, as in the v3 look.
+  play: async ({ canvasElement }) => {
+    const title = canvasElement.querySelector<HTMLElement>('[data-slot="empty-title"]');
+    await expect(title && getComputedStyle(title).lineHeight).toBe('21px');
+  },
 };
 
 /**
