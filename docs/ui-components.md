@@ -826,7 +826,7 @@ These packages are optional — install them only if you use the features that n
 
 ### Breaking changes in `@vendure-io/ui`
 
-1. Default, brand, destructive and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

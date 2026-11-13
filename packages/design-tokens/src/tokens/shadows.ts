@@ -19,9 +19,9 @@ export const shadows = {
 // keeps a popup apart from a white table or card. Dark mode swaps the edge to
 // white so it reads on the dark overlay tier.
 // `control` lifts a resting control or a card off its surface (default, brand,
-// destructive and outline buttons, button groups, Card): a 1px bottom edge and
-// a faint 2px blur. Dark mode keeps only the
-// edge, darker, because a blur does not read on the dark tiers.
+// destructive, destructive-outline and outline buttons, button groups, Card): a
+// 1px bottom edge and a faint 2px blur. Dark mode keeps only the edge, darker,
+// because a blur does not read on the dark tiers.
 // `scrolled` marks a sticky header while content sits scrolled under it: a 1px
 // line below the header in the `input` colour, no blur, so it reads as a rule
 // in both themes. It references `--input`, so it follows the theme on its own.

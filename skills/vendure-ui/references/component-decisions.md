@@ -41,6 +41,8 @@ Use the shared application anatomy without moving app-owned routing or context i
 - **The consumer owns application state:** Keep routing, navigation data, authentication, permissions, and context switching in the consumer.
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
 - **Search opens the palette from the top bar:** Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.
+- **The routed page enters with AppShellPage:** Wrap the routed page in AppShellPage inside AppShellMain, keyed by the pathname, so a new page fades in and rises 6px while the sidebar and the header stay still. A change of search params keeps the key and does not replay it. A layout without AppShell, such as the Dashboard, puts pageEnterClassName on its own wrapper, keyed the same way. A page that switches its content in place, such as the environment switch, reloads in place instead: see the motion tokens.
+- **A crumb that switches siblings is a BreadcrumbMenu:** When the user switches the current item between its siblings, such as the environment, make that crumb a BreadcrumbMenu: the current value, a menu of the options with a status dot, and extra items such as "Add environment" in its children. Do not add a list page or a picker inside the page for it. A crumb that only goes up a level stays a BreadcrumbLink. The options, the switch and the route stay in your app.
 
 Related decisions: `page-header`.
 ## ArrowLink
@@ -76,6 +78,7 @@ Compose actions as an emphasis ladder with one primary action per view.
 - **One primary action per view:** Choose the single most-important action and give it the default filled Button. Step every other action down.
 - **Variant expresses weight, not color preference:** Choose variants relative to neighboring actions; do not use filled or destructive styling merely to attract attention.
 - **Destructive means loss:** Reserve destructive for irreversible or removing actions. An outward-facing action is not automatically destructive.
+- **Destructive comes in two weights:** A destructive action that is on screen at rest, such as a danger zone on a settings page, is `destructive-outline`: the outline button with a red label and a red tint on hover. The solid `destructive` is for the press that does the damage, the confirm in a ConfirmDialog. Do not put a solid red button on a page at rest.
 - **Brand is an identity spend, not a louder primary:** Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.
 - **A disabled button that must say why keeps its focus:** Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.
 
@@ -86,7 +89,8 @@ Compose actions as an emphasis ladder with one primary action per view.
 - `secondary`: A supporting action that still deserves a filled surface.
 - `outline`: The common neutral partner: cancel, back, or dismiss.
 - `ghost`: Tertiary, overflow, or icon actions that should recede.
-- `destructive`: Irreversible or removing actions.
+- `destructive-outline`: A destructive action shown at rest on a page, such as a danger zone, or a second way out next to the primary.
+- `destructive`: The confirm of an irreversible or removing action.
 - `link`: Inline navigation that should read as text.
 
 Related decisions: `confirm-dialog`, `page-header`.
@@ -154,8 +158,15 @@ Confirm only consequential actions, and make the consequence and verb explicit.
 - **Confirmation must earn the interruption:** Confirm irreversible, bulk, or outward-facing actions. Do not confirm routine reversible changes.
 - **Name the action twice:** The title states the consequence and the confirmation button repeats the concrete verb.
 - **Destructive styling follows destructive outcome:** A confirmation can be consequential without causing loss. Use destructive only when the action removes or destroys.
+- **Caution for a cost that is not a loss:** Use `variant="caution"` for a costly action that destroys nothing, such as "Deploy anyway" after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog leans toward cancel without a red button.
 - **Keep pending state inside the dialog:** Disable repeated submission, preserve context, and close only after the confirmed action succeeds.
 - **Hold confirm until the consequence is known:** When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.
+
+**Choose:**
+
+- `default`: A consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus.
+- `caution`: A costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus; Confirm is an outline button.
+- `destructive`: A loss. Cancel takes the focus; Confirm is solid red.
 
 Related decisions: `button`.
 ## CopyableText

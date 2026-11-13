@@ -140,7 +140,7 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
 - `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a clear 1px edge and a soft drop. It is the popup's border, so a popup takes no border or ring class. Light and dark have different values. Use `shadow-overlay`
-- `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
+- `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive, destructive-outline and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
 - `--shadow-scrolled` — A 1px rule in the `input` colour under a sticky header while content sits scrolled under it. Use `in-data-scrolled:shadow-scrolled` on the header, and `useScrolled` from `@vendure-io/ui/hooks/use-scrolled` on its scroll container
 
 ### Motion
