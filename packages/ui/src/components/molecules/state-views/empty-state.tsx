@@ -97,7 +97,9 @@ function EmptyState({
             {icon}
           </EmptyMedia>
         ) : null}
-        <EmptyTitle className={cn(compact && 'text-style-card-title leading-5.25')}>{title}</EmptyTitle>
+        <EmptyTitle className={cn(compact && 'text-style-card-title leading-5.25')}>
+          {title}
+        </EmptyTitle>
         {description ? (
           <EmptyDescription className={cn(compact && 'text-sm')}>{description}</EmptyDescription>
         ) : null}
