@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
+import { checkCheckMark } from './menu-checked-row.ts';
 import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 import {
   Select,
@@ -312,7 +313,13 @@ async function openList(trigger: HTMLElement) {
  */
 export const OpenList: Story = {
   render: () => (
-    <Select>
+    <Select
+      items={[
+        { value: 'apple', label: 'Apple' },
+        { value: 'banana', label: 'Banana' },
+        { value: 'grapes', label: 'Grapes' },
+      ]}
+    >
       <SelectTrigger aria-label="Fruit" className="w-[180px]">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
@@ -326,6 +333,13 @@ export const OpenList: Story = {
   play: async ({ canvasElement }) => {
     await openList(within(canvasElement).getByRole('combobox', { name: 'Fruit' }));
     await expect(document.querySelector('[role=listbox]')).toHaveAccessibleName('Fruit');
+    // The selected option shows the check of a checked menu row.
+    const body = within(document.body);
+    await userEvent.click(body.getByRole('option', { name: 'Banana' }));
+    const trigger = within(canvasElement).getByRole('combobox', { name: 'Fruit' });
+    await waitFor(() => expect(trigger).toHaveTextContent('Banana'));
+    await openList(trigger);
+    await checkCheckMark(body.getByRole('option', { name: 'Banana' }), body.getByRole('option', { name: 'Apple' }));
   },
 };
 
