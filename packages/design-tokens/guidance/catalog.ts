@@ -80,8 +80,8 @@ export const tokenGuidance = [
         body: "Reserve overlay and the overlay shadow for popovers, menus, dialogs, and other content that floats above the page. The overlay shadow is the popup's border: a clear 1px edge, then the drop. Do not add a border or ring class to a popup. Primitives stay flat: no xs shadow tier on inputs. Default, brand, destructive, destructive-outline and outline buttons, button groups, cards and the sliding sidebar pill sit on shadow-control, a 1px lift off the surface. Ghost and link buttons stay flat.",
       },
       {
-        title: 'A disabled menu item takes no fill',
-        body: 'A disabled item in a dropdown menu, context menu, menubar, select or combobox stays at half opacity and takes no hover or focus fill, so it never looks like the item a click will pick.',
+        title: 'A disabled menu item never looks highlighted',
+        body: 'A disabled item in a dropdown menu, context menu, menubar, select or combobox shows its text and icon at half strength. Under hover or focus it takes no fill and its text and icon do not change, so it never looks like the item a click will pick. The arrow keys still stop on it and draw the focus ring at full strength: the item dims its text, not itself.',
       },
       {
         title: 'A scrolled header gets a rule',

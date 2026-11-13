@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
+import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 import {
   Select,
   SelectContent,
@@ -578,5 +579,29 @@ export const FitsNearTheEdges: Story = {
       await userEvent.keyboard('{Escape}');
       await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull(), { timeout: 3000 });
     }
+  },
+};
+
+/**
+ * A disabled option never takes the fill. The arrow keys still stop on it and
+ * show only the focus ring; its text and icon stay dimmed.
+ */
+export const DisabledItem: Story = {
+  render: () => (
+    <Select>
+      <SelectTrigger aria-label="Role" className="w-[180px]">
+        <SelectValue placeholder="Select a role" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="invite">Send invite</SelectItem>
+        <SelectItem value="member" disabled>
+          Add member
+        </SelectItem>
+        <SelectItem value="settings">Settings</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    await checkDisabledItemHasNoFill(within(canvasElement).getByRole('combobox', { name: 'Role' }));
   },
 };
