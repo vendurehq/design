@@ -199,7 +199,7 @@ function ConfirmDialog({
             <p
               id={reasonId}
               data-slot="confirm-dialog-disabled-reason"
-              className="text-muted-foreground self-center text-sm group-data-[size=sm]/alert-dialog-content:col-span-2 sm:mr-auto"
+              className="text-muted-foreground self-center text-sm group-data-[size=sm]/alert-dialog-content:col-span-2 sm:me-auto"
             >
               {confirmDisabledReason}
             </p>

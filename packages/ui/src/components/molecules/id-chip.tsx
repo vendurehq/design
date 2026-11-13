@@ -28,13 +28,13 @@ type TruncateMode = 'middle' | 'start' | 'none';
  */
 function chipChromeClass(copyable: boolean, className?: string): string {
   return cn(
-    'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 pl-2 [--content-inset:calc(var(--spacing)*2)] font-mono text-xs text-foreground-secondary',
+    'relative inline-flex min-h-6 w-fit items-center gap-1.5 rounded-lg bg-muted py-0.5 ps-2 [--content-inset:calc(var(--spacing)*2)] font-mono text-xs text-foreground-secondary',
     'transition-[background-color,color,scale] duration-quick ease-soft',
     contentInsetPull,
     'has-data-chip-copy:cursor-pointer has-data-chip-copy:hover:bg-accent has-data-chip-copy:hover:text-foreground motion-safe:has-data-chip-copy:active:scale-[0.97]',
     // The chip is the copy target, so the focus ring goes around the chip, not the 13px button.
     'has-[[data-chip-copy]:focus-visible]:outline-2 has-[[data-chip-copy]:focus-visible]:outline-offset-2 has-[[data-chip-copy]:focus-visible]:outline-ring has-[[data-chip-copy]:focus-visible]:outline-solid',
-    copyable ? 'pr-1.5' : 'pr-2',
+    copyable ? 'pe-1.5' : 'pe-2',
     className,
   );
 }

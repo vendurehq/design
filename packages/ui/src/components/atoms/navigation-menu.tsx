@@ -73,7 +73,7 @@ function NavigationMenuTrigger({
       {...props}
     >
       {children}{" "}
-      <ChevronDownIcon className="relative top-px ml-1 size-3 transition duration-slow group-data-popup-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
+      <ChevronDownIcon className="relative top-px ms-1 size-3 transition duration-slow group-data-popup-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
     </NavigationMenuPrimitive.Trigger>
   )
 }
@@ -86,7 +86,7 @@ function NavigationMenuContent({
     <NavigationMenuPrimitive.Content
       data-slot="navigation-menu-content"
       className={cn(
-        "motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pr-2.5 transition-[opacity,transform,translate] duration-popup-resize ease-out motion-reduce:transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
+        "motion-safe:data-ending-style:data-activation-direction=left:translate-x-[50%] motion-safe:data-ending-style:data-activation-direction=right:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=left:translate-x-[-50%] motion-safe:data-starting-style:data-activation-direction=right:translate-x-[50%] h-full w-auto p-2 pe-2.5 transition-[opacity,transform,translate] duration-popup-resize ease-out motion-reduce:transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0",
         className
       )}
       {...props}

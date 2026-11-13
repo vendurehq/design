@@ -62,7 +62,7 @@ function Chip({
       aria-disabled={disabled || undefined}
       className={cn(
         'max-w-full gap-1',
-        onRemove && 'pr-1',
+        onRemove && 'pe-1',
         disabled && 'pointer-events-none opacity-60',
         className,
       )}
@@ -77,7 +77,7 @@ function Chip({
           disabled={disabled}
           aria-label={removeLabel}
           onClick={onRemove}
-          className="-mr-0.5 ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          className="-me-0.5 ms-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           <XIcon className="size-3" />
         </button>

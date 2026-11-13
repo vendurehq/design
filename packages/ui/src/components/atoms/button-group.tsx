@@ -14,12 +14,12 @@ import { Separator } from "@vendure-io/ui/components/atoms/separator"
 // no fill, and its child groups keep their own radius. The group sits on
 // shadow-control; its children drop their own.
 const buttonGroupVariants = cva(
-  "has-[>[data-slot=button-group]]:gap-2 has-[>[data-slot=button-group]]:bg-transparent has-[>[data-slot=button-group]]:inset-ring-0 has-[>[data-slot=button-group]]:shadow-none has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-xl flex w-fit items-stretch rounded-xl *:data-slot:border-transparent [&>[data-slot]:not([data-slot=button-group])]:shadow-none *:focus-visible:z-10 *:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 [&>[data-slot=button-group-separator]+[data-slot]]:border-l-transparent! [&>[data-slot=button-group-separator]+[data-slot]]:border-t-transparent!",
+  "has-[>[data-slot=button-group]]:gap-2 has-[>[data-slot=button-group]]:bg-transparent has-[>[data-slot=button-group]]:inset-ring-0 has-[>[data-slot=button-group]]:shadow-none has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-xl flex w-fit items-stretch rounded-xl *:data-slot:border-transparent [&>[data-slot]:not([data-slot=button-group])]:shadow-none *:focus-visible:z-10 *:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 [&>[data-slot=button-group-separator]+[data-slot]]:border-s-transparent! [&>[data-slot=button-group-separator]+[data-slot]]:border-t-transparent!",
   {
     variants: {
       orientation: {
         horizontal:
-          "[&>[data-slot]:not([data-slot=button-group])]:rounded-none [&>[data-slot]:not([data-slot]~*)]:rounded-l-xl! [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-xl!",
+          "[&>[data-slot]:not([data-slot=button-group])]:rounded-none [&>[data-slot]:not([data-slot]~*)]:rounded-s-xl! [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-xl!",
         vertical:
           "[&>[data-slot]:not([data-slot=button-group])]:rounded-none [&>[data-slot]:not([data-slot]~*)]:rounded-t-xl! [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-xl! flex-col",
       },
@@ -32,9 +32,9 @@ const buttonGroupVariants = cva(
       },
     },
     compoundVariants: [
-      { orientation: "horizontal", variant: "default", className: "[&>[data-slot]~[data-slot]]:border-l-border" },
+      { orientation: "horizontal", variant: "default", className: "[&>[data-slot]~[data-slot]]:border-s-border" },
       { orientation: "vertical", variant: "default", className: "[&>[data-slot]~[data-slot]]:border-t-border" },
-      { orientation: "horizontal", variant: "primary", className: "[&>[data-slot]~[data-slot]]:border-l-primary-foreground/20" },
+      { orientation: "horizontal", variant: "primary", className: "[&>[data-slot]~[data-slot]]:border-s-primary-foreground/20" },
       { orientation: "vertical", variant: "primary", className: "[&>[data-slot]~[data-slot]]:border-t-primary-foreground/20" },
     ],
     defaultVariants: {
