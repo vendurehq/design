@@ -1,4 +1,5 @@
 import { expect } from 'storybook/test';
+import { PIXEL_TOLERANCE } from './pixel.ts';
 
 /**
  * Every control in `content` stays inside its padding. A sheet pads its
@@ -11,7 +12,7 @@ export async function expectInsidePadding(content: HTMLElement, inset?: number) 
   const right = box.right - (inset ?? Number.parseFloat(style.paddingRight));
   for (const control of content.querySelectorAll<HTMLElement>('button:not([data-slot$="-close"]), input')) {
     const rect = control.getBoundingClientRect();
-    await expect(rect.left).toBeGreaterThanOrEqual(left - 0.5);
-    await expect(rect.right).toBeLessThanOrEqual(right + 0.5);
+    await expect(rect.left).toBeGreaterThanOrEqual(left - PIXEL_TOLERANCE);
+    await expect(rect.right).toBeLessThanOrEqual(right + PIXEL_TOLERANCE);
   }
 }

@@ -5,6 +5,7 @@ import { expect, within } from 'storybook/test';
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '../src/components/atoms/alert.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Atoms/Feedback/Alert',
@@ -436,7 +437,7 @@ export const PassedIconAndNoIcon: Story = {
     expect(visibleIcons(none!)).toHaveLength(0);
     // The title lines up with the icon column only when there is an icon.
     const title = (alert: HTMLElement) => slot(alert, 'alert-title').getBoundingClientRect().left;
-    expect(title(prop!)).toBeCloseTo(title(child!), 0);
+    await expectPx(title(prop!), title(child!));
     expect(title(none!)).toBeLessThan(title(prop!));
   },
 };

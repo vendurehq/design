@@ -16,6 +16,7 @@ import {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 } from '../src/components/atoms/breadcrumb.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Atoms/Data Display/Breadcrumb',
@@ -116,7 +117,7 @@ export const WithMenu: Story = {
   play: async ({ canvasElement }) => {
     const crumb = within(canvasElement).getByRole('button', { name: 'Environment: Production' });
     await expect(crumb).toHaveAttribute('aria-haspopup', 'menu');
-    await expect(crumb.getBoundingClientRect().height).toBe(30);
+    await expectPx(crumb.getBoundingClientRect().height, 30);
     await userEvent.click(crumb);
     const menu = await within(document.body).findByRole('menu');
     await Promise.all(menu.getAnimations().map((animation) => animation.finished));

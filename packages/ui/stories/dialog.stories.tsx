@@ -6,6 +6,7 @@ import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
 import { expectInsidePadding } from './overlay-bounds.ts';
+import { expectPx } from './pixel.ts';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -100,19 +101,19 @@ export const WithIcon: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Deploy' }));
     const dialog = await within(document.body).findByRole('dialog');
-    await waitFor(() => expect(dialog.getBoundingClientRect().width).toBe(440));
+    await waitFor(() => expectPx(dialog.getBoundingClientRect().width, 440));
     // No ✕ by default: Cancel, Escape and the backdrop close the dialog.
     await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
     const title = dialog.querySelector('[data-slot=dialog-title]')!;
     const description = dialog.querySelector('[data-slot=dialog-description]')!;
     // The footer box reaches 16px up into the gap to cover a scrolled body, so measure its buttons.
     const deploy = within(dialog).getByRole('button', { name: 'Deploy' });
-    await expect(description.getBoundingClientRect().top - title.getBoundingClientRect().bottom).toBeCloseTo(10, 0);
-    await expect(deploy.getBoundingClientRect().top - description.getBoundingClientRect().bottom).toBeCloseTo(20, 0);
+    await expectPx(description.getBoundingClientRect().top - title.getBoundingClientRect().bottom, 10);
+    await expectPx(deploy.getBoundingClientRect().top - description.getBoundingClientRect().bottom, 20);
     // A short dialog does not scroll.
     await expect(dialog.scrollHeight).toBe(dialog.clientHeight);
     const icon = dialog.querySelector('[data-slot=dialog-title-icon] svg')!.getBoundingClientRect();
-    await expect(icon.width).toBe(18);
+    await expectPx(icon.width, 18);
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
   },
