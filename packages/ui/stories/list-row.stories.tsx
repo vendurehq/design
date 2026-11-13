@@ -267,6 +267,37 @@ export const AsAnchor: Story = {
   ),
 };
 
+/**
+ * Right to left: the row link's title starts at the row's start edge, the
+ * right one. Plays: the text of each title ends 0px from the link's right edge.
+ */
+export const AsAnchorRtl: Story = {
+  render: () => (
+    <div dir="rtl">
+      <RowCard>
+        {ORDERS.map((order) => (
+          <ListRow key={order.code}>
+            <ListRowContent>
+              <ListRowLink render={<a href={`#order-${order.code}`} />}>Order {order.code}</ListRowLink>
+            </ListRowContent>
+            <ListRowTrailing>{order.time}</ListRowTrailing>
+            <ListRowChevron />
+          </ListRow>
+        ))}
+      </RowCard>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const link of canvasElement.querySelectorAll<HTMLElement>('[data-slot="list-row-link"]')) {
+      const range = document.createRange();
+      range.selectNodeContents(link);
+      const text = range.getBoundingClientRect();
+      const box = link.getBoundingClientRect();
+      await expect(Math.abs(box.right - text.right)).toBeLessThan(1);
+    }
+  },
+};
+
 // A row with no detail page gets no link: ListRowTitle instead of
 // ListRowLink, no chevron. The row has no hover fill and no pointer.
 export const Static: Story = {
