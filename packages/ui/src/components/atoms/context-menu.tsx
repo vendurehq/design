@@ -5,10 +5,10 @@ import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { popupMotion } from "../../lib/popup-motion.ts"
-import { ChevronRightIcon, CheckIcon } from "lucide-react"
+import { ChevronRightIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
-import { menuItemDisabled, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
+import { menuCheckItem, menuItemDisabled, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function ContextMenu({ ...props }: ContextMenuPrimitive.Root.Props) {
   return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
@@ -174,17 +174,15 @@ function ContextMenuCheckboxItem({
       data-inset={inset}
       className={cn(
         menuItemDisabled,
+        menuCheckItem,
         "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85 pe-8",
         className
       )}
       checked={checked}
       {...props}
     >
-      <span className="pointer-events-none absolute end-2">
-        <ContextMenuPrimitive.CheckboxItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
-          <CheckIcon
-          />
-        </ContextMenuPrimitive.CheckboxItemIndicator>
+      <span className="pointer-events-none absolute end-2 flex items-center justify-center">
+        <MenuCheck />
       </span>
       {children}
     </ContextMenuPrimitive.CheckboxItem>

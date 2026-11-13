@@ -25,25 +25,34 @@ export const menuItem = cn(
 );
 
 /**
- * The checked row of a radio group in a menu: semibold text in the
- * foreground colour, and a `MenuCheck`. The item needs `group/menu-radio`.
+ * An item that shows a `MenuCheck`: a checkbox item of a menu, and a Select
+ * or Combobox option. The check shows when the item is checked
+ * (`data-checked`) or selected (`data-selected`).
  */
-export const menuRadioItem =
-  'group/menu-radio data-checked:text-foreground data-checked:font-semibold';
+export const menuCheckItem = 'group/menu-check';
 
 /**
- * The check of a checked radio row draws in: a path with pathLength 1 and a
+ * The checked row of a radio group in a menu: semibold text in the
+ * foreground colour, and a `MenuCheck`.
+ */
+export const menuRadioItem = `${menuCheckItem} data-checked:text-foreground data-checked:font-semibold`;
+
+/**
+ * The check of a checked row draws in: a path with pathLength 1 and a
  * dash of 1, its offset easing from 1 to 0. The row that loses the check
  * fades it out in `quick`, and its dash resets only after that, while
  * hidden. A transition runs only on a change, so the menu opens with the
  * check in place. With reduced motion the check only fades.
  */
 const drawCheck =
-  'size-3.5 shrink-0 stroke-[1.75] opacity-0 [transition:opacity_var(--transition-duration-quick)_var(--ease-soft)] group-data-checked/menu-radio:opacity-90 group-data-checked/menu-radio:[transition-duration:var(--transition-duration-fast)] motion-reduce:group-data-checked/menu-radio:[transition-duration:var(--transition-duration-normal)]';
+  'size-3.5 shrink-0 stroke-[1.75] opacity-0 [transition:opacity_var(--transition-duration-quick)_var(--ease-soft)] group-data-checked/menu-check:opacity-90 group-data-[selected]/menu-check:opacity-90 group-data-checked/menu-check:[transition-duration:var(--transition-duration-fast)] group-data-[selected]/menu-check:[transition-duration:var(--transition-duration-fast)] motion-reduce:group-data-checked/menu-check:[transition-duration:var(--transition-duration-normal)] motion-reduce:group-data-[selected]/menu-check:[transition-duration:var(--transition-duration-normal)]';
 const drawCheckPath =
-  '[stroke-dasharray:1_2] [stroke-dashoffset:1] [transition:stroke-dashoffset_0s_linear_var(--transition-duration-quick)] group-data-checked/menu-radio:[stroke-dashoffset:0] group-data-checked/menu-radio:[transition:stroke-dashoffset_var(--transition-duration-normal)_var(--ease-out)] motion-reduce:transition-none motion-reduce:group-data-checked/menu-radio:transition-none';
+  '[stroke-dasharray:1_2] [stroke-dashoffset:1] [transition:stroke-dashoffset_0s_linear_var(--transition-duration-quick)] group-data-checked/menu-check:[stroke-dashoffset:0] group-data-[selected]/menu-check:[stroke-dashoffset:0] group-data-checked/menu-check:[transition:stroke-dashoffset_var(--transition-duration-normal)_var(--ease-out)] group-data-[selected]/menu-check:[transition:stroke-dashoffset_var(--transition-duration-normal)_var(--ease-out)] motion-reduce:transition-none motion-reduce:group-data-checked/menu-check:transition-none motion-reduce:group-data-[selected]/menu-check:transition-none';
 
-/** The check of a radio row, inside an item with `menuRadioItem`. */
+/**
+ * The check of a checked radio or checkbox row, or of a selected Select or
+ * Combobox option, inside an item with `menuCheckItem` or `menuRadioItem`.
+ */
 export function MenuCheck({ className }: { className?: string }) {
   return (
     <svg

@@ -238,7 +238,28 @@ describe('v3 overlay look', () => {
     }
     expect(menuItemRecipe).toContain('data-checked:text-foreground data-checked:font-semibold');
     expect(menuItemRecipe).toContain('size-3.5');
-    expect(menuItemRecipe).toContain('group-data-checked/menu-radio:opacity-90');
+    expect(menuItemRecipe).toContain('group-data-checked/menu-check:opacity-90');
+  });
+
+  // One check mark for every checked or selected row: checkbox items, radio
+  // items, and Select and Combobox options draw the same 14px MenuCheck.
+  test('checkbox items and Select and Combobox options draw the MenuCheck', () => {
+    for (const [file, part] of [
+      ['dropdown-menu.tsx', 'CheckboxItem'],
+      ['context-menu.tsx', 'CheckboxItem'],
+      ['menubar.tsx', 'CheckboxItem'],
+      ['select.tsx', 'SelectItem'],
+      ['combobox.tsx', 'ComboboxItem'],
+    ] as const) {
+      const code = readFileSync(join(import.meta.dir, file), 'utf8');
+      const start = code.search(new RegExp(`function \\w*${part}\\(`));
+      const body = code.slice(start, code.indexOf('\n}\n', start));
+      expect(body).toContain('menuCheckItem');
+      expect(body).toContain('<MenuCheck />');
+      expect(body).not.toContain('CheckIcon');
+      expect(body).not.toContain('Indicator');
+    }
+    expect(menuItemRecipe).toContain('group-data-[selected]/menu-check:opacity-90');
   });
 
   test('destructive menu items read in destructive-text', () => {

@@ -78,13 +78,15 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 // The card-title role at body size: 13px/600 in foreground-secondary, quieter
 // than the data it labels. Spelled out because tailwind-merge would drop the
-// `text-style-card-title` utility next to `text-sm`.
+// `text-style-card-title` utility next to `text-sm`. A title that holds a
+// CardCount lays out as a row: the gap is the 10px to the count, and the JSX
+// space before the count no longer adds to it.
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-sm font-semibold tracking-[-0.005em] text-foreground-secondary",
+        "font-heading text-sm font-semibold tracking-[-0.005em] text-foreground-secondary has-data-[slot=card-count]:flex has-data-[slot=card-count]:items-baseline has-data-[slot=card-count]:gap-2.5",
         className
       )}
       {...props}
@@ -116,7 +118,7 @@ function CardCount({
       data-slot="card-count"
       className={cn(
         cardCountTone[tone],
-        "ms-2.5 text-xs font-semibold tabular-nums",
+        "text-xs font-semibold tabular-nums",
         className
       )}
       {...props}

@@ -22,3 +22,20 @@ export async function checkCheckedRowLook(menu: HTMLElement) {
   // The row that lost the check fades it out.
   await waitFor(() => expect(otherCheck && getComputedStyle(otherCheck).opacity).toBe('0'));
 }
+
+/**
+ * A checked or selected row shows the one check mark of every menu, Select
+ * and Combobox: the 14px `MenuCheck` at 0.9 opacity. A row that is not
+ * checked keeps the mark hidden.
+ */
+export async function checkCheckMark(checked: HTMLElement, other?: HTMLElement) {
+  const mark = checked.querySelector<SVGElement>('[data-slot=menu-check]');
+  await expect(mark).not.toBeNull();
+  const style = getComputedStyle(mark as SVGElement);
+  await expect([style.width, style.height, style.strokeWidth]).toEqual(['14px', '14px', '1.75px']);
+  await waitFor(() => expect(getComputedStyle(mark as SVGElement).opacity).toBe('0.9'));
+  if (other) {
+    const hidden = other.querySelector<SVGElement>('[data-slot=menu-check]');
+    await waitFor(() => expect(hidden && getComputedStyle(hidden).opacity).toBe('0'));
+  }
+}

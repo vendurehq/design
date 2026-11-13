@@ -4,7 +4,7 @@ import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { menuItemDisabled } from "../../lib/menu-item.tsx"
+import { MenuCheck, menuCheckItem, menuItemDisabled } from "../../lib/menu-item.tsx"
 import { statusChipRing } from "@vendure-io/ui/lib/tint-recipes"
 import { fieldSurface, fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
@@ -15,7 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@vendure-io/ui/components/atoms/input-group"
-import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
+import { ChevronDownIcon, XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
@@ -273,19 +273,16 @@ function ComboboxItem({
       data-slot="combobox-item"
       className={cn(
         menuItemDisabled,
+        menuCheckItem,
         "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}
     >
       {children}
-      <ComboboxPrimitive.ItemIndicator
-        render={
-          <span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center" />
-        }
-      >
-        <CheckIcon className="pointer-events-none" />
-      </ComboboxPrimitive.ItemIndicator>
+      <span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center">
+        <MenuCheck />
+      </span>
     </ComboboxPrimitive.Item>
   )
 }

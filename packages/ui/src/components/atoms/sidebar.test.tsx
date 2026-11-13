@@ -356,4 +356,13 @@ describe('SidebarLevels', () => {
     expect(html).toContain('data-sidebar="level-back"');
     expect(html).toMatch(/lucide-chevron-left[^"]*rtl:rotate-180|rtl:rotate-180[^"]*lucide-chevron-left/);
   });
+
+  test('the back chevron rests at 55% and lifts to 85% on hover, like the nav icons', () => {
+    const tag = levels('cloud').match(/<[^>]*data-sidebar="level-back"[^>]*>/)?.[0] ?? '';
+    const tokens = (tag.match(/class="([^"]*)"/)?.[1] ?? '').replace(/&amp;/g, '&').replace(/&gt;/g, '>').split(/\s+/);
+    expect(tokens).toEqual(
+      expect.arrayContaining(['[&>svg:first-child]:opacity-55', 'hover:[&>svg:first-child]:opacity-85', 'hover:[&>svg:first-child]:-translate-x-0.5']),
+    );
+    expect(tokens).not.toContain('[&>svg:first-child]:opacity-85');
+  });
 });
