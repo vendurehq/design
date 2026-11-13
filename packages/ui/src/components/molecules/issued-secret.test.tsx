@@ -113,7 +113,16 @@ describe('IssuedSecretFooter', () => {
     const markup = html(<IssuedSecretFooter guard={guard({ warned: true })} />);
     expect(markup).toContain('Close without copying');
     expect(markup).not.toContain('issued-secret-done');
-    expect(slotTokens(markup, 'issued-secret-close-anyway')).toContain('bg-destructive');
+  });
+
+  test('"Close without copying" is the quiet destructive button: the copy stays the one filled button', () => {
+    const closeAnyway = slotTokens(
+      html(<IssuedSecretFooter guard={guard({ warned: true })} />),
+      'issued-secret-close-anyway',
+    );
+    expect(closeAnyway).toContain('text-destructive-text');
+    expect(closeAnyway).toContain('bg-card');
+    expect(closeAnyway).not.toContain('bg-destructive');
   });
 
   test('labels can be replaced', () => {

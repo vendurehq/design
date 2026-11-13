@@ -644,7 +644,7 @@ export const uiGuidance = [
       },
       {
         title: 'Close before a copy warns once',
-        body: 'Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes.',
+        body: 'Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes. It is a destructive-outline button, so the copy button stays the one filled button.',
       },
       {
         title: 'One primary at a time',
