@@ -4,7 +4,7 @@ import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { outlineEdge } from "@vendure-io/ui/lib/outline-edge"
+import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
 
 const toggleVariants = cva(
   // Pressed is the accent tint with foreground text, as in the v3 look. Hover
@@ -29,8 +29,10 @@ const toggleVariants = cva(
         default: "bg-transparent",
         // The outline toggle takes the outline Button's surface: the card fill
         // and shadow-control, as the v3 look draws a pressed toggle beside
-        // buttons. Pressed is still the accent tint on top.
-        outline: [outlineEdge, "hover:bg-muted aria-disabled:hover:bg-card border bg-card shadow-control"],
+        // buttons. Its hover is the outline Button's too: 4% foreground mixed
+        // into the card, and the edge steps up to `input`. Pressed is still
+        // the accent tint on top, under the pointer as well.
+        outline: [outlineEdge, outlineEdgeHover, "hover:bg-[color-mix(in_oklab,var(--card),var(--foreground)_4%)] aria-disabled:hover:bg-card border bg-card shadow-control"],
       },
       size: {
         default: "h-8.5 min-w-8.5 px-2",

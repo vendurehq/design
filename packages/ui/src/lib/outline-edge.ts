@@ -12,6 +12,10 @@ export const outlineEdge = 'border-border';
 /** The same edge as an inset ring, for a ButtonGroup that draws its frame with a ring. */
 export const outlineEdgeRing = 'inset-ring-border';
 
-/** Hover: the edge steps up to `input`. Not inside a ButtonGroup (the group owns the edge), not while invalid and not while aria-disabled. */
+/**
+ * Hover: the edge steps up to `input`. Not inside a ButtonGroup or a joined
+ * ToggleGroup (the group owns the edge), not while invalid and not while
+ * aria-disabled.
+ */
 export const outlineEdgeHover =
-  '[&:not([data-slot=button-group]>*,[aria-invalid=true],[aria-disabled=true])]:hover:border-input';
+  "[&:not([data-slot=button-group]>*,[data-slot=toggle-group-item][data-spacing='0'],[aria-invalid=true],[aria-disabled=true])]:hover:border-input";
