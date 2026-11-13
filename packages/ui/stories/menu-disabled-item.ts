@@ -23,7 +23,7 @@ function luminance({ r, g, b }: { r: number; g: number; b: number }) {
  * The contrast of an item's focus ring against the popup behind it, after the
  * item's own opacity: a ring drawn on a dimmed item is dimmed with it.
  */
-function ringContrast(element: HTMLElement) {
+export function ringContrast(element: HTMLElement) {
   const popup = element.closest<HTMLElement>('[role=menu], [role=listbox]') ?? document.body;
   const back = rgba(getComputedStyle(popup).backgroundColor);
   const ring = rgba(getComputedStyle(element).outlineColor);

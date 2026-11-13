@@ -14,7 +14,14 @@ function variant(name: string): string {
 // branch would make a rule built on these variants depend on data-state, and
 // a change of data-state (a table row's `selected`) restyles the subtree.
 describe('state variants match only the Base UI attribute', () => {
-  test.each(['open', 'closed', 'checked', 'unchecked', 'active'])('data-%s', (state) => {
+  test.each([
+    'open',
+    'closed',
+    'checked',
+    'unchecked',
+    'selected',
+    'active',
+  ])('data-%s', (state) => {
     const body = variant(`data-${state}`);
     expect(body).not.toContain('data-state');
     expect(body).toContain(`&:where([data-${state}]:not([data-${state}="false"]))`);

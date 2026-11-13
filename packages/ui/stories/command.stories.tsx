@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
@@ -16,6 +17,7 @@ import {
   CommandShortcut,
 } from '../src/components/atoms/command.tsx';
 import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
+import { checkCheckMark } from './menu-checked-row.ts';
 import {
   BarChart3,
   Calculator,
@@ -138,6 +140,40 @@ export const States: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+const themes = ['Light', 'Dark', 'System'];
+
+/**
+ * A checked item (`data-checked`) draws the check of every menu and list: the
+ * 14px MenuCheck at 0.9 opacity, which draws in when the item becomes checked.
+ * Pick another theme to see it move. The check hides on an item with a
+ * shortcut or a detail.
+ */
+function CheckedItemDemo() {
+  const [theme, setTheme] = useState('System');
+  return (
+    <Command className="max-w-xs rounded-lg border" label="Theme">
+      <CommandList>
+        <CommandGroup heading="Theme">
+          {themes.map((name) => (
+            <CommandItem key={name} value={name} data-checked={theme === name} onSelect={() => setTheme(name)}>
+              {name}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  );
+}
+
+export const CheckedItem: Story = {
+  render: () => <CheckedItemDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvasElement.querySelector('.lucide-check')).toBeNull();
+    await checkCheckMark(canvas.getByRole('option', { name: 'System' }), canvas.getByRole('option', { name: 'Light' }));
+  },
 };
 
 const pages = [
