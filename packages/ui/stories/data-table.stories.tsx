@@ -51,6 +51,7 @@ import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 import { cn } from '../src/lib/utils.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 import { type OrderState, orderStates } from './order-states.tsx';
+import { expectPx, PIXEL_TOLERANCE } from './pixel.ts';
 
 // Realistic commerce data: a page of orders, the canonical DataTable use case in
 // a Vendure surface. `total` is in minor units (cents), rendered through <Money>.
@@ -1099,7 +1100,7 @@ export const CellTextAlignment: Story = {
       textLeft(header) -
       header.getBoundingClientRect().left -
       Number.parseFloat(getComputedStyle(header).paddingLeft);
-    await expect(labelInset(plain)).toBeCloseTo(labelInset(sortable), 0);
+    await expectPx(labelInset(plain), labelInset(sortable));
     for (const row of canvasElement.querySelectorAll('tbody tr')) {
       const cells = [...row.querySelectorAll('td')];
       for (const [index, cell] of cells.entries()) {
@@ -1118,7 +1119,7 @@ export const CellTextAlignment: Story = {
         for (const content of [first, first?.firstElementChild]) {
           if (!content) continue;
           const offset = content.getBoundingClientRect().left - cell.getBoundingClientRect().left;
-          await expect(offset, `${header.textContent} box`).toBeGreaterThanOrEqual(clear - 0.5);
+          await expect(offset, `${header.textContent} box`).toBeGreaterThanOrEqual(clear - PIXEL_TOLERANCE);
         }
       }
     }

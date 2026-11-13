@@ -5,6 +5,7 @@ import { DownloadIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Toaster } from '../src/components/atoms/sonner.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Atoms/Feedback/Sonner',
@@ -172,8 +173,8 @@ export const Edge: Story = {
     await expect(style.borderRadius).toBe('12px');
     const box = toastEl.getBoundingClientRect();
     const icon = toastEl.querySelector('svg')!.getBoundingClientRect();
-    await expect(icon.left - box.left).toBeCloseTo(14, 0);
-    await expect(title.getBoundingClientRect().left - icon.right).toBeCloseTo(10, 0);
+    await expectPx(icon.left - box.left, 14);
+    await expectPx(title.getBoundingClientRect().left - icon.right, 10);
     await expect(getComputedStyle(toastEl.querySelector('[data-icon]')!).color).toContain('/ 0.6');
     // Sonner's own --success-text must not reach the icon: it takes the token.
     await userEvent.click(canvas.getByRole('button', { name: 'Success' }));

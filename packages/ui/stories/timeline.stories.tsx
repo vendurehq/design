@@ -19,6 +19,7 @@ import {
   TimelineTitle,
 } from '../src/components/molecules/timeline.tsx';
 import type { Tone } from '../src/lib/state-dictionary.ts';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Molecules/Timeline',
@@ -80,7 +81,7 @@ export const Default: Story = {
     await expect(getComputedStyle(items[0] as HTMLElement, '::after').width).toBe('1px');
     await expect(getComputedStyle(items.at(-1) as HTMLElement, '::after').content).toBe('none');
     const dot = canvasElement.querySelector<HTMLElement>('[data-slot=timeline-marker]') as HTMLElement;
-    await expect(dot.getBoundingClientRect().width).toBe(8);
+    await expectPx(dot.getBoundingClientRect().width, 8);
   },
 };
 

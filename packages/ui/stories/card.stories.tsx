@@ -15,6 +15,7 @@ import {
 } from '../src/components/atoms/card.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Atoms/Data Display/Card',
@@ -110,8 +111,8 @@ export const WithRows: Story = {
     if (!card || !title || !firstRow) throw new Error('Card parts not rendered');
     const top = card.getBoundingClientRect().top + card.clientTop;
     const titleBox = title.getBoundingClientRect();
-    await expect(firstRow.getBoundingClientRect().top - top).toBeCloseTo(48, 0);
-    await expect((titleBox.top + titleBox.bottom) / 2 - top).toBeCloseTo(24, 0);
+    await expectPx(firstRow.getBoundingClientRect().top - top, 48);
+    await expectPx((titleBox.top + titleBox.bottom) / 2 - top, 24);
   },
 };
 

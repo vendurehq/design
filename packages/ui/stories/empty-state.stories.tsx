@@ -24,6 +24,7 @@ import {
 import { NoOrdersIllustration } from '../src/components/molecules/illustrations/no-orders.tsx';
 import { NoResultsIllustration } from '../src/components/molecules/illustrations/no-results.tsx';
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Molecules/EmptyState',
@@ -245,7 +246,7 @@ export const CompactInCardNextToContent: Story = {
     await expect(state).toHaveAttribute('data-size', 'compact');
     // The icon, not an illustration, fills the media slot.
     const icon = state!.querySelector('svg');
-    await expect(icon?.getBoundingClientRect().width).toBe(28);
+    await expectPx(icon?.getBoundingClientRect().width, 28);
     await expect(within(state!).getByText(/No emergency boot token/)).toBeVisible();
   },
 };

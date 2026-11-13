@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../src/components/atoms/select.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Atoms/Forms/Select',
@@ -182,10 +183,10 @@ async function expectListCoversTrigger(canvasElement: HTMLElement) {
     const rowBox = row.getBoundingClientRect();
     if (rtl) {
       await expect(check.right).toBeLessThanOrEqual(text.left);
-      await expect(rowBox.right - text.right).toBeCloseTo(8, 0);
+      await expectPx(rowBox.right - text.right, 8);
     } else {
       await expect(check.left).toBeGreaterThanOrEqual(text.right);
-      await expect(text.left - rowBox.left).toBeCloseTo(8, 0);
+      await expectPx(text.left - rowBox.left, 8);
     }
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull());
