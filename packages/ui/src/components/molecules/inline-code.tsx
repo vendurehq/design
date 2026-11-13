@@ -9,11 +9,15 @@ import type * as React from 'react';
  *
  * Multi-line code uses `CodeBlock`. A value the user copies elsewhere uses
  * `CopyableText` or `IdChip`. A keystroke uses `Kbd`.
+ *
+ * Code reads left to right in a right-to-left page too, so a flag such as
+ * `--watch` keeps its dashes in front. Pass `dir` to override.
  */
 function InlineCode({ className, ...props }: React.ComponentProps<'code'>) {
   return (
     <code
       data-slot="inline-code"
+      dir="ltr"
       className={cn(
         'bg-code-inline border-code-inline-border text-foreground rounded border px-1 py-px font-mono',
         className,

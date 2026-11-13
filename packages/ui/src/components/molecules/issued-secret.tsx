@@ -195,6 +195,8 @@ function IssuedSecret({
             ref={field}
             id={fieldId}
             readOnly
+            // The secret reads left to right in a right-to-left page too; the label follows the page.
+            dir="ltr"
             value={manual}
             className={cn('font-mono', fallbackInputClassName)}
             onFocus={(event) => event.currentTarget.select()}
