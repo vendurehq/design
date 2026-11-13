@@ -13,6 +13,7 @@ import {
   CommandList,
 } from '../src/components/atoms/command.tsx';
 import { SearchTrigger } from '../src/components/molecules/search-trigger.tsx';
+import { expectPx } from './pixel.ts';
 
 const meta = {
   title: 'Molecules/SearchTrigger',
@@ -90,8 +91,30 @@ export const Default: Story = {
 
 // `collapse="always"`: the 28px icon button of a narrow top bar. The default
 // `collapse="md"` turns into it below 768px.
+/**
+ * The 28px icon button. Plays: the 14px icon sits 7px from each side, in
+ * left to right and in right to left.
+ */
 export const Collapsed: Story = {
   args: { collapse: 'always' },
+  render: (args) => (
+    <div className="flex gap-4">
+      <SearchTrigger {...args} />
+      <div dir="rtl">
+        <SearchTrigger {...args} />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const triggers = within(canvasElement).getAllByRole('button', { name: 'Search (command palette)' });
+    for (const trigger of triggers) {
+      const box = trigger.getBoundingClientRect();
+      const icon = trigger.querySelector('svg')?.getBoundingClientRect();
+      await expectPx(box.width, 28);
+      await expectPx(icon && icon.left - box.left, 7, 'icon to the left edge');
+      await expectPx(icon && box.right - icon.right, 7, 'icon to the right edge');
+    }
+  },
 };
 
 // In a top bar, at the end, next to a ghost button. Narrow the canvas below
