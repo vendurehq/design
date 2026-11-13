@@ -2,6 +2,7 @@
 
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
+import { DirectionProvider } from '@vendure-io/ui/components/atoms/direction';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
@@ -557,24 +558,30 @@ export function CodeBlock({
                 }
           }
         >
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div
-              className={cn(
-                codeBlockContentClassName,
-                lineHighlightClassNames,
-                lineDiffClassNames,
-                lineFocusedClassNames,
-                wordHighlightClassNames,
-                darkModeClassNames,
-              )}
-            >
-              <SyntaxHighlightedContent
-                code={displayCode}
-                language={normalizeLanguage(isCommand ? 'bash' : language)}
-              />
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          {/* Code reads left to right in every page direction. The header
+              mirrors with the page; the code area and its scroll do not. The
+              provider tells the ScrollArea, which reads it for its scroll
+              position. */}
+          <DirectionProvider direction="ltr">
+            <ScrollArea dir="ltr" className="w-full whitespace-nowrap">
+              <div
+                className={cn(
+                  codeBlockContentClassName,
+                  lineHighlightClassNames,
+                  lineDiffClassNames,
+                  lineFocusedClassNames,
+                  wordHighlightClassNames,
+                  darkModeClassNames,
+                )}
+              >
+                <SyntaxHighlightedContent
+                  code={displayCode}
+                  language={normalizeLanguage(isCommand ? 'bash' : language)}
+                />
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </DirectionProvider>
         </motion.div>
         <FadeOverlay visible={showCollapsed} />
       </div>
