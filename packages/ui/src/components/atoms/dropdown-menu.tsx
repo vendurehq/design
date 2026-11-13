@@ -9,6 +9,7 @@ import { ChevronRightIcon, CheckIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
+import { menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -108,7 +109,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground data-[variant=destructive]:text-destructive-text data-[variant=destructive]:not-data-disabled:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground group/dropdown-menu-item relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-[variant=destructive]:data-disabled:text-destructive-text/50 data-[variant=destructive]:data-disabled:*:[svg]:text-destructive-text/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        menuItem, "data-[variant=destructive]:text-destructive-text data-[variant=destructive]:not-data-disabled:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[variant=destructive]:*:[svg]:text-destructive-text data-[variant=destructive]:[&>svg:not([class*='opacity-'])]:opacity-100 not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground group/dropdown-menu-item data-[variant=destructive]:data-disabled:text-destructive-text/50 data-[variant=destructive]:data-disabled:*:[svg]:text-destructive-text/50",
         className
       )}
       {...props}
@@ -133,7 +134,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground data-popup-open:bg-muted data-popup-open:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85",
+        menuItem, "not-data-[variant=destructive]:not-data-disabled:focus:**:not-data-[slot=dropdown-menu-shortcut]:text-accent-foreground data-popup-open:bg-muted data-popup-open:text-accent-foreground",
         className
       )}
       {...props}
@@ -183,7 +184,7 @@ function DropdownMenuCheckboxItem({
       data-slot="dropdown-menu-checkbox-item"
       data-inset={inset}
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85 pe-8",
+        menuItem, "not-data-disabled:focus:**:text-accent-foreground pe-8",
         className
       )}
       checked={checked}
@@ -225,7 +226,7 @@ function DropdownMenuRadioItem({
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
       className={cn(
-        "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-disabled:pointer-events-none data-disabled:text-foreground-secondary/50 data-disabled:[&_[data-slot$='-shortcut']]:opacity-50 data-inset:ps-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.75 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>svg:not([class*='opacity-'])]:opacity-85 pe-8",
+        menuItem, menuRadioItem, "not-data-disabled:focus:**:text-accent-foreground pe-8",
         className
       )}
       {...props}
@@ -234,10 +235,7 @@ function DropdownMenuRadioItem({
         className="pointer-events-none absolute end-2 flex items-center justify-center"
         data-slot="dropdown-menu-radio-item-indicator"
       >
-        <MenuPrimitive.RadioItemIndicator className="flex [clip-path:inset(0)] transition-[clip-path] duration-moderate ease-out motion-safe:data-starting-style:[clip-path:inset(0_100%_0_0)]">
-          <CheckIcon
-          />
-        </MenuPrimitive.RadioItemIndicator>
+        <MenuCheck />
       </span>
       {children}
     </MenuPrimitive.RadioItem>

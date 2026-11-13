@@ -19,6 +19,7 @@ import {
 } from "./dropdown-menu.tsx"
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
+import { menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -140,19 +141,9 @@ type BreadcrumbMenuOption = {
   leading?: React.ReactNode
   /** Muted text after the label in the menu only, such as a type. */
   detail?: React.ReactNode
+  /** The row shows but cannot be picked. The arrow keys still stop on it. */
+  disabled?: boolean
 }
-
-/**
- * The check of the current row draws in: a path with pathLength 1 and a dash
- * of 1, its offset easing from 1 to 0. The row that loses the check fades it
- * out in `quick`, and its dash resets only after that, while hidden. A
- * transition runs only on a change, so the menu opens with the check in place.
- * With reduced motion the check only fades.
- */
-const drawCheck =
-  "size-3.5 shrink-0 stroke-[1.75] opacity-0 [transition:opacity_var(--transition-duration-quick)_var(--ease-soft)] group-data-checked/breadcrumb-menu-item:opacity-90 group-data-checked/breadcrumb-menu-item:[transition-duration:var(--transition-duration-fast)] motion-reduce:group-data-checked/breadcrumb-menu-item:[transition-duration:var(--transition-duration-normal)]"
-const drawCheckPath =
-  "[stroke-dasharray:1_2] [stroke-dashoffset:1] [transition:stroke-dashoffset_0s_linear_var(--transition-duration-quick)] group-data-checked/breadcrumb-menu-item:[stroke-dashoffset:0] group-data-checked/breadcrumb-menu-item:[transition:stroke-dashoffset_var(--transition-duration-normal)_var(--ease-out)] motion-reduce:transition-none motion-reduce:group-data-checked/breadcrumb-menu-item:transition-none"
 
 /**
  * A crumb that opens a menu to switch the current item, such as the
@@ -231,9 +222,10 @@ function BreadcrumbMenu({
               <MenuPrimitive.RadioItem
                 key={option.value}
                 value={option.value}
+                disabled={option.disabled}
                 closeOnClick={false}
                 data-slot="breadcrumb-menu-item"
-                className="group/breadcrumb-menu-item focus:bg-muted focus:text-foreground relative flex min-h-8.5 cursor-default items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-foreground-secondary outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-checked:text-foreground data-checked:font-semibold data-disabled:pointer-events-none data-disabled:opacity-50"
+                className={cn(menuItem, menuRadioItem)}
               >
                 {option.leading}
                 <span className="min-w-0 flex-1 truncate">{option.label}</span>
@@ -242,17 +234,7 @@ function BreadcrumbMenu({
                     {option.detail}
                   </span>
                 )}
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                  className={drawCheck}
-                >
-                  <path d="M20 6 9 17l-5-5" pathLength={1} className={drawCheckPath} />
-                </svg>
+                <MenuCheck />
               </MenuPrimitive.RadioItem>
             ))}
           </MenuPrimitive.RadioGroup>

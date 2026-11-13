@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { checkCheckedRowLook } from './menu-checked-row.ts';
 import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { CreditCard, LogOut, Mail, MessageSquare, Plus, Server, Settings, User, UserPlus, Users } from 'lucide-react';
@@ -181,6 +182,13 @@ export const WithRadioItems: Story = {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+  },
+  // The checked row looks as it does in BreadcrumbMenu: semibold, with a check that draws in.
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Sort orders' }));
+    const menu = await within(document.body).findByRole('menu');
+    await checkCheckedRowLook(menu);
+    await userEvent.keyboard('{Escape}');
   },
 };
 
