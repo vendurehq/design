@@ -105,7 +105,7 @@ test('AppShellHeader keeps a hairline in forced-colors mode without a border on 
   expect(tokens.filter((token) => /^(forced-colors:)?border-b$/.test(token))).toEqual([]);
 });
 
-test('the page is flat: the content is not inset, and the sidebar has a 1px right border', () => {
+test('the page is flat: the content is not inset, and the sidebar has a 1px end border', () => {
   const html = renderToStaticMarkup(
     <AppShell>
       <AppShellSidebar>Nav</AppShellSidebar>
@@ -120,7 +120,7 @@ test('the page is flat: the content is not inset, and the sidebar has a 1px righ
     expect(content).not.toContain(token);
   }
   expect(slotTokens(html, 'app-shell-sidebar')).toEqual(
-    expect.arrayContaining(['border-r', 'border-sidebar-border']),
+    expect.arrayContaining(['border-e', 'border-sidebar-border']),
   );
   expect(slotTokens(html, 'app-shell-header')).not.toContain(
     'in-data-[slot=app-shell-content]:bg-surface',

@@ -154,7 +154,7 @@ describe('ButtonGroup', () => {
     const tokens = slotTokens(html, 'button-group');
     expect(tokens).toEqual(expect.arrayContaining(['inset-ring', 'inset-ring-border', 'bg-card', 'rounded-xl']));
     expect(tokens).toContain('*:data-slot:border-transparent');
-    expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-border');
+    expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-s-border');
   });
 
   test('the group sits on shadow-control; children and a layout row of groups drop it', () => {
@@ -179,7 +179,7 @@ describe('ButtonGroup', () => {
     expect(html).toContain('data-variant="primary"');
     const tokens = slotTokens(html, 'button-group');
     expect(tokens).toContain('bg-primary');
-    expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-l-primary-foreground/20');
+    expect(tokens).toContain('[&>[data-slot]~[data-slot]]:border-s-primary-foreground/20');
     expect(tokens).not.toContain('inset-ring');
   });
 });

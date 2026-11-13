@@ -86,7 +86,8 @@ function roundSides(el: HTMLElement, dir: Dir): Side[] {
 /** Which of a horizontal item's sides draw a visible 1px border. */
 function borderSides(el: HTMLElement, dir: Dir): Side[] {
   const s = getComputedStyle(el);
-  const visible = (width: string, color: string) => parseFloat(width) > 0 && color !== 'rgba(0, 0, 0, 0)';
+  // A transparent border computes to an alpha of 0: it holds space but draws nothing.
+  const visible = (width: string, color: string) => parseFloat(width) > 0 && !/,\s*0\)$/.test(color);
   const left = visible(s.borderLeftWidth, s.borderLeftColor);
   const right = visible(s.borderRightWidth, s.borderRightColor);
   const sides: Side[] = [];

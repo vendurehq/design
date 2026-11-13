@@ -61,7 +61,7 @@ describe('SecretValue', () => {
     ];
     for (const button of buttons) expect(button).toEqual(expect.arrayContaining(shared));
     expect(slotTokens(html(<SecretValue loadValue={loadValue} />), 'secret-value')).toContain(
-      'pr-1.5',
+      'pe-1.5',
     );
   });
 });
