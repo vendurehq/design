@@ -27,7 +27,10 @@ const toggleVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        outline: [outlineEdge, "hover:bg-muted border bg-transparent"],
+        // The outline toggle takes the outline Button's surface: the card fill
+        // and shadow-control, as the v3 look draws a pressed toggle beside
+        // buttons. Pressed is still the accent tint on top.
+        outline: [outlineEdge, "hover:bg-muted aria-disabled:hover:bg-card border bg-card shadow-control"],
       },
       size: {
         default: "h-8.5 min-w-8.5 px-2",

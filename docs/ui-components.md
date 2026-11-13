@@ -73,6 +73,8 @@ behavior you need instead of rebuilding it from atoms.
 ### Forms & Inputs
 `button`, `button-group`, `checkbox`, `combobox`, `field`, `input`, `input-group`, `input-otp`, `label`, `native-select`, `radio-group`, `select`, `slider`, `switch`, `textarea`, `toggle`, `toggle-group`
 
+> **Toggle surface.** An outline Toggle, and an outline ToggleGroup with no spacing, sit on the outline Button surface: the card fill and `shadow-control`. A segmented switch beside a ButtonGroup in a toolbar then reads as one control family. The pressed item is the accent tint on that surface.
+
 > **Toggle.** A disabled toggle that must say why takes `aria-disabled` in place of `disabled`, with a Tooltip that gives the reason. It keeps its tab stop and the pointer, so the tooltip opens. It looks like a disabled toggle, pressed or not: half opacity, a not-allowed cursor, no hover change. Base UI's Toggle has no `focusableWhenDisabled`, so blocking the press is your job: `onPressedChange={(_, details) => details.cancel()}`. That also stops a ToggleGroup from changing its value. Use plain `disabled` when the page already shows why.
 
 > **Labelling Checkbox, RadioGroup and Switch:** Base UI puts the `id` on a hidden input, not on the visible control. Because of this, `<Label htmlFor>` does not give the control an accessible name. Set `aria-label` on the control, or `aria-labelledby` with the `id` of the visible label. This note stays until a component fix lands.
