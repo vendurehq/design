@@ -344,6 +344,11 @@ export const OpenList: Story = {
     );
     await openList(trigger);
     await checkCheckMark(body.getByRole('option', { name: 'Banana' }), body.getByRole('option', { name: 'Apple' }));
+    // Away from the highlight, the selected option's text is foreground; the others stay secondary.
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(body.getByRole('option', { name: 'Grapes' })).toHaveFocus());
+    const color = (name: string) => getComputedStyle(body.getByRole('option', { name })).color;
+    await waitFor(() => expect(color('Banana')).not.toBe(color('Apple')));
   },
 };
 
