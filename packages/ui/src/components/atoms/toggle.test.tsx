@@ -214,3 +214,28 @@ describe('outline Toggle hover', () => {
     expect(edge).toContain("[data-slot=toggle-group-item][data-spacing='0']");
   });
 });
+
+// A toggle draws its icon as a Button does: 55% at rest, 85% under the
+// pointer, a 1.75 stroke, and 14px in the small size.
+describe('Toggle icon', () => {
+  const tokens = (node: React.ReactElement) => classTokens((renderToStaticMarkup(node).match(/<button[^>]*>/)?.[0] ?? '').replaceAll('&gt;', '>'));
+  const icon = "[&>svg:not([role=status]):not([class*='opacity-'])]";
+
+  test('takes the Button icon strength and stroke', async () => {
+    const { Button } = await import('./button.tsx');
+    const button = tokens(<Button variant="outline">B</Button>);
+    for (const variant of ['default', 'outline'] as const) {
+      const toggle = tokens(<Toggle variant={variant}>B</Toggle>);
+      for (const token of [`${icon}:opacity-55`, `hover:${icon}:opacity-85`, "[&_svg:not([class*='stroke-'])]:stroke-[1.75]"]) {
+        expect(button).toContain(token);
+        expect(toggle).toContain(token);
+      }
+    }
+  });
+
+  test('is 14px in the small size and 16px otherwise', () => {
+    expect(tokens(<Toggle size="sm">B</Toggle>)).toContain("[&_svg:not([class*='size-'])]:size-3.5");
+    expect(tokens(<Toggle size="sm">B</Toggle>)).not.toContain("[&_svg:not([class*='size-'])]:size-4");
+    expect(tokens(<Toggle>B</Toggle>)).toContain("[&_svg:not([class*='size-'])]:size-4");
+  });
+});
