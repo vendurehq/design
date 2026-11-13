@@ -113,6 +113,15 @@ export const WithRows: Story = {
     const titleBox = title.getBoundingClientRect();
     await expectPx(firstRow.getBoundingClientRect().top - top, 48);
     await expectPx((titleBox.top + titleBox.bottom) / 2 - top, 24);
+    // The count sits 10px after the last glyph of the title, also with the
+    // space the JSX puts between them.
+    const count = title.querySelector<HTMLElement>('[data-slot="card-count"]');
+    const text = title.firstChild;
+    if (!count || !text?.textContent) throw new Error('Title text or count not rendered');
+    const glyphs = document.createRange();
+    glyphs.setStart(text, 0);
+    glyphs.setEnd(text, text.textContent.trimEnd().length);
+    await expectPx(count.getBoundingClientRect().left - glyphs.getBoundingClientRect().right, 10, 'title to count');
   },
 };
 
@@ -234,6 +243,7 @@ export const CountTone: Story = {
     const title = canvasElement.querySelector<HTMLElement>('[data-slot=card-title]');
     expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(warning!).color);
     expect(getComputedStyle(critical!).color).not.toBe(getComputedStyle(title!).color);
-    expect(getComputedStyle(critical!).marginInlineStart).toBe('10px');
+    // The title row's gap puts the count 10px after the title.
+    expect(getComputedStyle(title!).columnGap).toBe('10px');
   },
 };

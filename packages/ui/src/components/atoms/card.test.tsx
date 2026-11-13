@@ -48,7 +48,12 @@ describe('Card', () => {
     expect(tokens).toContain('text-muted-foreground');
     expect(tokens).toContain('tabular-nums');
     // 10px after the title, as in the v3 look.
-    expect(tokens).toContain('ms-2.5');
+    // The title lays out as a row with a 10px gap; the Card / With rows story
+    // measures the real distance.
+    expect(tokens).not.toContain('ms-2.5');
+    expect(slotTokens(html, 'card-title')).toEqual(
+      expect.arrayContaining(['has-data-[slot=card-count]:flex', 'has-data-[slot=card-count]:gap-2.5']),
+    );
     expect(html).toMatch(/data-slot="card-title"[^>]*>Deployments <span[^>]*data-slot="card-count"/);
   });
 
