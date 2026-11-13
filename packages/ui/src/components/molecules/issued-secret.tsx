@@ -272,7 +272,8 @@ interface IssuedSecretFooterProps
 
 /**
  * The footer of an issued-secret dialog. Done closes after a copy. Before a
- * copy it shows the warning, and "Close without copying" takes its place.
+ * copy it shows the warning, and "Close without copying" takes its place, as
+ * the quiet `destructive-outline` button: the copy stays the one filled button.
  */
 function IssuedSecretFooter({
   guard,
@@ -287,7 +288,7 @@ function IssuedSecretFooter({
           key="close-anyway"
           type="button"
           data-slot="issued-secret-close-anyway"
-          variant="destructive"
+          variant="destructive-outline"
           onClick={guard.closeAnyway}
         >
           {closeAnywayLabel}

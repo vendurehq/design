@@ -181,7 +181,7 @@ export const CloseGuard: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="A close before the copy warns once"
-        intro="Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Before the first copy, Done, the close button, Escape and the backdrop show a warning, and the focus goes back to the copy button. Only the second action, Close without copying, closes. After a copy, Done closes at once."
+        intro="Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Before the first copy, Done, the close button, Escape and the backdrop show a warning, and the focus goes back to the copy button. Only the second action, Close without copying, closes. It is a destructive-outline button, so the copy button stays the one filled button. After a copy, Done closes at once."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example

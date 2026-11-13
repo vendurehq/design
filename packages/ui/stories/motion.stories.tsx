@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { cn } from '../src/lib/utils.ts';
 
 const meta = {
   title: 'Foundations/Motion',
@@ -9,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Motion tokens a consumer builds with. The design system ships the tokens only: the pending page state and the log viewer stay in the consumer.',
+          'Motion tokens a consumer builds with. The design system ships the tokens only: the page switch line, the pending page state and the log viewer stay in the consumer.',
       },
     },
   },
@@ -18,40 +19,44 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Reads a duration token in milliseconds, so a script waits as long as the CSS.
-function tokenMs(name: string) {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return Number.parseFloat(value) * (value.endsWith('ms') ? 1 : 1000);
-}
-
 const environments = ['Production', 'Staging'] as const;
 
 function PageSwitchDemo() {
   const [index, setIndex] = useState(0);
-  const [pending, setPending] = useState(false);
+  // Counts the switches, so the line and the content remount on each one.
+  const [switches, setSwitches] = useState(0);
   const environment = environments[index];
   const switchEnvironment = () => {
-    setPending(true);
-    window.setTimeout(() => {
-      setIndex((i) => (i + 1) % environments.length);
-      setPending(false);
-    }, tokenMs('--transition-duration-page-switch'));
+    setIndex((i) => (i + 1) % environments.length);
+    setSwitches((n) => n + 1);
   };
   return (
-    <div className="flex w-96 flex-col gap-4">
-      <Button variant="outline" className="self-start" disabled={pending} onClick={switchEnvironment}>
-        Switch environment
-      </Button>
+    <div className="bg-background flex w-96 flex-col overflow-hidden rounded-xl border">
+      <div className="flex h-12 items-center justify-between border-b px-4">
+        <p className="text-sm font-medium">{environment}</p>
+        <Button variant="outline" size="sm" onClick={switchEnvironment}>
+          Switch environment
+        </Button>
+      </div>
+      <div className="relative">
+        {switches > 0 && (
+          <span
+            key={switches}
+            data-testid="switch-line"
+            aria-hidden="true"
+            className="animate-page-switch-line pointer-events-none absolute inset-x-0 -top-px h-0.5 origin-left bg-linear-to-r from-transparent to-brand motion-reduce:hidden rtl:origin-right rtl:bg-linear-to-l"
+          />
+        )}
+      </div>
       <div
+        key={switches}
         data-testid="page"
-        data-pending={pending ? '' : undefined}
-        aria-busy={pending}
-        className="transition-opacity duration-normal ease-soft data-pending:opacity-50"
+        className={cn(
+          'flex flex-col gap-3 p-4',
+          switches > 0 && 'animate-page-reload motion-reduce:animate-page-reload-fade',
+        )}
       >
-        <div
-          key={environment}
-          className="bg-card animate-page-enter motion-reduce:animate-page-fade flex flex-col gap-1 rounded-xl border p-4"
-        >
+        <div className="bg-card flex flex-col gap-1 rounded-xl border p-4">
           <p className="text-style-card-title">{environment}</p>
           <p className="text-muted-foreground text-sm">3 deployments, last one 12 minutes ago</p>
         </div>
@@ -61,19 +66,28 @@ function PageSwitchDemo() {
 }
 
 /**
- * A page that switches its content in place. The page dims for
- * `duration-page-switch` (420ms), then the new content enters with
- * `animate-page-enter` (`motion-reduce:animate-page-fade` with reduced motion).
+ * A page that switches its content in place (the environment switch). The
+ * new content comes back with `animate-page-reload`: from 35% opacity, a 3px
+ * blur and a 3px drop (opacity 240ms, blur and position 280ms, on `ease-out`).
+ * At the same time a 2px brand line under the top bar grows from the start
+ * edge once with `animate-page-switch-line` (`duration-page-switch`, 420ms).
+ * With reduced motion the content only fades
+ * (`motion-reduce:animate-page-reload-fade`) and the line is hidden.
  */
 export const PageSwitch: Story = {
   render: () => <PageSwitchDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const page = canvas.getByTestId('page');
     await userEvent.click(canvas.getByRole('button', { name: 'Switch environment' }));
-    await expect(page).toHaveAttribute('data-pending');
-    await waitFor(() => expect(canvas.getByText('Staging')).toBeInTheDocument(), { timeout: 2000 });
-    await expect(page).not.toHaveAttribute('data-pending');
+    await expect(canvas.getAllByText('Staging')).not.toHaveLength(0);
+    const page = canvas.getByTestId('page');
+    const line = canvas.getByTestId('switch-line');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    await expect(getComputedStyle(page).animationName).toBe(
+      reducedMotion ? 'page-reload-fade' : 'page-reload-fade, page-reload-settle',
+    );
+    await expect(getComputedStyle(line).display).toBe(reducedMotion ? 'none' : 'block');
+    if (!reducedMotion) await expect(getComputedStyle(line).animationName).toBe('page-switch-line');
   },
 };
 

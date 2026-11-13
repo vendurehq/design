@@ -139,7 +139,7 @@ behavior you need instead of rebuilding it from atoms.
 #### Feedback & identity
 `confirm-dialog`, `state-views/*`, `status-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
-> **IssuedSecret.** A secret that was just issued, such as a new API key, is copy-only: it is never rendered. One button copies it, or one button per format (`formats`). The value shows only when the clipboard write fails, in a read-only field for a copy by hand. `useIssuedSecretGuard` holds the close guard: before the first copy, a close request shows a warning, and only "Close without copying" closes. Share one guard between `IssuedSecret` and `IssuedSecretFooter`, and pass `guard.onOpenChange` to the Dialog:
+> **IssuedSecret.** A secret that was just issued, such as a new API key, is copy-only: it is never rendered. One button copies it, or one button per format (`formats`). The value shows only when the clipboard write fails, in a read-only field for a copy by hand. `useIssuedSecretGuard` holds the close guard: before the first copy, a close request shows a warning, and only "Close without copying" closes. That button is `destructive-outline`, so the copy button stays the one filled button. Share one guard between `IssuedSecret` and `IssuedSecretFooter`, and pass `guard.onOpenChange` to the Dialog:
 >
 > ```tsx
 > const guard = useIssuedSecretGuard(() => setKey(null));
@@ -826,7 +826,7 @@ These packages are optional — install them only if you use the features that n
 
 ### Breaking changes in `@vendure-io/ui`
 
-1. Default, brand, destructive and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

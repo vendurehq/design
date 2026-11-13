@@ -156,7 +156,7 @@ function ListRowContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-const titleClassName = 'min-w-0 max-w-full truncate text-left text-sm font-medium text-foreground';
+const titleClassName = 'min-w-0 max-w-full truncate text-start text-sm font-medium text-foreground';
 
 /**
  * The row link and the row's title. Renders a `<button>` for an `onClick`

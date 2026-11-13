@@ -18,6 +18,10 @@ export const easing = {
   // The CSS `ease` curve: a light ease for small colour, opacity and blur
   // changes, and for quick exits.
   soft: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  // The CSS `ease-out` curve: a long, even fade of a highlight. Weaker than
+  // `out` on purpose, so the flash does not drop away at once. Only the
+  // match flash uses it.
+  flash: 'cubic-bezier(0, 0, 0.58, 1)',
   // The content of a Drawer fading while a nested drawer opens over it: a
   // near-linear start with a small overshoot at the end. Only Drawer uses it.
   drawerContent: 'cubic-bezier(0.45, 1.005, 0, 1.005)',
@@ -116,10 +120,23 @@ export const duration = {
   // uses them.
   pageFade: '220ms',
   pageRise: '260ms',
-  // A page that switches its content in place (the environment switch)
-  // stays dimmed for this time, then the new content enters with
-  // `page-enter`. The v3 look's switch takes 420ms.
+  // A page that switches its content in place (the environment switch): a
+  // 2px brand line under the top bar grows from the start edge once and
+  // fades, in this time on the `out` curve. The `page-switch-line`
+  // animation below uses it.
   pageSwitch: '420ms',
+  // The same switch brings the new content back in place: it fades up from
+  // 35% in `pageReloadFade`, and comes out of a 3px blur and a 3px drop in
+  // `pageReloadSettle`, both on the `out` curve. The `page-reload`
+  // animation below uses them.
+  pageReloadFade: '240ms',
+  pageReloadSettle: '280ms',
+  // One run of the live ring: it grows and fades, then rests. The
+  // `live-pulse` animation below repeats it. Only LiveIndicator uses it.
+  livePulse: '2.4s',
+  // The match flash holds, then fades, in this time on the `flash` curve.
+  // The `match-flash` animation below uses it.
+  matchFlash: '1.4s',
 } as const;
 
 // Named animations — Tailwind `animate-*` utilities. Each keyframe name an
@@ -136,7 +153,7 @@ export const animation = {
   // `out` curve: fast out of the dot, then a long fade. Slow and quiet, so a
   // state that stays live for minutes does not read as urgent. Only
   // LiveIndicator uses it.
-  livePulse: 'live-pulse 2.4s cubic-bezier(0.19, 1, 0.22, 1) infinite',
+  livePulse: `live-pulse ${duration.livePulse} ${easing.out} infinite`,
   // A page that opens: it fades in and rises 6px into place. Two keyframes,
   // because the fade and the rise end at different times. It runs once,
   // when the element mounts. AppShellPage uses it; a consumer with its own
@@ -144,12 +161,22 @@ export const animation = {
   pageEnter: `page-fade ${duration.pageFade} ${easing.out}, page-rise ${duration.pageRise} ${easing.out}`,
   // The same page enter with reduced motion: the fade only.
   pageFade: `page-fade ${duration.pageFade} ${easing.out}`,
+  // A page that switches its content in place: the new content comes back
+  // from 35% opacity, a 3px blur and a 3px drop. It runs once, when the
+  // element mounts: key it to the switched value.
+  pageReload: `page-reload-fade ${duration.pageReloadFade} ${easing.out}, page-reload-settle ${duration.pageReloadSettle} ${easing.out}`,
+  // The same reload with reduced motion: the fade only.
+  pageReloadFade: `page-reload-fade ${duration.pageReloadFade} ${easing.out}`,
+  // The 2px brand line of a page switch: it grows from the start edge, then
+  // fades, once. `forwards` keeps it gone at the end. With reduced motion
+  // the line is hidden.
+  pageSwitchLine: `page-switch-line ${duration.pageSwitch} ${easing.out} forwards`,
   // One flash that marks a new search match: a bar and a fill in the
   // highlight colour hold, then fade out. It runs once. It moves nothing, so
   // it also runs with reduced motion. A consumer sets `--match-flash-color`
   // to flash in another tone (an error line); the default is the brand
   // indicator. The match keeps its own static highlight after the flash.
-  matchFlash: 'match-flash 1.4s ease-out',
+  matchFlash: `match-flash ${duration.matchFlash} ${easing.flash}`,
 } as const;
 
 // The match flash colour: `--match-flash-color` when the consumer sets it,
@@ -190,6 +217,21 @@ export const keyframes = {
   },
   pageRise: {
     from: { transform: 'translateY(6px)' },
+  },
+  // The page reload: like the page enter, each step only sets the start.
+  // The fade starts at 35%, so the old page never blanks out.
+  pageReloadFade: {
+    from: { opacity: '0.35' },
+  },
+  pageReloadSettle: {
+    from: { filter: 'blur(3px)', transform: 'translateY(3px)' },
+  },
+  // The brand line grows to full width by 60%, then fades out. It scales
+  // from its start edge: give the line `origin-left` (`rtl:origin-right`).
+  pageSwitchLine: {
+    '0%': { transform: 'scaleX(0)', opacity: '1' },
+    '60%': { transform: 'scaleX(1)', opacity: '1' },
+    '100%': { transform: 'scaleX(1)', opacity: '0' },
   },
   // The flash holds its bar and its 22% fill for the first 30%, then fades
   // to the line's own styles.

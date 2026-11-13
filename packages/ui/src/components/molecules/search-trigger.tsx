@@ -31,7 +31,7 @@ function useIsApplePlatform() {
 // to `accent` in 120ms. No press scale: it is a field, not a button, to
 // the eye. Focus is the system's 2px ring, 2px out.
 const fieldClass = [
-  'group/search-trigger inline-flex h-7 w-55 shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-muted pr-1.5 pl-2.5 text-sm text-foreground-secondary inset-ring inset-ring-border outline-none select-none',
+  'group/search-trigger inline-flex h-7 w-55 shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-muted ps-2.5 pe-1.5 text-sm text-foreground-secondary inset-ring inset-ring-border outline-none select-none',
   'transition-colors duration-quick ease-soft hover:bg-accent',
   'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
   '[&_svg]:pointer-events-none [&_svg]:shrink-0',
@@ -111,7 +111,7 @@ function SearchTrigger({
         <Kbd
           aria-hidden
           className={cn(
-            'ml-auto h-4.5 bg-transparent text-foreground-secondary inset-ring-input',
+            'ms-auto h-4.5 bg-transparent text-foreground-secondary inset-ring-input',
             hidden,
           )}
         >

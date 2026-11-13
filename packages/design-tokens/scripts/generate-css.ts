@@ -230,11 +230,10 @@ const durationLines = Object.entries(duration).map(
 
 // Animation lines — Tailwind animate-* utilities. Each keyframe name they run
 // needs a matching @keyframes block, built below. A line longer than Biome's
-// width moves its value to the next line, as Biome formats it.
-const animationLines = Object.entries(animation).map(([key, value]) => {
-  const line = `  --animate-${kebabCase(key)}: ${value};`;
-  return line.length <= LINE_WIDTH ? line : `  --animate-${kebabCase(key)}:\n    ${value};`;
-});
+// width wraps as Biome formats it (see `declaration`).
+const animationLines = Object.entries(animation).map(([key, value]) =>
+  declaration(`animate-${kebabCase(key)}`, value),
+);
 
 const themeBlock = [
   ...baseColorLines,
