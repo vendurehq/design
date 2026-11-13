@@ -140,7 +140,11 @@ function SecretValue({
         // parent such as a TableCell, so a long value grows the row in height
         // instead of widening the table.
         // A secret reads left to right in a right-to-left page too.
-        <code data-slot="secret-value-value" dir="ltr" className="min-w-0 break-all whitespace-normal">
+        <code
+          data-slot="secret-value-value"
+          dir="ltr"
+          className="min-w-0 break-all whitespace-normal"
+        >
           {state.value}
         </code>
       ) : (
