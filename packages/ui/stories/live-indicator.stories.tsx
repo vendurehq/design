@@ -70,12 +70,15 @@ export const Still: Story = {
 
 // Live versus in progress: the dot is for a state that stays on (a log
 // stream, a running service); the StatusBadge spinner is for work that ends.
+// A log stream is a still info dot: the new lines already move.
 export const LiveAndInProgress: Story = {
   render: () => (
     <div className="flex w-96 flex-col gap-3">
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <span className="text-sm font-medium">Log</span>
-        <LiveIndicator>Streaming</LiveIndicator>
+        <LiveIndicator tone="info" pulse={false}>
+          Streaming
+        </LiveIndicator>
       </div>
       <div className="flex items-center justify-between rounded-xl border bg-card px-4 py-3">
         <span className="text-sm font-medium">Deployment</span>
