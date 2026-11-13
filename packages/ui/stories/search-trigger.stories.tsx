@@ -116,3 +116,24 @@ export const InTopBar: Story = {
     );
   },
 };
+
+/**
+ * Right to left: the icon sits at the start edge, now the right one, and the
+ * shortcut at the end edge, the left one. Plays: the shortcut is 6px from the
+ * left edge and the icon 10px from the right edge, the mirror of left to right.
+ */
+export const RightToLeft: Story = {
+  render: (args) => (
+    <div dir="rtl">
+      <SearchTrigger {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('button', { name: 'Search (command palette)' });
+    const box = trigger.getBoundingClientRect();
+    const icon = trigger.querySelector('svg')?.getBoundingClientRect();
+    const kbd = trigger.querySelector('[data-slot="kbd"]')?.getBoundingClientRect();
+    await expect(icon && Math.round(box.right - icon.right)).toBe(10);
+    await expect(kbd && Math.round(kbd.left - box.left)).toBe(6);
+  },
+};
