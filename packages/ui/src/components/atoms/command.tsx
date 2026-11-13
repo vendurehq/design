@@ -4,6 +4,7 @@ import * as React from "react"
 import { Command as CommandPrimitive, useCommandState } from "cmdk"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { MenuCheck, menuCheckItem } from "../../lib/menu-item.tsx"
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "@vendure-io/ui/components/atoms/input-group"
-import { SearchIcon, CheckIcon } from "lucide-react"
+import { SearchIcon } from "lucide-react"
 
 function Command({
   className,
@@ -482,7 +483,10 @@ function CommandSeparator({
 }
 
 // cmdk writes data-selected="true" or "false" on every item, so the highlight
-// matches the value; a bare data-selected: variant would match every item.
+// keys on the "true" value. A checked item (`data-checked="true"`) draws the
+// MenuCheck of every menu and list; the check sits in its own span, because
+// MenuCheck also shows for a selected option and every cmdk item carries
+// data-selected. The check hides when the item has a shortcut or a detail.
 // In a CommandList with slidingHighlight, the list's highlight replaces the
 // item's own fill. The highlight is the muted fill, as in every combobox,
 // select and menu. In forced colors, where fills drop, the
@@ -490,6 +494,10 @@ function CommandSeparator({
 // rest: foreground-secondary text, with the label (CommandItemLabel) in medium
 // weight. The highlighted row has the muted fill, turns its text to
 // foreground and its leading icon to the brand indicator.
+function isChecked(value: unknown) {
+  return value === true || value === "true"
+}
+
 function CommandItem({
   className,
   children,
@@ -505,7 +513,16 @@ function CommandItem({
       {...props}
     >
       {children}
-      <CheckIcon className="ms-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+      <span
+        data-slot="command-item-check"
+        data-checked={isChecked(props["data-checked" as keyof typeof props]) ? "" : undefined}
+        className={cn(
+          menuCheckItem,
+          "ms-auto flex size-4 shrink-0 items-center justify-center group-has-data-[slot=command-shortcut]/command-item:hidden group-has-data-[slot=command-item-detail]/command-item:hidden"
+        )}
+      >
+        <MenuCheck />
+      </span>
     </CommandPrimitive.Item>
   )
 }

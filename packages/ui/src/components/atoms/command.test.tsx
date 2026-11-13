@@ -102,6 +102,47 @@ describe('CommandItem highlight', () => {
   });
 });
 
+// A checked item draws the MenuCheck of every menu and list. The check's span
+// carries data-checked only for a checked item: cmdk writes data-selected on every
+// item, so the check must not key on the item's own attributes.
+describe('CommandItem check', () => {
+  function item(checked?: boolean | string) {
+    return renderToStaticMarkup(
+      <Command>
+        <CommandList>
+          <CommandItem value="orders" data-checked={checked}>
+            Orders
+          </CommandItem>
+        </CommandList>
+      </Command>,
+    );
+  }
+
+  test('draws MenuCheck, not the lucide check', () => {
+    const html = item(true);
+    expect(html).toContain('data-slot="menu-check"');
+    expect(html).not.toContain('lucide-check');
+  });
+
+  test('the check shows only for a checked item', () => {
+    expect(item(true)).toMatch(/data-slot="command-item-check" data-checked=""/);
+    expect(item('true')).toMatch(/data-slot="command-item-check" data-checked=""/);
+    expect(item()).not.toMatch(/data-slot="command-item-check" data-checked/);
+    expect(item(false)).not.toMatch(/data-slot="command-item-check" data-checked/);
+  });
+
+  test('the check hides when the item has a shortcut or a detail', () => {
+    const check = slotTokens(item(true), 'command-item-check');
+    expect(check).toEqual(
+      expect.arrayContaining([
+        'group/menu-check',
+        'group-has-data-[slot=command-shortcut]/command-item:hidden',
+        'group-has-data-[slot=command-item-detail]/command-item:hidden',
+      ]),
+    );
+  });
+});
+
 // A listbox allows only option and group children (axe aria-required-children).
 describe('CommandSeparator', () => {
   test('is not a separator role inside the listbox', () => {
