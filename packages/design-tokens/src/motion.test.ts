@@ -76,9 +76,18 @@ describe('Page switch', () => {
   });
 });
 
+describe('Live pulse', () => {
+  test('repeats a 2.4s run on the out curve', () => {
+    expect(duration.livePulse).toBe('2.4s');
+    expect(animation.livePulse).toBe(`live-pulse ${duration.livePulse} ${easing.out} infinite`);
+  });
+});
+
 describe('Match flash', () => {
-  test('runs once in 1.4s on ease-out', () => {
-    expect(animation.matchFlash).toBe('match-flash 1.4s ease-out');
+  test('runs once in 1.4s on the flash curve, the CSS ease-out', () => {
+    expect(duration.matchFlash).toBe('1.4s');
+    expect(easing.flash).toBe('cubic-bezier(0, 0, 0.58, 1)');
+    expect(animation.matchFlash).toBe(`match-flash ${duration.matchFlash} ${easing.flash}`);
     expect(animation.matchFlash).not.toMatch(/infinite|backwards|both|forwards/);
   });
 
