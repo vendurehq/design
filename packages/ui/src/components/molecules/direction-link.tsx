@@ -41,8 +41,8 @@ const EXTERNAL_ARROW_CLASS = [
   'size-3.5 shrink-0 opacity-40 rtl:-scale-x-100',
   '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft),translate_var(--transition-duration-external-arrow)_var(--ease-out)]',
   'group-hover/arrow-link:opacity-85 group-focus-visible/arrow-link:opacity-85',
-  'group-hover/arrow-link:translate-x-[1.5px] group-hover/arrow-link:-translate-y-[1.5px] group-focus-visible/arrow-link:translate-x-[1.5px] group-focus-visible/arrow-link:-translate-y-[1.5px]',
-  'rtl:group-hover/arrow-link:-translate-x-[1.5px] rtl:group-focus-visible/arrow-link:-translate-x-[1.5px]',
+  'group-hover/arrow-link:translate-x-[--spacing(0.375)] group-hover/arrow-link:-translate-y-[--spacing(0.375)] group-focus-visible/arrow-link:translate-x-[--spacing(0.375)] group-focus-visible/arrow-link:-translate-y-[--spacing(0.375)]',
+  'rtl:group-hover/arrow-link:-translate-x-[--spacing(0.375)] rtl:group-focus-visible/arrow-link:-translate-x-[--spacing(0.375)]',
   'motion-reduce:translate-none!',
 ].join(' ');
 
