@@ -129,3 +129,16 @@ describe('Toggle size and corners match Button', () => {
     );
   });
 });
+
+describe('Toggle motion', () => {
+  test('eases its fill, border and colour in quick on the default curve, like Button', () => {
+    const tag = renderToStaticMarkup(<Toggle aria-label="Bold">B</Toggle>).match(/<button[^>]*>/)?.[0] ?? '';
+    expect(classTokens(tag)).toEqual(
+      expect.arrayContaining([
+        'transition-[background-color,border-color,color,box-shadow]',
+        'duration-quick',
+        'ease-default',
+      ]),
+    );
+  });
+});
