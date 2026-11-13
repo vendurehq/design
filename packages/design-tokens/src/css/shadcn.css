@@ -2,7 +2,8 @@
 /*
  * Vendored from shadcn@3.8.5's tailwind.css, without the Radix
  * data-state branch of the data-open, data-closed, data-checked,
- * data-unchecked and data-active variants. It defines
+ * data-unchecked and data-active variants, and with a data-selected variant
+ * that matches an empty data-selected as Base UI writes it. It defines
  * the @custom-variant data-* selectors (data-open, data-horizontal, ...), the
  * no-scrollbar utility, and Base UI-aware accordion keyframes that the
  * base-vega components in @vendure-io/ui rely on. Without it, e.g.

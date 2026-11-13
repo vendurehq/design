@@ -135,12 +135,25 @@ function dropRadixStateBranches(css: string): string {
   }, css);
 }
 
+// shadcn's data-selected variant matches only data-selected="true", the value
+// cmdk writes. Base UI writes data-selected="" on a selected Select or Combobox
+// option, so the variant matches the attribute when it is present and not
+// "false", as the data-checked and data-unchecked variants do.
+function matchEmptyDataSelected(css: string): string {
+  const branch = '  &:where([data-selected="true"]) {\n';
+  if (css.split(branch).length !== 2) {
+    throw new Error('shadcn tailwind.css: expected one data-selected="true" branch; the vendored file changed');
+  }
+  return css.replace(branch, '  &:where([data-selected]:not([data-selected="false"])) {\n');
+}
+
 const shadcnCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '/*',
   ` * Vendored from shadcn@${shadcnPkg.version}'s tailwind.css, without the Radix`,
   ' * data-state branch of the data-open, data-closed, data-checked,',
-  ' * data-unchecked and data-active variants. It defines',
+  ' * data-unchecked and data-active variants, and with a data-selected variant',
+  ' * that matches an empty data-selected as Base UI writes it. It defines',
   ' * the @custom-variant data-* selectors (data-open, data-horizontal, ...), the',
   ' * no-scrollbar utility, and Base UI-aware accordion keyframes that the',
   ' * base-vega components in @vendure-io/ui rely on. Without it, e.g.',
@@ -149,7 +162,7 @@ const shadcnCss = [
   " * after tw-animate-css so shadcn's accordion keyframes win the cascade.",
   ' */',
   '',
-  dropRadixStateBranches(await Bun.file(shadcnCssPath).text()),
+  matchEmptyDataSelected(dropRadixStateBranches(await Bun.file(shadcnCssPath).text())),
 ].join('\n');
 
 await Bun.write(resolve(cssDir, 'shadcn.css'), shadcnCss);
