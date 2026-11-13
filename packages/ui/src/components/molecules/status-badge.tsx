@@ -76,11 +76,11 @@ const statusBadgeVariants = cva(
       tone: toneVars,
       size: {
         default: [
-          'h-6 gap-1.5 px-2.5 text-xs/none has-data-[slot=status-badge-marker]:pl-2',
+          'h-6 gap-1.5 px-2.5 text-xs/none has-data-[slot=status-badge-marker]:ps-2',
           '[--content-inset:calc(var(--spacing)*2.5)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*6.75)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5)]',
         ],
         lg: [
-          'h-7 gap-1.5 px-3 text-sm/none has-data-[slot=status-badge-marker]:pl-2.5',
+          'h-7 gap-1.5 px-3 text-sm/none has-data-[slot=status-badge-marker]:ps-2.5',
           '[--content-inset:calc(var(--spacing)*3)] has-data-[marker=icon]:[--content-inset:calc(var(--spacing)*7.5)] has-data-[marker=dot]:[--content-inset:calc(var(--spacing)*5.5)]',
         ],
       } satisfies Record<StatusBadgeSize, string[]>,
