@@ -338,8 +338,10 @@ export const OpenList: Story = {
     await userEvent.click(body.getByRole('option', { name: 'Banana' }));
     const trigger = within(canvasElement).getByRole('combobox', { name: 'Fruit' });
     await waitFor(() => expect(trigger).toHaveTextContent('Banana'));
-    // Reopen only once the closing list is gone, so its exit cannot cancel the new open.
-    await waitFor(() => expect(document.querySelector('[data-slot=select-content]')).toBeNull());
+    // Reopen only once the list has finished closing, so its exit cannot cancel the new open.
+    await waitFor(() =>
+      expect(document.querySelector('[data-slot=select-content]:is([data-open],[data-ending-style])')).toBeNull(),
+    );
     await openList(trigger);
     await checkCheckMark(body.getByRole('option', { name: 'Banana' }), body.getByRole('option', { name: 'Apple' }));
   },
