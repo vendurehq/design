@@ -4,11 +4,11 @@ import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { menuItemDisabled } from "../../lib/menu-item.tsx"
+import { MenuCheck, menuCheckItem, menuItemDisabled } from "../../lib/menu-item.tsx"
 import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
-import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
@@ -380,6 +380,7 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         menuItemDisabled,
+        menuCheckItem,
         "not-data-disabled:focus:bg-muted not-data-disabled:focus:text-accent-foreground not-data-[variant=destructive]:not-data-disabled:focus:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm text-foreground-secondary data-selected:text-foreground outline-hidden select-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>:first-child>svg:not([class*='opacity-'])]:opacity-55 [&>:first-child>svg:not([class*='opacity-'])]:transition-opacity [&>:first-child>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:focus:[&>:first-child>svg:not([class*='opacity-'])]:opacity-85 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
@@ -388,13 +389,9 @@ function SelectItem({
       <SelectPrimitive.ItemText className="flex flex-1 shrink-0 gap-2 whitespace-nowrap">
         {children}
       </SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator
-        render={
-          <span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center" />
-        }
-      >
-        <CheckIcon className="pointer-events-none" />
-      </SelectPrimitive.ItemIndicator>
+      <span className="pointer-events-none absolute end-2 flex size-4 items-center justify-center">
+        <MenuCheck />
+      </span>
     </SelectPrimitive.Item>
   )
 }

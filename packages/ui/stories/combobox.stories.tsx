@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
+import { checkCheckMark } from './menu-checked-row.ts';
 import {
   Combobox,
   ComboboxChip,
@@ -108,6 +109,10 @@ export const WithClear: Story = {
     await userEvent.click(input);
     await userEvent.keyboard('{ArrowDown}');
     await waitFor(() => expect(within(document.body).getAllByRole('option').length).toBeGreaterThan(0));
+    // The selected option shows the check of a checked menu row.
+    const options = within(document.body).getAllByRole('option');
+    const selected = options.find((option) => option.getAttribute('aria-selected') === 'true');
+    await checkCheckMark(selected as HTMLElement, options.find((option) => option !== selected));
   },
 };
 

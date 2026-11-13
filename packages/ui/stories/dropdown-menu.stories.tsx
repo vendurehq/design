@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
-import { checkCheckedRowLook } from './menu-checked-row.ts';
+import { checkCheckMark, checkCheckedRowLook } from './menu-checked-row.ts';
 import { checkDisabledItemHasNoFill } from './menu-disabled-item.ts';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { CreditCard, LogOut, Mail, MessageSquare, Plus, Server, Settings, User, UserPlus, Users } from 'lucide-react';
@@ -111,6 +111,18 @@ export const WithCheckboxItems: Story = {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+  },
+  // A checked row shows the same check as a checked radio row, and a row
+  // checked from the keyboard draws it in.
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'View Options' }));
+    const menu = await within(document.body).findByRole('menu');
+    const row = (name: string) => within(menu).getByRole('menuitemcheckbox', { name });
+    await checkCheckMark(row('Status Bar'), row('Activity Bar'));
+    await userEvent.click(row('Activity Bar'));
+    await waitFor(() => expect(row('Activity Bar')).toHaveAttribute('aria-checked', 'true'));
+    await checkCheckMark(row('Activity Bar'), row('Panel'));
+    await userEvent.keyboard('{Escape}');
   },
 };
 
