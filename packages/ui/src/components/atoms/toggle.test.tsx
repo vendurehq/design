@@ -142,3 +142,40 @@ describe('Toggle motion', () => {
     );
   });
 });
+
+describe('Outline surface', () => {
+  // The v3 look draws a pressed toggle beside buttons on the button surface:
+  // the card fill and shadow-control, with the pressed item on the accent tint.
+  // The story ToggleGroup/InAToolbar checks it beside a ButtonGroup.
+  test('an outline Toggle sits on the card fill with shadow-control, like an outline Button', () => {
+    const classes = classTokens(
+      renderToStaticMarkup(<Toggle variant="outline" aria-label="Bold" />).match(/<button[^>]*>/)?.[0] ?? '',
+    );
+    expect(classes).toEqual(expect.arrayContaining(['bg-card', 'shadow-control', 'aria-pressed:bg-accent']));
+    expect(classes).not.toContain('bg-transparent');
+  });
+
+  test('an aria-disabled outline Toggle keeps the card fill on hover', () => {
+    const classes = classTokens(
+      renderToStaticMarkup(<Toggle variant="outline" aria-disabled aria-label="Bold" />).match(/<button[^>]*>/)?.[0] ??
+        '',
+    );
+    expect(classes).toContain('aria-disabled:hover:bg-card');
+    expect(classes).not.toContain('aria-disabled:hover:bg-transparent');
+  });
+
+  test('a joined outline ToggleGroup sits on the card fill with shadow-control, like a ButtonGroup', () => {
+    const html = renderToStaticMarkup(
+      <ToggleGroup variant="outline" aria-label="View">
+        <ToggleGroupItem value="grid">Grid</ToggleGroupItem>
+      </ToggleGroup>,
+    );
+    const group = classTokens(html.match(/<div[^>]*data-slot="toggle-group"[^>]*>/)?.[0] ?? '');
+    expect(group).toEqual(
+      expect.arrayContaining([
+        'data-[variant=outline]:data-[spacing=0]:bg-card',
+        'data-[variant=outline]:data-[spacing=0]:shadow-control',
+      ]),
+    );
+  });
+});

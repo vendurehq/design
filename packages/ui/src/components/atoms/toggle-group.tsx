@@ -42,7 +42,9 @@ function ToggleGroup({
       data-orientation={orientation}
       style={{ "--gap": spacing } as React.CSSProperties}
       className={cn(
-        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-xl data-vertical:flex-col data-vertical:items-stretch",
+        // A joined outline group sits on the card fill with shadow-control, like
+        // a ButtonGroup; its items drop their own shadow.
+        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-xl data-vertical:flex-col data-vertical:items-stretch data-[variant=outline]:data-[spacing=0]:bg-card data-[variant=outline]:data-[spacing=0]:shadow-control",
         className
       )}
       {...props}

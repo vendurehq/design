@@ -198,5 +198,11 @@ export const InAToolbar: Story = {
       const corners = new Set(controls.filter((control) => control.tagName !== 'INPUT').map(radius));
       await expect(corners.size).toBe(1);
     }
+    // The outline ToggleGroup sits on the ButtonGroup's surface: one fill and one lift.
+    const row = canvas.getByTestId('row-default');
+    const toggles = row.querySelector('[data-slot=toggle-group]') as HTMLElement;
+    const buttons = row.querySelector('[data-slot=button-group]') as HTMLElement;
+    await expect(getComputedStyle(toggles).backgroundColor).toBe(getComputedStyle(buttons).backgroundColor);
+    await expect(getComputedStyle(toggles).boxShadow).toContain('0px 1px 0px 0px');
   },
 };
