@@ -2019,8 +2019,9 @@ export const SelectAllRippleCustomRows50: Story = {
 };
 
 // Body row heights for RowBarHeights: odd, even and fractional, as real rows
-// have (a thumbnail, a wrapped line, a zoomed page).
-const BAR_ROW_CONTENT_HEIGHTS = [24, 25, 23.5, 30, 24, 25, 24];
+// have (a thumbnail, a wrapped line, a zoomed page). Each is above 32px, so
+// with the cell padding the row grows past the 48px minimum.
+const BAR_ROW_CONTENT_HEIGHTS = [33, 34, 33.5, 38, 33, 34, 33];
 
 // Resolves a computed clip-path inset edge (`50%`, `0px`, `calc(50% - 0.5px)`)
 // to pixels along a row of the given height.
@@ -2838,11 +2839,11 @@ export const Deployments: Story = {
       }
     });
 
-    await step('a row with a two-line status is 46px high, with its divider', async () => {
+    await step('a row with a two-line status is 48px high, the same as a one-line row', async () => {
       // The last row has no divider.
       for (const badge of badges.slice(0, -1)) {
         const row = badge.closest('tr') as HTMLElement;
-        await expect(Math.abs(row.getBoundingClientRect().height - 46)).toBeLessThanOrEqual(0.5);
+        await expect(Math.abs(row.getBoundingClientRect().height - 48)).toBeLessThanOrEqual(0.5);
       }
     });
 
