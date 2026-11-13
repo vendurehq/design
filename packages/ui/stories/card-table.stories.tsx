@@ -7,7 +7,9 @@ import {
   SlidersHorizontalIcon,
 } from 'lucide-react';
 import { useState } from 'react';
+import { expect } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
+import { expectPx } from './pixel.ts';
 import {
   Card,
   CardAction,
@@ -172,8 +174,27 @@ function ListPageDemo() {
   );
 }
 
+/**
+ * A body row with 32px content (a thumbnail, a button) is 48px with its
+ * divider, the same as a ListRow. The header row stays 40px.
+ */
 export const ListPage: Story = {
   render: () => <ListPageDemo />,
+  play: async ({ canvasElement }) => {
+    const shown = (element: Element) => element.getBoundingClientRect().height > 0;
+    const rows = [...canvasElement.querySelectorAll('tbody tr')].filter(shown);
+    await expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const content = Math.max(
+        ...[...row.querySelectorAll('td > *')].map((child) => child.getBoundingClientRect().height),
+      );
+      await expectPx(content, 32);
+      // Half a pixel at most: the bug this guards is exactly one pixel.
+      await expect(Math.abs(row.getBoundingClientRect().height - 48)).toBeLessThanOrEqual(0.5);
+    }
+    const head = [...canvasElement.querySelectorAll('thead tr')].find(shown) as Element;
+    await expectPx(head.getBoundingClientRect().height, 40);
+  },
 };
 
 // Order-items shape: controls-only header (no title), no footer — the last
