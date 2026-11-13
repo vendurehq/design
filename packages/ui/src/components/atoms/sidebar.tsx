@@ -312,12 +312,14 @@ function SidebarInset({
   // recedes and cards (--surface-raised) lift off the pane. A border carries the
   // tier in light mode where the ramp collapses to white; flat by design, no drop
   // shadow (see AGENTS.md "flat look"). The default variant stays flush on canvas.
+  // The pane drops its margin on the sidebar's side. `side` is physical, as
+  // for Sheet: it does not mirror in right-to-left.
   return useRender({
     defaultTagName: "main",
     props: mergeProps<"main">(
       {
         className: cn(
-          "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border/60",
+          "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:peer-data-[side=left]:ml-0 md:peer-data-[variant=inset]:peer-data-[side=right]:mr-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border/60",
           className
         ),
       },

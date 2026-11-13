@@ -59,6 +59,8 @@ Popups (menus, selects, popovers, tooltips, comboboxes, hover cards) render in a
 
 Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet or Drawer keeps the side you give it (`side="right"`, `swipeDirection`): the sides are physical and do not mirror in right-to-left. Pick the side for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
 
+A Sidebar's `side` is physical too, as for Sheet and Drawer: it does not mirror. Give it `side="right"` in right-to-left, so it sits at the start of the line, and keep `side="left"` in left-to-right. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side.
+
 A CodeBlock keeps its code left to right in a right-to-left page: the lines start at the left and scroll from there. Its header mirrors with the page.
 
 ## Available Components
