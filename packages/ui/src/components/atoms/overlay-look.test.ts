@@ -194,6 +194,18 @@ describe('v3 overlay look', () => {
     expect(combobox).toContain('not-data-disabled:data-highlighted:bg-muted');
   });
 
+  test('a focused disabled item keeps its text and icon, and its focus ring at full strength', () => {
+    for (const file of ['dropdown-menu.tsx', 'context-menu.tsx', 'menubar.tsx', 'select.tsx', 'combobox.tsx']) {
+      const code = source(file);
+      // Every focus or highlight rule skips a disabled item.
+      expect(code).not.toMatch(/[\s"](focus|data-highlighted):/);
+      expect(code).not.toMatch(/not-data-\[variant=destructive\]:(focus|data-highlighted):/);
+      // The item dims its text, not itself: an opacity on the item would fade the ring too.
+      expect(code).not.toContain('data-disabled:opacity-50');
+      expect(code).toMatch(/data-disabled:text-[\w-]+\/50/);
+    }
+  });
+
   test('destructive menu items read in destructive-text', () => {
     for (const file of ['dropdown-menu.tsx', 'context-menu.tsx']) {
       const code = source(file);
