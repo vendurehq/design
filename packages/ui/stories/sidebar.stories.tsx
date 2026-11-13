@@ -910,7 +910,11 @@ function PageMenu({
 }
 
 /** A Console-like sidebar whose Cloud item opens a second level. */
-function TwoLevelSidebar({ defaultOpen = true, dir = 'ltr' }: { defaultOpen?: boolean; dir?: 'ltr' | 'rtl' }) {
+function TwoLevelSidebar({
+  defaultOpen = true,
+  dir = 'ltr',
+  variant,
+}: { defaultOpen?: boolean; dir?: 'ltr' | 'rtl'; variant?: 'sidebar' | 'inset' }) {
   // The level follows the page, as it would follow the route.
   const [current, setCurrent] = useState('Projects');
   const level = cloudNav.some((page) => page.title === current) || current === 'Source' ? 'cloud' : 'root';
@@ -918,7 +922,7 @@ function TwoLevelSidebar({ defaultOpen = true, dir = 'ltr' }: { defaultOpen?: bo
     <DirectionProvider direction={dir}>
       <div dir={dir}>
         <SidebarProvider defaultOpen={defaultOpen}>
-          <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir}>
+          <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir} variant={variant}>
             <SidebarHeader>
               <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
                 <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
@@ -1022,4 +1026,33 @@ export const TwoLevelsRightToLeft: Story = {
   name: 'Two levels, right to left',
   parameters: { layout: 'fullscreen' },
   render: () => <TwoLevelSidebar dir="rtl" />,
+};
+
+/**
+ * The inset pane sits 8px from every edge except the sidebar's: there it
+ * meets the sidebar with no margin. `side` is physical, so the sidebar on
+ * the right drops the right margin.
+ */
+async function checkInsetMargins(canvasElement: HTMLElement, side: 'left' | 'right') {
+  const inset = canvasElement.querySelector('[data-slot=sidebar-inset]') as HTMLElement;
+  const style = getComputedStyle(inset);
+  const [near, far] = side === 'left' ? ['marginLeft', 'marginRight'] : ['marginRight', 'marginLeft'];
+  await expect(style[near as 'marginLeft']).toBe('0px');
+  await expect(style[far as 'marginLeft']).toBe('8px');
+  await expect(style.marginTop).toBe('8px');
+}
+
+/** The inset variant: the content is a recessed pane next to the sidebar. */
+export const Inset: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => <TwoLevelSidebar variant="inset" />,
+  play: async ({ canvasElement }) => checkInsetMargins(canvasElement, 'left'),
+};
+
+/** The inset variant right to left, with the sidebar on the right. */
+export const InsetRightToLeft: Story = {
+  name: 'Inset, right to left',
+  parameters: { layout: 'fullscreen' },
+  render: () => <TwoLevelSidebar dir="rtl" variant="inset" />,
+  play: async ({ canvasElement }) => checkInsetMargins(canvasElement, 'right'),
 };
