@@ -125,6 +125,22 @@ behavior you need instead of rebuilding it from atoms.
 >
 > A layout without AppShell (the Dashboard) gets the same motion from `pageEnterClassName` (`animate-page-enter motion-reduce:animate-page-fade`) on its own wrapper, keyed the same way. Only opacity and transform move, so nothing shifts and the page takes clicks while it settles.
 
+> **The leading edge.** AppShell sets `--app-shell-gutter`, the inline padding of the page: 16px, and 32px from `md`. Pad the page with `px-(--app-shell-gutter)`. Put the `SidebarTrigger` first in `AppShellHeader` with a vertical `Separator` after it: from `md` the header places the toggle so that the divider sits on the left edge of the page, with the sidebar open or collapsed. Below `md` the toggle starts on the gutter. The header ignores a margin on the toggle. A page centred with a max width and `mx-auto` sets `--app-shell-page-width` to that width on AppShell, and the header follows it as it centres:
+>
+> ```tsx
+> <AppShell className="[--app-shell-page-width:var(--container-6xl)]">
+>   …
+>   <AppShellHeader>
+>     <SidebarTrigger />
+>     <Separator orientation="vertical" className="me-2 h-4 data-vertical:self-center" />
+>     <Breadcrumb>…</Breadcrumb>
+>   </AppShellHeader>
+>   <AppShellMain>
+>     <div className="mx-auto max-w-6xl px-(--app-shell-gutter)">…</div>
+>   </AppShellMain>
+> </AppShell>
+> ```
+
 > **SearchTrigger.** The search field at the end of the top bar: a button that looks like a 28px field, with a search icon, the word "Search" and the shortcut (⌘K on Apple platforms, Ctrl K elsewhere). Its accessible name is "Search (command palette)", and it announces a dialog. It only shows the shortcut: open the palette in `onClick` and bind the same key yourself. `shortcutKey` sets the letter (`null` for none). `collapse` shrinks it to an icon button: below 768px by default (`md`), `never` or `always`.
 >
 > ```tsx
