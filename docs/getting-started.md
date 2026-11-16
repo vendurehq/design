@@ -193,4 +193,4 @@ Or via Google Fonts in your HTML `<head>`:
 />
 ```
 
-The theme already defines `--font-sans`, `--font-heading`, `--font-body`, and `--font-mono` — the fonts just need to be loaded. For headings, use the `font-heading` utility (Inter); the theme deliberately doesn't restyle raw `h1`–`h6` elements, and `@vendure-io/ui` title components apply the utility themselves.
+The theme already defines `--font-sans`, `--font-heading`, `--font-body`, `--font-mono` and `--font-display` — the fonts just need to be loaded. `--font-display` is Public Sans, used only by the website's `text-style-display-*` headings; `css/fonts` self-hosts it, and the Google Fonts link above leaves it out. For headings, use the `font-heading` utility (Inter); the theme deliberately doesn't restyle raw `h1`–`h6` elements, and `@vendure-io/ui` title components apply the utility themselves.

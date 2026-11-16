@@ -34,6 +34,7 @@ Create hierarchy through semantic surface contrast and restrained neutral intens
 Use named type roles and shared font context rather than restyling headings ad hoc.
 
 - **Choose a semantic type role:** Use the named page-title, section-title, dialog-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text and keyboard hints 12px (text-xs), and micro text 11px (text-2xs).
+- **Display styles are for the website only:** Use display-xl (60px), display-lg (48px), display-md (36px) and display-sm (30px) for website hero and section headings. They set Public Sans (font-display), the website heading font. Never use them in product screens: a product page title is page-title. css/fonts self-hosts Public Sans.
 - **Raw headings are not globally restyled:** Use the design-system title components or apply the heading role explicitly. Do not rebind the heading font in consumer CSS.
 - **Load fonts separately from the theme:** Import css/fonts when the app should self-host the declared families; css/theme declares font tokens but does not load font files.
 - **Typography does not carry state color:** Type styles define font, size, weight, tracking, leading, and text wrapping: the title roles balance their lines and body avoids a single word on its last line. Apply semantic color separately according to meaning.

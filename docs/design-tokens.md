@@ -117,7 +117,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 
 ### Typography
 
-- **Font families**: `--font-sans` (Inter), `--font-heading` (Inter), `--font-body` (Inter), `--font-mono` (Geist Mono)
+- **Font families**: `--font-sans` (Inter), `--font-heading` (Inter), `--font-body` (Inter), `--font-mono` (Geist Mono), `--font-display` (Public Sans, website headings only)
 - **Inter features**: `--font-sans--font-feature-settings`, `--font-heading--font-feature-settings` and `--font-body--font-feature-settings` turn on `cv11`, `ss01` and `ss03`. Tailwind applies the sans value to the page and each value to its `font-*` utility
 - **Mono features**: `--font-mono--font-feature-settings` turns off the `liga` and `calt` ligatures. Tailwind applies it to `font-mono` and to `code`, `pre`, `kbd` and `samp`, so a space before `--` stays visible
 - **Type scale**: `--text-2xs` through `--text-5xl` — Tailwind `text-*` utilities. `text-sm` (13px, 20px line) is the body and UI size; `text-xs` (12px) is small text and keyboard hints; `text-2xs` (11px) is micro text
@@ -128,6 +128,7 @@ All colors use the OKLCH color space for perceptual uniformity.
   - `text-style-body` — body font
   - `text-style-caption` — small print
   - `text-style-code` — mono font
+  - `text-style-display-xl` (60px on a 60px line, flagship hero), `text-style-display-lg` (48px on a 50px line, page hero), `text-style-display-md` (36px on a 38px line, small-screen hero, large stat or price), `text-style-display-sm` (30px on a 36px line, section heading) — display font (Public Sans), semibold, tight tracking. Use them for website headings only, never in product screens: a product page title is `text-style-page-title`. `css/fonts` self-hosts Public Sans; a consumer that loads fonts another way must load Public Sans itself
 
 The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Inter) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
 
