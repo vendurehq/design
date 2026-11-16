@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect } from 'storybook/test';
 import {
   Table,
   TableHeader,
@@ -28,7 +29,25 @@ const invoices = [
   { id: 'INV-005', customer: 'Eve Davis', email: 'eve@example.com', amount: '$200.00', status: 'Paid' },
 ];
 
+/**
+ * One-line text sits in the middle of its 48px row: as far from the divider
+ * above as from the divider below.
+ */
 export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const rows = [...canvasElement.querySelectorAll('tbody tr')];
+    await expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const box = row.getBoundingClientRect();
+      await expect(Math.abs(box.height - 48)).toBeLessThanOrEqual(0.5);
+      const text = document.createRange();
+      text.selectNodeContents(row.querySelector('td') as Element);
+      const line = text.getBoundingClientRect();
+      // The row box runs from the middle of the divider above to the middle
+      // of its own divider, so its centre is the centre of the visible row.
+      await expect(Math.abs(line.top + line.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.25);
+    }
+  },
   render: () => (
     <Table>
       <TableCaption>Recent invoices for your account.</TableCaption>
