@@ -19,6 +19,22 @@ describe('StatusBadge', () => {
     expect(markup).toContain('[&amp;_svg]:size-3.25!');
   });
 
+  test('an icon in children hides the tone icon of the chip and the bare badge', () => {
+    // The hiding is CSS on the badge (the IconInChildren story measures it):
+    // a direct <svg> child hides the marker with data-marker="icon".
+    const rule = '[&amp;:has(&gt;svg)&gt;[data-marker=icon]]:hidden';
+    for (const appearance of ['chip', 'bare'] as const) {
+      const markup = html(
+        <StatusBadge tone="success" appearance={appearance}>
+          <CircleSlashIcon />
+          Verified
+        </StatusBadge>,
+      );
+      expect(slotTag(markup, 'status-badge')).toContain(rule);
+      expect(markup).toContain('data-marker="icon"');
+    }
+  });
+
   test('each tone has its own default icon', () => {
     const icons = {
       neutral: 'lucide-circle-dashed',
