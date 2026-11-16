@@ -185,12 +185,16 @@ export const ListPage: Story = {
     const rows = [...canvasElement.querySelectorAll('tbody tr')].filter(shown);
     await expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
-      const content = Math.max(
-        ...[...row.querySelectorAll('td > *')].map((child) => child.getBoundingClientRect().height),
-      );
-      await expectPx(content, 32);
+      const boxes = [...row.querySelectorAll('td > *')].map((child) => child.getBoundingClientRect());
+      const tallest = boxes.reduce((a, b) => (b.height > a.height ? b : a));
+      await expectPx(tallest.height, 32);
+      const box = row.getBoundingClientRect();
       // Half a pixel at most: the bug this guards is exactly one pixel.
-      await expect(Math.abs(row.getBoundingClientRect().height - 48)).toBeLessThanOrEqual(0.5);
+      await expect(Math.abs(box.height - 48)).toBeLessThanOrEqual(0.5);
+      // The content sits as far from the divider above as from its own.
+      await expect(
+        Math.abs(tallest.top + tallest.height / 2 - (box.top + box.height / 2)),
+      ).toBeLessThanOrEqual(0.25);
     }
     const head = [...canvasElement.querySelectorAll('thead tr')].find(shown) as Element;
     await expectPx(head.getBoundingClientRect().height, 40);
