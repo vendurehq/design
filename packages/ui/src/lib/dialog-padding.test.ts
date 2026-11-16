@@ -18,7 +18,15 @@ test('the last padding class wins, as in tailwind-merge', () => {
 });
 
 test('other classes and variants set nothing', () => {
-  for (const className of ['', 'py-0', 'pt-4', 'sm:p-0', 'gap-0', '[--dialog-padding:0px]', 'pe-2']) {
+  for (const className of [
+    '',
+    'py-0',
+    'pt-4',
+    'sm:p-0',
+    'gap-0',
+    '[--dialog-padding:0px]',
+    'pe-2',
+  ]) {
     expect(paddingFromClassName(className)).toBeUndefined();
   }
   expect(paddingFromClassName(undefined)).toBeUndefined();
@@ -26,8 +34,13 @@ test('other classes and variants set nothing', () => {
 
 test('dialogPaddingStyle keeps the caller style and adds the variable', () => {
   expect(dialogPaddingStyle('gap-2', { color: 'red' })).toEqual({ color: 'red' });
-  expect(dialogPaddingStyle('p-0', { color: 'red' })).toEqual({ '--dialog-padding': '0px', color: 'red' } as never);
-  const fromState = dialogPaddingStyle('p-0', (state: { open: boolean }) => ({ opacity: state.open ? 1 : 0 }));
+  expect(dialogPaddingStyle('p-0', { color: 'red' })).toEqual({
+    '--dialog-padding': '0px',
+    color: 'red',
+  } as never);
+  const fromState = dialogPaddingStyle('p-0', (state: { open: boolean }) => ({
+    opacity: state.open ? 1 : 0,
+  }));
   expect(typeof fromState === 'function' && fromState({ open: true })).toEqual({
     '--dialog-padding': '0px',
     opacity: 1,

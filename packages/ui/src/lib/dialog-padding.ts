@@ -15,14 +15,19 @@ export function paddingFromClassName(className: unknown): string | undefined {
     if (!match || token.includes(':')) continue;
     const raw = match[1] as string;
     if (raw === 'px') value = '1px';
-    else if (/^\d+(\.\d+)?$/.test(raw)) value = raw === '0' ? '0px' : `calc(var(--spacing) * ${raw})`;
-    else if (raw.startsWith('[') && raw.endsWith(']')) value = raw.slice(1, -1).replaceAll('_', ' ');
+    else if (/^\d+(\.\d+)?$/.test(raw))
+      value = raw === '0' ? '0px' : `calc(var(--spacing) * ${raw})`;
+    else if (raw.startsWith('[') && raw.endsWith(']'))
+      value = raw.slice(1, -1).replaceAll('_', ' ');
     else if (raw.startsWith('(--') && raw.endsWith(')')) value = `var(${raw.slice(1, -1)})`;
   }
   return value;
 }
 
-type StyleProp<State> = React.CSSProperties | ((state: State) => React.CSSProperties | undefined) | undefined;
+type StyleProp<State> =
+  | React.CSSProperties
+  | ((state: State) => React.CSSProperties | undefined)
+  | undefined;
 
 /**
  * Sets `--dialog-padding` from a `p-*` or `px-*` class on the dialog, so the
@@ -32,7 +37,10 @@ type StyleProp<State> = React.CSSProperties | ((state: State) => React.CSSProper
  * this, its header and footer would stick out by the default 20px. A
  * `[--dialog-padding:…]` class still works: with no `p-*` class, nothing is set.
  */
-export function dialogPaddingStyle<State>(className: unknown, style: StyleProp<State>): StyleProp<State> {
+export function dialogPaddingStyle<State>(
+  className: unknown,
+  style: StyleProp<State>,
+): StyleProp<State> {
   const padding = paddingFromClassName(className);
   if (padding === undefined) return style;
   const variable = { '--dialog-padding': padding } as React.CSSProperties;
