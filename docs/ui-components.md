@@ -568,7 +568,7 @@ own `div` does not get it.
 The padding of `DialogContent` and `AlertDialogContent` is the
 `--dialog-padding` variable, 20px by default. The pinned header and footer
 reach over that padding, so they span the full width of the dialog. For a
-dialog with another padding, set the variable, not a `p-*` class:
+dialog with another padding, set the variable:
 
 ```tsx
 {/* No padding: the header, the body and the footer set their own. */}
@@ -582,8 +582,11 @@ dialog with another padding, set the variable, not a `p-*` class:
 <DialogContent className="[--dialog-padding:--spacing(8)]">…</DialogContent>
 ```
 
-A `p-0` (or any `p-*`) on `DialogContent` changes the padding but not the
-header and footer offsets. They then sit 20px outside the dialog's edges.
+A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` (`p-0`,
+`p-4`, `px-[24px]`) also sets the variable, so code written for 2.x keeps its
+header and footer flush with the dialog's edges. A `px-*` class sets the
+padding on all four sides. `py-*`, `pt-*` and a class behind a breakpoint
+(`sm:p-0`) do not set it: use the variable for those.
 `SheetContent` has no padding of its own. Its header and footer bring their
 own 16px; pad the body, not `SheetContent`.
 
