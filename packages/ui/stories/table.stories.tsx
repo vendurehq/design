@@ -40,12 +40,20 @@ export const Default: Story = {
     for (const row of rows) {
       const box = row.getBoundingClientRect();
       await expect(Math.abs(box.height - 48)).toBeLessThanOrEqual(0.5);
-      const text = document.createRange();
-      text.selectNodeContents(row.querySelector('td') as Element);
-      const line = text.getBoundingClientRect();
+      // Measure one line box, not the glyphs: where the glyphs sit inside
+      // their line depends on the font's ascent and descent, which differ
+      // between machines. A block as tall as the cell's line stands in for
+      // the text while it is measured.
+      const cell = row.querySelector('td') as HTMLElement;
+      const text = [...cell.childNodes];
+      const line = document.createElement('div');
+      line.style.height = getComputedStyle(cell).lineHeight;
+      cell.replaceChildren(line);
+      const lineBox = line.getBoundingClientRect();
+      cell.replaceChildren(...text);
       // The row box runs from the middle of the divider above to the middle
       // of its own divider, so its centre is the centre of the visible row.
-      await expect(Math.abs(line.top + line.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.25);
+      await expect(Math.abs(lineBox.top + lineBox.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.25);
     }
   },
   render: () => (
