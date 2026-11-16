@@ -545,9 +545,10 @@ import { Button } from "@vendure-io/ui/components/atoms/button";
 </Dialog>
 ```
 
-The dialog has no ✕ by default. Cancel, Escape and a click on the backdrop
-close it. Pass `showCloseButton` to `DialogContent` when the dialog has no
-Cancel button. `DialogTitle` takes an `icon`, drawn at 18px before the title in
+A dialog with a `DialogFooter` or a `DialogClose` has no ✕. Cancel, Escape and
+a click on the backdrop close it. A dialog with neither shows the ✕ on its own,
+so it always has a visible way to close. `showCloseButton` on `DialogContent`
+wins over both: `true` adds the ✕, `false` leaves it out. `DialogTitle` takes an `icon`, drawn at 18px before the title in
 the foreground at 60%, and a `tone` to colour it for a state.
 
 A dialog is at most the viewport height less 1rem above and below. A taller

@@ -23,7 +23,17 @@ function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
+// DialogClose and DialogFooter tell the content they are there, so a dialog
+// without either shows the ✕ (DialogContent `showCloseButton`).
+const DialogCloseControlContext = React.createContext<(() => () => void) | null>(null)
+
+function useRegisterCloseControl() {
+  const register = React.useContext(DialogCloseControlContext)
+  React.useLayoutEffect(() => register?.(), [register])
+}
+
 function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
+  useRegisterCloseControl()
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
@@ -70,20 +80,28 @@ function DialogCloseButton({ className }: { className?: string }) {
 function DialogContent({
   className,
   children,
-  showCloseButton = false,
+  showCloseButton,
   overlayClassName,
   ...props
 }: DialogPrimitive.Popup.Props & {
   /**
-   * Shows a ✕ in the top-right corner. Off by default: the footer's Cancel,
-   * Escape and a click on the backdrop close the dialog. Turn it on for a
-   * dialog with no Cancel button.
+   * Shows a ✕ in the top-right corner. Left out, the dialog shows it only
+   * when it holds no `DialogFooter` and no `DialogClose`: a dialog with a
+   * footer closes with its Cancel, Escape or a click on the backdrop, and a
+   * dialog without one still has a visible way to close. `true` or `false`
+   * wins over that.
    */
   showCloseButton?: boolean
   /** Classes for the backdrop behind the dialog, e.g. `bg-scrim-subtle`. */
   overlayClassName?: string
 }) {
   const dir = usePopupDir()
+  const [closeControls, setCloseControls] = React.useState(0)
+  const registerCloseControl = React.useCallback(() => {
+    setCloseControls((count) => count + 1)
+    return () => setCloseControls((count) => count - 1)
+  }, [])
+  const showClose = showCloseButton ?? closeControls === 0
   return (
     <DialogPortal>
       <DialogOverlay className={overlayClassName} />
@@ -101,11 +119,13 @@ function DialogContent({
         )}
         {...props}
       >
-        <DialogCloseButtonContext.Provider value={showCloseButton}>
-          {children}
-        </DialogCloseButtonContext.Provider>
+        <DialogCloseControlContext.Provider value={registerCloseControl}>
+          <DialogCloseButtonContext.Provider value={showClose}>
+            {children}
+          </DialogCloseButtonContext.Provider>
+        </DialogCloseControlContext.Provider>
         {/* A dialog without a DialogHeader keeps the ✕ here, in the corner. */}
-        {showCloseButton && (
+        {showClose && (
           <DialogCloseButton className="group-has-data-[slot=dialog-header]/dialog-content:hidden" />
         )}
       </DialogPrimitive.Popup>
@@ -153,6 +173,7 @@ function DialogFooter({
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
 }) {
+  useRegisterCloseControl()
   const pinnedRef = usePinnedHeight("--pinned-footer-height", "dialog-content", ref)
   return (
     <div
