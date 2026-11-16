@@ -62,12 +62,18 @@ const rowRevealClass = [
 
 const chipLabel = statusChipLabel;
 
+// Code written for 2.x puts its own icon in `children`. Its `<svg>` is then a
+// direct child of the badge, and the tone icon (or spinner) hides, so the
+// badge shows one icon. A dot stays: 2.x had it too.
+const ownIconHidesToneIcon = '[&:has(>svg)>[data-marker=icon]]:hidden';
+
 const statusBadgeVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium',
     statusChipFill,
     statusChipRing,
     chipLabel,
+    ownIconHidesToneIcon,
     'outline-1 outline-transparent -outline-offset-1',
     contentInsetPull,
   ],
@@ -107,6 +113,7 @@ const bareVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium',
     chipLabel,
+    ownIconHidesToneIcon,
     contentInsetPull,
   ],
   {
@@ -221,7 +228,9 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    *   already names the tone. `progress` still shows its spinner, and `dot`
    *   still shows the dot. `appearance="icon"` always shows an icon.
    *
-   * Never put an icon in `children`: the chip already brings one.
+   * Put the icon here, not in `children`: the chip sizes and colours it. An
+   * `<svg>` in `children` (code written for 2.x) hides the tone icon, so the
+   * chip still shows one icon, but at the size and colour you gave it.
    */
   icon?: React.ReactNode;
   /**

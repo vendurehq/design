@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { CircleSlashIcon, MoonStarIcon } from 'lucide-react';
+import { BadgeCheckIcon, CircleSlashIcon, MoonStarIcon } from 'lucide-react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -104,6 +104,37 @@ export const WithIcon: Story = {
       </StatusBadge>
     </div>
   ),
+};
+
+// Code written for 2.x puts its own icon in `children`. The chip then hides
+// its tone icon, so it shows one icon. New code passes `icon` instead.
+export const IconInChildren: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      <StatusBadge tone="success" data-testid="own-icon">
+        <BadgeCheckIcon className="size-3.25" />
+        Verified
+      </StatusBadge>
+      <StatusBadge tone="progress" appearance="bare" data-testid="own-icon-bare">
+        <MoonStarIcon className="size-3.25" />
+        Waking
+      </StatusBadge>
+      <StatusBadge tone="success" data-testid="tone-icon">
+        Verified
+      </StatusBadge>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const shownIcons = (testId: string) =>
+      [...within(canvasElement).getByTestId(testId).querySelectorAll('svg')].filter(
+        (svg) => svg.getBoundingClientRect().width > 0,
+      );
+    await expect(shownIcons('own-icon')).toHaveLength(1);
+    await expect(shownIcons('own-icon')[0]?.classList).toContain('lucide-badge-check');
+    await expect(shownIcons('own-icon-bare')).toHaveLength(1);
+    await expect(shownIcons('own-icon-bare')[0]?.classList).toContain('lucide-moon-star');
+    await expect(shownIcons('tone-icon')).toHaveLength(1);
+  },
 };
 
 // `icon={false}`: an inline chip whose label already names the tone. A list
