@@ -403,6 +403,63 @@ export const TallForm: Story = {
   },
 };
 
+/**
+ * Code written for 2.x sets the dialog's padding with a class: `p-0` around a
+ * full-bleed picker, `p-4` for a tighter dialog. The class also sets
+ * `--dialog-padding`, so the pinned header and footer stay flush with the
+ * dialog's edges.
+ */
+function PaddingClassDialog({ padding }: { padding: string }) {
+  return (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Choose asset</DialogTrigger>
+      <DialogContent className={padding}>
+        <DialogHeader>
+          <DialogTitle>Choose an asset</DialogTitle>
+          <DialogDescription>Pick one image for the product.</DialogDescription>
+        </DialogHeader>
+        <div className="bg-muted grid h-40 place-items-center text-sm text-muted-foreground">Asset grid</div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <Button>Select</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+async function expectFlushHeaderAndFooter(canvasElement: HTMLElement, padding: number) {
+  await userEvent.click(within(canvasElement).getByRole('button', { name: 'Choose asset' }));
+  const dialog = await within(document.body).findByRole('dialog');
+  // Measure after the entrance: its scale changes every rect.
+  await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+  const box = dialog.getBoundingClientRect();
+  const header = dialog.querySelector('[data-slot=dialog-header]')?.getBoundingClientRect();
+  const footer = dialog.querySelector('[data-slot=dialog-footer]')?.getBoundingClientRect();
+  const title = within(dialog).getByRole('heading').getBoundingClientRect();
+  // Within a pixel: the centred popup lands on half pixels.
+  await expectPx(header?.left, box.left, 'header left edge');
+  await expectPx(header?.right, box.right, 'header right edge');
+  await expectPx(header?.top, box.top, 'header top edge');
+  await expectPx(footer?.left, box.left, 'footer left edge');
+  await expectPx(footer?.right, box.right, 'footer right edge');
+  await expectPx(footer?.bottom, box.bottom, 'footer bottom edge');
+  await expectPx(title.left - box.left, padding, 'title inset');
+  await userEvent.keyboard('{Escape}');
+}
+
+export const PaddingZero: Story = {
+  tags: ['!autodocs'],
+  render: () => <PaddingClassDialog padding="p-0" />,
+  play: async ({ canvasElement }) => expectFlushHeaderAndFooter(canvasElement, 0),
+};
+
+export const PaddingFour: Story = {
+  tags: ['!autodocs'],
+  render: () => <PaddingClassDialog padding="p-4" />,
+  play: async ({ canvasElement }) => expectFlushHeaderAndFooter(canvasElement, 16),
+};
+
 /** Ends with the dialog open, so the accessibility check scans it. */
 export const Open: Story = {
   tags: ['!autodocs'],

@@ -8,6 +8,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
+import { dialogPaddingStyle } from "../../lib/dialog-padding.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
 
@@ -82,6 +83,7 @@ function DialogContent({
   children,
   showCloseButton,
   overlayClassName,
+  style,
   ...props
 }: DialogPrimitive.Popup.Props & {
   /**
@@ -107,7 +109,7 @@ function DialogContent({
       <DialogOverlay className={overlayClassName} />
       {/* Enters from 4px below at 96%: opacity 200ms, scale and translate 240ms on the strong ease-out. Leaves to 98% (opacity 120ms on `ease`, scale 140ms on the strong ease-out). The scrim fades in 180ms and out in 140ms. Reduced motion keeps the fades. */}
       {/* At most the viewport height less 1rem on each side. A taller dialog scrolls inside; DialogHeader and DialogFooter stick to its top and bottom edges. */}
-      {/* The padding is `--dialog-padding` (20px), and the pinned header and footer reach over it. Change the variable, not `p-*`. */}
+      {/* The padding is `--dialog-padding` (20px), and the pinned header and footer reach over it. Change the variable; a `p-*` or `px-*` class also sets it (dialogPaddingStyle). */}
       {/* One column as wide as the space inside the padding: content wider than that shrinks or wraps inside it instead of widening the dialog past its padding. */}
       {/* The scroll padding is the pinned header's and footer's measured heights plus 4px for a focus ring: a focused field scrolls clear of both. */}
       <DialogPrimitive.Popup
@@ -117,6 +119,7 @@ function DialogContent({
           "group/dialog-content bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid grid-cols-[minmax(0,1fr)] max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto overscroll-contain rounded-2xl [--dialog-padding:--spacing(5)] p-(--dialog-padding) [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
           className
         )}
+        style={dialogPaddingStyle(className, style)}
         {...props}
       >
         <DialogCloseControlContext.Provider value={registerCloseControl}>
