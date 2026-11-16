@@ -142,7 +142,93 @@ export const WithToneIcon: Story = {
   ),
 };
 
-/** `showCloseButton` adds a ✕ for a dialog that has no Cancel button. */
+/**
+ * A dialog with no `DialogFooter` and no `DialogClose` shows a ✕ on its own,
+ * so it always has a visible way to close. A dialog with a footer shows none.
+ */
+export const WithoutFooter: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Show build</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Build details</DialogTitle>
+          <DialogDescription>Built from main in 2 min 14 s.</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show build' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Close' })).toBeVisible());
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+  },
+};
+
+/** A dialog with a footer has its Cancel: no ✕. */
+export const WithFooterNoCloseButton: Story = {
+  tags: ['!autodocs'],
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Dialog' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeVisible());
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/**
+ * A `DialogClose` in the body counts as the dialog's close control, as a
+ * footer does: no ✕.
+ */
+export const WithDialogCloseInBody: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Show build</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Build details</DialogTitle>
+        </DialogHeader>
+        <DialogClose render={<Button variant="outline" />}>Done</DialogClose>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show build' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Done' })).toBeVisible());
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** `showCloseButton={false}` wins: no ✕, even without a footer. */
+export const CloseButtonOff: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Show build</DialogTrigger>
+      <DialogContent showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Build details</DialogTitle>
+          <DialogDescription>Press Escape to close.</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show build' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** `showCloseButton` shows the ✕ whatever else the dialog holds. */
 export const WithCloseButton: Story = {
   render: () => (
     <Dialog>
