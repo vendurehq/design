@@ -5,6 +5,9 @@ export const fontFamily = {
   heading: '"Inter Variable", "Inter", system-ui, sans-serif',
   body: '"Inter Variable", "Inter", system-ui, sans-serif',
   mono: '"Geist Mono Variable", "Geist Mono", ui-monospace, monospace',
+  // Website headings only (the `text-style-display-*` styles). Product
+  // screens keep `heading`. `css/fonts` loads Public Sans.
+  display: '"Public Sans Variable", "Public Sans", system-ui, sans-serif',
 } as const;
 
 // Per-family font-feature-settings. The Inter families turn on `cv11`
@@ -19,6 +22,9 @@ export const fontFeatureSettings = {
   heading: '"cv11", "ss01", "ss03"',
   body: '"cv11", "ss01", "ss03"',
   mono: '"liga" 0, "calt" 0',
+  // The Inter features above pick Inter glyph variants. Public Sans keeps
+  // its own defaults.
+  display: 'normal',
 } as const;
 
 // `sm` is the body and UI text size (13px). `2xs` is micro text; no
@@ -57,6 +63,21 @@ export const letterSpacing = {
   normal: '0em',
   wide: '0.025em',
 } as const;
+
+// Display steps for website hero and section headings, above the product
+// scale. Public Sans, semibold, balanced lines. The sizes come from the
+// website's headings: flagship hero 60px, page hero 48px, small-screen hero
+// 36px, section heading 30px. Tracking is the website's -1.5px written in em
+// per step. Leading is tight and lands on whole pixels.
+const displayStyle = (fontSize: string, lineHeight: string, letterSpacing: string) => ({
+  fontFamily: fontFamily.display,
+  fontFeatureSettings: fontFeatureSettings.display,
+  fontSize,
+  fontWeight: fontWeight.semibold,
+  letterSpacing,
+  lineHeight,
+  textWrapStyle: 'balance',
+});
 
 // Named type compositions — font, size, weight, tracking, leading, and how
 // the lines break. Type only, no color. Titles balance their lines; body
@@ -121,4 +142,13 @@ export const textStyles = {
     fontWeight: fontWeight.normal,
     lineHeight: '1.5',
   },
+  // Website headings only, never in product screens.
+  // 60px on a 60px line: the flagship hero.
+  'display-xl': displayStyle('3.75rem', '3.75rem', '-0.025em'),
+  // 48px on a 50px line: every other page hero.
+  'display-lg': displayStyle('3rem', '3.125rem', '-0.031em'),
+  // 36px on a 38px line: a hero on a small screen, a large stat or price.
+  'display-md': displayStyle('2.25rem', '2.375rem', '-0.042em'),
+  // 30px on a 36px line: a section heading.
+  'display-sm': displayStyle('1.875rem', '2.25rem', '-0.05em'),
 } as const;

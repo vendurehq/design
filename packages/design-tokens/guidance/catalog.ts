@@ -107,6 +107,10 @@ export const tokenGuidance = [
         body: 'Use the named page-title, section-title, dialog-title, card-title, body, caption, and code styles when the content matches that role. Body and UI text is 13px (text-sm), small text and keyboard hints 12px (text-xs), and micro text 11px (text-2xs).',
       },
       {
+        title: 'Display styles are for the website only',
+        body: 'Use display-xl (60px), display-lg (48px), display-md (36px) and display-sm (30px) for website hero and section headings. They set Public Sans (font-display), the website heading font. Never use them in product screens: a product page title is page-title. css/fonts self-hosts Public Sans.',
+      },
+      {
         title: 'Raw headings are not globally restyled',
         body: 'Use the design-system title components or apply the heading role explicitly. Do not rebind the heading font in consumer CSS.',
       },
