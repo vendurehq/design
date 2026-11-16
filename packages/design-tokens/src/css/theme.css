@@ -183,10 +183,12 @@
   --font-heading: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, monospace;
+  --font-display: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
   --font-sans--font-feature-settings: "cv11", "ss01", "ss03";
   --font-heading--font-feature-settings: "cv11", "ss01", "ss03";
   --font-body--font-feature-settings: "cv11", "ss01", "ss03";
   --font-mono--font-feature-settings: "liga" 0, "calt" 0;
+  --font-display--font-feature-settings: normal;
   --text-2xs: 0.6875rem;
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
@@ -435,6 +437,46 @@
   font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.5;
+}
+
+@utility text-style-display-xl {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-feature-settings: normal;
+  font-size: 3.75rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 3.75rem;
+  text-wrap-style: balance;
+}
+
+@utility text-style-display-lg {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-feature-settings: normal;
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.031em;
+  line-height: 3.125rem;
+  text-wrap-style: balance;
+}
+
+@utility text-style-display-md {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-feature-settings: normal;
+  font-size: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.042em;
+  line-height: 2.375rem;
+  text-wrap-style: balance;
+}
+
+@utility text-style-display-sm {
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  font-feature-settings: normal;
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 2.25rem;
+  text-wrap-style: balance;
 }
 
 @layer base {
