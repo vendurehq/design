@@ -92,14 +92,14 @@ function Nav() {
   );
 }
 
-// The end of the top bar: the search field that opens the command palette
-// (the consumer's handler). Below 768px it shrinks to an icon button.
-// The divider between the sidebar toggle and the breadcrumb. The header places
-// it on the page's left edge.
+// The divider between the sidebar toggle and the breadcrumb, as the Console
+// and the Dashboard compose it.
 function HeaderDivider() {
   return <Separator orientation="vertical" className="me-2 h-4 data-vertical:self-center" />;
 }
 
+// The end of the top bar: the search field that opens the command palette
+// (the consumer's handler). Below 768px it shrinks to an icon button.
 function TopBarActions() {
   return (
     <div className="ml-auto flex items-center gap-1">
@@ -108,11 +108,9 @@ function TopBarActions() {
   );
 }
 
-// The page pads itself with the AppShell gutter, so its left edge lines up
-// with the divider after the sidebar toggle in the header.
 function Dashboard({ title = 'Orders' }: { title?: string }) {
   return (
-    <div className="flex flex-1 flex-col gap-5 overflow-auto px-(--app-shell-gutter) py-6">
+    <div className="flex flex-1 flex-col gap-5 overflow-auto p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">{title}</h1>
@@ -270,59 +268,6 @@ export const WithSidebarAtom: Story = {
     </>
     );
   },
-};
-
-// The leading edge. The divider after the sidebar toggle sits on the left edge
-// of the page: the title and the cards start on the same x. The page is
-// centred with a max width, so AppShell carries that width in
-// --app-shell-page-width and the header follows the page as it centres. It
-// holds with the sidebar open and collapsed, and from `md` up. Below `md`
-// the 16px gutter has no room for the toggle, so the toggle starts on it.
-export const LeadingEdge: Story = {
-  name: 'Leading edge: the divider on the page edge',
-  render: () => (
-    <AppShell className="h-[620px] min-h-0 overflow-hidden [--app-shell-page-width:var(--container-6xl)]">
-      <SidebarProvider className="min-h-0">
-        <Sidebar collapsible="icon" variant="inset">
-          <SidebarHeader>
-            <div className="flex items-center gap-2 px-2 py-1.5">
-              <div className="bg-brand size-6 rounded-md" />
-              <span className="text-sm font-semibold">Vendure</span>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {nav.map(({ icon: Icon, label, active }) => (
-                    <SidebarMenuItem key={label}>
-                      <SidebarMenuButton isActive={active} tooltip={label}>
-                        <Icon />
-                        <span>{label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-        <SidebarInset className="min-h-0 overflow-auto" render={<div />}>
-          <AppShellHeader>
-            <SidebarTrigger />
-            <HeaderDivider />
-            <span className="text-muted-foreground text-sm">Marketing / Orders</span>
-            <TopBarActions />
-          </AppShellHeader>
-          <AppShellMain scrollOwner="container">
-            <div className="mx-auto w-full max-w-6xl">
-              <Dashboard />
-            </div>
-          </AppShellMain>
-        </SidebarInset>
-      </SidebarProvider>
-    </AppShell>
-  ),
 };
 
 // The header sticks to the top of the element that scrolls. With

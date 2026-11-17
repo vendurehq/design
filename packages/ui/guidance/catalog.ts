@@ -89,10 +89,6 @@ export const uiGuidance = [
         body: 'Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.',
       },
       {
-        title: 'The page pads itself with the AppShell gutter',
-        body: 'Pad the page with px-(--app-shell-gutter): 16px, and 32px from 768px. Put the SidebarTrigger first in AppShellHeader with a vertical Separator after it; the header places the toggle so that the divider sits on the left edge of the page, with the sidebar open or collapsed. Do not put a margin on the toggle. A page centred with a max width and mx-auto sets --app-shell-page-width to that width on AppShell, so the header follows it. Below 768px the toggle starts on the gutter.',
-      },
-      {
         title: 'Search opens the palette from the top bar',
         body: 'Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.',
       },
