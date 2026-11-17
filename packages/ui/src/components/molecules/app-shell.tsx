@@ -62,12 +62,22 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
 // not own. Forced-colors mode drops box shadows, so there a 1px border on an
 // ::after line at the bottom edge draws the hairline in CanvasText; it
 // overlays the box and does not change the 52px.
+//
+// The sidebar toggle sits in an even 12px frame: 12px from the header's
+// leading edge (ps-3), 12px from its top and bottom edges (the 28px toggle
+// centred in 52px), and 12px to the divider after it (the 6px gap plus a
+// 6px end margin). The header owns these margins, so a margin a consumer
+// puts on the toggle does not apply.
+const headerToggleClassName =
+  '[&_[data-slot=sidebar-trigger]]:ms-0 [&_[data-slot=sidebar-trigger]]:me-1.5';
+
 function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="app-shell-header"
       className={cn(
         'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pe-5 ps-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
+        headerToggleClassName,
         className,
       )}
       {...props}

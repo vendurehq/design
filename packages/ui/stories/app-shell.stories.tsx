@@ -3,6 +3,7 @@ import { BarChart3, Package, Settings, ShoppingCart, Users } from 'lucide-react'
 import { useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardContent, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
+import { Separator } from '../src/components/atoms/separator.tsx';
 import {
   Sidebar,
   SidebarContent,
@@ -89,6 +90,12 @@ function Nav() {
       ))}
     </AppShellSidebar>
   );
+}
+
+// The divider between the sidebar toggle and the breadcrumb, as the Console
+// and the Dashboard compose it.
+function HeaderDivider() {
+  return <Separator orientation="vertical" className="me-2 h-4 data-vertical:self-center" />;
 }
 
 // The end of the top bar: the search field that opens the command palette
@@ -248,6 +255,7 @@ export const WithSidebarAtom: Story = {
           <SidebarInset render={<div />}>
             <AppShellHeader>
               <SidebarTrigger />
+              <HeaderDivider />
               <span className="text-muted-foreground text-sm">Marketing / Orders</span>
               <TopBarActions />
             </AppShellHeader>
@@ -328,6 +336,7 @@ export const PageEnter: Story = {
           <SidebarInset render={<div />}>
             <AppShellHeader>
               <SidebarTrigger />
+              <HeaderDivider />
               <span className="text-muted-foreground text-sm">Marketing / {current}</span>
             </AppShellHeader>
             <AppShellMain>
