@@ -17,8 +17,7 @@ export function paddingFromClassName(className: unknown): string | undefined {
     if (raw === 'px') value = '1px';
     else if (/^\d+(\.\d+)?$/.test(raw))
       value = raw === '0' ? '0px' : `calc(var(--spacing) * ${raw})`;
-    else if (raw.startsWith('[') && raw.endsWith(']'))
-      value = raw.slice(1, -1).replaceAll('_', ' ');
+    else if (raw.startsWith('[') && raw.endsWith(']')) value = raw.slice(1, -1).replace(/_/g, ' ');
     else if (raw.startsWith('(--') && raw.endsWith(')')) value = `var(${raw.slice(1, -1)})`;
   }
   return value;

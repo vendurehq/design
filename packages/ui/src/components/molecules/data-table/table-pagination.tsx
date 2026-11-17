@@ -151,7 +151,7 @@ function TablePagination({
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-sm">{pageSizeLabel}</span>
               <Select value={pageSize} onValueChange={(value) => onPageSizeChange(Number(value))}>
-                <SelectTrigger size="sm" aria-label={pageSizeLabel} className="w-fit">
+                <SelectTrigger aria-label={pageSizeLabel} className="w-fit">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -219,7 +219,7 @@ function NavButton({
 }) {
   const shared = {
     variant: 'outline' as const,
-    size: 'icon-sm' as const,
+    size: 'icon' as const,
     'data-slot': slot,
   };
 

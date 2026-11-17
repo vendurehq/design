@@ -201,11 +201,11 @@ function CodeBlockAction({ icon, label, onClick, disabled }: CodeBlockActionProp
         render={
           <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={onClick}
             aria-label={label}
             disabled={disabled}
-            className={cn('h-7 w-7', disabled && 'cursor-not-allowed opacity-50')}
+            className={cn(disabled && 'cursor-not-allowed opacity-50')}
           />
         }
       >
