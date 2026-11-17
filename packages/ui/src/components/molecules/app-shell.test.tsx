@@ -153,30 +153,3 @@ test('Only the page moves: main, the header and the content region carry no ente
   expect(html.match(/animate-page-enter/g)).toHaveLength(1);
   expect(html).toMatch(/<main[^>]*><div data-slot="app-shell-page"/);
 });
-
-test('the header lines the divider after the toggle up with the page gutter', () => {
-  const html = renderToStaticMarkup(
-    <AppShell>
-      <AppShellContent>
-        <AppShellHeader>Header</AppShellHeader>
-      </AppShellContent>
-    </AppShell>,
-  );
-
-  expect(slotTokens(html, 'app-shell')).toEqual(
-    expect.arrayContaining([
-      '[--app-shell-gutter:--spacing(4)]',
-      'md:[--app-shell-gutter:--spacing(8)]',
-    ]),
-  );
-  const header = slotTokens(html, 'app-shell-header');
-  expect(header).not.toContain('ps-3');
-  expect(header).toEqual(
-    expect.arrayContaining([
-      'ps-[calc(var(--app-shell-page-offset)+var(--app-shell-gutter,--spacing(4)))]',
-      'md:ps-[calc(var(--app-shell-page-offset)+max(0px,var(--app-shell-gutter,--spacing(8))-var(--spacing)*8))]',
-      '[&_[data-slot=sidebar-trigger]]:ms-0',
-      '[&_[data-slot=sidebar-trigger]]:-me-0.5',
-    ]),
-  );
-});

@@ -18,23 +18,12 @@ import type * as React from 'react';
 // header + main anatomy so every consumer gets the same scroll boundary and skip
 // link target without coupling the design system to a router or auth provider. The
 // shell is viewport-bound, so main scrolls and the header stays in view.
-//
-// The gutter: AppShell sets --app-shell-gutter, the inline padding of the page
-// (16px, 32px from `md`). The header lines up with it, so a consumer pads its
-// page with `px-(--app-shell-gutter)`. A page with a max width and `mx-auto`
-// sets --app-shell-page-width to that width on AppShell (or any ancestor of the
-// header), and the header follows the page as it centres.
-const gutterClassName = '[--app-shell-gutter:--spacing(4)] md:[--app-shell-gutter:--spacing(8)]';
 
 function AppShell({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="app-shell"
-      className={cn(
-        'bg-background text-foreground flex h-svh w-full overflow-hidden',
-        gutterClassName,
-        className,
-      )}
+      className={cn('bg-background text-foreground flex h-svh w-full overflow-hidden', className)}
       {...props}
     />
   );
@@ -73,29 +62,12 @@ function AppShellContent({ className, ...props }: React.ComponentProps<'div'>) {
 // not own. Forced-colors mode drops box shadows, so there a 1px border on an
 // ::after line at the bottom edge draws the hairline in CanvasText; it
 // overlays the box and does not change the 52px.
-//
-// The leading edge: the divider after the sidebar toggle sits on the page's
-// left edge. The toggle is 28px (spacing 7) and the divider follows 4px
-// later (spacing 1), so from `md` the header starts the toggle spacing 8 before
-// the gutter. Below `md` the 16px gutter has no room for the toggle, so the
-// toggle itself starts on the gutter. The header places the toggle: a margin
-// a consumer puts on it does not apply. Outside AppShell (no gutter set), the
-// fallbacks are the AppShell gutter values. The page offset is half of the
-// space a centred page leaves, and 0 for a full-width page.
-const headerInsetClassName = [
-  '[--app-shell-page-offset:max(0px,calc((100%-var(--app-shell-page-width,100%))/2))]',
-  'ps-[calc(var(--app-shell-page-offset)+var(--app-shell-gutter,--spacing(4)))]',
-  'md:ps-[calc(var(--app-shell-page-offset)+max(0px,var(--app-shell-gutter,--spacing(8))-var(--spacing)*8))]',
-  '[&_[data-slot=sidebar-trigger]]:ms-0 [&_[data-slot=sidebar-trigger]]:-me-0.5',
-].join(' ');
-
 function AppShellHeader({ className, ...props }: React.ComponentProps<'header'>) {
   return (
     <header
       data-slot="app-shell-header"
       className={cn(
-        'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pe-5 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
-        headerInsetClassName,
+        'bg-background md:in-[[data-variant=inset]~[data-slot=sidebar-inset]]:bg-surface sticky top-0 z-10 flex h-13 shrink-0 items-center gap-1.5 pe-5 ps-3 shadow-[inset_0_-1px_0_var(--border)] forced-colors:after:pointer-events-none forced-colors:after:absolute forced-colors:after:inset-x-0 forced-colors:after:bottom-0 forced-colors:after:border-b forced-colors:after:border-[CanvasText]',
         className,
       )}
       {...props}
