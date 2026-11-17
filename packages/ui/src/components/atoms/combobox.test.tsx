@@ -30,14 +30,14 @@ describe('ComboboxTrigger field styling', () => {
     expect(html).toContain('data-size="default"');
   });
 
-  test('size="sm" uses the small field height', () => {
+  test('size="sm" is 28px, the Button sm height', () => {
     const combobox = renderToStaticMarkup(
       <Combobox items={['DE']}>
         <ComboboxTrigger size="sm" />
       </Combobox>,
     );
     expect(combobox).toContain('data-size="sm"');
-    expect(slotTokens(combobox, 'combobox-trigger')).toContain('data-[size=sm]:h-8');
+    expect(slotTokens(combobox, 'combobox-trigger')).toContain('data-[size=sm]:h-7');
   });
 
   test('the inline trigger button of ComboboxInput stays a ghost icon button', () => {
