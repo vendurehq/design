@@ -88,6 +88,25 @@ describe('TablePagination capability rendering', () => {
     expect(markup).toContain('<button');
     expect(markup).not.toContain('<a ');
   });
+
+  test('the page-size selector and prev/next share the default 34px control height', () => {
+    const markup = html(
+      <TablePagination
+        page={2}
+        pageSize={25}
+        totalItems={132}
+        onPageChange={noop}
+        onPageSizeChange={noop}
+      />,
+    );
+    expect(markup).toMatch(
+      /data-slot="select-trigger"[^>]*data-size="default"|data-size="default"[^>]*data-slot="select-trigger"/,
+    );
+    for (const slot of ['table-pagination-previous', 'table-pagination-next']) {
+      const tag = markup.match(new RegExp(`<button[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
+      expect(tag).toContain('size-8.5');
+    }
+  });
 });
 
 describe('TablePagination anchor mode', () => {
