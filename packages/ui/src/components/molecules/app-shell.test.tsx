@@ -85,6 +85,25 @@ test('AppShellHeader is a 52px opaque sticky bar with an inset hairline', () => 
   expect(tokens.filter((token) => /backdrop-blur|\/85$|^border-b$/.test(token))).toEqual([]);
 });
 
+// The 28px toggle centres in the 52px bar, 12px from the top. The header keeps
+// the same 12px on the toggle's start (ps-3, no toggle margin) and on its end
+// (the 6px gap plus a 6px end margin), whatever margin a consumer passes.
+test('AppShellHeader frames the sidebar toggle with an even 12px', () => {
+  const html = renderToStaticMarkup(<AppShellHeader>Header</AppShellHeader>);
+  const tag = html.match(/<header[^>]*>/)?.[0] ?? '';
+  const tokens = (tag.match(/class="([^"]*)"/)?.[1] ?? '').replaceAll('&amp;', '&').split(/\s+/);
+
+  expect(tokens).toEqual(
+    expect.arrayContaining([
+      'h-13',
+      'ps-3',
+      'gap-1.5',
+      '[&_[data-slot=sidebar-trigger]]:ms-0',
+      '[&_[data-slot=sidebar-trigger]]:me-1.5',
+    ]),
+  );
+});
+
 // Forced-colors mode removes box shadows. The hairline comes back there as a
 // CanvasText border on an ::after line, which overlays the header instead of
 // taking a pixel from it. In normal mode nothing changes.
