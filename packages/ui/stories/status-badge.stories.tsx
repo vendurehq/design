@@ -107,7 +107,8 @@ export const WithIcon: Story = {
 };
 
 // Code written for 2.x puts its own icon in `children`. The chip then hides
-// its tone icon, so it shows one icon. New code passes `icon` instead.
+// its tone icon, so it shows one icon, in the tone colour like the tone icon.
+// A colour class on the icon still wins. New code passes `icon` instead.
 export const IconInChildren: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
@@ -122,6 +123,10 @@ export const IconInChildren: Story = {
       <StatusBadge tone="success" data-testid="tone-icon">
         Verified
       </StatusBadge>
+      <StatusBadge tone="success" data-testid="own-icon-coloured">
+        <BadgeCheckIcon className="size-3.25 text-muted-foreground" />
+        Verified
+      </StatusBadge>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -134,6 +139,16 @@ export const IconInChildren: Story = {
     await expect(shownIcons('own-icon-bare')).toHaveLength(1);
     await expect(shownIcons('own-icon-bare')[0]?.classList).toContain('lucide-moon-star');
     await expect(shownIcons('tone-icon')).toHaveLength(1);
+    // The own icon takes the tone colour of the tone icon; a caller's colour
+    // class wins over it.
+    const colour = (testId: string) => getComputedStyle(shownIcons(testId)[0]!).color;
+    await expect(colour('own-icon')).toBe(colour('tone-icon'));
+    const muted = document.createElement('span');
+    muted.className = 'text-muted-foreground';
+    canvasElement.append(muted);
+    await expect(colour('own-icon-coloured')).toBe(getComputedStyle(muted).color);
+    await expect(colour('own-icon-coloured')).not.toBe(colour('tone-icon'));
+    muted.remove();
   },
 };
 
