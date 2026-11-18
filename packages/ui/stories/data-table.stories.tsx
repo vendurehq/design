@@ -23,6 +23,7 @@ import {
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
+  type DataTableColumnMeta,
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
@@ -1123,6 +1124,88 @@ export const CellTextAlignment: Story = {
         }
       }
     }
+  },
+};
+
+// Number columns set `meta: { align: 'end' }`: the header label, its sort
+// icon and the cells line up on the end side, so the digits line up.
+const endAlignedColumns: ColumnDef<Order>[] = columns.map((column) =>
+  'accessorKey' in column && (column.accessorKey === 'items' || column.accessorKey === 'total')
+    ? { ...column, meta: { align: 'end' } satisfies DataTableColumnMeta }
+    : column,
+);
+
+// The inline-end edge of the visible text: its rightmost edge, or its leftmost
+// edge (negated) in right-to-left. Measured over all text boxes, so an LTR run
+// inside an RTL cell (a price) still counts by where it sits on screen.
+function textEnd(element: Element): number {
+  const rtl = getComputedStyle(element).direction === 'rtl';
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() && !node.parentElement?.closest('.sr-only, [aria-hidden="true"]')
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT,
+  });
+  let edge = Number.NEGATIVE_INFINITY;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    for (const rect of range.getClientRects()) {
+      if (rect.width === 0) continue;
+      edge = Math.max(edge, rtl ? -rect.left : rect.right);
+    }
+  }
+  if (edge === Number.NEGATIVE_INFINITY) throw new Error(`No visible text in ${element.outerHTML}`);
+  return edge;
+}
+
+function EndAlignedTable() {
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'total', desc: true }]);
+  return (
+    <DataTable<Order>
+      rows={orders}
+      columns={endAlignedColumns}
+      getRowId={(order) => order.id}
+      sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+    />
+  );
+}
+
+async function expectEndAligned(canvasElement: HTMLElement) {
+  const headers = [...canvasElement.querySelectorAll('thead th')];
+  for (const id of ['items', 'total']) {
+    const index = headers.findIndex((header) => header.getAttribute('data-column-id') === id);
+    const header = headers[index] as Element;
+    // The sort icon comes before the label, so the label ends where the cells end.
+    const button = header.querySelector('[data-slot=data-table-column-header]') as HTMLElement;
+    await expect(button).toBeTruthy();
+    const icon = button.querySelector('svg') as SVGElement;
+    const rtl = getComputedStyle(button).direction === 'rtl';
+    const iconEnd = rtl ? -icon.getBoundingClientRect().left : icon.getBoundingClientRect().right;
+    await expect(iconEnd, `${id} icon before label`).toBeLessThan(textEnd(button));
+    for (const row of canvasElement.querySelectorAll('tbody tr')) {
+      const cell = row.querySelectorAll('td')[index] as Element;
+      await expectPx(textEnd(cell), textEnd(button));
+    }
+  }
+}
+
+export const EndAlignedColumns: Story = {
+  render: () => <EndAlignedTable />,
+  play: async ({ canvasElement }) => {
+    await expectEndAligned(canvasElement);
+  },
+};
+
+// The same table in right-to-left: the end side is the left.
+export const EndAlignedColumnsRtl: Story = {
+  render: () => (
+    <div dir="rtl">
+      <EndAlignedTable />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expectEndAligned(canvasElement);
   },
 };
 

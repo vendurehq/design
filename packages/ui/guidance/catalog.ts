@@ -461,6 +461,10 @@ export const uiGuidance = [
         body: 'Badge, StatusBadge, Button and IdChip set --content-inset, the distance from their box to their first letter, and a DataTable cell pulls its first element back by it. Do not add per-column offsets. Mark a leading icon with data-icon="inline-start". Custom styled content sets --content-inset on the element that starts the cell.',
       },
       {
+        title: 'Number columns align to the end',
+        body: "Set meta: { align: 'end' } (typed as DataTableColumnMeta) on a column of amounts or counts (a total, a quantity) so its digits line up. The header, its sort control and the cells then align to the inline end, which flips in right-to-left. Render the value with Money or tabular-nums. Leave text, status and date columns at the start.",
+      },
+      {
         title: 'The first column names the row',
         body: 'Start the table with the column that names the row (title, name, key). Put the status column directly after it, as a StatusBadge with appearance="icon". Do not lead with a status, a badge or a count.',
       },

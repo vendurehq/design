@@ -1,5 +1,8 @@
 import type { Column, ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
-import type { ControlledState } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
+import type {
+  ControlledState,
+  DataTableColumnMeta,
+} from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 
 // Pure, TanStack-shaped logic for the DataTable core. No JSX and no React state,
 // so each function is unit-testable in isolation (the getRange/clampPage
@@ -126,4 +129,12 @@ export function measureColumnIndents(table: HTMLTableElement): Record<string, nu
 export function sameIndents(a: Record<string, number>, b: Record<string, number>): boolean {
   const keys = Object.keys(a);
   return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+}
+
+/**
+ * The side a column aligns to, from its `meta.align` (see DataTableColumnMeta).
+ * TanStack types `meta` as the consumer's own ColumnMeta, so it is read loosely.
+ */
+export function columnAlign(meta: unknown): NonNullable<DataTableColumnMeta['align']> {
+  return (meta as DataTableColumnMeta | undefined)?.align === 'end' ? 'end' : 'start';
 }

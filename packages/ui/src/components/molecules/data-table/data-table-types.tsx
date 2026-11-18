@@ -13,6 +13,20 @@ import type {
 } from '@tanstack/react-table';
 import type * as React from 'react';
 
+/**
+ * The keys DataTable reads from a column's `meta`. DataTable does not augment
+ * TanStack's `ColumnMeta`, so a consumer's own meta keys keep working; write
+ * `meta: { align: 'end' } satisfies DataTableColumnMeta` for a checked value.
+ */
+export interface DataTableColumnMeta {
+  /**
+   * Which side of the column its header, sort control and cells line up on.
+   * `'end'` is for numbers (totals, quantities), so their digits line up.
+   * Logical, so it flips in right-to-left. Defaults to `'start'`.
+   */
+  align?: 'start' | 'end';
+}
+
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be
 // imported by both `data-table.tsx` and its sub-components without an import
 // cycle. `data-table.tsx` re-exports everything here (plus the consumer-facing
