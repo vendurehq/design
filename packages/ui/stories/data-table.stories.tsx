@@ -1126,6 +1126,84 @@ export const CellTextAlignment: Story = {
   },
 };
 
+// Number columns set `meta: { align: 'end' }`: the header label, its sort
+// icon and the cells line up on the end side, so the digits line up.
+const endAlignedColumns: ColumnDef<Order>[] = columns.map((column) =>
+  'accessorKey' in column && (column.accessorKey === 'items' || column.accessorKey === 'total')
+    ? { ...column, meta: { align: 'end' } }
+    : column,
+);
+
+// The inline-end edge of the last visible letter: its right edge, or its left
+// edge in right-to-left.
+function textEnd(element: Element): number {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent?.trim() && !node.parentElement?.closest('.sr-only, [aria-hidden="true"]')
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT,
+  });
+  let last: Node | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) last = node;
+  if (!last?.textContent) throw new Error(`No visible text in ${element.outerHTML}`);
+  const end = last.textContent.trimEnd().length;
+  const range = document.createRange();
+  range.setStart(last, end - 1);
+  range.setEnd(last, end);
+  const rect = range.getBoundingClientRect();
+  return getComputedStyle(element).direction === 'rtl' ? -rect.left : rect.right;
+}
+
+function EndAlignedTable() {
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'total', desc: true }]);
+  return (
+    <DataTable<Order>
+      rows={orders}
+      columns={endAlignedColumns}
+      getRowId={(order) => order.id}
+      sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+    />
+  );
+}
+
+async function expectEndAligned(canvasElement: HTMLElement) {
+  const headers = [...canvasElement.querySelectorAll('thead th')];
+  for (const id of ['items', 'total']) {
+    const index = headers.findIndex((header) => header.getAttribute('data-column-id') === id);
+    const header = headers[index] as Element;
+    // The sort icon comes before the label, so the label ends where the cells end.
+    const button = header.querySelector('[data-slot=data-table-column-header]') as HTMLElement;
+    await expect(button).toBeTruthy();
+    const icon = button.querySelector('svg') as SVGElement;
+    const rtl = getComputedStyle(button).direction === 'rtl';
+    const iconEnd = rtl ? -icon.getBoundingClientRect().left : icon.getBoundingClientRect().right;
+    await expect(iconEnd, `${id} icon before label`).toBeLessThan(textEnd(button));
+    for (const row of canvasElement.querySelectorAll('tbody tr')) {
+      const cell = row.querySelectorAll('td')[index] as Element;
+      await expectPx(textEnd(cell), textEnd(button));
+    }
+  }
+}
+
+export const EndAlignedColumns: Story = {
+  render: () => <EndAlignedTable />,
+  play: async ({ canvasElement }) => {
+    await expectEndAligned(canvasElement);
+  },
+};
+
+// The same table in right-to-left: the end side is the left.
+export const EndAlignedColumnsRtl: Story = {
+  render: () => (
+    <div dir="rtl">
+      <EndAlignedTable />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expectEndAligned(canvasElement);
+  },
+};
+
 // Product variants: every row opens its variant. The name is a DataTableRowLink,
 // whose link covers the row; the SKU copy chip, the select checkbox, the
 // Product link and the actions menu sit above it and keep their own action.
