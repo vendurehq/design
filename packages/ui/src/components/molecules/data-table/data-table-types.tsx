@@ -5,7 +5,6 @@ import type {
   HeaderContext,
   OnChangeFn,
   Row,
-  RowData,
   RowSelectionState,
   SortingState,
   Table,
@@ -14,15 +13,18 @@ import type {
 } from '@tanstack/react-table';
 import type * as React from 'react';
 
-declare module '@tanstack/react-table' {
-  interface ColumnMeta<TData extends RowData, TValue> {
-    /**
-     * Which side of the column its header, sort control and cells line up on.
-     * `'end'` is for numbers (totals, quantities), so their digits line up.
-     * Logical, so it flips in right-to-left. Defaults to `'start'`.
-     */
-    align?: 'start' | 'end';
-  }
+/**
+ * The keys DataTable reads from a column's `meta`. DataTable does not augment
+ * TanStack's `ColumnMeta`, so a consumer's own meta keys keep working; write
+ * `meta: { align: 'end' } satisfies DataTableColumnMeta` for a checked value.
+ */
+export interface DataTableColumnMeta {
+  /**
+   * Which side of the column its header, sort control and cells line up on.
+   * `'end'` is for numbers (totals, quantities), so their digits line up.
+   * Logical, so it flips in right-to-left. Defaults to `'start'`.
+   */
+  align?: 'start' | 'end';
 }
 
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be

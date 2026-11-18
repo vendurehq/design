@@ -23,6 +23,7 @@ import {
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
+  type DataTableColumnMeta,
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
@@ -1130,7 +1131,7 @@ export const CellTextAlignment: Story = {
 // icon and the cells line up on the end side, so the digits line up.
 const endAlignedColumns: ColumnDef<Order>[] = columns.map((column) =>
   'accessorKey' in column && (column.accessorKey === 'items' || column.accessorKey === 'total')
-    ? { ...column, meta: { align: 'end' } }
+    ? { ...column, meta: { align: 'end' } satisfies DataTableColumnMeta }
     : column,
 );
 

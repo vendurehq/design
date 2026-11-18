@@ -14,6 +14,7 @@ import {
 } from './data-table.tsx';
 import {
   buildDisplayColumns,
+  columnAlign,
   getHideableLeafColumns,
   getSelectedOriginals,
   getSelectedRowIds,
@@ -122,6 +123,13 @@ describe('DataTable column alignment', () => {
   ];
   const cellsOf = (markup: string, id: string) =>
     markup.match(new RegExp(`<t[hd][^>]*data-column-id="${id}"[^>]*>`, 'g')) ?? [];
+
+  test('columnAlign reads meta.align and defaults to start', () => {
+    expect(columnAlign({ align: 'end' })).toBe('end');
+    expect(columnAlign({ align: 'start' })).toBe('start');
+    expect(columnAlign({ fieldInfo: {} })).toBe('start');
+    expect(columnAlign(undefined)).toBe('start');
+  });
 
   test("meta.align 'end' aligns the header and the cells to the end", () => {
     const markup = html(<DataTable rows={rows} columns={endColumns} getRowId={(row) => row.id} />);

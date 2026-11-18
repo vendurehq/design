@@ -71,6 +71,7 @@ import * as React from 'react';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
   buildDisplayColumns,
+  columnAlign,
   getSelectedRowIds,
   measureColumnIndents,
   resolveSlot,
@@ -918,7 +919,7 @@ function DataTable<TData>({
   const endColumnIds = new Set(
     table
       .getVisibleLeafColumns()
-      .filter((column) => column.columnDef.meta?.align === 'end')
+      .filter((column) => columnAlign(column.columnDef.meta) === 'end')
       .map((column) => column.id),
   );
   const columnClass = (id: string): string | undefined =>

@@ -462,7 +462,7 @@ export const uiGuidance = [
       },
       {
         title: 'Number columns align to the end',
-        body: "Set meta: { align: 'end' } on a column of amounts or counts (a total, a quantity) so its digits line up. The header, its sort control and the cells then align to the inline end, which flips in right-to-left. Render the value with Money or tabular-nums. Leave text, status and date columns at the start.",
+        body: "Set meta: { align: 'end' } (typed as DataTableColumnMeta) on a column of amounts or counts (a total, a quantity) so its digits line up. The header, its sort control and the cells then align to the inline end, which flips in right-to-left. Render the value with Money or tabular-nums. Leave text, status and date columns at the start.",
       },
       {
         title: 'The first column names the row',
