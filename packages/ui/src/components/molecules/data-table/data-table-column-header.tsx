@@ -17,11 +17,17 @@ interface DataTableColumnHeaderProps<TData, TValue>
   column: Column<TData, TValue>;
   /** Accessible name for the sort toggle, e.g. `Sort by Name`. */
   sortLabel?: string;
+  /**
+   * `'end'` puts the sort icon before the label and pulls the button forward,
+   * so the label ends where the column's end-aligned cells end.
+   */
+  align?: 'start' | 'end';
 }
 
 function DataTableColumnHeader<TData, TValue>({
   column,
   sortLabel,
+  align = 'start',
   className,
   children,
   ...props
@@ -43,10 +49,14 @@ function DataTableColumnHeader<TData, TValue>({
       // enabled). We only wire the click; the engine owns the state machine.
       onClick={column.getToggleSortingHandler()}
       // Pulls back by the button's own `--content-inset` (its padding and its
-      // 1px border), so the label starts where a plain header label would.
+      // 1px border), so the label starts where a plain header label would. An
+      // end-aligned header pulls forward instead and puts the icon first, so
+      // the label ends where the cells end.
+      data-align={align}
       className={cn(
         // The label takes the header's colour; hover still darkens it.
-        '-ms-(--content-inset) h-8 gap-1.5 text-inherit data-[slot=data-table-column-header]:px-2.5',
+        'h-8 gap-1.5 text-inherit data-[slot=data-table-column-header]:px-2.5',
+        align === 'end' ? '-me-(--content-inset) flex-row-reverse' : '-ms-(--content-inset)',
         className,
       )}
       {...props}

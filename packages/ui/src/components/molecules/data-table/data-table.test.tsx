@@ -115,6 +115,48 @@ describe('DataTable row rendering', () => {
   });
 });
 
+describe('DataTable column alignment', () => {
+  const endColumns: ColumnDef<Country>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'code', header: 'Code', meta: { align: 'end' } },
+  ];
+  const cellsOf = (markup: string, id: string) =>
+    markup.match(new RegExp(`<t[hd][^>]*data-column-id="${id}"[^>]*>`, 'g')) ?? [];
+
+  test("meta.align 'end' aligns the header and the cells to the end", () => {
+    const markup = html(<DataTable rows={rows} columns={endColumns} getRowId={(row) => row.id} />);
+    const code = cellsOf(markup, 'code');
+    expect(code).toHaveLength(3); // header + 2 body cells
+    for (const cell of code) expect(cell).toContain('text-end');
+    for (const cell of cellsOf(markup, 'name')) expect(cell).not.toContain('text-end');
+  });
+
+  test('an end-aligned cell pulls its last element forward, not its first back', () => {
+    const markup = html(<DataTable rows={rows} columns={endColumns} getRowId={(row) => row.id} />);
+    const [, ...codeCells] = cellsOf(markup, 'code');
+    for (const cell of codeCells) {
+      expect(cell).toContain('&gt;:last-child)]:-me-(--content-inset)');
+      expect(cell).not.toContain('-ms-(--content-inset)');
+    }
+    const [, ...nameCells] = cellsOf(markup, 'name');
+    for (const cell of nameCells) expect(cell).toContain('-ms-(--content-inset)');
+  });
+
+  test('an end-aligned sort control pulls forward and puts its icon first', () => {
+    const markup = html(
+      <DataTable rows={rows} columns={endColumns} sorting={{ defaultValue: [], mode: 'client' }} />,
+    );
+    const buttons = markup.match(/<button[^>]*data-slot="data-table-column-header"[^>]*>/g) ?? [];
+    expect(buttons).toHaveLength(2);
+    const [name, code] = buttons as [string, string];
+    expect(name).toContain('data-align="start"');
+    expect(name).toContain('-ms-(--content-inset)');
+    expect(code).toContain('data-align="end"');
+    expect(code).toContain('-me-(--content-inset)');
+    expect(code).toContain('flex-row-reverse');
+  });
+});
+
 describe('DataTableRowLink', () => {
   const linkedColumns: ColumnDef<Country>[] = [
     {

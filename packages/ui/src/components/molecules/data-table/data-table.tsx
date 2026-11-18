@@ -913,7 +913,17 @@ function DataTable<TData>({
     if (rowActions != null && id === ACTIONS_COLUMN_ID) return 'actions';
     return undefined;
   };
-  const columnClass = (id: string): string | undefined => {
+  // Columns whose `meta.align` is `'end'`: their header, sort control and
+  // cells line up on the end side, so the digits of a number column line up.
+  const endColumnIds = new Set(
+    table
+      .getVisibleLeafColumns()
+      .filter((column) => column.columnDef.meta?.align === 'end')
+      .map((column) => column.id),
+  );
+  const columnClass = (id: string): string | undefined =>
+    cn(startColumnClass(id), endColumnIds.has(id) && 'text-end');
+  const startColumnClass = (id: string): string | undefined => {
     const generated = generatedColumn(id);
     // `ps-0!`: the select cell is the first child, so CardTable's edge-cell
     // padding would otherwise widen the zero-width cell and push the whole
@@ -942,8 +952,11 @@ function DataTable<TData>({
   // A cell with a two-line status (StatusBadge `appearance="icon"` with a
   // `detail`) drops to 6px vertical padding, so its 33px block fits the 48px
   // row minimum and the row stays 48px, the same as a one-line row.
-  const bodyCellClass =
-    '[--content-inset:0px] [:where(&>:first-child)]:-ms-(--content-inset) has-[[data-slot=status-badge][data-detail]]:py-1.5';
+  // An end-aligned cell pulls its last element forward by the same inset, so
+  // the content's last letter lines up with the header's.
+  const bodyCellClass = '[--content-inset:0px] has-[[data-slot=status-badge][data-detail]]:py-1.5';
+  const startPullClass = '[:where(&>:first-child)]:-ms-(--content-inset)';
+  const endPullClass = '[:where(&>:last-child)]:-me-(--content-inset)';
 
   // A pull-back that reaches past the cell's start padding indents the whole
   // column instead (see measureColumnIndents), so no content leaves its cell.
@@ -977,7 +990,11 @@ function DataTable<TData>({
   const bodyCellProps = (columnId: string): DataTableRowCellProps => ({
     'data-column-id': columnId,
     'data-content-inset-cell': '',
-    className: cn(columnClass(columnId), bodyCellClass),
+    className: cn(
+      columnClass(columnId),
+      bodyCellClass,
+      endColumnIds.has(columnId) ? endPullClass : startPullClass,
+    ),
     style: columnIndentStyle(columnId),
   });
 
@@ -1235,6 +1252,7 @@ function DataTable<TData>({
                         <DataTableColumnHeader
                           column={headerCell.column}
                           sortLabel={l.sortLabel(headerLabelText(headerCell.column))}
+                          align={endColumnIds.has(headerCell.column.id) ? 'end' : 'start'}
                         >
                           {content}
                         </DataTableColumnHeader>
