@@ -55,7 +55,7 @@ export const Sides: Story = {
 
 /**
  * Moving from one trigger to the next, inside a TooltipProvider. The first
- * tooltip waits `tooltip-delay` (600ms), so a pointer that only passes over a
+ * tooltip waits `tooltip-delay` (350ms), so a pointer that only passes over a
  * trigger opens nothing. Once a tooltip is open, the next one opens at once
  * and shows in full in its first frame: Base UI marks it `data-instant`, and
  * an instant tooltip does not animate.
@@ -129,7 +129,7 @@ export const FromTriggerToTrigger: Story = {
 };
 
 /**
- * A tooltip without a TooltipProvider waits `tooltip-delay` (600ms) before it
+ * A tooltip without a TooltipProvider waits `tooltip-delay` (350ms) before it
  * opens, as it does inside one. A TooltipProvider is what lets the next
  * tooltips open at once, without animation.
  */

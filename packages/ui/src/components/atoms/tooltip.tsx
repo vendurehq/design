@@ -18,11 +18,11 @@ const InTooltipProvider = React.createContext(false)
  * not import the tokens package at runtime; tooltip.test.ts keeps the two
  * equal.
  */
-const TOOLTIP_DELAY = 600
+const TOOLTIP_DELAY = 350
 
 /**
  * Wrap the app in one TooltipProvider. The first tooltip then waits
- * `tooltip-delay` (600ms), so a pointer that only passes over a trigger opens
+ * `tooltip-delay` (350ms), so a pointer that only passes over a trigger opens
  * nothing. Once a tooltip is open, the next one opens at once and does not
  * animate, until no tooltip has been open for the provider's `timeout`.
  */
@@ -47,7 +47,7 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
 
 /**
  * Inside a TooltipProvider it leaves `delay` unset, so the provider's delay
- * applies. Without a provider the delay is `tooltip-delay` (600ms) too, so a
+ * applies. Without a provider the delay is `tooltip-delay` (350ms) too, so a
  * pointer that only passes over a trigger opens nothing. An explicit `delay`
  * wins in both cases. A provider is what lets the next tooltips open at once.
  */
