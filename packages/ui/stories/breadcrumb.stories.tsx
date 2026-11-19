@@ -485,6 +485,17 @@ export const SearchMenuEmpty: Story = {
   },
 };
 
+/** No projects at all: the popup says so above the footer. */
+export const SearchMenuNoOptions: Story = {
+  render: () => <ProjectCrumbs read="empty" projectId="" />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Projects: All projects' }));
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    await waitFor(() => expect(within(popup).getByText('No project found.')).toBeVisible());
+    await expect(within(popup).getByRole('option', { name: /Create project/ })).toBeVisible();
+  },
+};
+
 /**
  * While the projects load, the crumb shows the placeholder and the popup a
  * loading row in place of the options. The footer stays.

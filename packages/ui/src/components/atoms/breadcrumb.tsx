@@ -236,8 +236,9 @@ const crumbTriggerClassName =
 /**
  * The inside of the crumb, and its tooltip. The crumb's accessible name is
  * the list label, the option label and then the status, whatever shows
- * first: "Environment: Production, Healthy". It is set as `aria-label`, so
- * words inside `leading` are not read; put them in `status`.
+ * first: "Environment: Production, Healthy". With a `status` it is set as
+ * `aria-label`, and words inside `leading` are not read. Without one it comes
+ * from the content, `leading` first, as before.
  */
 function useCrumbTrigger({
   options,
@@ -258,9 +259,9 @@ function useCrumbTrigger({
   const labels = options.map((option) => option.label)
   if (placeholder !== undefined) labels.unshift(placeholder)
   const currentLabel = labels[active] ?? ""
-  const name = current?.status
-    ? `${label}: ${currentLabel}, ${current.status}`
-    : `${label}: ${currentLabel}`
+  // With a status, the name is set so the status comes after the label.
+  // Without one, the name comes from the content, as before.
+  const name = current?.status ? `${label}: ${currentLabel}, ${current.status}` : undefined
   // Whether the label is cut now. Read when the pointer or the focus
   // arrives, so a resize or a new label is never stale.
   const [cut, setCut] = React.useState(false)
@@ -274,6 +275,7 @@ function useCrumbTrigger({
   const content = (
     <>
       {current?.leading}
+      <span className="sr-only">{label}: </span>
       <LabelSwap
         data-slot="breadcrumb-menu-label"
         timing="button"
