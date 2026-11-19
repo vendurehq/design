@@ -710,7 +710,8 @@ function SidebarMenuButton({
 // chevron. Render it as the trigger of the menu it opens:
 // <DropdownMenuTrigger render={<SidebarIdentityButton />}>. It takes the fill
 // while that menu is open: a Base UI trigger marks that with data-popup-open,
-// not data-open. In the icon rail the text and the chevron fade like
+// not data-open. The muted avatar fill is translucent and darkens on that fill,
+// so the initials take the sidebar text colour to keep their contrast. In the icon rail the text and the chevron fade like
 // a label and the media stays; both stay mounted, so the button keeps its
 // accessible name in the rail.
 function SidebarIdentityButton({
@@ -722,7 +723,7 @@ function SidebarIdentityButton({
     <SidebarMenuButton
       size="lg"
       className={cn(
-        "data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground",
+        "data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground [&_[data-slot=avatar-fallback]]:text-sidebar-foreground",
         className
       )}
       {...props}
