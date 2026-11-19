@@ -49,6 +49,7 @@ import {
   PageHeaderTitle,
 } from '../src/components/molecules/page-header.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
+import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
 import { cn } from '../src/lib/utils.ts';
 import type { Tone } from '../src/lib/state-dictionary.ts';
 import { type OrderState, orderStates } from './order-states.tsx';
@@ -401,6 +402,38 @@ export const Empty: Story = {
       }
     />
   ),
+};
+
+/**
+ * An `EmptyState` as the empty content looks the same as one outside a
+ * table: the empty cell mutes plain text, not the state's title.
+ */
+export const EmptyWithEmptyState: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <EmptyState illustration={null} title="No repository" description="Connect a repository to deploy from it." />
+      <DataTable<Order>
+        rows={[]}
+        columns={columns}
+        getRowId={(order) => order.id}
+        emptyState={
+          <EmptyState illustration={null} title="No orders yet" description="Orders appear here after the first checkout." />
+        }
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [outside, inside] = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="empty-title"]')];
+    await expect(outside?.closest('table')).toBeNull();
+    await expect(inside?.closest('table')).not.toBeNull();
+    const look = (title: HTMLElement) => {
+      const style = getComputedStyle(title);
+      return { color: style.color, fontSize: style.fontSize, fontWeight: style.fontWeight };
+    };
+    await expect(look(inside as HTMLElement)).toEqual(look(outside as HTMLElement));
+    // The title keeps its section-title type next to the colour.
+    await expect(look(inside as HTMLElement).fontWeight).not.toBe('400');
+  },
 };
 
 // Row actions — a per-row menu appended as a trailing actions column. The first
