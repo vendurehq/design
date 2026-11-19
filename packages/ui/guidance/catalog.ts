@@ -552,6 +552,47 @@ export const uiGuidance = [
     related: ['form', 'money', 'date-time'],
   },
   {
+    id: 'dialog',
+    title: 'Dialog and Sheet size',
+    summary: 'Size a Dialog or a Sheet by its job with the `size` prop, never with a width class.',
+    sourceStory: 'dialog-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'The job picks the size',
+        body: "Dialogs that do the same job open at the same width. Pick `size` on DialogContent or SheetContent from the job, not from the content's pixel width.",
+      },
+      {
+        title: 'No width classes',
+        body: 'Do not set `max-w-[…]`, `min-w-[…]` or `w-[…]` on DialogContent or SheetContent. If no size fits a real job, raise it in the design system.',
+      },
+      {
+        title: 'Small screens are handled',
+        body: 'A dialog shrinks to the viewport less 1rem on each side below its breakpoint; `xl` waits for 1024px. A left or right sheet is at most 3/4 of the viewport. Top and bottom sheets ignore `size`.',
+      },
+    ],
+    choices: [
+      {
+        choice: 'Dialog size="default"',
+        when: '440px. A confirmation, or a form of a few short fields.',
+      },
+      {
+        choice: 'Dialog size="lg"',
+        when: '560px. A form with longer fields, a field group or a short list.',
+      },
+      {
+        choice: 'Dialog size="xl"',
+        when: '800px. A wide form, a table, a tree or a grid of choices.',
+      },
+      {
+        choice: 'Dialog size="full"',
+        when: 'The viewport less 1rem on each side. A picker or a preview.',
+      },
+      { choice: 'Sheet size="default"', when: '512px. A short form, a filter or a settings list.' },
+      { choice: 'Sheet size="xl"', when: '800px. A table or a wide form beside the page.' },
+    ],
+    related: ['confirm-dialog', 'form'],
+  },
+  {
     id: 'file-dropzone',
     title: 'FileDropzone',
     summary:
