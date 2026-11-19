@@ -17,8 +17,10 @@ const blockDeclarations = (css: string, selector: string): Map<string, string> =
   const blocks = css.matchAll(
     new RegExp(`(?:^|\\n)${selector.replace('.', '\\.')} \\{([^}]*)\\}`, 'g'),
   );
-  for (const [, body] of blocks) {
-    for (const [, name, value] of body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) {
+  for (const block of blocks) {
+    for (const [, name = '', value = ''] of (block[1] ?? '').matchAll(
+      /--([a-z0-9-]+):\s*([^;]+);/g,
+    )) {
       declared.set(name, value.trim());
     }
   }
@@ -44,7 +46,7 @@ const sourceFiles = (dir: string): string[] =>
 // `var(--x)` in arbitrary values and the Tailwind shorthand `-(--x)`.
 const uiReads = new Set<string>();
 for (const file of sourceFiles(uiSrc)) {
-  for (const [, name] of readFileSync(file, 'utf8').matchAll(/(?:var\(|-\()--([a-z0-9-]+)/g)) {
+  for (const [, name = ''] of readFileSync(file, 'utf8').matchAll(/(?:var\(|-\()--([a-z0-9-]+)/g)) {
     uiReads.add(name);
   }
 }
