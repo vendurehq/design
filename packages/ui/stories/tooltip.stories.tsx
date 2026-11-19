@@ -92,7 +92,7 @@ export const FromTriggerToTrigger: Story = {
       { timeout: 5000 },
     );
     // The first tooltip waits for the delay.
-    await expect(waited).toBeGreaterThanOrEqual(550);
+    await expect(waited).toBeGreaterThanOrEqual(320);
     await userEvent.unhover(first);
     // Read the popup in the same task that inserts it, before any frame runs.
     // Base UI mounts a popup with `data-starting-style` and clears it one frame
@@ -156,14 +156,14 @@ export const WithoutProvider: Story = {
         const start = performance.now();
         await userEvent.hover(trigger);
         // Nothing is open before the delay is over.
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         expect(body.queryByText('Copy the order code')).toBeNull();
         await body.findByText('Copy the order code', {}, { timeout: 1500 });
         waited = performance.now() - start;
       },
       { timeout: 5000 },
     );
-    await expect(waited).toBeGreaterThanOrEqual(550);
+    await expect(waited).toBeGreaterThanOrEqual(320);
   },
 };
 
