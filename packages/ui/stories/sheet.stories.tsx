@@ -5,6 +5,7 @@ import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
 import { expectInsidePadding } from './overlay-bounds.ts';
+import { expectPx } from './pixel.ts';
 
 /**
  * The overlay uses the scrim slot. The overlay renders in a portal on `body`,
@@ -193,6 +194,47 @@ export const TallForm: Story = {
       expect(field.bottom).toBeLessThanOrEqual(footer.getBoundingClientRect().top);
     });
     await userEvent.keyboard('{Escape}');
+  },
+};
+
+const sheetSizes = [
+  { size: 'default', job: 'Short form', width: 512 },
+  { size: 'xl', job: 'Table or wide form', width: 800 },
+] as const;
+
+/**
+ * A left or right sheet takes `default` (512px) for a short form or a
+ * settings list, and `xl` (800px) for a table or a wide form. Both are 3/4 of
+ * the viewport at most. Top and bottom sheets ignore the size. Do not set a
+ * `max-w-[…]`, `min-w-[…]` or `w-[…]` class for the width.
+ */
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      {sheetSizes.map(({ size, job }) => (
+        <Sheet key={size}>
+          <SheetTrigger render={<Button variant="outline" />}>{`size="${size}"`}</SheetTrigger>
+          <SheetContent size={size}>
+            <SheetHeader>
+              <SheetTitle>{job}</SheetTitle>
+              <SheetDescription>{`This sheet uses size="${size}".`}</SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const { size, job, width } of sheetSizes) {
+      await userEvent.click(within(canvasElement).getByRole('button', { name: `size="${size}"` }));
+      const sheet = await within(document.body).findByRole('dialog', { name: job });
+      await Promise.all(sheet.getAnimations().map((animation) => animation.finished));
+      const viewport = document.documentElement.clientWidth;
+      const expected = viewport >= 640 ? Math.min(width, viewport * 0.75) : viewport * 0.75;
+      await expectPx(sheet.offsetWidth, expected, `size="${size}" width`);
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+    }
   },
 };
 

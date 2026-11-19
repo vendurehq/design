@@ -460,6 +460,57 @@ export const PaddingFour: Story = {
   play: async ({ canvasElement }) => expectFlushHeaderAndFooter(canvasElement, 16),
 };
 
+const dialogSizes = [
+  { size: 'default', job: 'Confirm', width: 440, from: 640 },
+  { size: 'lg', job: 'Form', width: 560, from: 640 },
+  { size: 'xl', job: 'Wide form or table', width: 800, from: 1024 },
+  { size: 'full', job: 'Picker or preview', width: Number.POSITIVE_INFINITY, from: 0 },
+] as const;
+
+/**
+ * Pick the size by the dialog's job, not by its content's pixel width.
+ * `default` (440px) confirms or holds a few fields, `lg` (560px) holds a form
+ * with longer fields or a short list, `xl` (800px) holds a wide form, a table
+ * or a tree, and `full` takes the viewport less 1rem on each side for a picker
+ * or a preview. Below the size's breakpoint every dialog is the viewport less
+ * that margin. Do not set a `max-w-[…]` or `w-[…]` class for the width.
+ */
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      {dialogSizes.map(({ size, job }) => (
+        <Dialog key={size}>
+          <DialogTrigger render={<Button variant="outline" />}>{`size="${size}"`}</DialogTrigger>
+          <DialogContent size={size}>
+            <DialogHeader>
+              <DialogTitle>{job}</DialogTitle>
+              <DialogDescription>{`This dialog uses size="${size}".`}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+              <Button>Continue</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const margin = 32;
+    for (const { size, job, width, from } of dialogSizes) {
+      await userEvent.click(within(canvasElement).getByRole('button', { name: `size="${size}"` }));
+      const dialog = await within(document.body).findByRole('dialog', { name: job });
+      await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+      const viewport = document.documentElement.clientWidth;
+      const expected = viewport >= from ? Math.min(width, viewport - margin) : viewport - margin;
+      // Measured without the entry scale: offsetWidth is the layout width.
+      await expectPx(dialog.offsetWidth, expected, `size="${size}" width`);
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+    }
+  },
+};
+
 /** Ends with the dialog open, so the accessibility check scans it. */
 export const Open: Story = {
   tags: ['!autodocs'],
