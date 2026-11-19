@@ -7,6 +7,8 @@ import { checkCheckedRowLook } from './menu-checked-row.ts';
 import { checkDisabledContentDims } from './menu-disabled-item.ts';
 import { DropdownMenuItem, DropdownMenuSeparator } from '../src/components/atoms/dropdown-menu.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
+import { SidebarProvider, SidebarTrigger } from '../src/components/atoms/sidebar.tsx';
+import { Separator } from '../src/components/atoms/separator.tsx';
 import { CommandItem } from '../src/components/atoms/command.tsx';
 import {
   Breadcrumb,
@@ -121,7 +123,16 @@ export const WithMenu: Story = {
   play: async ({ canvasElement }) => {
     const crumb = within(canvasElement).getByRole('button', { name: 'Environment: Production' });
     await expect(crumb).toHaveAttribute('aria-haspopup', 'menu');
-    await expectPx(crumb.getBoundingClientRect().height, 30);
+    // The sm height, the same as a SidebarTrigger beside it.
+    await expectPx(crumb.getBoundingClientRect().height, 28);
+    // --content-inset is the real start inset: 9px padding and the 1px border.
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;width:var(--content-inset)';
+    crumb.append(probe);
+    await expectPx(probe.getBoundingClientRect().width, 10);
+    probe.remove();
+    const dot = crumb.firstElementChild as HTMLElement;
+    await expectPx(dot.getBoundingClientRect().left - crumb.getBoundingClientRect().left, 10);
     await userEvent.click(crumb);
     const menu = await within(document.body).findByRole('menu');
     await Promise.all(menu.getAnimations().map((animation) => animation.finished));
@@ -216,8 +227,41 @@ export const WithMenuStatus: Story = {
     const crumb = within(canvasElement).getByRole('button', { name: 'Environment: Production, Healthy' });
     await userEvent.click(crumb);
     const menu = await within(document.body).findByRole('menu');
-    await expect(within(menu).getByRole('menuitemradio', { name: /Staging.*Deploying/ })).toBeInTheDocument();
+    // One comma, no space before it, then the detail.
+    await expect(within(menu).getByRole('menuitemradio', { name: 'Production, Healthy' })).toBeInTheDocument();
+    await expect(
+      within(menu).getByRole('menuitemradio', { name: 'Staging, Deploying Non-production' }),
+    ).toBeInTheDocument();
+    // The detail sits at the end of the row, right before the check.
+    const staging = within(menu).getByRole('menuitemradio', { name: /Staging/ });
+    const detail = within(staging).getByText('Non-production');
+    const check = staging.querySelector('[data-slot="menu-check"]') as SVGElement;
+    await expectPx(check.getBoundingClientRect().left - detail.getBoundingClientRect().right, 10);
     await userEvent.keyboard('{Escape}');
+  },
+};
+
+/**
+ * A top bar: the sidebar's toggle, a divider and the crumbs. The toggle and
+ * the crumb share the `sm` height, 28px, so their centres and their hover
+ * fills line up.
+ */
+export const InTopBar: Story = {
+  render: () => (
+    <SidebarProvider className="min-h-0">
+      <header className="bg-background border-border flex h-12 w-full items-center gap-2 border-b px-3">
+        <SidebarTrigger />
+        <Separator orientation="vertical" className="data-vertical:h-4 data-vertical:self-center" />
+        <EnvironmentCrumbs options={statusEnvironments} />
+      </header>
+    </SidebarProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const toggle = canvas.getByRole('button', { name: 'Toggle Sidebar' });
+    const crumb = canvas.getByRole('button', { name: 'Environment: Production, Healthy' });
+    await expectPx(crumb.getBoundingClientRect().height, toggle.getBoundingClientRect().height);
+    await expectPx(crumb.getBoundingClientRect().top, toggle.getBoundingClientRect().top);
   },
 };
 
