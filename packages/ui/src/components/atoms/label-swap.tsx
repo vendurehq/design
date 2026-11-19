@@ -24,6 +24,18 @@ type LabelSwapProps = Omit<React.ComponentProps<"span">, "children"> & {
   timing: keyof typeof TIMINGS
   /** Classes for each label, after the shared ones. */
   labelClassName?: string
+  /**
+   * The swap may shrink below the active label's width, and the label then
+   * ends in an ellipsis. The swap still eases to the label's full width; its
+   * container (a flex row with `min-w-0`) decides how much of it shows.
+   */
+  truncate?: boolean
+  /**
+   * Changes when the active label's text changes at the same index, such as
+   * a placeholder that becomes the first loaded option. The swap then
+   * measures again: a cut label's box does not grow by itself.
+   */
+  activeKey?: string
 }
 
 /**
@@ -42,16 +54,34 @@ function LabelSwap({
   active,
   timing,
   labelClassName,
+  truncate = false,
+  activeKey,
   className,
   style,
   ...props
 }: LabelSwapProps) {
-  const { refs, width, height } = useActiveLabelSize(active)
+  const { refs, width, height } = useActiveLabelSize(active, { natural: truncate, key: activeKey })
+  // While the width eases, a growing label is clipped, as without
+  // `truncate`; the ellipsis shows only at rest, so it does not flash.
+  const [resizing, setResizing] = React.useState(false)
+  const onResize = (running: boolean) => (event: React.TransitionEvent<HTMLSpanElement>) => {
+    if (event.target === event.currentTarget && event.propertyName === "width") setResizing(running)
+  }
+  const resizeHandlers = truncate
+    ? {
+        onTransitionRun: onResize(true),
+        onTransitionEnd: onResize(false),
+        onTransitionCancel: onResize(false),
+      }
+    : undefined
   return (
     <span
+      data-resizing={resizing ? "" : undefined}
+      {...resizeHandlers}
       className={cn(
         "grid grid-cols-[100%] justify-items-center motion-safe:transition-[width,height] motion-safe:duration-(--label-swap-resize) motion-safe:ease-drawer",
         TIMINGS[timing],
+        truncate && "min-w-0 shrink",
         className
       )}
       style={width === undefined ? style : { ...style, width, height }}
@@ -68,6 +98,7 @@ function LabelSwap({
           aria-hidden={index === active ? undefined : true}
           className={cn(
             "col-start-1 row-start-1 [transition:opacity_var(--label-swap-fade)_var(--ease-soft),translate_var(--label-swap-move)_var(--ease-out),filter_var(--label-swap-fade)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-(--label-swap-shift) motion-safe:data-[swap=before]:-translate-y-(--label-swap-shift) motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]",
+            truncate && "max-w-full truncate in-data-resizing:text-clip",
             labelClassName
           )}
         >
