@@ -482,17 +482,28 @@ export const SearchMenuEmpty: Story = {
 
 /**
  * While the projects load, the crumb shows the placeholder and the popup a
- * loading row. When they arrive, the crumb swaps to the project's name.
+ * loading row in place of the options. The footer stays.
  */
 export const SearchMenuLoading: Story = {
-  render: () => <LoadingProjects />,
+  render: () => <ProjectCrumbs read="loading" />,
   play: async ({ canvasElement }) => {
-    const crumb = within(canvasElement).getByRole('button', { name: 'Projects: Project' });
-    await userEvent.click(crumb);
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Projects: Project' }));
     const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
     await expect(within(popup).getByRole('status')).toHaveTextContent('Loading…');
     await expect(within(popup).queryByText('No project found.')).not.toBeInTheDocument();
-    await userEvent.keyboard('{Escape}');
+    await expect(within(popup).getByRole('option', { name: /Create project/ })).toBeInTheDocument();
+  },
+};
+
+/**
+ * When the projects arrive, the crumb swaps from the placeholder to the
+ * project's name, which it shows in full.
+ */
+export const SearchMenuLoaded: Story = {
+  tags: ['!autodocs'],
+  render: () => <LoadingProjects />,
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: 'Projects: Project' })).toBeInTheDocument();
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Finish loading' }));
     const loaded = await within(canvasElement).findByRole('button', { name: 'Projects: Acme Storefront' });
     // The placeholder and the first project share an index: the crumb
