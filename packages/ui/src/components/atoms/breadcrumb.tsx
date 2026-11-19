@@ -300,6 +300,27 @@ function useCrumbTrigger({
   return { triggerProps, content, tooltip }
 }
 
+function stopPropagation(event: React.SyntheticEvent) {
+  event.stopPropagation()
+}
+
+/**
+ * Keeps focus and hover events in the open menu. React passes the events of
+ * a portal up through its React parents, so a focus or a hover in the menu
+ * would reach a tooltip, or any handler, that wraps the crumb, and open it
+ * over the menu.
+ */
+const popupEventProps = {
+  onFocus: stopPropagation,
+  onBlur: stopPropagation,
+  onPointerOver: stopPropagation,
+  onPointerOut: stopPropagation,
+  onPointerMove: stopPropagation,
+  onMouseOver: stopPropagation,
+  onMouseOut: stopPropagation,
+  onMouseMove: stopPropagation,
+}
+
 /** The leading slot, the label, the status and the detail of a menu row. */
 function OptionRow({ option }: { option: BreadcrumbSearchMenuOption }) {
   return (
@@ -393,6 +414,7 @@ function BreadcrumbMenu({
         {crumb.tooltip}
       </Tooltip>
       <DropdownMenuContent
+        {...popupEventProps}
         className={cn("w-max min-w-72 max-w-90", contentClassName)}
       >
         <DropdownMenuGroup>
@@ -508,6 +530,7 @@ function BreadcrumbSearchMenu({
         {crumb.tooltip}
       </Tooltip>
       <PopoverContent
+        {...popupEventProps}
         data-slot="breadcrumb-search-menu-content"
         aria-label={label}
         className={cn("w-72 max-w-90 gap-0 overflow-hidden p-0", contentClassName)}
