@@ -62,7 +62,7 @@ Use Badge for static classification or counts, neutral by default.
 - **Classification is not state:** Use Badge for kind, category, or count. State words that can succeed, fail, or move belong to StatusBadge.
 - **Neutral is the default:** Begin with the default Badge and step away only when the meaning requires it.
 - **Brand is an identity opt-in:** Use the brand variant only for a deliberate identity label, never to make routine metadata louder.
-- **A count on a control is a CountBadge:** A number on an icon button (unread notifications, alerts) or inside a button (active filters) is a CountBadge, not a Badge sized by hand. Pass count and a tone (neutral, brand, warning, critical); it caps at max (99+) and renders nothing at 0. On an icon button use placement="corner" and add relative to the button. Pass label with the real count ("120 unread") where nothing beside the number names it; an aria-label on the button replaces its content, so put the count in that label instead. A count in text or a table cell stays on Badge.
+- **A count on a control is a CountBadge:** A number on an icon button or inside a button (unread notifications, alerts, active filters) is a CountBadge, not a Badge sized by hand. A count in running text or a table cell stays on Badge.
 
 **Choose:**
 
@@ -71,7 +71,7 @@ Use Badge for static classification or counts, neutral by default.
 - `brand`: A rare identity label that deliberately spends brand.
 - `destructive`: A destructive classification, not an entity workflow state.
 
-Related decisions: `chip`, `status-badge`.
+Related decisions: `chip`, `count-badge`, `status-badge`.
 ## Button
 
 Compose actions as an emphasis ladder with one primary action per view.
@@ -180,6 +180,24 @@ Offer copying only for values users genuinely transport elsewhere.
 - **Truncate without destroying recognition:** Choose middle, start, or no truncation according to which portion users recognize while copying the full value.
 
 Related decisions: `anonymized-token`, `id-chip`.
+## CountBadge
+
+Use CountBadge for a small count on an icon button or inside a button.
+
+- **A count on a control, not in text:** Use CountBadge for unread notifications or alerts on an icon button and for the number of active filters inside a button. A count in running text, a heading or a table cell stays on Badge. Never size, place or colour a Badge or a span by hand for a count.
+- **The badge owns the number:** Pass the raw count. CountBadge caps it at max (99+ by default) and renders nothing at 0, so the caller does not branch on zero or cut the number.
+- **Tone from the shared tones:** Pass a tone, never a colour class. Use neutral for a plain count, brand for unread items, and warning or critical when the count reports problems; take it from the state dictionary (maxTone) when the items have states.
+- **Corner on an icon button, inline in a label:** On an icon button use placement="corner" and add relative to the button; a wider count grows away from the icon. Inside a button with words use the inline default, after the label.
+- **The count is part of the name:** Pass label with the real count ("120 unread") where nothing beside the number names it; the visible number is then hidden from screen readers. An aria-label on the button replaces its content, so in that case put the count in the aria-label instead. Leave label out where the button text names the count ("Active filters").
+
+**Choose:**
+
+- `neutral`: A plain count with no urgency: active filters, selected items.
+- `brand`: Unread items that ask for a look, such as notifications.
+- `warning`: The count is of items where a person must act or a risk exists.
+- `critical`: The count is of failures or blocking problems.
+
+Related decisions: `badge`, `button`, `status-badge`.
 ## DataTable
 
 Use the batteries-included collection engine while keeping URL, fetching, and persistence consumer-owned.

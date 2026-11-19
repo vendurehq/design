@@ -149,7 +149,7 @@ export const uiGuidance = [
       },
       {
         title: 'A count on a control is a CountBadge',
-        body: 'A number on an icon button (unread notifications, alerts) or inside a button (active filters) is a CountBadge, not a Badge sized by hand. Pass count and a tone (neutral, brand, warning, critical); it caps at max (99+) and renders nothing at 0. On an icon button use placement="corner" and add relative to the button. Pass label with the real count ("120 unread") where nothing beside the number names it; an aria-label on the button replaces its content, so put the count in that label instead. A count in text or a table cell stays on Badge.',
+        body: 'A number on an icon button or inside a button (unread notifications, alerts, active filters) is a CountBadge, not a Badge sized by hand. A count in running text or a table cell stays on Badge.',
       },
     ],
     choices: [
@@ -161,7 +161,7 @@ export const uiGuidance = [
         when: 'A destructive classification, not an entity workflow state.',
       },
     ],
-    related: ['chip', 'status-badge'],
+    related: ['chip', 'count-badge', 'status-badge'],
   },
   {
     id: 'button',
@@ -416,6 +416,44 @@ export const uiGuidance = [
       },
     ],
     related: ['anonymized-token', 'id-chip'],
+  },
+  {
+    id: 'count-badge',
+    title: 'CountBadge',
+    summary: 'Use CountBadge for a small count on an icon button or inside a button.',
+    sourceStory: 'count-badge-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'A count on a control, not in text',
+        body: 'Use CountBadge for unread notifications or alerts on an icon button and for the number of active filters inside a button. A count in running text, a heading or a table cell stays on Badge. Never size, place or colour a Badge or a span by hand for a count.',
+      },
+      {
+        title: 'The badge owns the number',
+        body: 'Pass the raw count. CountBadge caps it at max (99+ by default) and renders nothing at 0, so the caller does not branch on zero or cut the number.',
+      },
+      {
+        title: 'Tone from the shared tones',
+        body: 'Pass a tone, never a colour class. Use neutral for a plain count, brand for unread items, and warning or critical when the count reports problems; take it from the state dictionary (maxTone) when the items have states.',
+      },
+      {
+        title: 'Corner on an icon button, inline in a label',
+        body: 'On an icon button use placement="corner" and add relative to the button; a wider count grows away from the icon. Inside a button with words use the inline default, after the label.',
+      },
+      {
+        title: 'The count is part of the name',
+        body: 'Pass label with the real count ("120 unread") where nothing beside the number names it; the visible number is then hidden from screen readers. An aria-label on the button replaces its content, so in that case put the count in the aria-label instead. Leave label out where the button text names the count ("Active filters").',
+      },
+    ],
+    choices: [
+      { choice: 'neutral', when: 'A plain count with no urgency: active filters, selected items.' },
+      { choice: 'brand', when: 'Unread items that ask for a look, such as notifications.' },
+      {
+        choice: 'warning',
+        when: 'The count is of items where a person must act or a risk exists.',
+      },
+      { choice: 'critical', when: 'The count is of failures or blocking problems.' },
+    ],
+    related: ['badge', 'button', 'status-badge'],
   },
   {
     id: 'data-table',
