@@ -161,3 +161,40 @@ export const CopyWhileHidden: Story = {
     expectSecretAbsent(canvasElement);
   },
 };
+
+/** Centre of an element's border box. */
+function centre(el: Element) {
+  const box = el.getBoundingClientRect();
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}
+
+/**
+ * Show and Copy each own a 24 x 24 px target that the other does not cover
+ * (WCAG 2.5.8), while the icons stay 13px. Their centres are at least 24px
+ * apart, and every corner of a 23 x 23 px square around each centre hits that
+ * button.
+ */
+export const TargetsDoNotOverlap: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const show = canvas.getByRole('button', { name: 'Show value' });
+    const copy = canvas.getByRole('button', { name: 'Copy value' });
+
+    await expect(show.getBoundingClientRect().width).toBeLessThan(14);
+    const a = centre(show);
+    const b = centre(copy);
+    await expect(Math.hypot(b.x - a.x, b.y - a.y)).toBeGreaterThanOrEqual(24);
+
+    for (const [button, c] of [
+      [show, a],
+      [copy, b],
+    ] as const) {
+      for (const dx of [-11.5, 11.5]) {
+        for (const dy of [-11.5, 11.5]) {
+          const hit = document.elementFromPoint(c.x + dx, c.y + dy);
+          await expect(button.contains(hit)).toBe(true);
+        }
+      }
+    }
+  },
+};
