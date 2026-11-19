@@ -51,6 +51,28 @@ export const WithButton: Story = {
 };
 
 /**
+ * The xs and icon-xs buttons take the `rounded-lg` corner of every xs
+ * Button (6px), not a corner worked out from `--radius`.
+ */
+export const ExtraSmallButtons: Story = {
+  render: () => (
+    <InputGroup>
+      <InputGroupInput aria-label="Token" placeholder="Token" />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton size="xs"><Copy /> Copy</InputGroupButton>
+        <InputGroupButton size="icon-xs" aria-label="Copy the token"><Copy /></InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const button of [canvas.getByRole('button', { name: 'Copy' }), canvas.getByRole('button', { name: 'Copy the token' })]) {
+      await expect(getComputedStyle(button).borderTopLeftRadius).toBe('6px');
+    }
+  },
+};
+
+/**
  * A key hint in an addon has no fill of its own: its text and hairline sit
  * straight on the field, so the text keeps its contrast in light and dark.
  */
