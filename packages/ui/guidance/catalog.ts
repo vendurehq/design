@@ -1048,6 +1048,14 @@ export const uiGuidance = [
         title: 'An area with its own navigation is a second level',
         body: "Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.",
       },
+      {
+        title: 'The account or user switch is a SidebarIdentityButton',
+        body: 'Render SidebarIdentityButton as the trigger of its menu, with an Avatar and a SidebarIdentityText (a title over an optional caption) as children. It brings the chevron, the open fill and the icon rail: the text and the chevron fade, the avatar stays. Do not hide the text with useSidebar().state, and do not build the row from SidebarMenuButton by hand.',
+      },
+      {
+        title: 'An account is square, a person is round',
+        body: 'Pass `shape="square"` to the Avatar of an account, an organisation or a channel. Keep the default round Avatar for a person. Do not set a radius on Avatar, AvatarImage or AvatarFallback.',
+      },
     ],
   },
   {

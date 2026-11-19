@@ -8,16 +8,24 @@ import { cn } from "@vendure-io/ui/lib/utils"
 function Avatar({
   className,
   size = "default",
+  shape = "circle",
   ...props
 }: AvatarPrimitive.Root.Props & {
   size?: "default" | "sm" | "lg"
+  /**
+   * `circle` for a person. `square` for an account, an organisation or a
+   * channel: a logo or initials in a rounded square. The shape covers the
+   * ring, the image and the fallback, so do not set a radius by hand.
+   */
+  shape?: "circle" | "square"
 }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
+      data-shape={shape}
       className={cn(
-        "after:border-border group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        "after:border-border group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 data-[shape=square]:rounded-lg data-[shape=square]:after:rounded-lg dark:after:mix-blend-lighten",
         className
       )}
       {...props}
@@ -30,7 +38,7 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn(
-        "aspect-square size-full rounded-full object-cover",
+        "aspect-square size-full rounded-full object-cover group-data-[shape=square]/avatar:rounded-lg",
         className
       )}
       {...props}
@@ -46,7 +54,7 @@ function AvatarFallback({
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        "bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs",
+        "bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[shape=square]/avatar:rounded-lg",
         className
       )}
       {...props}

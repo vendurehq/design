@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, waitFor, within } from 'storybook/test';
 import {
   Avatar,
   AvatarImage,
@@ -38,6 +39,47 @@ export const WithFallback: Story = {
       <Avatar size="lg">
         <AvatarFallback>LG</AvatarFallback>
         <AvatarBadge />
+      </Avatar>
+    </div>
+  ),
+};
+
+// A 1x1 image as a data URI, so the story does not depend on the network.
+const logo =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1" fill="gray"/></svg>';
+
+/**
+ * `shape="square"` for an account, an organisation or a channel; the default
+ * round shape for a person. The shape covers the ring, the image and the
+ * fallback.
+ */
+export const Square: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const radius = (el: Element) => parseFloat(getComputedStyle(el).borderTopLeftRadius);
+    const square = canvas.getByTestId('square-image');
+    const round = canvas.getByTestId('round-image');
+    const image = await waitFor(() => {
+      const img = square.querySelector('[data-slot=avatar-image]');
+      expect(img).not.toBeNull();
+      return img as Element;
+    });
+    const fallback = canvas.getByTestId('square-fallback').querySelector('[data-slot=avatar-fallback]') as Element;
+    for (const el of [square, image, fallback]) {
+      await expect(radius(el)).toBeLessThan(radius(round));
+    }
+  },
+  render: () => (
+    <div className="flex items-center gap-4">
+      <Avatar shape="square" data-testid="square-image">
+        <AvatarImage src={logo} alt="Acme logo" />
+        <AvatarFallback>AC</AvatarFallback>
+      </Avatar>
+      <Avatar shape="square" data-testid="square-fallback">
+        <AvatarFallback>GL</AvatarFallback>
+      </Avatar>
+      <Avatar data-testid="round-image">
+        <AvatarFallback>AL</AvatarFallback>
       </Avatar>
     </div>
   ),

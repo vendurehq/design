@@ -420,6 +420,8 @@ For the current page, exactly one icon in the sidebar takes the active colour: t
 - **A closed group still lights its icon:** Keep `hasActiveChild` on a group whose nested items are not mounted: its icon is then the one that takes the active colour.
 - **The group gets no fill and no bar:** `hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the sliding pill (or the fill and the bar in a SidebarMenu with `slidingIndicator={false}`). Never set both on one button.
 - **An area with its own navigation is a second level:** Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.
+- **The account or user switch is a SidebarIdentityButton:** Render SidebarIdentityButton as the trigger of its menu, with an Avatar and a SidebarIdentityText (a title over an optional caption) as children. It brings the chevron, the open fill and the icon rail: the text and the chevron fade, the avatar stays. Do not hide the text with useSidebar().state, and do not build the row from SidebarMenuButton by hand.
+- **An account is square, a person is round:** Pass `shape="square"` to the Avatar of an account, an organisation or a channel. Keep the default round Avatar for a person. Do not set a radius on Avatar, AvatarImage or AvatarFallback.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.
