@@ -270,6 +270,11 @@ export const WithMenuLongName: Story = {
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(shown()).toHaveTextContent('Production'));
     await waitFor(() => expect(shown().scrollWidth).toBeLessThanOrEqual(shown().clientWidth));
+    // Back to the long name: it is cut again.
+    await userEvent.click(crumb);
+    await userEvent.click(within(await within(document.body).findByRole('menu')).getByRole('menuitemradio', { name: /Feature/ }));
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(shown().scrollWidth).toBeGreaterThan(shown().clientWidth));
   },
 };
 
@@ -539,7 +544,19 @@ export const SearchMenuError: Story = {
     await waitFor(() => expect(within(popup).getByText('Projects could not be loaded')).toBeVisible());
     await expect(within(popup).getByRole('group', { name: 'Projects could not be loaded' })).toBeInTheDocument();
     await expect(within(popup).queryByText('No project found.')).not.toBeInTheDocument();
+    await expect(within(popup).getByRole('option', { name: 'Retry' })).toBeInTheDocument();
+  },
+};
+
+/** Retry reads the projects again; they replace the error rows. */
+export const SearchMenuRetry: Story = {
+  tags: ['!autodocs'],
+  render: () => <ProjectCrumbs read="error" />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Projects: Projects unavailable' }));
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
     await userEvent.click(within(popup).getByRole('option', { name: 'Retry' }));
-    await expect(await within(popup).findByRole('option', { name: /Acme Storefront/ })).toBeVisible();
+    await expect(await within(document.body).findByRole('option', { name: /Acme Storefront/ })).toBeInTheDocument();
+    await expect(within(canvasElement).getByRole('button', { name: 'Projects: Acme Storefront' })).toBeInTheDocument();
   },
 };

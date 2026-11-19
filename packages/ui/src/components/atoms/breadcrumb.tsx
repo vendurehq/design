@@ -250,10 +250,13 @@ function useCrumbTrigger({
 }) {
   const found = options.findIndex((option) => option.value === value)
   const fallback = placeholder !== undefined && found === -1
-  const active = fallback ? options.length : Math.max(0, found)
-  const current = fallback ? undefined : options[active]
+  // The placeholder has its own place before the options, so the options
+  // arriving after a read swap the label, never rewrite it in place.
+  const offset = placeholder === undefined ? 0 : 1
+  const active = fallback ? 0 : Math.max(0, found) + offset
+  const current = fallback ? undefined : options[active - offset]
   const labels = options.map((option) => option.label)
-  if (placeholder !== undefined) labels.push(placeholder)
+  if (placeholder !== undefined) labels.unshift(placeholder)
   const currentLabel = labels[active] ?? ""
   const name = current?.status
     ? `${label}: ${currentLabel}, ${current.status}`
