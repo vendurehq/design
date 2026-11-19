@@ -147,6 +147,21 @@ function matchEmptyDataSelected(css: string): string {
   return css.replace(branch, '  &:where([data-selected]:not([data-selected="false"])) {\n');
 }
 
+// The theme-independent variables: the colour ramps, the radius scale and
+// --radius. @vendure-io/ui reads them in arbitrary values (the destructive
+// Button hover mixes toward --destructive-900). A consumer that builds its own
+// :root and .dark theme imports only this file, so they are declared here too,
+// with the variables.css values. No color-scheme and no .dark block: the
+// consumer's theme owns those. theme.css declares them twice, harmlessly.
+const staticVars = { ...baseColorVars, ...radiusVars, ...semanticRadiusVars };
+const staticVarsBlock = [
+  '',
+  '/* Theme-independent tokens (colour ramps, radius scale, --radius), as in variables.css. */',
+  ':root {',
+  ...Object.entries(staticVars).map(([key, value]) => declaration(key, value)),
+  '}',
+].join('\n');
+
 const shadcnCss = [
   '/* AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-css.ts` */',
   '/*',
@@ -160,9 +175,15 @@ const shadcnCss = [
   ' * data-horizontal: compiles to [data-horizontal] instead of',
   ' * [data-orientation="horizontal"] and never matches. theme.css imports this',
   " * after tw-animate-css so shadcn's accordion keyframes win the cascade.",
+  ' * The :root block at the end is not from shadcn: it declares the',
+  ' * theme-independent tokens (colour ramps, radius scale, --radius) that',
+  ' * @vendure-io/ui reads, for a consumer that builds its own theme and imports',
+  ' * only this file.',
   ' */',
   '',
   matchEmptyDataSelected(dropRadixStateBranches(await Bun.file(shadcnCssPath).text())),
+  staticVarsBlock,
+  '',
 ].join('\n');
 
 await Bun.write(resolve(cssDir, 'shadcn.css'), shadcnCss);
