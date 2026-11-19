@@ -224,14 +224,17 @@ function useMenuOpen(
 }
 
 /**
- * The look of a crumb that opens a menu: a 30px ghost button with the
+ * The look of a crumb that opens a menu: a 28px ghost button (the `sm`
+ * height, the same as `SidebarTrigger` beside it in a top bar) with the
  * current option's `leading` slot, its label and an up-down chevron. It may
  * shrink: the label then ends in an ellipsis and the crumb shows the full
  * label in a tooltip. Give its BreadcrumbItem `min-w-0`, and a `max-w-*` on
- * the crumb where it should stop growing.
+ * the crumb where it should stop growing. `--content-inset` is the real
+ * start inset of its content (9px padding and the 1px border), so a row
+ * under it can line up with the dot.
  */
 const crumbTriggerClassName =
-  "text-foreground hover:text-foreground aria-expanded:text-foreground h-7.5 min-w-0 shrink gap-2.25 rounded-lg ps-2.25 pe-1.75 text-sm font-semibold"
+  "text-foreground hover:text-foreground aria-expanded:text-foreground min-w-0 shrink gap-2.25 rounded-lg ps-2.25 pe-1.75 text-sm font-semibold [--content-inset:calc(var(--spacing)*2.25+1px)]"
 
 /**
  * The inside of the crumb, and its tooltip. The crumb's accessible name is
@@ -302,12 +305,21 @@ function OptionRow({ option }: { option: BreadcrumbSearchMenuOption }) {
   return (
     <>
       {option.leading}
-      <span className="min-w-0 flex-1 truncate">
-        {option.label}
-        {option.status && <span className="sr-only">, {option.status}</span>}
-      </span>
+      {option.status ? (
+        // One text node for the name: a separate sr-only span after the
+        // label would read "Production , Healthy".
+        <>
+          <span aria-hidden className="min-w-0 flex-1 truncate">
+            {option.label}
+          </span>
+          <span className="sr-only">{`${option.label}, ${option.status}`}</span>
+        </>
+      ) : (
+        <span className="min-w-0 flex-1 truncate">{option.label}</span>
+      )}
       {option.detail != null && (
-        <span className="text-muted-foreground text-xs font-medium">
+        // At the end of the row, before the check, in both menus.
+        <span className="text-muted-foreground ms-auto shrink-0 ps-3 text-xs font-medium">
           {option.detail}
         </span>
       )}
@@ -381,7 +393,7 @@ function BreadcrumbMenu({
         {crumb.tooltip}
       </Tooltip>
       <DropdownMenuContent
-        className={cn("w-max max-w-90", contentClassName)}
+        className={cn("w-max min-w-72 max-w-90", contentClassName)}
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel>{label}</DropdownMenuLabel>
