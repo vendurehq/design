@@ -329,7 +329,7 @@ describe('DataTable loading state', () => {
     expect(count(body, /data-slot="data-table-skeleton-line"/g)).toBe(4);
     expect(count(body, /class="[^"]*size-8/g)).toBe(2);
     expect(count(body, /relative w-0 p-0 ps-0!/g)).toBe(2);
-    expect(count(body, /class="[^"]*ps-\[calc\(var\(--spacing\)\*8\+/g)).toBe(2);
+    expect(count(body, /class="[^"]*ps-\[calc\(var\(--spacing\)\*10\+/g)).toBe(2);
     expect(count(body, /class="[^"]*py-0/g)).toBe(2);
   });
 
@@ -940,9 +940,9 @@ describe('DataTable renderRow cell classes', () => {
       />,
     );
     expect(seen.select).toContain('relative w-0 p-0 ps-0!');
-    expect(seen.name).toContain('ps-[calc(var(--spacing)*8');
+    expect(seen.name).toContain('ps-[calc(var(--spacing)*10');
     expect(seen.code).toContain('ps-[calc(var(--spacing)*2');
-    expect(seen.code).not.toContain('*8');
+    expect(seen.code).not.toContain('*10');
   });
 
   test('a cell the table does not select gets no gutter: without rowSelection the first cell has none', () => {
