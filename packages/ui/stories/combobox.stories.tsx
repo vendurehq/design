@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { Field, FieldLabel } from '../src/components/atoms/field.tsx';
 import { checkCheckMark } from './menu-checked-row.ts';
@@ -511,5 +511,294 @@ export const OpensTowardTheCentre: Story = {
       if (dir === null) root.removeAttribute('dir');
       else root.setAttribute('dir', dir);
     }
+  },
+};
+
+// A server-searched catalogue for the paging stories: 100 values, 20 a page.
+const colours = ['Red', 'Orange', 'Yellow', 'Green', 'Teal', 'Blue', 'Indigo', 'Violet', 'Black', 'White'];
+const materials = ['cotton', 'linen', 'wool', 'silk', 'denim', 'leather', 'velvet', 'satin', 'tweed', 'canvas'];
+const catalogue = colours.flatMap((colour) => materials.map((material) => `${colour} ${material}`));
+const PAGE_SIZE = 20;
+
+/**
+ * Searches the catalogue as a server would: the first page of a new search
+ * and each next page arrive after `delay`. `loadMore` counts its calls, so
+ * the play functions can check how often the Combobox asked.
+ */
+function useServerSearch(delay = 250) {
+  const [query, setQuery] = useState('');
+  const [pages, setPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [requests, setRequests] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const matches = useMemo(
+    () => catalogue.filter((value) => value.toLowerCase().includes(query.trim().toLowerCase())),
+    [query],
+  );
+  useEffect(() => {
+    setLoading(true);
+    setPages(0);
+    timer.current = setTimeout(() => {
+      setPages(1);
+      setLoading(false);
+    }, delay);
+    return () => clearTimeout(timer.current);
+  }, [query, delay]);
+  const loadMore = () => {
+    setRequests((count) => count + 1);
+    setLoading(true);
+    timer.current = setTimeout(() => {
+      setPages((count) => count + 1);
+      setLoading(false);
+    }, delay);
+  };
+  const items = matches.slice(0, pages * PAGE_SIZE);
+  return {
+    query,
+    setQuery,
+    items,
+    loading,
+    hasMore: items.length < matches.length,
+    loadMore,
+    caption: `${items.length} of ${matches.length} loaded, ${requests} next-page requests`,
+  };
+}
+
+const optionTexts = () =>
+  [...document.querySelectorAll('[data-slot=combobox-list] [role=option]')].map((option) => option.textContent);
+const pagingCaption = (canvasElement: HTMLElement) =>
+  canvasElement.querySelector('[data-testid=paging]')?.textContent ?? '';
+
+/**
+ * A server-searched list that loads the next page as it scrolls near its
+ * end, or as the arrow keys reach its last option. The consumer keeps the
+ * fetching: `filter={null}` turns the client filter off, `onLoadMore` asks
+ * for the next page, `hasMore` says there is one and `loading` shows the
+ * loading row and marks the list busy. While a new search loads, the
+ * loading row stands in for the empty state.
+ */
+export const ServerSearch: Story = {
+  render: function ServerSearchStory() {
+    const search = useServerSearch();
+    return (
+      <div className="flex flex-col gap-2">
+        <Combobox
+          items={search.items}
+          filter={null}
+          inputValue={search.query}
+          onInputValueChange={search.setQuery}
+          onLoadMore={search.loadMore}
+          hasMore={search.hasMore}
+          loading={search.loading}
+          loadingLabel="Loading values"
+        >
+          <ComboboxInput aria-label="Facet value" placeholder="Search values" className="w-72" />
+          <ComboboxContent>
+            <ComboboxEmpty>No values found.</ComboboxEmpty>
+            <ComboboxList>
+              {(value: string) => (
+                <ComboboxItem key={value} value={value}>
+                  {value}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        <p data-testid="paging" className="text-muted-foreground text-xs">
+          {search.caption}
+        </p>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const caption = () => pagingCaption(canvasElement);
+    const input = within(canvasElement).getByRole('combobox', { name: 'Facet value' });
+    await userEvent.click(input);
+    const list = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-slot=combobox-list]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    // The first page is taller than the list: opening it asks for nothing.
+    await waitFor(() => expect(optionTexts()).toHaveLength(20));
+    await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(caption()).toBe('20 of 100 loaded, 0 next-page requests');
+
+    // The arrow keys reach the last option: one request, a loading row at
+    // the end, and a busy list. The highlight stays put while the page lands,
+    // and the next ArrowDown moves into the new page.
+    for (let i = 0; i < 20; i++) await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(document.querySelector('[role=option][data-highlighted]')?.textContent).toBe('Orange canvas'),
+    );
+    await waitFor(() => expect(caption()).toBe('20 of 100 loaded, 1 next-page requests'));
+    await expect(list.querySelector('[data-slot=combobox-loading]')).not.toBeNull();
+    await expect(list.getAttribute('aria-busy')).toBe('true');
+    await expect(document.querySelector('[data-slot=combobox-status]')?.textContent).toContain('Loading values');
+    await waitFor(() => expect(optionTexts()).toHaveLength(40));
+    await expect(list.querySelector('[data-slot=combobox-loading]')).toBeNull();
+    await expect(list.hasAttribute('aria-busy')).toBe(false);
+    await expect(document.querySelector('[role=option][data-highlighted]')?.textContent).toBe('Orange canvas');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(document.querySelector('[role=option][data-highlighted]')?.textContent).toBe('Yellow cotton');
+    await expect(caption()).toBe('40 of 100 loaded, 1 next-page requests');
+
+    // Scrolling to the end asks once, however many scroll events fire.
+    for (let i = 0; i < 5; i++) {
+      list.scrollTop = list.scrollHeight;
+      list.dispatchEvent(new Event('scroll'));
+    }
+    await waitFor(() => expect(optionTexts()).toHaveLength(60));
+    await expect(caption()).toBe('60 of 100 loaded, 2 next-page requests');
+
+    // Closed before the page lands: the list asks again when it reopens.
+    list.scrollTop = list.scrollHeight;
+    list.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(caption()).toBe('60 of 100 loaded, 3 next-page requests'));
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(caption()).toBe('80 of 100 loaded, 3 next-page requests'));
+    await userEvent.click(input);
+    const reopened = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-slot=combobox-list]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    await waitFor(() => expect(optionTexts()).toHaveLength(80));
+    reopened.scrollTop = reopened.scrollHeight;
+    reopened.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(caption()).toBe('100 of 100 loaded, 4 next-page requests'));
+
+    // A new search starts over: the loading row replaces the empty state
+    // while it loads, and the end of its list asks again.
+    await userEvent.clear(input);
+    await userEvent.type(input, 'e');
+    await waitFor(() => expect(reopened.querySelector('[data-slot=combobox-loading]')).not.toBeNull());
+    await waitFor(() => expect(optionTexts()).toHaveLength(20));
+    const requests = Number(caption().match(/(\d+) next-page/)?.[1]);
+    reopened.scrollTop = reopened.scrollHeight;
+    reopened.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(optionTexts()).toHaveLength(40));
+    await expect(caption()).toContain(`${requests + 1} next-page requests`);
+
+    // A search with one short page: nothing more to load, so no request.
+    await userEvent.clear(input);
+    await userEvent.type(input, 'red');
+    await waitFor(() => expect(caption()).toMatch(/^10 of 10 loaded/));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(caption()).toContain(`${requests + 1} next-page requests`);
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** The same paging seam on a multi-value Combobox with chips. */
+export const ServerSearchChips: Story = {
+  render: function ServerSearchChipsStory() {
+    const search = useServerSearch();
+    const chipsAnchor = useComboboxAnchor();
+    return (
+      <div className="flex flex-col gap-2">
+        <Combobox
+          items={search.items}
+          filter={null}
+          multiple
+          defaultValue={['Red cotton']}
+          inputValue={search.query}
+          onInputValueChange={search.setQuery}
+          onLoadMore={search.loadMore}
+          hasMore={search.hasMore}
+          loading={search.loading}
+        >
+          <ComboboxChips ref={chipsAnchor} className="w-80">
+            <ComboboxValue>
+              {(values: string[]) => values.map((value) => <ComboboxChip key={value}>{value}</ComboboxChip>)}
+            </ComboboxValue>
+            <ComboboxChipsInput aria-label="Facet values" placeholder="Add a value" />
+          </ComboboxChips>
+          <ComboboxContent anchor={chipsAnchor}>
+            <ComboboxEmpty>No values found.</ComboboxEmpty>
+            <ComboboxList>
+              {(value: string) => (
+                <ComboboxItem key={value} value={value}>
+                  {value}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        <p data-testid="paging" className="text-muted-foreground text-xs">
+          {search.caption}
+        </p>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const caption = () => pagingCaption(canvasElement);
+    await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Facet values' }));
+    await waitFor(() => expect(optionTexts()).toHaveLength(20));
+    const list = document.querySelector<HTMLElement>('[data-slot=combobox-list]') as HTMLElement;
+    await expect(caption()).toBe('20 of 100 loaded, 0 next-page requests');
+    list.scrollTop = list.scrollHeight;
+    list.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(optionTexts()).toHaveLength(40));
+    await expect(caption()).toBe('40 of 100 loaded, 1 next-page requests');
+    for (let i = 0; i < 40; i++) await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() => expect(caption()).toBe('40 of 100 loaded, 2 next-page requests'));
+    await waitFor(() => expect(optionTexts()).toHaveLength(60));
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+function PagingLoadingStory({ items, label }: { items: string[]; label: string }) {
+  return (
+    <div className="h-80">
+      <Combobox items={items} filter={null} open onLoadMore={() => {}} hasMore loading>
+        <ComboboxInput aria-label={label} className="w-60" />
+        <ComboboxContent>
+          <ComboboxEmpty>No values found.</ComboboxEmpty>
+          <ComboboxList>
+            {(value: string) => (
+              <ComboboxItem key={value} value={value}>
+                {value}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  );
+}
+
+/** Checks the open list is busy, shows the loading row and announces it. */
+async function checkLoading() {
+  const list = await waitFor(() => {
+    const element = document.querySelector<HTMLElement>('[data-slot=combobox-list]');
+    expect(element).not.toBeNull();
+    return element as HTMLElement;
+  });
+  await expect(list.getAttribute('aria-busy')).toBe('true');
+  await expect(list.querySelector('[data-slot=combobox-loading]')).not.toBeNull();
+  await expect(document.querySelector('[data-slot=combobox-status]')?.textContent).toContain('Loading…');
+}
+
+/**
+ * The next page loading, held open: the loading row sits under the options,
+ * the list is busy, and the status outside the listbox announces the load.
+ */
+export const PagingLoadingNextPage: Story = {
+  render: () => <PagingLoadingStory items={catalogue.slice(0, 6)} label="Next page loading" />,
+  play: checkLoading,
+};
+
+/**
+ * A new search with no options yet, held open: the loading row takes the
+ * place of the empty state.
+ */
+export const PagingLoadingNewSearch: Story = {
+  render: () => <PagingLoadingStory items={[]} label="New search loading" />,
+  play: async () => {
+    await checkLoading();
+    const empty = document.querySelector('[data-slot=combobox-empty]');
+    await expect(empty && getComputedStyle(empty).display).toBe('none');
   },
 };
