@@ -1006,9 +1006,11 @@ export const IdentitySwitch: Story = {
     const radius = (id: string) => parseFloat(getComputedStyle(canvas.getByTestId(id)).borderTopLeftRadius);
     await expect(radius('user-menu-avatar')).toBeGreaterThan(radius('account-switch-avatar'));
 
-    // Open: the trigger takes the fill.
+    // Open: the trigger takes the fill, with the pointer moved away so the
+    // hover fill cannot stand in for it.
     const idleFill = getComputedStyle(userMenu).backgroundColor;
     await userEvent.click(userMenu);
+    await userEvent.unhover(userMenu);
     await page.findByRole('menuitem', { name: 'Sign out' });
     await waitFor(() => expect(userMenu).toHaveAttribute('data-popup-open'));
     await waitFor(() => expect(getComputedStyle(userMenu).backgroundColor).not.toBe(idleFill));

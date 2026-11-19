@@ -380,7 +380,7 @@ describe('SidebarIdentityButton', () => {
       </SidebarProvider>,
     );
 
-    expect(slotTokens(html, 'sidebar-menu-button')).toContain('data-open:bg-sidebar-accent');
+    expect(slotTokens(html, 'sidebar-menu-button')).toContain('data-popup-open:bg-sidebar-accent');
     expect(html.match(/data-slot="sidebar-identity-chevron"/g)).toHaveLength(1);
     expect(slotTokens(html, 'sidebar-identity-chevron')).toContain('group-data-[collapsible=icon]:opacity-0');
     expect(slotTokens(html, 'sidebar-identity-text')).toContain('group-data-[collapsible=icon]:opacity-0');
