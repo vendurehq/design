@@ -10,6 +10,7 @@ import { Button } from '../src/components/atoms/button.tsx';
 import { SidebarProvider, SidebarTrigger } from '../src/components/atoms/sidebar.tsx';
 import { Separator } from '../src/components/atoms/separator.tsx';
 import { CommandItem } from '../src/components/atoms/command.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../src/components/atoms/tooltip.tsx';
 import {
   Breadcrumb,
   BreadcrumbMenu,
@@ -326,6 +327,113 @@ function LongNameMenu() {
   const [value, setValue] = React.useState('feature');
   return <BreadcrumbMenu label="Environment" options={longEnvironments} value={value} onValueChange={setValue} />;
 }
+
+/**
+ * A consumer tooltip around a crumb, as a trail does to show a cut crumb in
+ * full: it reads the cut `.truncate` text under the focus or the pointer.
+ */
+function CutTextTooltip({ children }: { children: React.ReactNode }) {
+  const [text, setText] = React.useState<string | null>(null);
+  const measure = (event: React.SyntheticEvent<HTMLElement>) => {
+    if (!(event.target instanceof Element) || event.target.closest('[data-slot="breadcrumb-menu"]')) {
+      setText(null);
+      return;
+    }
+    const cut = [...event.currentTarget.querySelectorAll<HTMLElement>('.truncate')].filter(
+      (part) => part.scrollWidth > part.clientWidth,
+    );
+    setText(cut.length > 0 ? cut.map((part) => part.textContent).join(' ') : null);
+  };
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<div className="flex min-w-0 items-center" />} onFocus={measure} onPointerOver={measure}>
+        {children}
+      </TooltipTrigger>
+      {text ? <TooltipContent>{text}</TooltipContent> : null}
+    </Tooltip>
+  );
+}
+
+function CrumbsInTooltip({ options, initial }: { options: BreadcrumbMenuOption[]; initial: string }) {
+  const [value, setValue] = React.useState(initial);
+  return (
+    <div className="w-50">
+      <Breadcrumb>
+        <BreadcrumbList className="flex-nowrap">
+          <BreadcrumbItem className="min-w-0">
+            <CutTextTooltip>
+              <BreadcrumbMenu label="Environment" options={options} value={value} onValueChange={setValue} />
+            </CutTextTooltip>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem className="shrink-0">
+            <BreadcrumbPage>Logs</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  );
+}
+
+/**
+ * No tooltip shows over the open menu, from the crumb or from around it. It
+ * records every tooltip that mounts, since one may close again at once.
+ */
+async function expectNoTooltipWhileOpen(canvasElement: HTMLElement, name: string) {
+  const crumb = within(canvasElement).getByRole('button', { name });
+  const shown: string[] = [];
+  const observer = new MutationObserver((records) => {
+    for (const node of records.flatMap((record) => [...record.addedNodes])) {
+      if (!(node instanceof Element)) continue;
+      const tip = node.matches('[data-slot="tooltip-content"]') ? node : node.querySelector('[data-slot="tooltip-content"]');
+      if (tip) shown.push(tip.textContent ?? '');
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  // Longer than the 350ms tooltip delay.
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 500));
+  try {
+    // A cut label shows its own tooltip on focus, while the menu is closed.
+    crumb.focus();
+    await settle();
+    shown.length = 0;
+    await userEvent.keyboard('{Enter}');
+    const menu = await within(document.body).findByRole('menu');
+    await waitFor(() => expect(within(menu).getAllByRole('menuitemradio')[0]).toHaveFocus());
+    await settle();
+    await userEvent.keyboard('{ArrowDown}');
+    await settle();
+    await userEvent.hover(within(menu).getAllByRole('menuitemradio')[1] as HTMLElement);
+    await settle();
+    await expect(shown.join(' | ')).toBe('');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(crumb).toHaveFocus());
+  } finally {
+    observer.disconnect();
+  }
+}
+
+/**
+ * Focus and the pointer in the open menu stay inside it: a tooltip that
+ * wraps the crumb does not open over the menu. The hidden labels of the
+ * crumb's swap count as cut there, so it would repeat one of them.
+ */
+export const WithMenuInConsumerTooltip: Story = {
+  tags: ['!autodocs'],
+  render: () => <CrumbsInTooltip options={environments} initial="production" />,
+  play: ({ canvasElement }) => expectNoTooltipWhileOpen(canvasElement, 'Environment: Production'),
+};
+
+/** The same with a label that really is cut. */
+export const WithMenuLongNameInConsumerTooltip: Story = {
+  tags: ['!autodocs'],
+  render: () => <CrumbsInTooltip options={longEnvironments} initial="feature" />,
+  play: ({ canvasElement }) =>
+    expectNoTooltipWhileOpen(
+      canvasElement,
+      'Environment: Feature: checkout redesign with saved payment methods, Healthy',
+    ),
+};
 
 const linkedEnvironments: BreadcrumbMenuOption[] = environments.map((option) => ({
   ...option,
