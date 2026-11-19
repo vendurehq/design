@@ -160,7 +160,7 @@ export const CopiedLabelSwaps: Story = {
 };
 
 /**
- * Inside a TooltipProvider the first tooltip waits 600ms. A click that comes
+ * Inside a TooltipProvider the first tooltip waits 350ms. A click that comes
  * sooner copies at once and still shows "Copied".
  */
 export const CopiesBeforeTheDelay: Story = {
