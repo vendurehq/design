@@ -652,15 +652,32 @@ export const ServerSearch: Story = {
     await waitFor(() => expect(optionTexts()).toHaveLength(60));
     await expect(caption()).toBe('60 of 100 loaded, 2 next-page requests');
 
+    // Closed before the page lands: the list asks again when it reopens.
+    list.scrollTop = list.scrollHeight;
+    list.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(caption()).toBe('60 of 100 loaded, 3 next-page requests'));
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(caption()).toBe('80 of 100 loaded, 3 next-page requests'));
+    await userEvent.click(input);
+    const reopened = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-slot=combobox-list]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    await waitFor(() => expect(optionTexts()).toHaveLength(80));
+    reopened.scrollTop = reopened.scrollHeight;
+    reopened.dispatchEvent(new Event('scroll'));
+    await waitFor(() => expect(caption()).toBe('100 of 100 loaded, 4 next-page requests'));
+
     // A new search starts over: the loading row replaces the empty state
     // while it loads, and the end of its list asks again.
     await userEvent.clear(input);
     await userEvent.type(input, 'e');
-    await waitFor(() => expect(list.querySelector('[data-slot=combobox-loading]')).not.toBeNull());
+    await waitFor(() => expect(reopened.querySelector('[data-slot=combobox-loading]')).not.toBeNull());
     await waitFor(() => expect(optionTexts()).toHaveLength(20));
     const requests = Number(caption().match(/(\d+) next-page/)?.[1]);
-    list.scrollTop = list.scrollHeight;
-    list.dispatchEvent(new Event('scroll'));
+    reopened.scrollTop = reopened.scrollHeight;
+    reopened.dispatchEvent(new Event('scroll'));
     await waitFor(() => expect(optionTexts()).toHaveLength(40));
     await expect(caption()).toContain(`${requests + 1} next-page requests`);
 

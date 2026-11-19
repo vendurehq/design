@@ -39,8 +39,10 @@ type ComboboxPagingProps = {
   /**
    * Asks for the next page of a server-searched list. Called once when the
    * list scrolls near its end, or the arrow keys reach its last option, while
-   * `hasMore` is set and `loading` is not. It is called again only after the
-   * options change: a failed fetch does not call it in a loop.
+   * `hasMore` is set and `loading` is not. It is called again once the
+   * options change, the search changes, the list reopens, or the list
+   * scrolls away from its end and back: a failed fetch is retried by
+   * scrolling, never in a loop.
    */
   onLoadMore?: () => void
   /** There is a next page for `onLoadMore` to fetch. */
@@ -106,21 +108,22 @@ function Combobox<Value, Multiple extends boolean | undefined = false, Item = Va
     latched.current = false
   }, [])
 
-  const enabled = onLoadMore !== undefined || loading !== undefined
+  const canLoadMore = onLoadMore !== undefined
+  const enabled = canLoadMore || loading !== undefined
   const paging = React.useMemo(
     () =>
       enabled
         ? {
             loading: !!loading,
             loadingLabel,
-            canLoadMore: onLoadMore !== undefined,
+            canLoadMore,
             list,
             setList,
             requestMore,
             rearm,
           }
         : null,
-    [enabled, loading, loadingLabel, onLoadMore, list, requestMore, rearm]
+    [enabled, loading, loadingLabel, canLoadMore, list, requestMore, rearm]
   )
 
   return (
@@ -353,7 +356,8 @@ const LOAD_MORE_THRESHOLD = 64
  * Asks for the next page when the end of the list is in view or near it:
  * when the list opens, when it scrolls (the arrow keys scroll it too), and
  * when its options change, so a page shorter than the list fills it. A new
- * set of options lets the next request through.
+ * set of options, a reopened list, or a scroll away from the end lets the
+ * next request through.
  */
 function useLoadMore(paging: ComboboxPaging | null, end: React.RefObject<HTMLElement | null>) {
   const list = paging?.list ?? null
@@ -367,10 +371,14 @@ function useLoadMore(paging: ComboboxPaging | null, end: React.RefObject<HTMLEle
       if (!marker || !list.isConnected) return
       if (marker.getBoundingClientRect().top - list.getBoundingClientRect().bottom <= LOAD_MORE_THRESHOLD) {
         requestMore()
+      } else {
+        rearm()
       }
     }
     const options = () => list.querySelectorAll("[role=option]").length
     let count = options()
+    // A page may have landed while the list was closed.
+    rearm()
     const observer = new MutationObserver(() => {
       const next = options()
       if (next === count) return
