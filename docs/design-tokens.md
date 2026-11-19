@@ -35,6 +35,16 @@ Raw CSS custom properties only, without Tailwind or any theme config. Use this i
 @import "@vendure-io/design-tokens/css/variables";
 ```
 
+### `@vendure-io/design-tokens/css/shadcn`
+
+For an app that builds its own `:root` and `.dark` theme instead of importing `css/theme` (the Vendure Dashboard does this). It holds the shadcn `@custom-variant` selectors and accordion keyframes that `@vendure-io/ui` relies on, and declares the theme-independent tokens the components read in arbitrary values: the colour ramps (`--brand-500`, `--destructive-900`, …), the radius scale (`--radius-md`, …) and `--radius`. Your theme supplies the semantic colours and shadows.
+
+```css
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@vendure-io/design-tokens/css/shadcn";
+```
+
 ### `@vendure-io/design-tokens/css/fonts`
 
 Self-hosted `@font-face` rules (via [Fontsource](https://fontsource.org/)) for Inter, Public Sans, and Geist Mono. The theme uses Inter and Geist Mono; Public Sans stays loaded for apps that set it themselves. `css/theme` only declares the `--font-*` family tokens — it doesn't load the font files, so import this alongside it (or `css/variables`) or the theme falls back to system fonts:

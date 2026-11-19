@@ -15,6 +15,7 @@ npm install @vendure-io/design-tokens
 | `@vendure-io/design-tokens` | TypeScript token definitions (colors, typography, radii, shadows, motion) |
 | `@vendure-io/design-tokens/css/variables` | Raw CSS custom properties |
 | `@vendure-io/design-tokens/css/theme` | Full Tailwind v4 theme CSS (recommended for apps) |
+| `@vendure-io/design-tokens/css/shadcn` | shadcn variants and keyframes, plus the colour ramps, radius scale and `--radius`, for an app that builds its own theme |
 | `@vendure-io/design-tokens/css/fonts` | Self-hosted font files (Inter, Public Sans, Geist Mono) |
 
 ## Usage

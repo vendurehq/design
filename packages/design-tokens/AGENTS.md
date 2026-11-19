@@ -6,13 +6,15 @@ Design tokens for the Vendure design system. Consumed by `@vendure-io/ui` and do
 
 - `src/tokens/` — TS token definitions (colors, typography, radii, shadows, motion)
 - `src/css/variables.css` — CSS custom properties generated from tokens
-- `src/css/theme.css` — Tailwind v4 theme config, imports variables.css + tw-animate-css
+- `src/css/theme.css` — Tailwind v4 theme config, imports variables.css + tw-animate-css + shadcn.css
+- `src/css/shadcn.css` — vendored shadcn variants and keyframes, plus a `:root` block with the theme-independent tokens (colour ramps, radius scale, `--radius`) that `@vendure-io/ui` reads. `shadcn-static-vars.test.ts` keeps it complete
 
 ## Exports
 
 - `.` → TS tokens (`src/tokens/index.ts`)
 - `./css/variables` → raw CSS variables
 - `./css/theme` → full theme CSS (use this in apps)
+- `./css/shadcn` → shadcn variants and keyframes plus the theme-independent tokens; for a consumer that builds its own `:root`/`.dark` theme (the Dashboard)
 - `./css/fonts` → self-hosted `@font-face` rules (Fontsource) for the three font families; theme.css only declares the `--font-*` tokens, it doesn't load font files — import this alongside it. It also holds the one base rule both consumers need: grayscale font smoothing on `html`/`body`, in `@layer base`
 
 ## Rules
