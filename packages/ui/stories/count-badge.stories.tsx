@@ -17,18 +17,21 @@ type Story = StoryObj<typeof meta>;
 // Inline, neutral: the number alone.
 export const Default: Story = {};
 
-// The four tones, inline and on a corner.
+// Every shared tone plus brand, inline and on a corner. `progress` draws as
+// `info`.
 export const Tones: Story = {
   render: (args) => (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <CountBadge {...args} tone="neutral" />
-        <CountBadge {...args} tone="brand" />
+        <CountBadge {...args} tone="info" />
+        <CountBadge {...args} tone="success" />
         <CountBadge {...args} tone="warning" />
         <CountBadge {...args} tone="critical" />
+        <CountBadge {...args} tone="brand" />
       </div>
       <div className="flex items-center gap-3">
-        {(['neutral', 'brand', 'warning', 'critical'] as const).map((tone) => (
+        {(['neutral', 'info', 'success', 'warning', 'critical', 'brand'] as const).map((tone) => (
           <Button key={tone} variant="ghost" size="icon" className="relative">
             <BellIcon />
             <span className="sr-only">Notifications</span>
@@ -49,7 +52,7 @@ export const OnIconButton: Story = {
     <Button variant="ghost" size="icon" className="relative">
       <BellIcon />
       <span className="sr-only">Notifications,</span>
-      <CountBadge {...args} tone="brand" placement="corner" label={`${args.count} unread`} />
+      <CountBadge {...args} placement="corner" label={`${args.count} unread`} />
     </Button>
   ),
   play: async ({ canvasElement }) => {
@@ -120,4 +123,23 @@ export const CustomMax: Story = {
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('9+')).toBeVisible();
   },
+};
+
+// On the small icon button (28px), as on the Console bell: one digit and the
+// "99+" cap.
+export const OnSmallIconButton: Story = {
+  render: () => (
+    <div className="flex items-center gap-4">
+      <Button variant="ghost" size="icon-sm" className="relative">
+        <BellIcon />
+        <span className="sr-only">Notifications,</span>
+        <CountBadge count={3} placement="corner" label="3 unread" />
+      </Button>
+      <Button variant="ghost" size="icon-sm" className="relative">
+        <BellIcon />
+        <span className="sr-only">Notifications,</span>
+        <CountBadge count={120} placement="corner" label="120 unread" />
+      </Button>
+    </div>
+  ),
 };

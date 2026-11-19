@@ -62,10 +62,14 @@ function Example({
 }
 
 const TONES: { tone: CountBadgeTone; count: number; use: string }[] = [
-  { tone: 'neutral', count: 2, use: 'A plain count with no urgency: active filters, selected items.' },
-  { tone: 'brand', count: 5, use: 'Unread items that ask for a look, such as notifications.' },
+  { tone: 'neutral', count: 2, use: 'A plain count with no urgency: unread notifications, active filters, selected items.' },
   { tone: 'warning', count: 1, use: 'Items where a person must act or a risk exists.' },
   { tone: 'critical', count: 3, use: 'Failures or blocking problems.' },
+  {
+    tone: 'brand',
+    count: 5,
+    use: 'Rare: a deliberate highlight the product opts into, at most one per view. Not the routine unread count.',
+  },
 ];
 
 // ── countbadge vs badge ──────────────────────────────────────────────────────
@@ -86,7 +90,7 @@ export const CountBadgeVsBadge: Story = {
             <Button variant="ghost" size="icon" className="relative">
               <BellIcon />
               <span className="sr-only">Notifications,</span>
-              <CountBadge count={120} tone="brand" placement="corner" label="120 unread" />
+              <CountBadge count={120} placement="corner" label="120 unread" />
             </Button>
             <Button variant="outline" size="sm">
               <FilterIcon data-icon="inline-start" />
@@ -130,7 +134,7 @@ export const ChoosingATone: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="The tone says what the count is of"
-        intro="Pass a tone, never a colour class. Start at neutral. When the counted items have states, take the tone from the state dictionary (maxTone) instead of picking it at the call site."
+        intro="Pass a tone, never a colour class. Start at neutral: unread notifications and active filters are neutral. When the counted items have states, pass the state dictionary's maxTone() result as it is; info, success and progress work too. Brand follows accent rationing."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[520px] text-left text-sm">
@@ -181,7 +185,7 @@ export const TheAccessibleName: Story = {
             <Button variant="ghost" size="icon" className="relative">
               <BellIcon />
               <span className="sr-only">Notifications,</span>
-              <CountBadge count={120} tone="brand" placement="corner" label="120 unread" />
+              <CountBadge count={120} placement="corner" label="120 unread" />
             </Button>
           </Example>
           <Example
@@ -190,7 +194,7 @@ export const TheAccessibleName: Story = {
           >
             <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
               <BellIcon />
-              <CountBadge count={120} tone="brand" placement="corner" label="120 unread" />
+              <CountBadge count={120} placement="corner" label="120 unread" />
             </Button>
           </Example>
         </div>

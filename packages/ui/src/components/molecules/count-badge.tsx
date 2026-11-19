@@ -3,18 +3,19 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import type * as React from 'react';
 
-type CountBadgeTone = Extract<Tone, 'neutral' | 'warning' | 'critical'> | 'brand';
+type CountBadgeTone = Tone | 'brand';
 type CountBadgePlacement = 'inline' | 'corner';
 
 // A small solid count: unread notifications or alerts on an icon button, the
 // number of active filters inside a button. The number is the whole content,
 // so the fill is solid, not a tint: a tint at 11px does not read.
 //
-// Tones use the shared tone names, so `maxTone()` output narrows straight in.
-// `critical` takes the `destructive` slots, as on StatusBadge. `neutral` is the
-// `primary` ink (near black in light mode, light grey in dark mode): every
-// hand-built count in the apps used it, and it stays quiet next to a brand
-// button. Each pair is held to 4.5:1 by the tokens' contrast test.
+// `tone` takes every shared tone, so a `maxTone()` result passes in as it is,
+// plus `brand`. `critical` takes the `destructive` slots and `progress` the
+// `info` slots, as on StatusBadge. `neutral` is the `primary` ink (near black
+// in light mode, light grey in dark mode): every hand-built count in the apps
+// used it. `brand` follows accent rationing: an opt-in, not the default for
+// unread items. Each pair is held to 4.5:1 by the tokens' contrast test.
 //
 // `corner` sits on the top end corner of an icon button, 16px high. Its start
 // edge is pinned to the middle of the button, so a wider count ("99+") grows
@@ -24,7 +25,7 @@ type CountBadgePlacement = 'inline' | 'corner';
 // the flow of a button label, 20px high, the button's gap spacing it.
 const countBadgeVariants = cva(
   [
-    'inline-flex shrink-0 items-center justify-center rounded-full font-medium tabular-nums leading-none whitespace-nowrap',
+    'inline-flex shrink-0 items-center justify-center rounded-full font-medium tabular-nums whitespace-nowrap',
     // Forced colours drop the fill; an outline keeps the pill visible.
     'outline-1 outline-transparent -outline-offset-1',
   ],
@@ -33,13 +34,16 @@ const countBadgeVariants = cva(
       tone: {
         neutral: 'bg-primary text-primary-foreground',
         brand: 'bg-brand text-brand-foreground',
+        info: 'bg-info text-info-foreground',
+        success: 'bg-success text-success-foreground',
         warning: 'bg-warning text-warning-foreground',
         critical: 'bg-destructive text-destructive-foreground',
+        progress: 'bg-info text-info-foreground',
       } satisfies Record<CountBadgeTone, string>,
       placement: {
-        inline: 'h-5 min-w-5 px-1.5 text-xs',
+        inline: 'h-5 min-w-5 px-1.5 text-xs/none',
         corner:
-          'pointer-events-none absolute start-1/2 -top-1 h-4 min-w-4 px-1 text-2xs ring-2 ring-background',
+          'pointer-events-none absolute start-1/2 -top-1 h-4 min-w-4 px-1 text-2xs/none ring-2 ring-background',
       } satisfies Record<CountBadgePlacement, string>,
     },
     defaultVariants: {

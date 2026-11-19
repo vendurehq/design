@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { maxTone } from '../../lib/state-dictionary.ts';
 import { CountBadge, formatCount } from './count-badge.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
@@ -48,11 +49,25 @@ describe('CountBadge', () => {
     );
   });
 
+  test('takes a maxTone() result as it is; progress uses the info slots', () => {
+    expect(html(<CountBadge count={2} tone={maxTone('neutral', 'warning')} />)).toContain(
+      'data-tone="warning"',
+    );
+    expect(html(<CountBadge count={2} tone="progress" />)).toContain(
+      'bg-info text-info-foreground',
+    );
+  });
+
+  test('the line height is the box, not the font: leading survives the merge', () => {
+    expect(html(<CountBadge count={2} />)).toContain('text-xs/none');
+    expect(html(<CountBadge count={2} placement="corner" />)).toContain('text-2xs/none');
+  });
+
   test('corner sits on the top end corner, 16px, with a token font size', () => {
     const markup = html(<CountBadge count={4} placement="corner" />);
 
     expect(markup).toContain('absolute start-1/2 -top-1 h-4 min-w-4');
-    expect(markup).toContain('text-2xs');
+    expect(markup).toContain('text-2xs/none');
     expect(markup).toContain('ring-2 ring-background');
     expect(markup).not.toMatch(/text-\[\d/);
   });

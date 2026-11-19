@@ -315,7 +315,7 @@ import { CountBadge } from "@vendure-io/ui/components/molecules/count-badge";
 <Button variant="ghost" size="icon" className="relative">
   <BellIcon />
   <span className="sr-only">Notifications,</span>
-  <CountBadge count={unread} tone="brand" placement="corner" label={`${unread} unread`} />
+  <CountBadge count={unread} placement="corner" label={`${unread} unread`} />
 </Button>
 
 // In a button label: inline (the default). The words beside it name the count.
@@ -328,7 +328,7 @@ import { CountBadge } from "@vendure-io/ui/components/molecules/count-badge";
 
 - `count`: nothing renders at 0, below 0 or for a non-finite value.
 - `max` (default 99): above it the badge reads `99+`.
-- `tone`: `neutral` (default, the `primary` ink), `brand`, `warning` or `critical` (the `destructive` slots). The names are the shared tones, so a `maxTone()` result narrows straight in.
+- `tone`: any shared tone, or `brand`. `neutral` (default, the `primary` ink) for unread items and filters; `warning` or `critical` (the `destructive` slots) when the count reports problems. A `maxTone()` result passes in as it is. `brand` is a rare opt-in (accent rationing).
 - `placement`: `inline` (20px, `text-xs`) or `corner` (16px, `text-2xs`, on the top end corner, with a ring in the page background; its start edge sits at the middle of the button, so "99+" grows away from the icon).
 - `label`: what the count means to a screen reader, with the real number ("120 unread"). The visible number is then hidden from it. Leave it out where the text beside the count names it. An `aria-label` on the button replaces the button's content, so in that case put the count in the `aria-label` instead.
 

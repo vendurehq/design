@@ -433,7 +433,7 @@ export const uiGuidance = [
       },
       {
         title: 'Tone from the shared tones',
-        body: 'Pass a tone, never a colour class. Use neutral for a plain count, brand for unread items, and warning or critical when the count reports problems; take it from the state dictionary (maxTone) when the items have states.',
+        body: 'Pass a tone, never a colour class. Unread notifications and active filters are neutral. When the counted items have states, pass the maxTone() result of their tones as it is: warning or critical when the count reports problems. Brand is a rare opt-in under accent rationing, never the routine unread count.',
       },
       {
         title: 'Corner on an icon button, inline in a label',
@@ -445,13 +445,16 @@ export const uiGuidance = [
       },
     ],
     choices: [
-      { choice: 'neutral', when: 'A plain count with no urgency: active filters, selected items.' },
-      { choice: 'brand', when: 'Unread items that ask for a look, such as notifications.' },
+      {
+        choice: 'neutral',
+        when: 'A plain count with no urgency: unread notifications, active filters, selected items.',
+      },
       {
         choice: 'warning',
         when: 'The count is of items where a person must act or a risk exists.',
       },
       { choice: 'critical', when: 'The count is of failures or blocking problems.' },
+      { choice: 'brand', when: 'A rare highlight the product opts into, at most one per view.' },
     ],
     related: ['badge', 'button', 'status-badge'],
   },

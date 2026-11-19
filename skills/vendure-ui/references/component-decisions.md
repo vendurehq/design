@@ -186,16 +186,16 @@ Use CountBadge for a small count on an icon button or inside a button.
 
 - **A count on a control, not in text:** Use CountBadge for unread notifications or alerts on an icon button and for the number of active filters inside a button. A count in running text, a heading or a table cell stays on Badge. Never size, place or colour a Badge or a span by hand for a count.
 - **The badge owns the number:** Pass the raw count. CountBadge caps it at max (99+ by default) and renders nothing at 0, so the caller does not branch on zero or cut the number.
-- **Tone from the shared tones:** Pass a tone, never a colour class. Use neutral for a plain count, brand for unread items, and warning or critical when the count reports problems; take it from the state dictionary (maxTone) when the items have states.
+- **Tone from the shared tones:** Pass a tone, never a colour class. Unread notifications and active filters are neutral. When the counted items have states, pass the maxTone() result of their tones as it is: warning or critical when the count reports problems. Brand is a rare opt-in under accent rationing, never the routine unread count.
 - **Corner on an icon button, inline in a label:** On an icon button use placement="corner" and add relative to the button; a wider count grows away from the icon. Inside a button with words use the inline default, after the label.
 - **The count is part of the name:** Pass label with the real count ("120 unread") where nothing beside the number names it; the visible number is then hidden from screen readers. An aria-label on the button replaces its content, so in that case put the count in the aria-label instead. Leave label out where the button text names the count ("Active filters").
 
 **Choose:**
 
-- `neutral`: A plain count with no urgency: active filters, selected items.
-- `brand`: Unread items that ask for a look, such as notifications.
+- `neutral`: A plain count with no urgency: unread notifications, active filters, selected items.
 - `warning`: The count is of items where a person must act or a risk exists.
 - `critical`: The count is of failures or blocking problems.
+- `brand`: A rare highlight the product opts into, at most one per view.
 
 Related decisions: `badge`, `button`, `status-badge`.
 ## DataTable
