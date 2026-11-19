@@ -14,7 +14,9 @@ const uiSrc = resolve(import.meta.dir, '../../ui/src');
 
 const blockDeclarations = (css: string, selector: string): Map<string, string> => {
   const declared = new Map<string, string>();
-  const blocks = css.matchAll(new RegExp(`(?:^|\\n)${selector.replace('.', '\\.')} \\{([^}]*)\\}`, 'g'));
+  const blocks = css.matchAll(
+    new RegExp(`(?:^|\\n)${selector.replace('.', '\\.')} \\{([^}]*)\\}`, 'g'),
+  );
   for (const [, body] of blocks) {
     for (const [, name, value] of body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) {
       declared.set(name, value.trim());
@@ -54,7 +56,9 @@ describe('css/shadcn static variables', () => {
   });
 
   test('declares every theme-independent variable that @vendure-io/ui reads', () => {
-    const missing = [...uiReads].filter((name) => staticVars.has(name) && !shadcnVars.has(name)).sort();
+    const missing = [...uiReads]
+      .filter((name) => staticVars.has(name) && !shadcnVars.has(name))
+      .sort();
     expect(missing).toEqual([]);
   });
 
