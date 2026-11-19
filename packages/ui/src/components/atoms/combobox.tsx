@@ -15,7 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@vendure-io/ui/components/atoms/input-group"
-import { ChevronDownIcon, XIcon } from "lucide-react"
+import { ChevronDownIcon, Loader2Icon, XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
@@ -35,15 +35,113 @@ type ComboboxControls = {
 
 const ComboboxControlsContext = React.createContext<ComboboxControls | null>(null)
 
-function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>(
-  props: ComboboxPrimitive.Root.Props<Value, Multiple, Item>
-) {
+type ComboboxPagingProps = {
+  /**
+   * Asks for the next page of a server-searched list. Called once when the
+   * list scrolls near its end, or the arrow keys reach its last option, while
+   * `hasMore` is set and `loading` is not. It is called again only after the
+   * options change: a failed fetch does not call it in a loop.
+   */
+  onLoadMore?: () => void
+  /** There is a next page for `onLoadMore` to fetch. */
+  hasMore?: boolean
+  /**
+   * A page is loading: the list shows a loading row at its end, is busy for
+   * assistive technology and announces `loadingLabel`. With no options yet,
+   * the loading row takes the place of ComboboxEmpty.
+   */
+  loading?: boolean
+  /** Announced to screen readers while `loading` is set. */
+  loadingLabel?: string
+}
+
+/**
+ * The paging state of the nearest Combobox, for its list and its empty state.
+ * Null when the Combobox takes none of the paging props.
+ */
+type ComboboxPaging = {
+  loading: boolean
+  loadingLabel: string
+  canLoadMore: boolean
+  list: HTMLElement | null
+  setList: (list: HTMLElement | null) => void
+  /** Calls `onLoadMore` once per set of options. */
+  requestMore: () => void
+  /** Lets the next request through: the options or the search changed. */
+  rearm: () => void
+}
+
+const ComboboxPagingContext = React.createContext<ComboboxPaging | null>(null)
+
+function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({
+  onLoadMore,
+  hasMore = false,
+  loading,
+  loadingLabel = "Loading…",
+  onItemHighlighted,
+  onInputValueChange,
+  ...props
+}: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & ComboboxPagingProps) {
   const [trigger, setTrigger] = React.useState<HTMLElement | null>(null)
   const [input, setInput] = React.useState<HTMLElement | null>(null)
+  const [list, setList] = React.useState<HTMLElement | null>(null)
   const controls = React.useMemo(() => ({ trigger, input, setTrigger, setInput }), [trigger, input])
+
+  // Read at call time, so an observer set up on an earlier render sees the
+  // current flags.
+  const latest = React.useRef({ onLoadMore, hasMore, loading })
+  React.useLayoutEffect(() => {
+    latest.current = { onLoadMore, hasMore, loading }
+  })
+  // Set once a page is asked for. Scrolling fires many events before the
+  // consumer's `loading` flag turns on; the latch keeps that to one call.
+  const latched = React.useRef(false)
+  const requestMore = React.useCallback(() => {
+    const current = latest.current
+    if (!current.onLoadMore || !current.hasMore || current.loading || latched.current) return
+    latched.current = true
+    current.onLoadMore()
+  }, [])
+  const rearm = React.useCallback(() => {
+    latched.current = false
+  }, [])
+
+  const enabled = onLoadMore !== undefined || loading !== undefined
+  const paging = React.useMemo(
+    () =>
+      enabled
+        ? {
+            loading: !!loading,
+            loadingLabel,
+            canLoadMore: onLoadMore !== undefined,
+            list,
+            setList,
+            requestMore,
+            rearm,
+          }
+        : null,
+    [enabled, loading, loadingLabel, onLoadMore, list, requestMore, rearm]
+  )
+
   return (
     <ComboboxControlsContext.Provider value={controls}>
-      <ComboboxPrimitive.Root {...props} />
+      <ComboboxPagingContext.Provider value={paging}>
+        <ComboboxPrimitive.Root
+          {...props}
+          onInputValueChange={(value, details) => {
+            rearm()
+            onInputValueChange?.(value, details)
+          }}
+          onItemHighlighted={(value, details) => {
+            onItemHighlighted?.(value, details)
+            // The arrow keys reached the last option: load the next page, as
+            // scrolling there would. Counted from the DOM, so groups and rows
+            // that are not part of the page line up.
+            if (details.reason !== "keyboard" || !list) return
+            if (details.index === list.querySelectorAll("[role=option]").length - 1) requestMore()
+          }}
+        />
+      </ComboboxPagingContext.Provider>
     </ComboboxControlsContext.Provider>
   )
 }
@@ -248,18 +346,106 @@ function ComboboxContent({
   )
 }
 
-function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
+/** How near the end of the list, in pixels, the next page starts to load. */
+const LOAD_MORE_THRESHOLD = 64
+
+/**
+ * Asks for the next page when the end of the list is in view or near it:
+ * when the list opens, when it scrolls (the arrow keys scroll it too), and
+ * when its options change, so a page shorter than the list fills it. A new
+ * set of options lets the next request through.
+ */
+function useLoadMore(paging: ComboboxPaging | null, end: React.RefObject<HTMLElement | null>) {
+  const list = paging?.list ?? null
+  const canLoadMore = !!paging?.canLoadMore
+  const requestMore = paging?.requestMore
+  const rearm = paging?.rearm
+  React.useEffect(() => {
+    if (!list || !canLoadMore || !requestMore || !rearm) return
+    const check = () => {
+      const marker = end.current
+      if (!marker || !list.isConnected) return
+      if (marker.getBoundingClientRect().top - list.getBoundingClientRect().bottom <= LOAD_MORE_THRESHOLD) {
+        requestMore()
+      }
+    }
+    const options = () => list.querySelectorAll("[role=option]").length
+    let count = options()
+    const observer = new MutationObserver(() => {
+      const next = options()
+      if (next === count) return
+      count = next
+      rearm()
+      check()
+    })
+    observer.observe(list, { childList: true, subtree: true })
+    list.addEventListener("scroll", check, { passive: true })
+    // After the popup has its size.
+    const frame = requestAnimationFrame(check)
+    return () => {
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+      list.removeEventListener("scroll", check)
+    }
+  }, [list, canLoadMore, requestMore, rearm, end])
+}
+
+function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.List.Props) {
   const name = useComboboxName()
+  const paging = React.useContext(ComboboxPagingContext)
+  const listRef = useRegisteredRef(ref, paging?.setList)
+  const endRef = React.useRef<HTMLDivElement | null>(null)
+  useLoadMore(paging, endRef)
+  // A paged list adds rows after the options, so a render function is
+  // wrapped in the Collection the primitive would wrap it in.
+  const items =
+    paging && typeof children === "function" ? (
+      <ComboboxPrimitive.Collection>{children}</ComboboxPrimitive.Collection>
+    ) : (
+      children
+    )
   return (
-    <ComboboxPrimitive.List
-      {...(hasName(props) ? {} : name)}
-      data-slot="combobox-list"
-      className={cn(
-        "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
-        className
+    <>
+      <ComboboxPrimitive.List
+        {...(hasName(props) ? {} : name)}
+        ref={listRef}
+        data-slot="combobox-list"
+        aria-busy={paging?.loading || undefined}
+        className={cn(
+          "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
+          className
+        )}
+        {...props}
+      >
+        {paging ? (
+          <>
+            {items}
+            {/* Decorative: a listbox holds only options and groups, so the
+                row is hidden from assistive technology. The list is busy
+                and the status below announces the load. */}
+            {paging.loading && (
+              <div
+                data-slot="combobox-loading"
+                aria-hidden="true"
+                className="text-muted-foreground flex min-h-8.5 items-center justify-center"
+              >
+                <Loader2Icon className="size-4 motion-safe:animate-spin" />
+              </div>
+            )}
+            {paging.canLoadMore && <div ref={endRef} data-slot="combobox-list-end" aria-hidden="true" />}
+          </>
+        ) : (
+          children
+        )}
+      </ComboboxPrimitive.List>
+      {/* Stays mounted, so screen readers announce the change. Outside the
+          listbox, which may hold only options and groups. */}
+      {paging && (
+        <ComboboxPrimitive.Status data-slot="combobox-status" className="sr-only">
+          {paging.loading ? paging.loadingLabel : null}
+        </ComboboxPrimitive.Status>
       )}
-      {...props}
-    />
+    </>
   )
 }
 
@@ -321,12 +507,16 @@ function ComboboxCollection({ ...props }: ComboboxPrimitive.Collection.Props) {
   )
 }
 
+// While a page loads, the list's loading row stands in for the empty state:
+// a new search has no options yet, but it is not empty.
 function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
+  const loading = !!React.useContext(ComboboxPagingContext)?.loading
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
       className={cn(
         "text-muted-foreground hidden w-full justify-center py-2 text-center text-sm group-data-empty/combobox-content:flex",
+        loading && "group-data-empty/combobox-content:hidden",
         className
       )}
       {...props}
