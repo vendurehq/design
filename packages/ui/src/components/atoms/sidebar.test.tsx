@@ -7,6 +7,8 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarIdentityButton,
+  SidebarIdentityText,
   SidebarInset,
   SidebarLevel,
   SidebarLevelBack,
@@ -364,5 +366,29 @@ describe('SidebarLevels', () => {
       expect.arrayContaining(['[&>svg:first-child]:opacity-55', 'hover:[&>svg:first-child]:opacity-85', 'hover:[&>svg:first-child]:-translate-x-0.5']),
     );
     expect(tokens).not.toContain('[&>svg:first-child]:opacity-85');
+  });
+});
+
+describe('SidebarIdentityButton', () => {
+  test('renders the children, one chevron and the identity text, and fades them in the icon rail', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarIdentityButton>
+          <span data-slot="avatar">AL</span>
+          <SidebarIdentityText title="Ada Lovelace" caption="ada@example.com" />
+        </SidebarIdentityButton>
+      </SidebarProvider>,
+    );
+
+    expect(slotTokens(html, 'sidebar-menu-button')).toContain('data-open:bg-sidebar-accent');
+    expect(html.match(/data-slot="sidebar-identity-chevron"/g)).toHaveLength(1);
+    expect(slotTokens(html, 'sidebar-identity-chevron')).toContain('group-data-[collapsible=icon]:opacity-0');
+    expect(slotTokens(html, 'sidebar-identity-text')).toContain('group-data-[collapsible=icon]:opacity-0');
+    expect(html).toContain('ada@example.com');
+  });
+
+  test('leaves the caption out when there is none', () => {
+    const html = renderToStaticMarkup(<SidebarIdentityText title="Acme" />);
+    expect(html).not.toContain('sidebar-identity-caption');
   });
 });

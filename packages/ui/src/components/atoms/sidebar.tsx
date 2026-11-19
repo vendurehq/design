@@ -23,7 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@vendure-io/ui/components/atoms/tooltip"
-import { ChevronLeftIcon, PanelLeftIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronsUpDownIcon, PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -705,6 +705,73 @@ function SidebarMenuButton({
   )
 }
 
+// The account or user switch at the top or bottom of the sidebar: media (an
+// Avatar), a SidebarIdentityText (a title over a caption) and an up/down
+// chevron. Render it as the trigger of the menu it opens:
+// <DropdownMenuTrigger render={<SidebarIdentityButton />}>. It takes the fill
+// while that menu is open. In the icon rail the text and the chevron fade like
+// a label and the media stays; both stay mounted, so the button keeps its
+// accessible name in the rail.
+function SidebarIdentityButton({
+  className,
+  children,
+  ...props
+}: Omit<React.ComponentProps<typeof SidebarMenuButton>, "size">) {
+  return (
+    <SidebarMenuButton
+      size="lg"
+      className={cn(
+        "data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <ChevronsUpDownIcon
+        data-slot="sidebar-identity-chevron"
+        aria-hidden="true"
+        className="text-muted-foreground ms-auto transition-opacity duration-moderate group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:duration-fast"
+      />
+    </SidebarMenuButton>
+  )
+}
+
+// The two lines of a SidebarIdentityButton. Also fits the identity row at the
+// top of the menu it opens. The text fades in the icon rail even when the
+// title holds an icon, which the generic label fade of SidebarMenuButton skips.
+function SidebarIdentityText({
+  title,
+  caption,
+  className,
+  ...props
+}: Omit<React.ComponentProps<"span">, "title" | "children"> & {
+  title: React.ReactNode
+  caption?: React.ReactNode
+}) {
+  return (
+    <span
+      data-slot="sidebar-identity-text"
+      className={cn(
+        "grid min-w-0 flex-1 text-start text-sm leading-tight transition-opacity duration-moderate group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:duration-fast",
+        className
+      )}
+      {...props}
+    >
+      <span data-slot="sidebar-identity-title" className="truncate font-semibold">
+        {title}
+      </span>
+      {caption ? (
+        <span
+          data-slot="sidebar-identity-caption"
+          className="text-muted-foreground truncate text-xs font-normal"
+        >
+          {caption}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
 function SidebarMenuAction({
   className,
   render,
@@ -1028,6 +1095,8 @@ export {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
+  SidebarIdentityButton,
+  SidebarIdentityText,
   SidebarInput,
   SidebarInset,
   SidebarLevel,

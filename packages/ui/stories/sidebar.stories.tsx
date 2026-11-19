@@ -27,6 +27,8 @@ import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
+  SidebarIdentityButton,
+  SidebarIdentityText,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -51,6 +53,15 @@ import {
   CollapsibleTrigger,
 } from '../src/components/atoms/collapsible.tsx';
 import { Avatar, AvatarFallback } from '../src/components/atoms/avatar.tsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../src/components/atoms/dropdown-menu.tsx';
 
 const meta = {
   title: 'Atoms/Layout/Sidebar',
@@ -869,6 +880,189 @@ export const IconRailWithAvatarAndWrappedIcon: Story = {
     <SidebarProvider defaultOpen={false}>
       <SwitcherAndAccount />
     </SidebarProvider>
+  ),
+};
+
+/**
+ * The account switch in the header and the user menu in the footer, each a
+ * SidebarIdentityButton that opens a menu. The account takes a square avatar,
+ * the person a round one.
+ */
+function IdentitySidebar({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
+  return (
+    <>
+      <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<SidebarIdentityButton tooltip="Acme Corporation" data-testid="account-switch" />}
+                >
+                  <Avatar shape="square" data-testid="account-switch-avatar">
+                    <AvatarFallback>AC</AvatarFallback>
+                  </Avatar>
+                  <SidebarIdentityText title="Acme Corporation" caption="Customer account" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="right" className="min-w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Customer accounts</DropdownMenuLabel>
+                    <DropdownMenuItem>
+                      <Avatar shape="square" size="sm">
+                        <AvatarFallback>AC</AvatarFallback>
+                      </Avatar>
+                      Acme Corporation
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Avatar shape="square" size="sm">
+                        <AvatarFallback>GL</AvatarFallback>
+                      </Avatar>
+                      Globex
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SlidingMenu tooltips />
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<SidebarIdentityButton tooltip="Ada Lovelace" data-testid="user-menu" />}
+                >
+                  <Avatar data-testid="user-menu-avatar">
+                    <AvatarFallback>AL</AvatarFallback>
+                  </Avatar>
+                  <SidebarIdentityText
+                    title="Ada Lovelace"
+                    caption="ada@example.com"
+                    data-testid="user-menu-text"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="right" className="min-w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="flex items-center gap-2 font-normal">
+                      <Avatar>
+                        <AvatarFallback>AL</AvatarFallback>
+                      </Avatar>
+                      <SidebarIdentityText title="Ada Lovelace" caption="ada@example.com" />
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Sign out</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-13 items-center gap-2 border-b px-3">
+          <SidebarTrigger />
+          <span className="text-sm font-medium">Home</span>
+        </header>
+        <div className="flex-1 p-5">
+          <p className="text-muted-foreground text-sm">Main content area</p>
+        </div>
+      </SidebarInset>
+    </>
+  );
+}
+
+const chevronOf = (button: HTMLElement) =>
+  button.querySelector('[data-slot=sidebar-identity-chevron]') as HTMLElement;
+const textOf = (button: HTMLElement) =>
+  button.querySelector('[data-slot=sidebar-identity-text]') as HTMLElement;
+
+/**
+ * The account or user switch: SidebarIdentityButton, an Avatar and a
+ * SidebarIdentityText, rendered as the trigger of its menu. It takes the fill
+ * while the menu is open.
+ */
+export const IdentitySwitch: Story = {
+  name: 'Identity switch in the header and the footer',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const userMenu = canvas.getByTestId('user-menu');
+    const account = canvas.getByTestId('account-switch');
+
+    // One chevron each, a title over a caption, all visible.
+    await expect(account.querySelectorAll('[data-slot=sidebar-identity-chevron]')).toHaveLength(1);
+    await expect(getComputedStyle(chevronOf(userMenu)).opacity).toBe('1');
+    await expect(getComputedStyle(textOf(userMenu)).opacity).toBe('1');
+    await expect(account).toHaveAccessibleName(/Acme Corporation/);
+
+    // The person is round, the account square.
+    const radius = (id: string) => parseFloat(getComputedStyle(canvas.getByTestId(id)).borderTopLeftRadius);
+    await expect(radius('user-menu-avatar')).toBeGreaterThan(radius('account-switch-avatar'));
+
+    // Open: the trigger takes the fill.
+    const idleFill = getComputedStyle(userMenu).backgroundColor;
+    await userEvent.click(userMenu);
+    await page.findByRole('menuitem', { name: 'Sign out' });
+    await waitFor(() => expect(userMenu).toHaveAttribute('data-popup-open'));
+    await waitFor(() => expect(getComputedStyle(userMenu).backgroundColor).not.toBe(idleFill));
+    await userEvent.keyboard('{Escape}');
+  },
+  render: () => (
+    <SidebarProvider>
+      <IdentitySidebar />
+    </SidebarProvider>
+  ),
+};
+
+/**
+ * In the icon rail the text and the chevron fade and the avatar stays. The
+ * text stays mounted, so the button keeps its accessible name.
+ */
+export const IdentitySwitchIconRail: Story = {
+  name: 'Identity switch on the icon rail',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const id of ['account-switch', 'user-menu']) {
+      const button = canvas.getByTestId(id);
+      await waitFor(() => expect(getComputedStyle(textOf(button)).opacity).toBe('0'));
+      await waitFor(() => expect(getComputedStyle(chevronOf(button)).opacity).toBe('0'));
+      await expect(getComputedStyle(canvas.getByTestId(`${id}-avatar`)).opacity).toBe('1');
+    }
+    await expect(canvas.getByTestId('user-menu')).toHaveAccessibleName(/Ada Lovelace/);
+  },
+  render: () => (
+    <SidebarProvider defaultOpen={false}>
+      <IdentitySidebar />
+    </SidebarProvider>
+  ),
+};
+
+/** Right to left: the chevron sits at the start edge, the text aligns right. */
+export const IdentitySwitchRightToLeft: Story = {
+  name: 'Identity switch, right to left',
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByTestId('user-menu');
+    const chevron = chevronOf(button).getBoundingClientRect();
+    const text = textOf(button).getBoundingClientRect();
+    await expect(chevron.right).toBeLessThanOrEqual(text.left);
+  },
+  render: () => (
+    <DirectionProvider direction="rtl">
+      <div dir="rtl">
+        <SidebarProvider>
+          <IdentitySidebar dir="rtl" />
+        </SidebarProvider>
+      </div>
+    </DirectionProvider>
   ),
 };
 
