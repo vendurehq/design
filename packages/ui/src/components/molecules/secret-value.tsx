@@ -45,10 +45,11 @@ const MASK = '••••••••';
 
 // The trailing buttons have the IdChip button look (`chipIconButtonClass`).
 // Each one is its own control (the chip has two), so its icon brightens on
-// its own hover, and its ::after widens the target to 21px.
+// its own hover. Its ::after is a 24px target centred on the 13px icon
+// (WCAG 2.5.8).
 const CHIP_BUTTON_CLASS = cn(
   chipIconButtonClass,
-  'relative after:absolute after:-inset-1 hover:text-foreground',
+  'relative after:absolute after:top-1/2 after:left-1/2 after:size-6 after:-translate-1/2 hover:text-foreground',
   'hover:[&>svg:not([role=status])]:opacity-100',
   'hover:[&_[data-slot=copy-state-icon]:not([data-copied])>svg:first-child]:opacity-100',
 );
@@ -180,7 +181,9 @@ function SecretValue({
           onCopyError={onCopyError}
           copyLabel={copyLabel}
           copiedLabel={copiedLabel}
-          className={CHIP_BUTTON_CLASS}
+          // 6px more than the chip gap puts the icon centres 25px apart, so
+          // the two 24px targets do not overlap.
+          className={cn(CHIP_BUTTON_CLASS, 'ms-1.5')}
         />
       ) : null}
       {state.status === 'error' ? (
