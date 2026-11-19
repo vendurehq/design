@@ -30,6 +30,12 @@ type LabelSwapProps = Omit<React.ComponentProps<"span">, "children"> & {
    * container (a flex row with `min-w-0`) decides how much of it shows.
    */
   truncate?: boolean
+  /**
+   * Changes when the active label's text changes at the same index, such as
+   * a placeholder that becomes the first loaded option. The swap then
+   * measures again: a cut label's box does not grow by itself.
+   */
+  activeKey?: string
 }
 
 /**
@@ -49,11 +55,12 @@ function LabelSwap({
   timing,
   labelClassName,
   truncate = false,
+  activeKey,
   className,
   style,
   ...props
 }: LabelSwapProps) {
-  const { refs, width, height } = useActiveLabelSize(active, { natural: truncate })
+  const { refs, width, height } = useActiveLabelSize(active, { natural: truncate, key: activeKey })
   return (
     <span
       className={cn(

@@ -170,8 +170,12 @@ type BreadcrumbMenuOption = {
   /**
    * Renders the row as a link, so it can open in a new tab. It keeps the
    * `menuitemradio` role. An element such as a router `<Link>`; `href` is the
-   * short form for a plain `<a>`. A click with a modifier key, or with the
-   * middle button, opens the link and does not call `onValueChange`.
+   * short form for a plain `<a>`. The link does the navigation: a plain
+   * click follows it and still calls `onValueChange`, so do not navigate
+   * there too. A click with a modifier key, or with the middle button, opens
+   * the link elsewhere and does not call `onValueChange`. A disabled option
+   * renders no link. `BreadcrumbMenu` only: a `BreadcrumbSearchMenu` row is
+   * an option of a listbox, which cannot be a link.
    */
   render?: React.ReactElement
   href?: string
@@ -179,9 +183,12 @@ type BreadcrumbMenuOption = {
   keywords?: readonly string[]
 }
 
+/** One item a `BreadcrumbSearchMenu` can switch to: no link rows. */
+type BreadcrumbSearchMenuOption = Omit<BreadcrumbMenuOption, "render" | "href">
+
 /** The props both crumb menus share. */
 type BreadcrumbMenuBaseProps = {
-  options: readonly BreadcrumbMenuOption[]
+  options: readonly BreadcrumbSearchMenuOption[]
   value: string
   onValueChange?: (value: string) => void
   /** Names the list: it heads the menu and starts the crumb's accessible name. */
@@ -227,10 +234,10 @@ const crumbTriggerClassName =
   "text-foreground hover:text-foreground aria-expanded:text-foreground h-7.5 min-w-0 shrink gap-2.25 rounded-lg ps-2.25 pe-1.75 text-sm font-semibold"
 
 /**
- * The inside of the crumb, and its tooltip. The accessible name reads the
- * list label, the option label and then the status: "Environment:
- * Production, Healthy". The leading slot comes last in the DOM and first on
- * screen (`order-first`), so words a consumer left inside it come last too.
+ * The inside of the crumb, and its tooltip. The crumb's accessible name is
+ * the list label, the option label and then the status, whatever shows
+ * first: "Environment: Production, Healthy". It is set as `aria-label`, so
+ * words inside `leading` are not read; put them in `status`.
  */
 function useCrumbTrigger({
   options,
@@ -245,18 +252,12 @@ function useCrumbTrigger({
   const fallback = placeholder !== undefined && found === -1
   const active = fallback ? options.length : Math.max(0, found)
   const current = fallback ? undefined : options[active]
-  const labels: React.ReactNode[] = options.map((option) =>
-    option.status ? (
-      <>
-        {option.label}
-        <span className="sr-only">, {option.status}</span>
-      </>
-    ) : (
-      option.label
-    )
-  )
+  const labels = options.map((option) => option.label)
   if (placeholder !== undefined) labels.push(placeholder)
-  const currentLabel = current?.label ?? placeholder ?? ""
+  const currentLabel = labels[active] ?? ""
+  const name = current?.status
+    ? `${label}: ${currentLabel}, ${current.status}`
+    : `${label}: ${currentLabel}`
   // Whether the label is cut now. Read when the pointer or the focus
   // arrives, so a resize or a new label is never stale.
   const [cut, setCut] = React.useState(false)
@@ -266,23 +267,19 @@ function useCrumbTrigger({
     )
     setCut(shown !== null && shown.scrollWidth > shown.clientWidth + 0.5)
   }
-  const triggerProps = { onPointerEnter: measure, onFocus: measure }
+  const triggerProps = { "aria-label": name, onPointerEnter: measure, onFocus: measure }
   const content = (
     <>
-      <span className="sr-only">{label}: </span>
+      {current?.leading}
       <LabelSwap
         data-slot="breadcrumb-menu-label"
         timing="button"
         labels={labels}
         active={active}
         truncate
+        activeKey={currentLabel}
         className="justify-items-start overflow-x-clip whitespace-nowrap"
       />
-      {current?.leading != null && (
-        <span data-slot="breadcrumb-menu-leading" className="order-first flex shrink-0 items-center">
-          {current.leading}
-        </span>
-      )}
       <ChevronsUpDownIcon
         aria-hidden
         className="size-3.5 opacity-40 group-hover/button:opacity-80 group-aria-expanded/button:opacity-80"
@@ -296,7 +293,7 @@ function useCrumbTrigger({
 }
 
 /** The leading slot, the label, the status and the detail of a menu row. */
-function OptionRow({ option }: { option: BreadcrumbMenuOption }) {
+function OptionRow({ option }: { option: BreadcrumbSearchMenuOption }) {
   return (
     <>
       {option.leading}
@@ -350,7 +347,10 @@ function BreadcrumbMenu({
   children,
   className,
   contentClassName,
-}: BreadcrumbMenuBaseProps & { children?: React.ReactNode }) {
+}: Omit<BreadcrumbMenuBaseProps, "options"> & {
+  options: readonly BreadcrumbMenuOption[]
+  children?: React.ReactNode
+}) {
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
   const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
   return (
@@ -396,7 +396,7 @@ function BreadcrumbMenu({
                 disabled={option.disabled}
                 closeOnClick={false}
                 data-slot="breadcrumb-menu-item"
-                render={option.render ?? (option.href !== undefined ? <a href={option.href} /> : undefined)}
+                render={option.disabled ? undefined : (option.render ?? (option.href !== undefined ? <a href={option.href} /> : undefined))}
                 className={cn(menuItem, menuRadioItem)}
               >
                 <OptionRow option={option} />
@@ -492,22 +492,27 @@ function BreadcrumbSearchMenu({
       </Tooltip>
       <PopoverContent
         data-slot="breadcrumb-search-menu-content"
+        aria-label={label}
         className={cn("w-72 max-w-90 gap-0 overflow-hidden p-0", contentClassName)}
       >
-        <Command label={label} filter={searchFilter}>
-          <CommandInput autoFocus aria-label={searchPlaceholder} placeholder={searchPlaceholder} />
+        {/* A new Command once the error clears: cmdk keeps the Retry row
+            selected after it unmounts, and the field then points at a row
+            that is gone (aria-activedescendant). */}
+        <Command key={failed ? "failed" : "read"} label={label} filter={searchFilter}>
+          <CommandInput autoFocus placeholder={searchPlaceholder} />
+          {/* Outside the list: a listbox takes only options and groups. */}
+          {loading && (
+            <div
+              role="status"
+              data-slot="breadcrumb-search-menu-loading"
+              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-4 pt-2.5 pb-1 text-sm"
+            >
+              <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
+              Loading…
+            </div>
+          )}
           <CommandList>
             {!loading && !failed && <CommandEmpty>{emptyText}</CommandEmpty>}
-            {loading && (
-              <div
-                role="status"
-                data-slot="breadcrumb-search-menu-loading"
-                className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-3 py-1.5 text-sm"
-              >
-                <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
-                Loading…
-              </div>
-            )}
             {failed && !loading && (
               <CommandGroup forceMount heading={error}>
                 {onRetry && (
@@ -566,4 +571,4 @@ export {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 }
-export type { BreadcrumbMenuOption }
+export type { BreadcrumbMenuOption, BreadcrumbSearchMenuOption }

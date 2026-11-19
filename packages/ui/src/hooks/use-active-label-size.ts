@@ -13,7 +13,10 @@ import * as React from 'react';
  * also while the label is cut with an ellipsis: the swap keeps that width and
  * its container shrinks it, so the cut never feeds back into the size.
  */
-export function useActiveLabelSize(active: number, { natural = false } = {}) {
+export function useActiveLabelSize(
+  active: number,
+  { natural = false, key }: { natural?: boolean; key?: string } = {},
+) {
   const refs = React.useRef<(HTMLSpanElement | null)[]>([]);
   const [size, setSize] = React.useState<{ width: number; height: number }>();
   React.useLayoutEffect(() => {
@@ -31,6 +34,7 @@ export function useActiveLabelSize(active: number, { natural = false } = {}) {
     const observer = new ResizeObserver(measure);
     observer.observe(label);
     return () => observer.disconnect();
-  }, [active, natural]);
+    // `key` is a dependency only: a new text at the same index measures again.
+  }, [active, natural, key]);
   return { refs, width: size?.width, height: size?.height };
 }
