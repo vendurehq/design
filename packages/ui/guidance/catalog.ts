@@ -147,6 +147,10 @@ export const uiGuidance = [
         title: 'Brand is an identity opt-in',
         body: 'Use the brand variant only for a deliberate identity label, never to make routine metadata louder.',
       },
+      {
+        title: 'A count on a control is a CountBadge',
+        body: 'A number on an icon button or inside a button (unread notifications, alerts, active filters) is a CountBadge, not a Badge sized by hand. A count in running text or a table cell stays on Badge.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'Routine classification and counts.' },
@@ -157,7 +161,7 @@ export const uiGuidance = [
         when: 'A destructive classification, not an entity workflow state.',
       },
     ],
-    related: ['chip', 'status-badge'],
+    related: ['chip', 'count-badge', 'status-badge'],
   },
   {
     id: 'button',
@@ -412,6 +416,47 @@ export const uiGuidance = [
       },
     ],
     related: ['anonymized-token', 'id-chip'],
+  },
+  {
+    id: 'count-badge',
+    title: 'CountBadge',
+    summary: 'Use CountBadge for a small count on an icon button or inside a button.',
+    sourceStory: 'count-badge-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'A count on a control, not in text',
+        body: 'Use CountBadge for unread notifications or alerts on an icon button and for the number of active filters inside a button. A count in running text, a heading or a table cell stays on Badge. Never size, place or colour a Badge or a span by hand for a count.',
+      },
+      {
+        title: 'The badge owns the number',
+        body: 'Pass the raw count. CountBadge caps it at max (99+ by default) and renders nothing at 0, so the caller does not branch on zero or cut the number.',
+      },
+      {
+        title: 'Tone from the shared tones',
+        body: 'Pass a tone, never a colour class. Unread notifications and active filters are neutral. When the counted items have states, pass the maxTone() result of their tones as it is: warning or critical when the count reports problems. Brand is a rare opt-in under accent rationing, never the routine unread count.',
+      },
+      {
+        title: 'Corner on an icon button, inline in a label',
+        body: 'On an icon button use placement="corner" and add relative to the button; a wider count grows away from the icon. Inside a button with words use the inline default, after the label.',
+      },
+      {
+        title: 'The count is part of the name',
+        body: 'Pass label with the real count ("120 unread") where nothing beside the number names it; the visible number is then hidden from screen readers. An aria-label on the button replaces its content, so in that case put the count in the aria-label instead. Leave label out where the button text names the count ("Active filters").',
+      },
+    ],
+    choices: [
+      {
+        choice: 'neutral',
+        when: 'A plain count with no urgency: unread notifications, active filters, selected items.',
+      },
+      {
+        choice: 'warning',
+        when: 'The count is of items where a person must act or a risk exists.',
+      },
+      { choice: 'critical', when: 'The count is of failures or blocking problems.' },
+      { choice: 'brand', when: 'A rare highlight the product opts into, at most one per view.' },
+    ],
+    related: ['badge', 'button', 'status-badge'],
   },
   {
     id: 'data-table',
