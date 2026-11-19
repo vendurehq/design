@@ -147,6 +147,10 @@ export const uiGuidance = [
         title: 'Brand is an identity opt-in',
         body: 'Use the brand variant only for a deliberate identity label, never to make routine metadata louder.',
       },
+      {
+        title: 'A count on a control is a CountBadge',
+        body: 'A number on an icon button (unread notifications, alerts) or inside a button (active filters) is a CountBadge, not a Badge sized by hand. Pass count and a tone (neutral, brand, warning, critical); it caps at max (99+) and renders nothing at 0. On an icon button use placement="corner" and add relative to the button. Pass label with the real count ("120 unread") where nothing beside the number names it; an aria-label on the button replaces its content, so put the count in that label instead. A count in text or a table cell stays on Badge.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'Routine classification and counts.' },

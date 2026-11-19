@@ -62,6 +62,7 @@ Use Badge for static classification or counts, neutral by default.
 - **Classification is not state:** Use Badge for kind, category, or count. State words that can succeed, fail, or move belong to StatusBadge.
 - **Neutral is the default:** Begin with the default Badge and step away only when the meaning requires it.
 - **Brand is an identity opt-in:** Use the brand variant only for a deliberate identity label, never to make routine metadata louder.
+- **A count on a control is a CountBadge:** A number on an icon button (unread notifications, alerts) or inside a button (active filters) is a CountBadge, not a Badge sized by hand. Pass count and a tone (neutral, brand, warning, critical); it caps at max (99+) and renders nothing at 0. On an icon button use placement="corner" and add relative to the button. Pass label with the real count ("120 unread") where nothing beside the number names it; an aria-label on the button replaces its content, so put the count in that label instead. A count in text or a table cell stays on Badge.
 
 **Choose:**
 

@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { BellIcon, FilterIcon } from 'lucide-react';
 import { Badge } from '../src/components/atoms/badge.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
+import { CountBadge } from '../src/components/molecules/count-badge.tsx';
 import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 
 /**
@@ -173,6 +176,60 @@ export const ChoosingAVariant: Story = {
               ))}
             </tbody>
           </table>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── counts on an icon or a button ────────────────────────────────────────────
+
+export const CountsOnControls: Story = {
+  name: '4 · A count on an icon or a button',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="A count on a control is a CountBadge"
+        intro="A number on an icon button (unread notifications, alerts) or in a button (active filters) is a CountBadge. It sets the size, the font, the 99+ cap, the corner placement and the tone, and it renders nothing at zero. A count in running text or a table cell stays on Badge."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="CountBadge on the corner of a relative icon button, and inline in a button label. The tone comes from the shared tones."
+          >
+            <Button variant="ghost" size="icon" className="relative">
+              <BellIcon />
+              <span className="sr-only">Notifications,</span>
+              <CountBadge count={120} tone="brand" placement="corner" label="120 unread" />
+            </Button>
+            <Button variant="outline" size="sm">
+              <FilterIcon data-icon="inline-start" />
+              Active filters
+              <CountBadge count={2} />
+            </Button>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A Badge squeezed and placed by hand, or a coloured circle with a colour picked at the call site. Each app ends up with its own size, font and cap."
+          >
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+              <BellIcon />
+              <Badge
+                aria-hidden
+                variant="primary"
+                className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-2xs"
+              >
+                99+
+              </Badge>
+            </Button>
+            <Button variant="outline" size="sm">
+              <FilterIcon data-icon="inline-start" />
+              Active filters
+              <span className="bg-primary text-primary-foreground inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs">
+                2
+              </span>
+            </Button>
+          </Example>
         </div>
       </Section>
     </div>

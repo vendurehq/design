@@ -145,7 +145,7 @@ behavior you need instead of rebuilding it from atoms.
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
 #### Feedback & identity
-`confirm-dialog`, `state-views/*`, `status-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
+`confirm-dialog`, `state-views/*`, `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
 > **IssuedSecret.** A secret that was just issued, such as a new API key, is copy-only: it is never rendered. One button copies it, or one button per format (`formats`). The value shows only when the clipboard write fails, in a read-only field for a copy by hand. `useIssuedSecretGuard` holds the close guard: before the first copy, a close request shows a warning, and only "Close without copying" closes. That button is `destructive-outline`, so the copy button stays the one filled button. Share one guard between `IssuedSecret` and `IssuedSecretFooter`, and pass `guard.onOpenChange` to the Dialog:
 >
@@ -303,6 +303,36 @@ import { Badge } from "@vendure-io/ui/components/atoms/badge";
 ```
 
 > **Breaking change in ui v2:** Badge's `default` variant is neutral (neutral-subtle), not solid brand. Solid brand is an explicit opt-in via `variant="brand"` and follows the same one-primary-per-view rule as Button. The `secondary` variant was removed — it was visually identical to the new neutral default; migrate `variant="secondary"` to no variant. State colors belong to `StatusBadge` and its tones, not to Badge variants.
+
+### CountBadge
+
+A small count on a control: unread notifications or alerts on an icon button, the number of active filters in a button.
+
+```tsx
+import { CountBadge } from "@vendure-io/ui/components/molecules/count-badge";
+
+// On an icon button: the corner placement. The button needs `relative`.
+<Button variant="ghost" size="icon" className="relative">
+  <BellIcon />
+  <span className="sr-only">Notifications,</span>
+  <CountBadge count={unread} tone="brand" placement="corner" label={`${unread} unread`} />
+</Button>
+
+// In a button label: inline (the default). The words beside it name the count.
+<Button variant="outline" size="sm">
+  <FilterIcon data-icon="inline-start" />
+  Active filters
+  <CountBadge count={filters.length} />
+</Button>
+```
+
+- `count`: nothing renders at 0, below 0 or for a non-finite value.
+- `max` (default 99): above it the badge reads `99+`.
+- `tone`: `neutral` (default, the `primary` ink), `brand`, `warning` or `critical` (the `destructive` slots). The names are the shared tones, so a `maxTone()` result narrows straight in.
+- `placement`: `inline` (20px, `text-xs`) or `corner` (16px, `text-2xs`, on the top end corner, with a ring in the page background; its start edge sits at the middle of the button, so "99+" grows away from the icon).
+- `label`: what the count means to a screen reader, with the real number ("120 unread"). The visible number is then hidden from it. Leave it out where the text beside the count names it. An `aria-label` on the button replaces the button's content, so in that case put the count in the `aria-label` instead.
+
+A count in running text or a table cell stays on `Badge`.
 
 ### StatusBadge and domain states
 
