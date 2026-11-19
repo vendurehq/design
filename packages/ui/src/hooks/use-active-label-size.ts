@@ -19,6 +19,7 @@ export function useActiveLabelSize(
 ) {
   const refs = React.useRef<(HTMLSpanElement | null)[]>([]);
   const [size, setSize] = React.useState<{ width: number; height: number }>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `key` only re-runs the measure when the active label's text changes.
   React.useLayoutEffect(() => {
     const label = refs.current[active];
     if (!label) return;
@@ -44,7 +45,6 @@ export function useActiveLabelSize(
       observer.disconnect();
       fonts?.removeEventListener('loadingdone', measure);
     };
-    // `key` is a dependency only: a new text at the same index measures again.
   }, [active, natural, key]);
   return { refs, width: size?.width, height: size?.height };
 }
