@@ -112,8 +112,8 @@ const START_GAPS = {
   subListLine: 26,
   subButton: 36,
   selectCheckbox: 8,
-  nameHeader: 32,
-  nameCell: 32,
+  nameHeader: 40,
+  nameCell: 40,
   skuHeaderToCell: 0,
 };
 

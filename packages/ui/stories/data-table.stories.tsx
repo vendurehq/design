@@ -527,6 +527,49 @@ export const RowSelection: Story = {
   },
 };
 
+// A sorted leading column beside the select checkbox. The header pill pulls
+// back by its `--content-inset` so its label starts with the cell text; the
+// select gutter leaves room for that, so the pill (hovered or sorted) does not
+// run into the select-all checkbox and stays inside the table.
+export const SortedLeadingColumnWithSelection: Story = {
+  render: () => {
+    const [selection, setSelection] = useState<RowSelectionState>({});
+    const [sorting, setSorting] = useState<SortingState>([{ id: 'code', desc: true }]);
+    return (
+      <DataTable<Order>
+        rows={orders}
+        columns={columns}
+        getRowId={(order) => order.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+      />
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const headerRow = canvasElement.querySelector('thead tr') as HTMLElement;
+    const pill = canvasElement.querySelector('thead [data-slot=data-table-column-header]') as HTMLElement;
+    const checkbox = canvasElement.querySelector('thead [role=checkbox]') as HTMLElement;
+    const container = canvasElement.querySelector('[data-slot=table-container]') as HTMLElement;
+    const firstCell = canvasElement.querySelector('tbody tr td[data-column-id=code]') as HTMLElement;
+    await step('the pill and the checkbox do not touch', async () => {
+      await userEvent.hover(headerRow);
+      await userEvent.hover(pill);
+      const pillBox = pill.getBoundingClientRect();
+      const checkboxBox = checkbox.getBoundingClientRect();
+      await expect(pillBox.left - checkboxBox.right, 'gap between checkbox and pill').toBeGreaterThanOrEqual(4);
+    });
+    await step('the pill stays inside the table', async () => {
+      const pillBox = pill.getBoundingClientRect();
+      const containerBox = container.getBoundingClientRect();
+      await expect(pillBox.left).toBeGreaterThanOrEqual(containerBox.left);
+      await expect(pillBox.right).toBeLessThanOrEqual(containerBox.right);
+    });
+    await step('the header label starts with the cell text', async () => {
+      await expectPx(textLeft(pill), textLeft(firstCell));
+    });
+  },
+};
+
 // The selection kept in session storage. `selectionStorageKey` names the list
 // and anything that scopes its rows (here a channel). The table restores the
 // stored ids on its first load, stores every change (with the ids of rows on

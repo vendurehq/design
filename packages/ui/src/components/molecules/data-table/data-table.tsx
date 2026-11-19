@@ -338,15 +338,23 @@ const HEADER_LABEL_UNDER_BULK_CLASS =
 const ROW_CONTROL_SELECTOR =
   '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
 
+// The select gutter is `--spacing(10)`, 40px: the checkbox (8px in, 16px wide,
+// ending at 24px), a 5px gap, then the 11px `--content-inset` of a sortable
+// header (DataTableColumnHeader pulls its pill back by that much so its label
+// starts with the cell text). A narrower gutter puts the hovered or sorted
+// header pill over the select-all checkbox. Every rule that uses the gutter
+// (the select area, the leading cell, the bulk bar over the header) writes
+// `--spacing(10)`; change them together.
+//
 // The click area of a select checkbox is its whole cell: the full height of
 // the row, from the table's start edge to where the leading cell's content
-// starts (its gutter, `--spacing(8)` plus its indent). The select cell is
+// starts (its gutter plus its indent). The select cell is
 // zero-width, so the area is floated over that gutter, under the checkbox and
 // above the row link's stretched ::after. It is not focusable: keyboard focus
 // and the focus ring stay on the checkbox. The checkbox's own enlarged hit
 // area is turned off here, since it reached past the gutter into the content.
 const SELECT_AREA_CLASS =
-  'absolute inset-y-0 start-0 z-10 w-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+  'absolute inset-y-0 start-0 z-10 w-[calc(var(--spacing)*10+var(--column-indent,0px))]';
 const SELECT_CHECKBOX_HIT_CLASS = 'after:hidden';
 
 // Select all and clear all from the header checkbox ripple down the page: the
@@ -934,7 +942,7 @@ function DataTable<TData>({
     // Every other cell adds its column's indent (`--column-indent`, see
     // `columnIndents`) to its start padding. CardTable's edge-cell padding
     // adds it too.
-    if (id === leadingColumnId) return 'ps-[calc(var(--spacing)*8+var(--column-indent,0px))]';
+    if (id === leadingColumnId) return 'ps-[calc(var(--spacing)*10+var(--column-indent,0px))]';
     // Actions cells drop vertical padding so a row-action button (taller than a
     // text line) sits inside the natural row height rather than inflating every
     // row; `align-middle` on the cell keeps it centred.
@@ -1211,7 +1219,7 @@ function DataTable<TData>({
                 <motion.div
                   key="bulk-over-header"
                   {...bulkBarFade}
-                  className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-10 items-center ps-8 pe-(--card-px)"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-10 items-center ps-10 pe-(--card-px)"
                 >
                   <DataTableBulkActions
                     table={table}
