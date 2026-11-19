@@ -900,7 +900,8 @@ function IdentitySidebar({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
                   render={<SidebarIdentityButton tooltip="Acme Corporation" data-testid="account-switch" />}
                 >
                   <Avatar shape="square" data-testid="account-switch-avatar">
-                    <AvatarFallback>AC</AvatarFallback>
+                    {/* A fallback with its own colour, like a Console account avatar. */}
+                    <AvatarFallback className="bg-primary text-primary-foreground">AC</AvatarFallback>
                   </Avatar>
                   <SidebarIdentityText title="Acme Corporation" caption="Customer account" />
                 </DropdownMenuTrigger>
@@ -1005,6 +1006,17 @@ export const IdentitySwitch: Story = {
     // The person is round, the account square.
     const radius = (id: string) => parseFloat(getComputedStyle(canvas.getByTestId(id)).borderTopLeftRadius);
     await expect(radius('user-menu-avatar')).toBeGreaterThan(radius('account-switch-avatar'));
+
+    // A fallback with its own colour keeps it; a default one takes the sidebar text colour.
+    const fallbackColor = (id: string) =>
+      getComputedStyle(canvas.getByTestId(id).querySelector('[data-slot=avatar-fallback]') as HTMLElement).color;
+    const probe = document.createElement('span');
+    probe.className = 'text-primary-foreground';
+    canvasElement.append(probe);
+    await expect(fallbackColor('account-switch-avatar')).toBe(getComputedStyle(probe).color);
+    probe.className = 'text-sidebar-foreground';
+    await expect(fallbackColor('user-menu-avatar')).toBe(getComputedStyle(probe).color);
+    probe.remove();
 
     // Open: the trigger takes the fill, with the pointer moved away so the
     // hover fill cannot stand in for it.
