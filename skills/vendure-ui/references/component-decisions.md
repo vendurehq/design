@@ -228,6 +228,24 @@ Use a description list for labeled facts, not editable values or record collecti
 - **Split long detail surfaces by meaning:** Group facts into named sections once one list becomes difficult to scan; do not create arbitrary columns only to reduce height.
 
 Related decisions: `form`, `money`, `date-time`.
+## Dialog and Sheet size
+
+Size a Dialog or a Sheet by its job with the `size` prop, never with a width class.
+
+- **The job picks the size:** Dialogs that do the same job open at the same width. Pick `size` on DialogContent or SheetContent from the job, not from the content's pixel width.
+- **No width classes:** Do not set `max-w-[…]`, `min-w-[…]` or `w-[…]` on DialogContent or SheetContent. If no size fits a real job, raise it in the design system.
+- **Small screens are handled:** A dialog shrinks to the viewport less 1rem on each side below its breakpoint; `xl` waits for 1024px. A left or right sheet is at most 3/4 of the viewport. Top and bottom sheets ignore `size`.
+
+**Choose:**
+
+- `Dialog size="default"`: 440px. A confirmation, or a form of a few short fields.
+- `Dialog size="lg"`: 560px. A form with longer fields, a field group or a short list.
+- `Dialog size="xl"`: 800px. A wide form, a table, a tree or a grid of choices.
+- `Dialog size="full"`: The viewport less 1rem on each side. A picker or a preview.
+- `Sheet size="default"`: 512px. A short form, a filter or a settings list.
+- `Sheet size="xl"`: 800px. A table or a wide form beside the page.
+
+Related decisions: `confirm-dialog`, `form`.
 ## FileDropzone
 
 Standardize local file selection and validation while leaving transport and persistence app-owned.

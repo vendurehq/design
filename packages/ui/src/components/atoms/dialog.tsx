@@ -78,14 +78,34 @@ function DialogCloseButton({ className }: { className?: string }) {
   )
 }
 
+// The width per size, as whole class strings so Tailwind finds them in this
+// source. They sit before `className` in `cn`, so a consumer's `sm:max-w-*`
+// still replaces them. Below the breakpoint a dialog is the viewport less 1rem
+// on each side: `xl` waits for `lg`, where 800px fits with that margin.
+const dialogSizes = {
+  default: "sm:max-w-110",
+  lg: "sm:max-w-140",
+  xl: "lg:max-w-200",
+  full: "",
+} as const
+
 function DialogContent({
   className,
   children,
+  size = "default",
   showCloseButton,
   overlayClassName,
   style,
   ...props
 }: DialogPrimitive.Popup.Props & {
+  /**
+   * The width, by the dialog's job. `default` (440px): a confirmation or a
+   * form of a few fields. `lg` (560px): a form with longer fields or a short
+   * list. `xl` (800px): a wide form, a table or a tree. `full`: the viewport
+   * less 1rem on each side, for a picker or a preview. Every size shrinks to
+   * the viewport less that margin on a small screen.
+   */
+  size?: keyof typeof dialogSizes
   /**
    * Shows a ✕ in the top-right corner. Left out, the dialog shows it only
    * when it holds no `DialogFooter` and no `DialogClose`: a dialog with a
@@ -115,8 +135,10 @@ function DialogContent({
       <DialogPrimitive.Popup
         dir={dir}
         data-slot="dialog-content"
+        data-size={size}
         className={cn(
-          "group/dialog-content bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid grid-cols-[minmax(0,1fr)] max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto overscroll-contain rounded-2xl [--dialog-padding:--spacing(5)] p-(--dialog-padding) [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none sm:max-w-110",
+          "group/dialog-content bg-overlay shadow-overlay fixed top-1/2 left-1/2 z-50 grid grid-cols-[minmax(0,1fr)] max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto overscroll-contain rounded-2xl [--dialog-padding:--spacing(5)] p-(--dialog-padding) [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] text-sm transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none",
+          dialogSizes[size],
           className
         )}
         style={dialogPaddingStyle(className, style)}
