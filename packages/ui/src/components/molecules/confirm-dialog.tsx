@@ -92,6 +92,13 @@ interface ConfirmDialogProps {
    * once, also when a mouse click opened the dialog.
    */
   initialFocus?: ComponentProps<typeof AlertDialogContent>['initialFocus'];
+  /**
+   * The element that takes focus when the dialog closes. By default focus goes
+   * back to the element that opened it. Set it when that element is gone after
+   * a confirm, e.g. the row of a deleted item: return the next row, or the
+   * list's main action. Same type as Base UI's `Dialog.Popup` `finalFocus`.
+   */
+  finalFocus?: ComponentProps<typeof AlertDialogContent>['finalFocus'];
   /** Uncontrolled mode — the element that opens the dialog. */
   children?: ReactElement;
   /** Controlled mode — supply with `onOpenChange`. */
@@ -111,6 +118,7 @@ function ConfirmDialog({
   confirmDisabled = false,
   confirmDisabledReason,
   initialFocus,
+  finalFocus,
   children,
   open,
   onOpenChange,
@@ -168,6 +176,7 @@ function ConfirmDialog({
       <AlertDialogContent
         data-slot="confirm-dialog"
         initialFocus={initialFocus ?? defaultInitialFocus}
+        finalFocus={finalFocus}
       >
         <AlertDialogHeader>
           {icon ? (
