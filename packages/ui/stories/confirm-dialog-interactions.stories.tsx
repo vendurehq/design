@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { RocketIcon, Trash2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
@@ -156,6 +156,68 @@ export const InitialFocusPassthrough: Story = {
     const dialog = await within(document.body).findByRole('alertdialog');
     await waitFor(() =>
       expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus(),
+    );
+  },
+};
+
+/**
+ * `finalFocus` reaches the popup. A confirmed delete removes the row that
+ * opened the dialog, so the default (back to the trigger) has no target and
+ * focus drops to the page body. Here focus goes to the next row instead.
+ */
+function DeleteRows() {
+  const [rows, setRows] = useState(['Alpha', 'Beta', 'Gamma']);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  // `deleting` is cleared when the dialog closes, before `finalFocus` runs, so
+  // the row to focus is kept in a ref.
+  const focusAfter = useRef<string | undefined>(undefined);
+  return (
+    <>
+      <ul className="flex flex-col gap-2">
+        {rows.map((name) => (
+          <li key={name} className="flex items-center gap-2">
+            <Button variant="ghost" data-row={name}>
+              {name}
+            </Button>
+            <Button variant="outline" onClick={() => setDeleting(name)}>
+              Delete {name}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(next) => {
+          if (!next) setDeleting(null);
+        }}
+        title={`Delete ${deleting ?? ''}?`}
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          if (!deleting) return;
+          const index = rows.indexOf(deleting);
+          focusAfter.current = rows[index + 1] ?? rows[index - 1];
+          setRows((current) => current.filter((row) => row !== deleting));
+        }}
+        finalFocus={() =>
+          document.querySelector<HTMLElement>(`[data-row=${focusAfter.current}]`) ?? true
+        }
+      />
+    </>
+  );
+}
+
+export const FinalFocusPassthrough: Story = {
+  render: () => <DeleteRows />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Delete Beta' }));
+    const dialog = await within(document.body).findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+    await expect(within(canvasElement).queryByRole('button', { name: 'Delete Beta' })).toBeNull();
+    // Focus lands on the next row (Gamma), not on the page body.
+    await waitFor(() =>
+      expect(within(canvasElement).getByRole('button', { name: 'Gamma' })).toHaveFocus(),
     );
   },
 };
