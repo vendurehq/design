@@ -276,19 +276,16 @@ describe('CommandItemDetail', () => {
     </Command>,
   );
 
-  test('shows on the highlighted item only', () => {
-    expect(slotTokens(html, 'command-item-detail')).toEqual(
-      expect.arrayContaining([
-        'opacity-0',
-        'group-data-[selected=true]/command-item:opacity-100',
-      ]),
-    );
+  test('shows on every row, with no reveal on selection or hover', () => {
+    const detail = slotTokens(html, 'command-item-detail');
+    expect(detail.some((token) => /opacity|transition|delay|blur|translate|selected|hover/.test(token))).toBe(false);
   });
 
-  test('shows and hides at once, with the highlight', () => {
-    expect(slotTokens(html, 'command-item-detail').some((token) => /transition|delay|blur|translate/.test(token))).toBe(
-      false,
+  test('truncates before the label does', () => {
+    expect(slotTokens(html, 'command-item-detail')).toEqual(
+      expect.arrayContaining(['truncate', 'min-w-0', 'max-w-[45%]']),
     );
+    expect(slotTokens(html, 'command-item-detail')).not.toContain('shrink-0');
   });
 
   test('takes the place of the check mark', () => {

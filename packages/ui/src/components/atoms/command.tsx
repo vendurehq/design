@@ -459,9 +459,9 @@ function CommandShortcut({
 }
 
 // Where an item lives, such as "Production · Acme", at the end of the row. It
-// shows on the highlighted item only: repeated on every row it is noise. It
-// shows and hides at once, with the highlight: the selection moves on every
-// arrow key and every keystroke, and motion there only delays reading.
+// shows on every row, so the results can be scanned without moving the
+// selection through them. It stays muted and small so the label is read
+// first, and it truncates before the label does (at most 45% of the row).
 function CommandItemDetail({
   className,
   ...props
@@ -470,7 +470,7 @@ function CommandItemDetail({
     <span
       data-slot="command-item-detail"
       className={cn(
-        "text-muted-foreground ms-auto max-w-[55%] shrink-0 truncate ps-3 text-xs opacity-0 group-data-[selected=true]/command-item:opacity-100",
+        "text-muted-foreground ms-auto max-w-[45%] min-w-0 truncate ps-3 text-xs",
         className
       )}
       {...props}

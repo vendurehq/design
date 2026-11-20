@@ -180,7 +180,11 @@ const pages = [
   { label: 'Orders', icon: ShoppingCart, detail: 'Sales · Default channel' },
   { label: 'Products', icon: Package, detail: 'Catalog · Default channel' },
   { label: 'Customers', icon: Users, detail: 'Customers · Default channel' },
-  { label: 'Analytics', icon: BarChart3, detail: 'Insights' },
+  {
+    label: 'Analytics',
+    icon: BarChart3,
+    detail: 'Insights · Sales, conversion and traffic reports for every channel and currency',
+  },
 ];
 const account = [
   { label: 'Profile', icon: User },
@@ -256,10 +260,10 @@ function PaletteBody() {
  * foreground and its icon turns the brand indicator. These styles apply in
  * CommandDialog only: a Command elsewhere, even in a dialog, keeps the accent
  * highlight. A page item names where it lives with
- * CommandItemDetail, shown on the highlighted item only. Type to filter:
+ * CommandItemDetail, muted, on every row. Type to filter:
  * each keystroke shows the new results at once, at their new height, with the
- * highlight already on the first result. The highlight, the row tint and the
- * detail move with the selection in the same frame, also on a held arrow key.
+ * highlight already on the first result. The highlight and the row tint move
+ * with the selection in the same frame, also on a held arrow key.
  * Only the dialog moves: it drops 6px from 98% as it opens and closes in
  * 110ms. Under reduced motion it only fades.
  */
@@ -298,6 +302,14 @@ export const Palette: Story = {
       return expect(highlight.getBoundingClientRect().top).toBeCloseTo(selected.getBoundingClientRect().top, 0);
     };
 
+    // Every row shows its detail, not only the selected one.
+    const details = Array.from(list.querySelectorAll<HTMLElement>('[data-slot=command-item-detail]'));
+    await expect(details.length).toBeGreaterThan(1);
+    for (const detail of details) {
+      await expect(detail).toBeVisible();
+      await expect(getComputedStyle(detail).opacity).toBe('1');
+    }
+
     // A keystroke shows the new results at once: no copy of the old results,
     // nothing fading or blurring in, the list already at its new height and
     // the highlight already on the first result.
@@ -309,7 +321,7 @@ export const Palette: Story = {
     await expect(list.clientHeight).toBe(Math.min(sizer?.offsetHeight ?? 0, Number.parseFloat(getComputedStyle(list).maxHeight)));
     await expectHighlightOnSelection();
 
-    // A held arrow key: the highlight and the item detail keep up on every step.
+    // A held arrow key: the highlight keeps up on every step.
     for (const _ of [1, 2, 3]) {
       await userEvent.keyboard('{ArrowDown}');
       await nextFrame();
