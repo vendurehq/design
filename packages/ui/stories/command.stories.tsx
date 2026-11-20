@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
@@ -256,14 +256,12 @@ function PaletteBody() {
  * foreground and its icon turns the brand indicator. These styles apply in
  * CommandDialog only: a Command elsewhere, even in a dialog, keeps the accent
  * highlight. A page item names where it lives with
- * CommandItemDetail, shown on the highlighted item only. CommandList's
- * slidingHighlight follows the selection and eases the list's scroll with
- * it; hold an arrow key and it keeps up without restarting. Type to filter:
- * the old results fade out with a blur while new ones fade in, rows that stay
- * keep still, and the list eases to its new height. The palette drops 6px
- * from 98% as it opens and closes in 110ms. Under reduced motion it only
- * fades, the highlight and the scroll jump, new results only fade and the
- * height changes at once.
+ * CommandItemDetail, shown on the highlighted item only. Type to filter:
+ * each keystroke shows the new results at once, at their new height, with the
+ * highlight already on the first result. The highlight, the row tint and the
+ * detail move with the selection in the same frame, also on a held arrow key.
+ * Only the dialog moves: it drops 6px from 98% as it opens and closes in
+ * 110ms. Under reduced motion it only fades.
  */
 export const Palette: Story = {
   parameters: { docs: { story: { inline: false, height: '560px' } } },
@@ -280,11 +278,52 @@ export const Palette: Story = {
       </>
     );
   },
+  play: async ({ canvasElement }) => {
+    const document = canvasElement.ownerDocument;
+    const body = within(document.body);
+    const input = await body.findByRole('combobox');
+    await Promise.all(document.getAnimations().map((animation) => animation.finished));
+    const list = document.querySelector<HTMLElement>('[cmdk-list]');
+    if (!list) throw new Error('The palette has no list');
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    const animated = () =>
+      document
+        .getAnimations()
+        .map((animation) => (animation.effect as KeyframeEffect | null)?.target)
+        .filter((target) => target instanceof Element && list.contains(target));
+    const expectHighlightOnSelection = () => {
+      const selected = list.querySelector('[cmdk-item][data-selected="true"]');
+      const highlight = list.querySelector('[data-slot=command-highlight]');
+      if (!selected || !highlight) throw new Error('No selected item or highlight');
+      return expect(highlight.getBoundingClientRect().top).toBeCloseTo(selected.getBoundingClientRect().top, 0);
+    };
+
+    // A keystroke shows the new results at once: no copy of the old results,
+    // nothing fading or blurring in, the list already at its new height and
+    // the highlight already on the first result.
+    await userEvent.type(input, 'se', { delay: 30 });
+    await nextFrame();
+    await expect(list.querySelector('[data-slot=command-results-ghost]')).toBeNull();
+    await expect(animated()).toEqual([]);
+    const sizer = list.querySelector<HTMLElement>('[cmdk-list-sizer]');
+    await expect(list.clientHeight).toBe(Math.min(sizer?.offsetHeight ?? 0, Number.parseFloat(getComputedStyle(list).maxHeight)));
+    await expectHighlightOnSelection();
+
+    // A held arrow key: the highlight and the item detail keep up on every step.
+    for (const _ of [1, 2, 3]) {
+      await userEvent.keyboard('{ArrowDown}');
+      await nextFrame();
+      await expectHighlightOnSelection();
+      await expect(animated()).toEqual([]);
+    }
+    await userEvent.clear(input);
+  },
 };
 
 /**
- * The sliding highlight and the footer without the dialog. Move with the
- * arrow keys or the pointer. Pinned to the light page theme.
+ * The sliding highlight and the footer without the dialog. Outside the
+ * palette the highlight eases from item to item. Move with the arrow keys or
+ * the pointer. Pinned to the light page theme.
  */
 export const SlidingHighlight: Story = {
   globals: { theme: 'light' },
