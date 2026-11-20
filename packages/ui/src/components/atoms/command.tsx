@@ -64,7 +64,7 @@ function CommandDialog({
       <DialogContent
         data-command-palette=""
         className={cn(
-          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-palette-exit data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-palette-tint motion-reduce:ease-soft",
+          "shadow-overlay top-[12vh] translate-y-0 gap-0 overflow-hidden rounded-3xl! p-0 ring-0 sm:max-w-150 origin-top transition-[opacity,scale,translate] duration-[var(--transition-duration-palette-enter),var(--transition-duration-palette-move),var(--transition-duration-palette-move)] motion-safe:data-starting-style:-translate-y-1.5 motion-safe:data-starting-style:scale-98 data-ending-style:duration-palette-exit data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-ending-style:scale-98 motion-reduce:transition-opacity motion-reduce:duration-quick motion-reduce:ease-soft",
           className
         )}
         showCloseButton={showCloseButton}
@@ -103,18 +103,12 @@ function CommandInput({
   )
 }
 
-// In the palette, results that appear after the first render (a new query)
-// fade in from a 3px blur, 50ms after the old results start to leave. Rows that
-// stay are not touched: cmdk re-inserts them when it sorts, so the ghost marks
-// every shown result data-result-seen before the query changes. The colour
-// transition is the palette item's own (see CommandItem). Reduced motion drops
-// the blur.
-const ENTERING_RESULTS =
-  "[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:transition-[color,opacity,filter] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:duration-[var(--transition-duration-palette-tint),var(--transition-duration-normal),var(--transition-duration-palette-result-blur)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:delay-[var(--transition-duration-instant),var(--transition-duration-palette-result-delay),var(--transition-duration-palette-result-delay)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:ease-[var(--ease-soft),var(--ease-soft),var(--ease-out)] [&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:opacity-0 motion-safe:[&[data-results-ready]_:is([cmdk-item],[cmdk-group-heading],[cmdk-empty]):not([data-result-seen],[data-slot=command-results-ghost]_*)]:starting:blur-[3px]"
-
 // cmdk measures the list's content and writes it to --cmdk-list-height, so the
 // list eases to its new height as results change. The first measure is not
 // animated (the height starts as auto). Reduced motion drops the animation.
+// The palette list has no motion: a search is typed fast, and each keystroke
+// must show its results at once. It takes its content's height (capped by
+// max-h) in the same frame, not cmdk's measure, which lands a frame later.
 function CommandList({
   className,
   slidingHighlight = false,
@@ -123,8 +117,9 @@ function CommandList({
 }: React.ComponentProps<typeof CommandPrimitive.List> & {
   /**
    * Draws the selected item's highlight as one fill that follows the
-   * selection from item to item, and eases the list's scroll with it. Off by
-   * default: each item then fills itself.
+   * selection from item to item, and eases the list's scroll with it. In the
+   * palette it jumps to the selected item in the same frame. Off by default:
+   * each item then fills itself.
    */
   slidingHighlight?: boolean
 }) {
@@ -133,117 +128,14 @@ function CommandList({
       data-slot="command-list"
       data-highlight={slidingHighlight ? "slide" : undefined}
       className={cn(
-        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-normal ease-height in-data-command-palette:max-h-95 motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
-        ENTERING_RESULTS,
+        "no-scrollbar h-(--cmdk-list-height) max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none transition-[height] duration-normal ease-height in-data-command-palette:h-auto in-data-command-palette:max-h-95 in-data-command-palette:transition-none motion-reduce:transition-none *:[[cmdk-list-sizer]]:relative *:[[cmdk-list-sizer]]:p-1",
         className
       )}
       {...props}
     >
       {slidingHighlight && <CommandHighlight />}
-      <CommandResultsGhost />
       {children}
     </CommandPrimitive.List>
-  )
-}
-
-// The palette's results crossfade. Just before the query changes (beforeinput),
-// a copy of the current results goes into this layer, at the place they were
-// shown, and fades out with a 3px blur (opacity 140ms, blur 160ms) while the
-// new results fade in under it. Only in the palette (a CommandList in
-// CommandDialog). Reduced motion skips the copy: new results only fade in.
-function CommandResultsGhost() {
-  const ref = React.useRef<HTMLDivElement>(null)
-
-  React.useLayoutEffect(() => {
-    const ghost = ref.current
-    const sizer = ghost?.parentElement
-    const list = sizer?.closest<HTMLElement>("[cmdk-list]")
-    const root = sizer?.closest("[cmdk-root]")
-    if (
-      !ghost ||
-      !sizer ||
-      !list ||
-      !root ||
-      !list.closest("[data-command-palette]")
-    ) {
-      return
-    }
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
-    let timer = 0
-
-    // Results rendered from now on are new: they fade in.
-    const frame = requestAnimationFrame(() => {
-      list.dataset.resultsReady = ""
-    })
-
-    const onBeforeInput = (event: Event) => {
-      if (!(event.target instanceof HTMLInputElement)) {
-        return
-      }
-      // Results shown now stay still if the new query keeps them.
-      for (const result of Array.from(
-        sizer.querySelectorAll<HTMLElement>(
-          "[cmdk-item],[cmdk-group-heading],[cmdk-empty]"
-        )
-      )) {
-        if (ghost.contains(result)) {
-          continue
-        }
-        if (result.offsetParent) {
-          result.dataset.resultSeen = ""
-        } else {
-          delete result.dataset.resultSeen
-        }
-      }
-      if (reduced.matches) {
-        return
-      }
-      const copies: Node[] = []
-      for (const child of Array.from(sizer.children)) {
-        if (
-          child === ghost ||
-          child.getAttribute("data-slot") === "command-highlight"
-        ) {
-          continue
-        }
-        const copy = child.cloneNode(true) as HTMLElement
-        // The copy must not answer cmdk's or the highlight's item queries.
-        for (const node of [copy, ...Array.from(copy.querySelectorAll("*"))]) {
-          node.removeAttribute("id")
-          node.removeAttribute("cmdk-item")
-          node.removeAttribute("cmdk-empty")
-          node.removeAttribute("data-result-seen")
-        }
-        copies.push(copy)
-      }
-      ghost.replaceChildren(...copies)
-      // A new query scrolls the list to the top: keep the copy where it was.
-      ghost.style.top = `${-list.scrollTop}px`
-      delete ghost.dataset.leaving
-      void ghost.offsetHeight
-      ghost.dataset.leaving = ""
-      window.clearTimeout(timer)
-      timer = window.setTimeout(() => ghost.replaceChildren(), 220)
-    }
-    root.addEventListener("beforeinput", onBeforeInput, true)
-
-    return () => {
-      cancelAnimationFrame(frame)
-      window.clearTimeout(timer)
-      root.removeEventListener("beforeinput", onBeforeInput, true)
-      delete list.dataset.resultsReady
-    }
-  }, [])
-
-  return (
-    <div
-      ref={ref}
-      aria-hidden="true"
-      role="none"
-      inert
-      data-slot="command-results-ghost"
-      className="pointer-events-none absolute inset-x-0 top-0 z-10 p-1 empty:hidden data-leaving:*:opacity-0 data-leaving:*:blur-[3px] data-leaving:*:transition-[opacity,filter] data-leaving:*:duration-[var(--transition-duration-palette-result-exit),var(--transition-duration-palette-enter)] data-leaving:*:ease-soft"
-    />
   )
 }
 
@@ -270,6 +162,10 @@ const NAVIGATION_KEYS = new Set([
 // instead of restarting. cmdk scrolls the selected item into view at once;
 // after a key press the follower takes that scroll back and eases to it.
 // Wheel and pointer scrolling stay native. Reduced motion jumps.
+//
+// In the palette the highlight and the scroll jump too, in the same frame as
+// the selection: arrow keys repeat and searches are typed fast, and a
+// highlight that eases there trails behind the row the user reads.
 function CommandHighlight() {
   const ref = React.useRef<HTMLDivElement>(null)
 
@@ -281,6 +177,8 @@ function CommandHighlight() {
       return
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const inPalette = list.closest("[data-command-palette]") !== null
+    const jumps = () => inPalette || reduced.matches
 
     // y and h are shown, ty and th are the target. scroll is the list's
     // shown scroll position, scrollTo its target while the follower scrolls.
@@ -305,7 +203,7 @@ function CommandHighlight() {
     const tick = (time: number) => {
       const dt = f.last ? Math.min(time - f.last, 48) : 16
       f.last = time
-      const k = reduced.matches ? 1 : 1 - Math.exp(-dt / FOLLOW_MS)
+      const k = jumps() ? 1 : 1 - Math.exp(-dt / FOLLOW_MS)
       f.y = Math.abs(f.ty - f.y) < 0.25 ? f.ty : f.y + (f.ty - f.y) * k
       f.h = Math.abs(f.th - f.h) < 0.25 ? f.th : f.h + (f.th - f.h) * k
       draw()
@@ -352,7 +250,7 @@ function CommandHighlight() {
       highlight.style.width = `${selected.offsetWidth}px`
       f.ty = top
       f.th = selected.offsetHeight
-      if (!f.placed) {
+      if (!f.placed || jumps()) {
         f.placed = true
         f.y = f.ty
         f.h = f.th
@@ -361,7 +259,7 @@ function CommandHighlight() {
       highlight.dataset.shown = ""
       // cmdk has already scrolled the item into view. Show the old position
       // and let the follower ease to cmdk's.
-      if (f.byKey && list.scrollTop !== f.scroll && !reduced.matches) {
+      if (f.byKey && list.scrollTop !== f.scroll && !jumps()) {
         f.scrollTo = list.scrollTop
         list.scrollTop = f.scroll
       }
@@ -426,7 +324,7 @@ function CommandHighlight() {
       aria-hidden="true"
       role="none"
       data-slot="command-highlight"
-      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-fast data-ready:ease-soft"
+      className="bg-muted pointer-events-none absolute top-0 left-0 rounded-sm opacity-0 will-change-transform forced-colors:outline-2 forced-colors:-outline-offset-2 forced-colors:outline-solid forced-colors:outline-[Highlight] in-data-command-palette:rounded-xl data-shown:opacity-100 data-ready:transition-opacity data-ready:duration-fast data-ready:ease-soft in-data-command-palette:transition-none!"
     />
   )
 }
@@ -493,7 +391,9 @@ function CommandSeparator({
 // highlight is a Highlight outline. Palette items are 40px tall and quiet at
 // rest: foreground-secondary text, with the label (CommandItemLabel) in medium
 // weight. The highlighted row has the muted fill, turns its text to
-// foreground and its leading icon to the brand indicator.
+// foreground and its leading icon to the brand indicator, all at once: the
+// selection moves on every arrow key and keystroke, so a tint that eases
+// would trail behind it.
 function isChecked(value: unknown) {
   return value === true || value === "true"
 }
@@ -507,7 +407,7 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[selected=true]:bg-muted not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground in-data-command-palette:transition-[color] in-data-command-palette:duration-palette-tint in-data-command-palette:ease-soft data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-moderate not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:duration-palette-tint in-data-command-palette:[&>svg:not([class*='opacity-'])]:ease-soft in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
+        "group/command-item relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[selected=true]:bg-muted not-in-data-command-palette:data-[selected=true]:text-accent-foreground not-in-data-command-palette:data-[selected=true]:**:[svg]:text-accent-foreground in-data-[highlight=slide]:data-[selected=true]:bg-transparent! not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:-outline-offset-2 not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-solid not-in-data-[highlight=slide]:data-[selected=true]:forced-colors:outline-[Highlight] in-data-command-palette:h-10 in-data-command-palette:gap-3 in-data-command-palette:rounded-xl in-data-command-palette:px-2.5 in-data-command-palette:text-foreground-secondary in-data-command-palette:data-[selected=true]:text-foreground data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-[opacity,color] [&>svg:not([class*='opacity-'])]:duration-moderate not-in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-85 in-data-command-palette:[&>svg:not([class*='opacity-'])]:transition-none! in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:opacity-100 in-data-command-palette:data-[selected=true]:[&>svg:not([class*='opacity-'])]:text-brand-indicator",
         className
       )}
       {...props}
@@ -559,9 +459,9 @@ function CommandShortcut({
 }
 
 // Where an item lives, such as "Production · Acme", at the end of the row. It
-// shows on the highlighted item only: repeated on every row it is noise. It
-// slides in 4px from a 1px blur as the highlight arrives (opacity 180ms,
-// transform 220ms, after 40ms) and leaves in 90ms. Reduced motion fades only.
+// shows on every row, so the results can be scanned without moving the
+// selection through them. It stays muted and small so the label is read
+// first, and it truncates before the label does (at most 45% of the row).
 function CommandItemDetail({
   className,
   ...props
@@ -570,7 +470,7 @@ function CommandItemDetail({
     <span
       data-slot="command-item-detail"
       className={cn(
-        "text-muted-foreground ms-auto max-w-[55%] shrink-0 truncate ps-3 text-xs opacity-0 -translate-x-1 rtl:translate-x-1 blur-[1px] transition-[opacity,translate,filter] duration-palette-detail-exit ease-soft group-data-[selected=true]/command-item:translate-x-0 group-data-[selected=true]/command-item:opacity-100 group-data-[selected=true]/command-item:blur-none group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay) group-data-[selected=true]/command-item:duration-[var(--transition-duration-palette-move),var(--transition-duration-palette-detail-move),var(--transition-duration-palette-move)] group-data-[selected=true]/command-item:ease-out motion-reduce:translate-x-0 motion-reduce:blur-none",
+        "text-muted-foreground ms-auto max-w-[45%] min-w-0 truncate ps-3 text-xs",
         className
       )}
       {...props}

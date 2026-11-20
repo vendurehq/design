@@ -244,29 +244,23 @@ describe('CommandFooter', () => {
   });
 });
 
-describe('CommandList results crossfade', () => {
-  test('renders one hidden, inert ghost layer for the leaving results', () => {
+describe('palette results', () => {
+  test('have no copy of the old results and no enter transition', () => {
     const html = render();
-    expect(html.match(/data-slot="command-results-ghost"/g)).toHaveLength(1);
-    const ghost = html.match(/<div[^>]*data-slot="command-results-ghost"[^>]*>/)?.[0] ?? '';
-    expect(ghost).toContain('aria-hidden="true"');
-    expect(ghost).toContain('role="none"');
-    expect(ghost).toContain('inert');
-    expect(slotTokens(html, 'command-results-ghost')).toEqual(
-      expect.arrayContaining(['data-leaving:*:opacity-0', 'data-leaving:*:blur-[3px]']),
+    expect(html).not.toContain('command-results-ghost');
+    expect(slotTokens(html, 'command-list').some((token) => token.includes('results-ready'))).toBe(false);
+  });
+
+  test('the palette list takes its content height at once', () => {
+    expect(slotTokens(render(), 'command-list')).toEqual(
+      expect.arrayContaining(['in-data-command-palette:h-auto', 'in-data-command-palette:transition-none']),
     );
   });
 
-  test('new results fade in from a blur, rows that stay and the ghost do not', () => {
-    const entering = slotTokens(render(), 'command-list').filter((token) => token.includes('[data-results-ready]'));
-    expect(entering.length).toBeGreaterThan(0);
-    for (const token of entering) {
-      expect(token).toContain(':not([data-result-seen],[data-slot=command-results-ghost]_*)');
-    }
-    expect(entering.some((token) => token.endsWith(':starting:opacity-0'))).toBe(true);
-    expect(entering.some((token) => token.startsWith('motion-safe:') && token.endsWith(':starting:blur-[3px]'))).toBe(
-      true,
-    );
+  test('palette rows change tint with the selection, without a transition', () => {
+    const item = slotTokens(render(), 'command-item');
+    expect(item.some((token) => token.startsWith('in-data-command-palette:transition-['))).toBe(false);
+    expect(item).toContain("in-data-command-palette:[&>svg:not([class*='opacity-'])]:transition-none!");
   });
 });
 
@@ -282,16 +276,16 @@ describe('CommandItemDetail', () => {
     </Command>,
   );
 
-  test('shows on the highlighted item only', () => {
+  test('shows on every row, with no reveal on selection or hover', () => {
+    const detail = slotTokens(html, 'command-item-detail');
+    expect(detail.some((token) => /opacity|transition|delay|blur|translate|selected|hover/.test(token))).toBe(false);
+  });
+
+  test('truncates before the label does', () => {
     expect(slotTokens(html, 'command-item-detail')).toEqual(
-      expect.arrayContaining([
-        'opacity-0',
-        'group-data-[selected=true]/command-item:opacity-100',
-        'group-data-[selected=true]/command-item:delay-(--transition-duration-palette-detail-delay)',
-        'motion-reduce:translate-x-0',
-        'motion-reduce:blur-none',
-      ]),
+      expect.arrayContaining(['truncate', 'min-w-0', 'max-w-[45%]']),
     );
+    expect(slotTokens(html, 'command-item-detail')).not.toContain('shrink-0');
   });
 
   test('takes the place of the check mark', () => {
