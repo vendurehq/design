@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { TagIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Chip } from '../src/components/molecules/chip.tsx';
+import { StatusBadge } from '../src/components/molecules/status-badge.tsx';
 
 const meta = {
   title: 'Molecules/Chip',
@@ -88,4 +89,17 @@ export const RemovableList: Story = {
       </div>
     );
   },
+};
+
+// The chip next to a StatusBadge: same height, same corner, same label inset.
+export const NextToStatusBadge: Story = {
+  render: () => (
+    <div className="flex items-center gap-2">
+      <StatusBadge>Disabled</StatusBadge>
+      <Chip>screen size</Chip>
+      <Chip onRemove={() => {}} removeLabel="Remove screen size">
+        screen size
+      </Chip>
+    </div>
+  ),
 };

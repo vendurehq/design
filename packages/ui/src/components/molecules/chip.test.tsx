@@ -31,3 +31,26 @@ test('Chip variants exclude the link and ghost Badge variants', () => {
   // @ts-expect-error: `ghost` is not a tag treatment.
   renderToStaticMarkup(<Chip variant="ghost">Apparel</Chip>);
 });
+
+test('a Chip has the StatusBadge shape: 24px high, 6px corner', () => {
+  const html = renderToStaticMarkup(<Chip>Apparel</Chip>);
+  expect(html).toContain('h-6');
+  expect(html).toContain('rounded-lg');
+  expect(html).not.toContain('rounded-4xl');
+  expect(html).not.toContain('h-5');
+});
+
+test('the remove button corner is concentric: 6px chip corner minus the 4px inset is 2px', () => {
+  const html = renderToStaticMarkup(
+    <Chip onRemove={() => {}} removeLabel="Remove Apparel">
+      Apparel
+    </Chip>,
+  );
+  const button = html.slice(html.indexOf('<button'));
+  expect(button).toContain('rounded-sm');
+  expect(button).not.toContain('rounded-full');
+  // 24px chip, 16px button: 4px from the top and bottom. The end matches it:
+  // the 1px border and 3px of padding.
+  expect(html).toContain('pe-0.75');
+  expect(button).not.toContain('-me-0.5');
+});
