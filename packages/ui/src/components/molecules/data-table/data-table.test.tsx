@@ -8,6 +8,7 @@ import { ListRowChevron } from '../list-row.tsx';
 import {
   type ColumnDef,
   DataTable,
+  type DataTableFilterEditorContext,
   DataTableRowLink,
   type TableInstance as Table,
   type TableOptions,
@@ -669,6 +670,41 @@ describe('DataTable filters', () => {
     );
     expect(markup).toContain('data-slot="data-table-add-filter"');
     expect(markup).not.toContain('data-slot="list-header-chips"');
+  });
+});
+
+describe('DataTable editable filter chips', () => {
+  const filtered = (renderEditor?: (ctx: DataTableFilterEditorContext<Country>) => React.ReactNode) =>
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        filters={{
+          value: [{ id: 'name', value: { contains: 'Al' } }],
+          onChange: () => {},
+          columns: [{ id: 'name', label: 'Name', renderEditor }],
+        }}
+      />,
+    );
+
+  test('without renderEditor the chip label is text', () => {
+    const markup = filtered();
+    expect(markup).not.toContain('data-slot="chip-edit"');
+    expect(markup).toContain('data-slot="chip-remove"');
+  });
+
+  test('renderEditor makes the label a button and renders the editor closed', () => {
+    const seen: DataTableFilterEditorContext<Country>[] = [];
+    const markup = filtered((ctx) => {
+      seen.push(ctx);
+      return <span data-testid="name-editor" data-open={String(ctx.open)} />;
+    });
+    expect(markup).toContain('data-slot="chip-edit"');
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).toContain('data-testid="name-editor" data-open="false"');
+    expect(seen[0]?.value).toEqual({ contains: 'Al' });
+    expect(seen[0]?.column.id).toBe('name');
+    expect(seen[0]?.anchor).toHaveProperty('current');
   });
 });
 

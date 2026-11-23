@@ -122,6 +122,24 @@ export interface DataTableFilterColumn<TData = unknown> {
    * passes its human-readable-operator formatter here.
    */
   formatChip?: (value: DataTableFilterValue) => React.ReactNode;
+  /**
+   * Makes the column's applied-filter chip editable. Present → the chip label
+   * is a button that opens this editor, and the consumer renders the whole
+   * popup (a Popover, a Combobox, a Dialog) controlled by `open`. Anchor a
+   * positioned popup to `anchor`, the chip. Absent → the chip only removes.
+   */
+  renderEditor?: (ctx: DataTableFilterEditorContext<TData>) => React.ReactNode;
+}
+
+export interface DataTableFilterEditorContext<TData = unknown> {
+  /** Whether the editor is open. The chip label opens it. */
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** The applied-filter chip, to anchor a positioned popup to. */
+  anchor: React.RefObject<HTMLElement | null>;
+  value: DataTableFilterValue | undefined;
+  onChange: (next: DataTableFilterValue | undefined) => void;
+  column: DataTableFilterColumn<TData>;
 }
 
 export type DataTableFilters<TData> = ControlledState<ColumnFiltersState> & {

@@ -129,6 +129,57 @@ function labelText(label: React.ReactNode, fallback: string): string {
   return typeof label === 'string' ? label : fallback;
 }
 
+/** One applied filter. With `renderEditor`, its label opens the consumer's editor. */
+function AppliedFilterChip<TData>({
+  table,
+  filterId,
+  value,
+  column,
+  removeLabel,
+}: {
+  table: Table<TData>;
+  filterId: string;
+  value: DataTableFilterValue;
+  column: DataTableFilterColumn<TData> | undefined;
+  removeLabel: (columnLabel: string) => string;
+}) {
+  const [editing, setEditing] = React.useState(false);
+  const anchor = React.useRef<HTMLSpanElement>(null);
+  const text = labelText(column?.label, filterId);
+  const content = column?.formatChip ? (
+    column.formatChip(value)
+  ) : (
+    <>
+      {column?.label ?? filterId}: {JSON.stringify(value)}
+    </>
+  );
+  const editor = column?.renderEditor;
+
+  return (
+    <>
+      <Chip
+        ref={anchor}
+        onEdit={editor ? () => setEditing((open) => !open) : undefined}
+        editExpanded={editor ? editing : undefined}
+        onRemove={() => table.getColumn(filterId)?.setFilterValue(undefined)}
+        removeLabel={removeLabel(text)}
+      >
+        {content}
+      </Chip>
+      {editor && column
+        ? editor({
+            open: editing,
+            onOpenChange: setEditing,
+            anchor,
+            value,
+            onChange: (next) => table.getColumn(filterId)?.setFilterValue(next),
+            column,
+          })
+        : null}
+    </>
+  );
+}
+
 interface DataTableAppliedFiltersProps<TData> {
   table: Table<TData>;
   columns?: DataTableFilterColumn<TData>[];
@@ -149,27 +200,16 @@ function DataTableAppliedFilters<TData>({
 
   const columnMap = new Map((columns ?? []).map((column) => [column.id, column]));
 
-  const chipFor = (filter: (typeof applied)[number]) => {
-    const column = columnMap.get(filter.id);
-    const text = labelText(column?.label, filter.id);
-    const content = column?.formatChip ? (
-      column.formatChip(filter.value as DataTableFilterValue)
-    ) : (
-      <>
-        {column?.label ?? filter.id}: {JSON.stringify(filter.value)}
-      </>
-    );
-
-    return (
-      <Chip
-        key={filter.id}
-        onRemove={() => table.getColumn(filter.id)?.setFilterValue(undefined)}
-        removeLabel={removeLabel(text)}
-      >
-        {content}
-      </Chip>
-    );
-  };
+  const chipFor = (filter: (typeof applied)[number]) => (
+    <AppliedFilterChip
+      key={filter.id}
+      table={table}
+      filterId={filter.id}
+      value={filter.value as DataTableFilterValue}
+      column={columnMap.get(filter.id)}
+      removeLabel={removeLabel}
+    />
+  );
 
   const inline = applied.slice(0, inlineChipLimit);
   const overflow = applied.slice(inlineChipLimit);
