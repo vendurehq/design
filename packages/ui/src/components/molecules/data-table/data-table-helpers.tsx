@@ -1,6 +1,7 @@
 import type { Column, ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
 import type {
   ControlledState,
+  DataTableClearFilters,
   DataTableColumnMeta,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 
@@ -46,6 +47,25 @@ export function getHideableLeafColumns<TData>(table: Table<TData>): Column<TData
 }
 
 /** Resolve a render-prop-or-node slot against the live table instance. */
+/**
+ * The "Clear filters" button after the chips, or undefined when it is off.
+ * `emptyCell`: the table shows its empty state (no rows, not loading). The
+ * button hides there unless the consumer sets `hidden`. Default click: remove
+ * every applied filter.
+ */
+export function resolveClearFilters<TData>(
+  option: boolean | DataTableClearFilters | undefined,
+  table: Pick<Table<TData>, 'setColumnFilters'>,
+  emptyCell: boolean,
+): { hidden: boolean; onClear: () => void } | undefined {
+  if (!option) return undefined;
+  const config = option === true ? {} : option;
+  return {
+    hidden: config.hidden ?? emptyCell,
+    onClear: config.onClear ?? (() => table.setColumnFilters([])),
+  };
+}
+
 export function resolveSlot<TData, TSlot>(
   slot: TSlot | ((table: Table<TData>) => TSlot) | undefined,
   table: Table<TData>,

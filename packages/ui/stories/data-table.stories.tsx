@@ -944,6 +944,92 @@ export const FiltersWithAppliedChips: Story = {
   },
 };
 
+/** Orders whose fields contain each applied filter: a stand-in for a server read. */
+function filterOrders(filters: ColumnFiltersState): Order[] {
+  return orders.filter((order) =>
+    filters.every((filter) => {
+      const needle = String((filter.value as { contains?: unknown }).contains ?? '').toLowerCase();
+      return String(order[filter.id as keyof Order]).toLowerCase().includes(needle);
+    }),
+  );
+}
+
+function ClearFiltersTable({ initial }: { initial: ColumnFiltersState }) {
+  const [filters, setFilters] = useState<ColumnFiltersState>(initial);
+  return (
+    <DataTable<Order>
+      rows={filterOrders(filters)}
+      columns={columns}
+      getRowId={(order) => order.id}
+      header={
+        <PageHeader>
+          <PageHeaderContent>
+            <PageHeaderTitle>Orders</PageHeaderTitle>
+            <PageHeaderDescription>Clear filters after the chips.</PageHeaderDescription>
+          </PageHeaderContent>
+        </PageHeader>
+      }
+      filters={{
+        value: filters,
+        onChange: setFilters,
+        columns: filterColumns,
+        clearFilters: true,
+      }}
+      emptyState={
+        <EmptyState
+          illustration={null}
+          title="No matching orders"
+          description="Change your filters."
+        >
+          <Button variant="outline" onClick={() => setFilters([])}>
+            Clear filters
+          </Button>
+        </EmptyState>
+      }
+    />
+  );
+}
+
+const clearFiltersButtons = (canvasElement: HTMLElement) => {
+  const buttons = [...canvasElement.querySelectorAll('button')].filter(
+    (button) => button.textContent?.trim() === 'Clear filters',
+  );
+  return {
+    toolbar: buttons.filter((button) => !button.closest('[data-slot="empty-state"]')).length,
+    emptyState: buttons.filter((button) => button.closest('[data-slot="empty-state"]')).length,
+  };
+};
+
+// `filters.clearFilters` — "Clear filters" after the chips, while a chip
+// applies and rows match. A search alone shows no button: the field has its
+// own clear. The chip line keeps the button's height (h-7), so the table does
+// not move when the button hides.
+export const FiltersWithClearFilters: Story = {
+  render: () => <ClearFiltersTable initial={[{ id: 'customer', value: { contains: 'Ada' } }]} />,
+  play: async ({ canvasElement }) => {
+    const chips = canvasElement.querySelector<HTMLElement>('[data-slot="list-header-chips"]');
+    await expect(chips?.lastElementChild?.textContent).toBe('Clear filters');
+    await expect(clearFiltersButtons(canvasElement)).toEqual({ toolbar: 1, emptyState: 0 });
+    await expectPx(chips?.getBoundingClientRect().height, 28);
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-slot="list-header-chips"]')).toBeNull(),
+    );
+    await expect(clearFiltersButtons(canvasElement)).toEqual({ toolbar: 0, emptyState: 0 });
+  },
+};
+
+// A chip with no matching rows: the empty state holds the only "Clear
+// filters". The chip line keeps the height it has with the button.
+export const FiltersWithClearFiltersNoMatches: Story = {
+  render: () => <ClearFiltersTable initial={[{ id: 'customer', value: { contains: 'Nobody' } }]} />,
+  play: async ({ canvasElement }) => {
+    await expect(clearFiltersButtons(canvasElement)).toEqual({ toolbar: 0, emptyState: 1 });
+    const chips = canvasElement.querySelector<HTMLElement>('[data-slot="list-header-chips"]');
+    await expectPx(chips?.getBoundingClientRect().height, 28);
+  },
+};
+
 // footerRows — presentational rows appended after the data rows: the
 // order-detail totals shape. They render only alongside real rows (never with
 // the skeleton or empty states) and ignore selection, sorting, and pagination.

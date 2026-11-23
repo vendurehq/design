@@ -20,6 +20,7 @@ import {
   getSelectedRowIds,
   isControlled,
   measureColumnIndents,
+  resolveClearFilters,
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
@@ -668,6 +669,94 @@ describe('DataTable filters', () => {
     );
     expect(markup).toContain('data-slot="data-table-add-filter"');
     expect(markup).not.toContain('data-slot="list-header-chips"');
+  });
+});
+
+describe('DataTable clear filters', () => {
+  const nameFilter = [{ id: 'name', value: { contains: 'a' } }];
+  const clearButton = /data-slot="data-table-clear-filters"/g;
+  const chipLine = (markup: string) => markup.match(/<div data-slot="list-header-chips"[^>]*>/)?.[0];
+  const table = (props: {
+    rows?: Country[];
+    value?: typeof nameFilter;
+    clearFilters?: boolean | { hidden?: boolean; onClear?: () => void };
+    isLoading?: boolean;
+    clearLabel?: string;
+  }) =>
+    html(
+      <DataTable
+        rows={props.rows ?? rows}
+        columns={columns}
+        isLoading={props.isLoading}
+        emptyState="No matching countries"
+        labels={props.clearLabel ? { clearFilters: props.clearLabel } : undefined}
+        filters={{
+          value: props.value ?? nameFilter,
+          onChange: () => {},
+          columns: [{ id: 'name', label: 'Name' }],
+          clearFilters: props.clearFilters,
+        }}
+      />,
+    );
+
+  test('off by default: no button, and the chip line keeps its own height', () => {
+    const markup = table({});
+    expect(count(markup, clearButton)).toBe(0);
+    expect(chipLine(markup)).not.toContain('min-h-7');
+  });
+
+  test('a chip with matching rows: the button follows the chips', () => {
+    const markup = table({ clearFilters: true });
+    expect(count(markup, clearButton)).toBe(1);
+    const line = markup.slice(markup.indexOf('data-slot="list-header-chips"'));
+    expect(line.indexOf('data-slot="chip"')).toBeLessThan(line.indexOf('data-table-clear-filters'));
+    expect(markup).toContain('>Clear filters</button>');
+  });
+
+  test('no chip (a search alone): no chip line and no button', () => {
+    const markup = table({ clearFilters: true, value: [] });
+    expect(markup).not.toContain('data-slot="list-header-chips"');
+    expect(count(markup, clearButton)).toBe(0);
+  });
+
+  test('a chip with no matching rows: the empty state has the only "Clear filters"', () => {
+    const markup = table({ clearFilters: true, rows: [] });
+    expect(markup).toContain('No matching countries');
+    expect(count(markup, clearButton)).toBe(0);
+    // The line keeps the button's height, so the table does not move.
+    expect(chipLine(markup)).toContain('min-h-7');
+  });
+
+  test('a chip while the first page loads: the button stays', () => {
+    const markup = table({ clearFilters: true, rows: [], isLoading: true });
+    expect(count(markup, clearButton)).toBe(1);
+  });
+
+  test('hidden overrides the default rule both ways', () => {
+    expect(count(table({ clearFilters: { hidden: true } }), clearButton)).toBe(0);
+    expect(count(table({ clearFilters: { hidden: false }, rows: [] }), clearButton)).toBe(1);
+  });
+
+  test('labels.clearFilters renames the button', () => {
+    expect(table({ clearFilters: true, clearLabel: 'Reset' })).toContain('>Reset</button>');
+  });
+
+  test('resolveClearFilters: off, default clear, and the consumer handler', () => {
+    const setColumnFilters = mock();
+    expect(resolveClearFilters(undefined, { setColumnFilters }, false)).toBeUndefined();
+    expect(resolveClearFilters(false, { setColumnFilters }, false)).toBeUndefined();
+
+    const builtIn = resolveClearFilters(true, { setColumnFilters }, true);
+    expect(builtIn?.hidden).toBe(true);
+    builtIn?.onClear();
+    expect(setColumnFilters).toHaveBeenCalledWith([]);
+
+    const onClear = mock();
+    const custom = resolveClearFilters({ onClear }, { setColumnFilters }, false);
+    expect(custom?.hidden).toBe(false);
+    custom?.onClear();
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(setColumnFilters).toHaveBeenCalledTimes(1);
   });
 });
 
