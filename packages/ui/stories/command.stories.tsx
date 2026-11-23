@@ -16,6 +16,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '../src/components/atoms/command.tsx';
+import { useIsApplePlatform } from '../src/hooks/use-apple-platform.ts';
 import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
 import { checkCheckMark } from './menu-checked-row.ts';
 import {
@@ -201,6 +202,7 @@ const settings = [
 
 /** The palette body: grouped results with a sliding highlight, then the key hints. */
 function PaletteBody() {
+  const apple = useIsApplePlatform();
   return (
     <Command>
       <CommandInput placeholder="Search pages and settings..." end={<Kbd aria-hidden="true">Esc</Kbd>} />
@@ -237,7 +239,7 @@ function PaletteBody() {
         end={
           <span className="flex items-center gap-1">
             <KbdGroup>
-              <Kbd>⌘</Kbd>
+              <Kbd>{apple ? '⌘' : 'Ctrl'}</Kbd>
               <Kbd>K</Kbd>
             </KbdGroup>
             Toggle

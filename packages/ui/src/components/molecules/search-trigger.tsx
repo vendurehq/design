@@ -1,28 +1,12 @@
 'use client';
 
 import { Kbd } from '@vendure-io/ui/components/atoms/kbd';
+import { useIsApplePlatform } from '@vendure-io/ui/hooks/use-apple-platform';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { SearchIcon } from 'lucide-react';
 import type * as React from 'react';
-import { useSyncExternalStore } from 'react';
 
 type SearchTriggerCollapse = 'md' | 'never' | 'always';
-
-const subscribe = () => () => {};
-
-// Apple platforms show ⌘, the rest show Ctrl. The server and the first
-// hydration render have no platform, so they show Ctrl; React swaps in the
-// client value right after hydration without a mismatch error.
-function isApplePlatform() {
-  if (typeof navigator === 'undefined') return false;
-  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const platform = nav.userAgentData?.platform || nav.platform || nav.userAgent;
-  return /mac|iphone|ipad|ipod/i.test(platform);
-}
-
-function useIsApplePlatform() {
-  return useSyncExternalStore(subscribe, isApplePlatform, () => false);
-}
 
 // The v3 look: a button that looks like a field. 28px high, 220px wide, on
 // the muted fill with a 1px inset hairline and the lg radius. The 13px text
