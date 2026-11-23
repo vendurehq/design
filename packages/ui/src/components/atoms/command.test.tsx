@@ -182,6 +182,38 @@ describe('CommandInput', () => {
   });
 });
 
+describe('CommandInput end slot', () => {
+  test('renders nothing at the end without `end`', () => {
+    const html = renderToStaticMarkup(
+      <Command>
+        <CommandInput placeholder="Search" />
+      </Command>,
+    );
+    expect(html).not.toContain('data-align="inline-end"');
+  });
+
+  test('renders `end` in an end addon after the input', () => {
+    const html = renderToStaticMarkup(
+      <Command>
+        <CommandInput placeholder="Search" end={<Kbd>Esc</Kbd>} />
+      </Command>,
+    );
+    const end = html.indexOf('data-align="inline-end"');
+    expect(end).toBeGreaterThan(html.indexOf('data-slot="command-input"'));
+    expect(html.slice(end)).toContain('data-slot="kbd"');
+    expect(html.slice(end)).toContain('Esc');
+  });
+
+  test('does not pass `end` to the input element', () => {
+    const html = renderToStaticMarkup(
+      <Command>
+        <CommandInput placeholder="Search" end={<Kbd>Esc</Kbd>} />
+      </Command>,
+    );
+    expect(html).not.toContain(' end=');
+  });
+});
+
 describe('CommandList', () => {
   test('eases to the height cmdk measures, and not under reduced motion', () => {
     const list = slotTokens(render(), 'command-list');
@@ -241,6 +273,27 @@ describe('CommandFooter', () => {
     expect(html).toContain('data-slot="command-footer"');
     expect(html).toContain('data-slot="kbd"');
     expect(slotTokens(html, 'command-footer')).toContain('border-t');
+  });
+});
+
+describe('CommandFooter end slot', () => {
+  test('renders `end` after the hints, pushed to the right', () => {
+    const html = renderToStaticMarkup(
+      <CommandFooter end={<span>Toggle</span>}>
+        <span>Close</span>
+      </CommandFooter>,
+    );
+    expect(html.indexOf('Toggle')).toBeGreaterThan(html.indexOf('Close'));
+    expect(slotTokens(html, 'command-footer-end')).toContain('ms-auto');
+  });
+
+  test('renders no end element without `end`', () => {
+    const html = renderToStaticMarkup(
+      <CommandFooter>
+        <span>Close</span>
+      </CommandFooter>,
+    );
+    expect(html).not.toContain('command-footer-end');
   });
 });
 
