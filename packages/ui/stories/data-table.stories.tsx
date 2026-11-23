@@ -20,6 +20,8 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '../src/components/atoms/input-group.tsx';
+import { Input } from '../src/components/atoms/input.tsx';
+import { Popover, PopoverContent } from '../src/components/atoms/popover.tsx';
 import { TableCell, TableRow } from '../src/components/atoms/table.tsx';
 import {
   type ColumnDef,
@@ -27,6 +29,7 @@ import {
   type ColumnFiltersState,
   DataTable,
   type DataTableFilterColumn,
+  type DataTableFilterEditorContext,
   type DataTableProps,
   DataTableRowLink,
   DataTableSkeletonLine,
@@ -1027,6 +1030,75 @@ export const FiltersWithClearFiltersNoMatches: Story = {
     await expect(clearFiltersButtons(canvasElement)).toEqual({ toolbar: 0, emptyState: 1 });
     const chips = canvasElement.querySelector<HTMLElement>('[data-slot="list-header-chips"]');
     await expectPx(chips?.getBoundingClientRect().height, 28);
+  },
+};
+
+/** A text editor for one filter, in a popover anchored to its chip. */
+function ContainsEditor({ open, onOpenChange, anchor, value, onChange, column }: DataTableFilterEditorContext<Order>) {
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverContent anchor={anchor} className="w-64 gap-2 p-2">
+        <Input
+          autoFocus
+          aria-label={`${String(column.label)} contains`}
+          defaultValue={String(value?.contains ?? '')}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return;
+            const next = event.currentTarget.value;
+            onChange(next ? { contains: next } : undefined);
+            onOpenChange(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+const editableFilterColumns: DataTableFilterColumn<Order>[] = filterColumns.map((column) => ({
+  ...column,
+  renderEditor: (ctx) => <ContainsEditor {...ctx} />,
+}));
+
+// `filters.columns[].renderEditor` — an editable chip. Its label is a button
+// that opens the consumer's editor, anchored to the chip; × still removes.
+export const FiltersWithEditableChips: Story = {
+  render: () => {
+    const [filters, setFilters] = useState<ColumnFiltersState>([
+      { id: 'customer', value: { contains: 'Ada' } },
+    ]);
+    return (
+      <DataTable<Order>
+        rows={filterOrders(filters)}
+        columns={columns}
+        getRowId={(order) => order.id}
+        header={
+          <PageHeader>
+            <PageHeaderContent>
+              <PageHeaderTitle>Orders</PageHeaderTitle>
+              <PageHeaderDescription>Click a chip to edit its filter.</PageHeaderDescription>
+            </PageHeaderContent>
+          </PageHeader>
+        }
+        filters={{
+          value: filters,
+          onChange: setFilters,
+          columns: editableFilterColumns,
+          clearFilters: true,
+        }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const edit = canvasElement.querySelector<HTMLButtonElement>('[data-slot="chip-edit"]');
+    await expect(edit).not.toBeNull();
+    await expect(edit).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(edit!);
+    const input = await within(document.body).findByRole('textbox', { name: 'Customer contains' });
+    await expect(edit).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Grace{Enter}');
+    await waitFor(() => expect(canvas.getByText(/contains Grace/)).toBeInTheDocument());
   },
 };
 
