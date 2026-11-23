@@ -183,7 +183,12 @@ function WideTable() {
   );
 }
 
-function scrollContainers(canvasElement: HTMLElement) {
+/**
+ * The tables once their widths are final: a web font that loads later widens
+ * the columns, and a scroll made before then stops short of the new end.
+ */
+async function scrollContainers(canvasElement: HTMLElement) {
+  await document.fonts.ready;
   return [...canvasElement.querySelectorAll<HTMLElement>('[data-slot=table-container]')];
 }
 
@@ -231,7 +236,7 @@ function OverflowPanels({ dir }: { dir?: 'rtl' }) {
 export const OverflowAtRest: Story = {
   globals: { theme: 'light' },
   play: async ({ canvasElement }) => {
-    for (const container of scrollContainers(canvasElement)) {
+    for (const container of await scrollContainers(canvasElement)) {
       await expect(container.scrollWidth).toBeGreaterThan(container.clientWidth);
       await expect(cueState(container)).toEqual({ start: false, end: true });
       await expect(getComputedStyle(container).maskImage).toContain('linear-gradient');
@@ -249,7 +254,7 @@ export const OverflowScrolled: Story = {
   globals: { theme: 'light' },
   play: async ({ canvasElement }) => {
     // Each theme renders a table on the page, then one on a card.
-    const containers = scrollContainers(canvasElement);
+    const containers = await scrollContainers(canvasElement);
     await expect(containers).toHaveLength(4);
     for (const [index, container] of containers.entries()) {
       if (index % 2 === 0) {
@@ -272,7 +277,7 @@ export const OverflowScrolled: Story = {
 export const OverflowRightToLeft: Story = {
   globals: { theme: 'light' },
   play: async ({ canvasElement }) => {
-    const containers = scrollContainers(canvasElement);
+    const containers = await scrollContainers(canvasElement);
     await expect(containers).toHaveLength(4);
     for (const [index, container] of containers.entries()) {
       if (index % 2 === 0) {
