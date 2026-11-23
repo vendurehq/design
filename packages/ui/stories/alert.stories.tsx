@@ -98,7 +98,8 @@ export const Destructive: Story = {
     const alert = within(canvasElement).getByRole('alert');
     expectActionBesideText(alert);
     expectActionInsideAlert(alert);
-    expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+    // A title and one sentence: the action is centred on the two lines.
+    expectActionCentredOnText(alert);
   },
 };
 
