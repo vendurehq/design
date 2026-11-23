@@ -674,7 +674,9 @@ describe('DataTable filters', () => {
 });
 
 describe('DataTable editable filter chips', () => {
-  const filtered = (renderEditor?: (ctx: DataTableFilterEditorContext<Country>) => React.ReactNode) =>
+  const filtered = (
+    renderEditor?: (ctx: DataTableFilterEditorContext<Country>) => React.ReactNode,
+  ) =>
     html(
       <DataTable
         rows={rows}
