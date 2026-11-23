@@ -308,6 +308,20 @@ export const Chips: Story = {
     const chip = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chip"]') as HTMLElement;
     await expect(getComputedStyle(chip).backgroundColor).not.toBe(style.backgroundColor);
     await expect(getComputedStyle(chip).boxShadow).not.toBe('none');
+    // The Chip size, and corners that are concentric with the field's 6px:
+    // the chip sits 5px in, so its corner is 6 - 5 = 1px; the remove button
+    // sits 4px inside the chip, so its corner is square.
+    const chipBox = chip.getBoundingClientRect();
+    const fieldBox = chips.getBoundingClientRect();
+    await expect(chipBox.height).toBe(24);
+    await expect(chipBox.top - fieldBox.top).toBe(5);
+    await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('1px');
+    const remove = chip.querySelector<HTMLElement>('[data-slot="combobox-chip-remove"]') as HTMLElement;
+    const removeBox = remove.getBoundingClientRect();
+    await expect(removeBox.width).toBe(16);
+    await expect(removeBox.top - chipBox.top).toBe(4);
+    await expect(chipBox.right - removeBox.right).toBe(4);
+    await expect(getComputedStyle(remove).borderTopLeftRadius).toBe('0px');
     // Focus on the input inside rings the whole field, 2px inside.
     within(canvasElement).getByRole('combobox', { name: 'Countries' }).focus();
     await waitFor(() => expect(style.outlineWidth).toBe('2px'));

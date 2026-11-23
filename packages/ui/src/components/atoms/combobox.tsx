@@ -555,7 +555,7 @@ function ComboboxChips({
       data-slot="combobox-chips"
       className={cn(
         fieldSurfaceWithin,
-        "flex min-h-8.5 flex-wrap items-center gap-1.5 px-2.5 py-1.5 text-sm has-data-[slot=combobox-chip]:px-1.5",
+        "flex min-h-8.5 flex-wrap items-center gap-1.5 px-2.5 py-1.5 text-sm has-data-[slot=combobox-chip]:p-1.25",
         className
       )}
       {...props}
@@ -565,6 +565,10 @@ function ComboboxChips({
 
 // A chip is the v3 look's grey chip: the accent fill, one step above the
 // muted field it sits on, with a grey outline, so each value stands out.
+// It has the Chip size: 24px high, the label 10px from the edge. In the 34px
+// field it sits 5px from the edge, so its corner is the field's 6px minus that
+// 5px, 1px. The remove button sits 4px inside the chip, so its corner is the
+// chip's 1px minus 4px, which is square.
 function ComboboxChip({
   className,
   children,
@@ -580,7 +584,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "bg-accent [--status-tone:var(--neutral-text)]", statusChipRing, "text-foreground flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm px-1.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pe-0",
+        "bg-accent [--status-tone:var(--neutral-text)]", statusChipRing, "text-foreground flex h-6 w-fit items-center justify-center gap-1.5 rounded-[calc(var(--radius-lg)-5px)] ps-2.5 pe-2.5 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pe-1",
         className
       )}
       {...props}
@@ -589,7 +593,7 @@ function ComboboxChip({
       {showRemove && (
         <ComboboxPrimitive.ChipRemove
           render={<Button variant="ghost" size="icon-xs" />}
-          className="-ms-1 opacity-50 hover:opacity-100"
+          className="size-4 rounded-none [--button-box:--spacing(4)] opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
           aria-label={removeLabel}
         >
