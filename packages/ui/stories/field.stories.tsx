@@ -8,6 +8,8 @@ import {
   FieldDescription,
   FieldError,
   FieldContent,
+  FieldLegend,
+  FieldSet,
 } from '../src/components/atoms/field.tsx';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
@@ -21,6 +23,14 @@ import {
 } from '../src/components/atoms/input-group.tsx';
 import { NativeSelect, NativeSelectOption } from '../src/components/atoms/native-select.tsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../src/components/atoms/select.tsx';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../src/components/atoms/table.tsx';
 import { Textarea } from '../src/components/atoms/textarea.tsx';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 
@@ -367,5 +377,58 @@ export const ChoiceCards: Story = {
     await expect(tinted('Express delivery')).toBe(true);
     await expect(tinted('Standard delivery')).toBe(false);
     await expect(tinted('Gift wrap')).toBe(true);
+  },
+};
+
+/**
+ * A FieldSet around a table wider than its parent. The FieldSet fits the
+ * parent and the table scrolls sideways in its own container. A browser
+ * fieldset defaults to `min-inline-size: min-content`, which would stretch it
+ * to the table; the play function fails if it does.
+ */
+export const WideTable: Story = {
+  render: () => (
+    <div data-testid="narrow-parent" className="w-[358px] rounded-lg border p-4">
+      <FieldSet>
+        <FieldLegend>Permissions</FieldLegend>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Resource</TableHead>
+              <TableHead>Read</TableHead>
+              <TableHead>Create</TableHead>
+              <TableHead>Update</TableHead>
+              <TableHead>Delete</TableHead>
+              <TableHead>Manage access</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {['Projects', 'Deployments', 'Environments'].map((resource) => (
+              <TableRow key={resource}>
+                <TableCell className="whitespace-nowrap">{resource}</TableCell>
+                {['Read', 'Create', 'Update', 'Delete', 'Manage access'].map((action) => (
+                  <TableCell key={action} className="whitespace-nowrap">
+                    <Checkbox aria-label={`${resource} ${action}`} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </FieldSet>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const parent = canvas.getByTestId('narrow-parent');
+    const fieldset = canvasElement.querySelector<HTMLElement>('[data-slot="field-set"]') as HTMLElement;
+    const container = canvasElement.querySelector<HTMLElement>('[data-slot="table-container"]') as HTMLElement;
+    // The FieldSet stays inside the parent's content box.
+    await expect(Math.round(fieldset.getBoundingClientRect().right)).toBeLessThanOrEqual(
+      Math.round(parent.getBoundingClientRect().right - 16),
+    );
+    // The table is wider than the FieldSet and scrolls in its own container.
+    await expect(container.scrollWidth).toBeGreaterThan(container.clientWidth);
+    await expect(getComputedStyle(container).overflowX).toBe('auto');
   },
 };
