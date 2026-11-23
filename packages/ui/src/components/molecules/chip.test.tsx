@@ -54,3 +54,34 @@ test('the remove button corner is concentric: 6px chip corner minus the 4px inse
   expect(html).toContain('pe-0.75');
   expect(button).not.toContain('-me-0.5');
 });
+
+test('a Chip without onEdit keeps its label as text', () => {
+  const html = renderToStaticMarkup(<Chip>Apparel</Chip>);
+  expect(html).not.toContain('<button');
+  expect(html).not.toContain('chip-edit');
+});
+
+test('onEdit makes the label a button, a sibling of the remove button', () => {
+  const html = renderToStaticMarkup(
+    <Chip onEdit={() => {}} editExpanded={false} onRemove={() => {}} removeLabel="Remove Apparel">
+      Apparel
+    </Chip>,
+  );
+  const edit = html.indexOf('data-slot="chip-edit"');
+  const remove = html.indexOf('data-slot="chip-remove"');
+  expect(edit).toBeGreaterThan(-1);
+  expect(remove).toBeGreaterThan(edit);
+  // Two sibling buttons, never one inside the other.
+  expect(html.slice(edit, remove)).toContain('</button>');
+  expect(html).toContain('aria-expanded="false"');
+  expect(html).toContain('>Apparel</button>');
+});
+
+test('editLabel names the edit button', () => {
+  const html = renderToStaticMarkup(
+    <Chip onEdit={() => {}} editLabel="Edit Apparel">
+      Apparel
+    </Chip>,
+  );
+  expect(html).toContain('aria-label="Edit Apparel"');
+});

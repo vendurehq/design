@@ -21,6 +21,19 @@ interface ChipProps extends React.ComponentProps<'span'> {
    * whenever `onRemove` is set — the × has no text otherwise.
    */
   removeLabel?: string;
+  /**
+   * Presence of this handler makes the label a button that runs it, e.g. to
+   * open an editor for the chip's value. The remove button stays a separate
+   * button after it. Absent → the label is plain text.
+   */
+  onEdit?: () => void;
+  /**
+   * Accessible label for the edit button. Optional: without it the button is
+   * named by the chip's text.
+   */
+  editLabel?: string;
+  /** `aria-expanded` of the edit button, while the editor it opens is open. */
+  editExpanded?: boolean;
   /** Dims the chip and disables removal (e.g. a pending un-assign mutation). */
   disabled?: boolean;
 }
@@ -42,6 +55,9 @@ function Chip({
   icon,
   onRemove,
   removeLabel,
+  onEdit,
+  editLabel,
+  editExpanded,
   disabled,
   children,
   ...props
@@ -73,7 +89,24 @@ function Chip({
       {...props}
     >
       {icon}
-      <span className="truncate">{children}</span>
+      {onEdit ? (
+        <button
+          type="button"
+          data-slot="chip-edit"
+          disabled={disabled}
+          aria-label={editLabel}
+          aria-expanded={editExpanded}
+          onClick={onEdit}
+          // The label stays text: no padding of its own, so an editable chip
+          // has the same size as a static one. The ring is drawn outside the
+          // label, 2px from its text.
+          className="min-w-0 cursor-pointer truncate rounded-sm hover:underline hover:underline-offset-2 disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {children}
+        </button>
+      ) : (
+        <span className="truncate">{children}</span>
+      )}
       {onRemove ? (
         <button
           type="button"
