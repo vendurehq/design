@@ -316,6 +316,8 @@ export const Chips: Story = {
     await expect(chipBox.height).toBe(24);
     await expect(chipBox.top - fieldBox.top).toBe(5);
     await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('1px');
+    // The label is 8px from the edge: denser than a standalone Chip, so a field holds more chips.
+    await expect(getComputedStyle(chip).paddingLeft).toBe('8px');
     const remove = chip.querySelector<HTMLElement>('[data-slot="combobox-chip-remove"]') as HTMLElement;
     const removeBox = remove.getBoundingClientRect();
     await expect(removeBox.width).toBe(16);
