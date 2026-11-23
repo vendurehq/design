@@ -61,8 +61,12 @@ function Chip({
       // exempts from the contrast minimum.
       aria-disabled={disabled || undefined}
       className={cn(
-        'max-w-full gap-1',
-        onRemove && 'pe-1',
+        // The StatusBadge shape: 24px high, the 6px corner (`rounded-lg`), the
+        // label 10px from the edge (9px of padding and the 1px border).
+        'h-6 max-w-full gap-1 rounded-lg px-2.25 [--content-inset:calc(var(--spacing)*2.5)]',
+        // The remove button sits 4px from the top, bottom and end edges: the
+        // 1px border and 3px of padding.
+        onRemove && 'pe-0.75',
         disabled && 'pointer-events-none opacity-60',
         className,
       )}
@@ -77,7 +81,9 @@ function Chip({
           disabled={disabled}
           aria-label={removeLabel}
           onClick={onRemove}
-          className="-me-0.5 ms-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+          // Nested in the chip's 6px corner, 4px from each edge: the concentric
+          // radius is 6px - 4px = 2px (`rounded-sm`).
+          className="ms-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-current/70 hover:bg-current/10 hover:text-current disabled:pointer-events-none outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           <XIcon className="size-3" />
         </button>
