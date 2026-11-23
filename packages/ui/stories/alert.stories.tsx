@@ -61,6 +61,15 @@ function expectActionOnFirstLine(alert: HTMLElement, text: HTMLElement) {
   expect(Math.abs(buttonCentre - (textBox.top + lineHeight / 2))).toBeLessThanOrEqual(EPSILON);
 }
 
+/** Asserts the action button is centred on the text column as a whole. */
+function expectActionCentredOnText(alert: HTMLElement) {
+  const texts = [...alert.querySelectorAll<HTMLElement>('[data-slot=alert-title], [data-slot=alert-description]')];
+  const top = Math.min(...texts.map((text) => text.getBoundingClientRect().top));
+  const bottom = Math.max(...texts.map((text) => text.getBoundingClientRect().bottom));
+  const buttonBox = actionButton(alert).getBoundingClientRect();
+  expect(Math.abs(buttonBox.top + buttonBox.height / 2 - (top + bottom) / 2)).toBeLessThanOrEqual(EPSILON);
+}
+
 export const Default: Story = {
   render: () => (
     <Alert>
@@ -89,7 +98,8 @@ export const Destructive: Story = {
     const alert = within(canvasElement).getByRole('alert');
     expectActionBesideText(alert);
     expectActionInsideAlert(alert);
-    expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+    // A title and one sentence: the action is centred on the two lines.
+    expectActionCentredOnText(alert);
   },
 };
 
@@ -181,7 +191,10 @@ export const LongSentenceWithAction: Story = {
   },
 };
 
-/** With a title, the action sits on the title line. */
+/**
+ * A title and one sentence: two lines. The action is centred on the two lines,
+ * not on the title line.
+ */
 export const TitleDescriptionAction: Story = {
   render: () => (
     <Alert variant="destructive">
@@ -199,13 +212,45 @@ export const TitleDescriptionAction: Story = {
     const alert = within(canvasElement).getByRole('alert');
     expectActionBesideText(alert);
     expectActionInsideAlert(alert);
-    expectActionOnFirstLine(alert, slot(alert, 'alert-title'));
+    expectActionCentredOnText(alert);
     // The description starts right under the title line, as in the v3 look.
     await expectPx(
       slot(alert, 'alert-description').getBoundingClientRect().top - slot(alert, 'alert-title').getBoundingClientRect().bottom,
       0,
       'title to description',
     );
+  },
+};
+
+/**
+ * A taller alert: a bold sentence, an error line in mono and a next step. The
+ * action stays at the top right, on the first line.
+ */
+export const TallWithAction: Story = {
+  render: () => (
+    <Alert variant="destructive">
+      <AlertDescription>
+        <p>
+          <strong className="text-foreground">The database migration failed.</strong> The previous deployment
+          still serves traffic.
+        </p>
+        <pre className="font-mono text-xs whitespace-pre-wrap">
+          {'Migration "AddGiftCardBalance1730000000000" failed: column "balance" of relation "gift_card" already exists.'}
+        </pre>
+        <p>Fix the migration in your repository, then deploy again.</p>
+      </AlertDescription>
+      <AlertAction>
+        <Button variant="ghost" size="sm">
+          Jump to error
+        </Button>
+      </AlertAction>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    expectActionBesideText(alert);
+    expectActionInsideAlert(alert);
+    expectActionOnFirstLine(alert, slot(alert, 'alert-description'));
   },
 };
 

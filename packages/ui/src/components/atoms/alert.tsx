@@ -119,17 +119,24 @@ function AlertDescription({
   )
 }
 
-// From a 28rem-wide alert up, the action takes the last grid column on the first
-// row, so the text wraps before it. The action box is one text line high and
-// centres its content, so a button lines up with the first line of the text and
-// overflows into the alert padding instead of making the alert taller. In a
-// narrower alert the action moves to its own row under the text.
+// From a 28rem-wide alert up, the action takes the last grid column and spans
+// the text rows, so the text wraps before it. The action box is one text line
+// high and centres its content, so a button lines up with a line of text and
+// overflows into the alert padding instead of making the alert taller.
+// Where the box sits follows the height of the text beside it (100% of the
+// spanned rows):
+// - Up to two lines (a title and one sentence), it is centred on the text.
+// - From three lines (an error block, a next step), it stays on the first line.
+// The step happens at 2.5 lines; `(2.5lh - 100%) * 999` turns it into 0 or a
+// large value, so `min()` picks either the centre offset or 0.
+// The span of 9 rows covers every text row; extra implicit rows are 0 high.
+// In a narrower alert the action moves to its own row under the text.
 function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="alert-action"
       className={cn(
-        "col-end-[-1] flex flex-wrap content-center items-center gap-2 @max-md/alert:col-start-1 @max-md/alert:mt-2 @max-md/alert:group-has-[>svg]/alert:col-start-2 @md/alert:row-start-1 @md/alert:ms-3 @md/alert:h-lh @md/alert:self-start",
+        "col-end-[-1] flex flex-wrap content-center items-center gap-2 @max-md/alert:col-start-1 @max-md/alert:mt-2 @max-md/alert:group-has-[>svg]/alert:col-start-2 @md/alert:relative @md/alert:row-start-1 @md/alert:row-span-9 @md/alert:ms-3 @md/alert:h-lh @md/alert:self-start @md/alert:top-[min((100%_-_1lh)/2,max(0px,(2.5lh_-_100%)*999))]",
         className
       )}
       {...props}
