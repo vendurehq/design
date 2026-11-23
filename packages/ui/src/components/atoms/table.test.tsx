@@ -85,3 +85,66 @@ describe('Table container', () => {
     expect(container).toContain('focus-visible:outline-ring');
   });
 });
+
+// The scroll cue is measured in the browser after mount, so a server render
+// (and a table that fits) has no cue: no `data-overflow-*` mark and no mask.
+// The mask only applies behind those marks. The stories OverflowAtRest,
+// OverflowScrolled and OverflowRightToLeft scroll real tables and check the
+// marks and the computed mask in the browser.
+describe('Table scroll cue', () => {
+  const containerTokens = (html: string) =>
+    (html.match(/data-slot="table-container"[^>]*class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  test('a table that has not overflowed shows no cue', () => {
+    const html = renderToStaticMarkup(<Table />);
+    // An attribute, not the variant in the class list.
+    expect(html).not.toMatch(/\sdata-overflow-(start|end)[\s=>]/);
+    expect(html).not.toContain('tabindex');
+    // No mask outside the overflow marks: a fitting table is not masked.
+    const unconditionalMasks = containerTokens(html).filter((token) => token.startsWith('[mask-image'));
+    expect(unconditionalMasks).toEqual([]);
+  });
+
+  test('each edge fades only behind its own overflow mark', () => {
+    const tokens = containerTokens(renderToStaticMarkup(<Table />));
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        'data-overflow-start:[mask-image:var(--table-fade)]',
+        'data-overflow-end:[mask-image:var(--table-fade)]',
+      ]),
+    );
+  });
+
+  test('the fade follows the reading direction and needs no surface colour', () => {
+    const tokens = containerTokens(renderToStaticMarkup(<Table />));
+    const fades = tokens.filter((token) => token.includes('--table-fade:'));
+    expect(fades).toHaveLength(2);
+    expect(fades.find((token) => !token.startsWith('rtl:'))).toContain('to_right');
+    expect(fades.find((token) => token.startsWith('rtl:'))).toContain('to_left');
+    // A mask fades to transparent, so the fade never names a background.
+    for (const fade of fades) {
+      expect(fade).not.toMatch(/bg-|--color-|var\(--(background|card|muted)/);
+    }
+  });
+
+  test('the fade is at most 32px and as wide as the hidden content', () => {
+    const tokens = containerTokens(renderToStaticMarkup(<Table />));
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        '[--table-fade-start:min(var(--table-overflow-start,0px),calc(var(--spacing)*8))]',
+        '[--table-fade-end:min(var(--table-overflow-end,0px),calc(var(--spacing)*8))]',
+      ]),
+    );
+  });
+
+  test('the focus ring keeps an opaque frame under the mask', () => {
+    const tokens = containerTokens(renderToStaticMarkup(<Table />));
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        'focus-visible:outline-2',
+        'focus-visible:-outline-offset-2',
+        'focus-visible:[mask-size:100%_100%,2px_100%,2px_100%,100%_2px,100%_2px]',
+      ]),
+    );
+  });
+});

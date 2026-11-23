@@ -4,6 +4,35 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
+// How far the table runs past each edge of its scroll container, in px.
+// Start and end follow the reading direction. Right to left, browsers report
+// `scrollLeft` from 0 at the start down to a negative number at the end, so
+// the distance from the start is its absolute value.
+function overflowAtEdges(container: HTMLElement) {
+  const overflow = Math.max(container.scrollWidth - container.clientWidth, 0)
+  const start = Math.min(Math.abs(container.scrollLeft), overflow)
+  return { start, end: overflow - start }
+}
+
+// The scroll cue: when the table is wider than its container, each edge with
+// hidden content past it fades out, so the column cut at the edge reads as
+// cut, not as the last column. The fade is a mask on the container, so it
+// needs no background colour and works on any surface (page, card). Each fade
+// is as wide as the content hidden past its edge, up to 32px, so it shrinks
+// with the scroll and is gone when that edge is reached; it follows the
+// scroll and has no transition of its own. `data-overflow-start` and
+// `data-overflow-end` mark the edges that fade. A table that fits has no mask.
+// The focus ring is drawn inside the container, where the mask would fade it,
+// so while it shows, a 2px frame under it stays opaque.
+const scrollCue = [
+  "[--table-fade-start:min(var(--table-overflow-start,0px),calc(var(--spacing)*8))] [--table-fade-end:min(var(--table-overflow-end,0px),calc(var(--spacing)*8))]",
+  "[--table-fade:linear-gradient(to_right,transparent,black_var(--table-fade-start),black_calc(100%_-_var(--table-fade-end)),transparent)]",
+  "rtl:[--table-fade:linear-gradient(to_left,transparent,black_var(--table-fade-start),black_calc(100%_-_var(--table-fade-end)),transparent)]",
+  "data-overflow-start:[mask-image:var(--table-fade)] data-overflow-end:[mask-image:var(--table-fade)]",
+  "focus-visible:[mask-image:var(--table-fade),var(--table-ring-strip),var(--table-ring-strip),var(--table-ring-strip),var(--table-ring-strip)]! [--table-ring-strip:linear-gradient(black,black)]",
+  "focus-visible:[mask-position:0_0,left,right,top,bottom] focus-visible:[mask-size:100%_100%,2px_100%,2px_100%,100%_2px,100%_2px] focus-visible:[mask-repeat:no-repeat]",
+].join(" ")
+
 // When the table is wider than its container, the container scrolls and must
 // be reachable by keyboard (axe scrollable-region-focusable), so it becomes a
 // tab stop with a focus ring. A table that fits adds no tab stop.
@@ -11,25 +40,41 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [scrollable, setScrollable] = React.useState(false)
 
-  // Measure before the first paint, so an overflowing table is a tab stop
-  // from the start; the observer then tracks later size changes.
+  // Measure before the first paint, so an overflowing table is a tab stop and
+  // shows its cue from the start; the observer then tracks later size
+  // changes, and the scroll listener moves the cue. The cue is written to the
+  // container directly, not through state, so a scroll does not re-render.
   React.useLayoutEffect(() => {
     const container = containerRef.current
     if (!container) {
       return
     }
-    const update = () =>
+    const updateCue = () => {
+      const { start, end } = overflowAtEdges(container)
+      // Sub-pixel overflow from fractional widths is not worth a cue.
+      container.toggleAttribute("data-overflow-start", start >= 1)
+      container.toggleAttribute("data-overflow-end", end >= 1)
+      container.style.setProperty("--table-overflow-start", `${start}px`)
+      container.style.setProperty("--table-overflow-end", `${end}px`)
+    }
+    const update = () => {
       setScrollable(container.scrollWidth > container.clientWidth)
+      updateCue()
+    }
     update()
+    container.addEventListener("scroll", updateCue, { passive: true })
     if (typeof ResizeObserver === "undefined") {
-      return
+      return () => container.removeEventListener("scroll", updateCue)
     }
     const observer = new ResizeObserver(update)
     observer.observe(container)
     if (container.firstElementChild) {
       observer.observe(container.firstElementChild)
     }
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      container.removeEventListener("scroll", updateCue)
+    }
   }, [])
 
   return (
@@ -37,7 +82,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       ref={containerRef}
       data-slot="table-container"
       tabIndex={scrollable ? 0 : undefined}
-      className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none"
+      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue}`}
     >
       <table
         data-slot="table"
