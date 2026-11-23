@@ -28,6 +28,9 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
  * it up with its left edge. The side is picked each time it opens. A popover
  * that opens to the left or right of its trigger keeps "start". An explicit
  * `align` always wins. Do not set `align` unless there is a reason.
+ *
+ * `anchor` positions a popover that has no trigger against another element,
+ * e.g. an editor opened from an applied-filter chip.
  */
 function PopoverContent({
   className,
@@ -36,11 +39,12 @@ function PopoverContent({
   alignOffset = 0,
   side = "bottom",
   sideOffset = 6,
+  anchor,
   ...props
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset"
+    "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
   >) {
   const dir = usePopupDir()
   const { popupRef, align: positionAlign } = usePopupAlign(align, side, ref)
@@ -52,6 +56,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
+        anchor={anchor}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup
