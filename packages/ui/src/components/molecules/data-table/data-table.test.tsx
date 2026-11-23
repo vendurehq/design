@@ -675,7 +675,8 @@ describe('DataTable filters', () => {
 describe('DataTable clear filters', () => {
   const nameFilter = [{ id: 'name', value: { contains: 'a' } }];
   const clearButton = /data-slot="data-table-clear-filters"/g;
-  const chipLine = (markup: string) => markup.match(/<div data-slot="list-header-chips"[^>]*>/)?.[0];
+  const chipLine = (markup: string) =>
+    markup.match(/<div data-slot="list-header-chips"[^>]*>/)?.[0];
   const table = (props: {
     rows?: Country[];
     value?: typeof nameFilter;
