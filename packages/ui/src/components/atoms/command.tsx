@@ -80,8 +80,15 @@ function CommandDialog({
 
 function CommandInput({
   className,
+  end,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  /**
+   * Content at the end of the field, such as a `Kbd` with the key that closes
+   * the palette. It sits in an end addon, so the input never runs under it.
+   */
+  end?: React.ReactNode
+}) {
   return (
     // Unboxed: the input runs edge to edge above a hairline, with no field
     // border, fill or ring. 54px with 16px text in the palette dialog.
@@ -98,6 +105,11 @@ function CommandInput({
         <InputGroupAddon>
           <SearchIcon className="size-4 shrink-0 opacity-50" />
         </InputGroupAddon>
+        {end != null && (
+          <InputGroupAddon align="inline-end" className="pe-0">
+            {end}
+          </InputGroupAddon>
+        )}
       </InputGroup>
     </div>
   )
@@ -479,8 +491,14 @@ function CommandItemDetail({
 }
 
 // Key hints under the list. Each direct child is one hint: Kbd keys and a
-// label. The keys render at 18px here.
-function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
+// label. The keys render at 18px here. `end` is a hint set apart at the right
+// end of the footer, such as the key that toggles the palette.
+function CommandFooter({
+  className,
+  children,
+  end,
+  ...props
+}: React.ComponentProps<"div"> & { end?: React.ReactNode }) {
   return (
     <div
       data-slot="command-footer"
@@ -489,7 +507,10 @@ function CommandFooter({ className, ...props }: React.ComponentProps<"div">) {
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      {end != null && <span data-slot="command-footer-end" className="ms-auto">{end}</span>}
+    </div>
   )
 }
 

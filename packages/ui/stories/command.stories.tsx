@@ -203,7 +203,7 @@ const settings = [
 function PaletteBody() {
   return (
     <Command>
-      <CommandInput placeholder="Search pages and settings..." />
+      <CommandInput placeholder="Search pages and settings..." end={<Kbd aria-hidden="true">Esc</Kbd>} />
       <CommandList slidingHighlight>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Pages">
@@ -232,7 +232,18 @@ function PaletteBody() {
           ))}
         </CommandGroup>
       </CommandList>
-      <CommandFooter aria-hidden="true">
+      <CommandFooter
+        aria-hidden="true"
+        end={
+          <span className="flex items-center gap-1">
+            <KbdGroup>
+              <Kbd>⌘</Kbd>
+              <Kbd>K</Kbd>
+            </KbdGroup>
+            Toggle
+          </span>
+        }
+      >
         <span>
           <KbdGroup>
             <Kbd>↑</Kbd>
