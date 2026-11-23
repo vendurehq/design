@@ -141,7 +141,27 @@ export type DataTableFilters<TData> = ControlledState<ColumnFiltersState> & {
   showAddFilter?: boolean;
   /** Defaults to true. Set false when a consumer renders its own applied-filter UI. */
   showAppliedFilters?: boolean;
+  /**
+   * A "Clear filters" button after the applied-filter chips. Off by default.
+   * `true` or an object turns it on. It shows only with a chip: a search has
+   * the clear of its own field. While the table shows its empty state (no
+   * rows, not loading), the empty state holds the only "Clear filters", so the
+   * button hides. The chip line keeps the button's height either way, so the
+   * table does not move when it shows or hides.
+   */
+  clearFilters?: boolean | DataTableClearFilters;
 };
+
+export interface DataTableClearFilters {
+  /** Runs on click. Default: removes every applied filter. */
+  onClear?: () => void;
+  /**
+   * Hides the button while a chip applies. Default: true while the table
+   * shows its empty state (no rows, not loading). Set it when the consumer
+   * knows better, e.g. loading passed through `emptyState`.
+   */
+  hidden?: boolean;
+}
 
 export interface DataTableBulkActionContext<TData> {
   /**
@@ -227,6 +247,7 @@ export interface DataTableLabels {
   columnsTrigger?: string; // 'Columns'
   columnsHeading?: string; // 'Toggle columns'
   addFilter?: string; // 'Add filter'
+  clearFilters?: string; // 'Clear filters'
   removeFilter?: (columnLabel: string) => string; // (l) => `Remove ${l} filter`
   sortLabel?: (columnLabel: string) => string; // (c) => `Sort by ${c}`
   filtersCollapsed?: (count: number) => string; // (n) => `${n} filters`

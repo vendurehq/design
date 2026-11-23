@@ -23,6 +23,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table';
+import { Button } from '@vendure-io/ui/components/atoms/button';
 import { Card, CardFooter, CardHeader, CardTable } from '@vendure-io/ui/components/atoms/card';
 import { Checkbox } from '@vendure-io/ui/components/atoms/checkbox';
 import {
@@ -74,6 +75,7 @@ import {
   columnAlign,
   getSelectedRowIds,
   measureColumnIndents,
+  resolveClearFilters,
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
@@ -680,6 +682,7 @@ function DataTable<TData>({
       columnsTrigger: labels?.columnsTrigger ?? 'Columns',
       columnsHeading: labels?.columnsHeading ?? 'Toggle columns',
       addFilter: labels?.addFilter ?? 'Add filter',
+      clearFilters: labels?.clearFilters ?? 'Clear filters',
       removeFilter:
         labels?.removeFilter ?? ((columnLabel: string) => `Remove ${columnLabel} filter`),
       sortLabel: labels?.sortLabel ?? ((columnLabel: string) => `Sort by ${columnLabel}`),
@@ -1055,6 +1058,13 @@ function DataTable<TData>({
     filters.showAppliedFilters !== false &&
     table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
+  // "Clear filters" after the chips. With no rows (and not loading) the empty
+  // state has the only one.
+  const clearFilters = resolveClearFilters(
+    filters?.clearFilters,
+    table,
+    !(isLoading && rows.length === 0) && bodyRows.length === 0,
+  );
   // The bulk bar exists only while rows are selected. It takes the controls
   // row's place, or, with no controls row, covers the column header row (see
   // `bulkBarFade`): it never opens a band of its own, so the table never
@@ -1193,7 +1203,10 @@ function DataTable<TData>({
               </MotionConfig>
             )}
             {showChips && (
-              <ListHeaderChips>
+              // With "Clear filters" on, the line keeps the button's height
+              // (Button sm, h-7; a Chip is h-6), so the table does not move
+              // when the button shows or hides.
+              <ListHeaderChips className={clearFilters ? 'min-h-7' : undefined}>
                 <DataTableAppliedFilters
                   table={table}
                   columns={filters?.columns}
@@ -1201,6 +1214,16 @@ function DataTable<TData>({
                   removeLabel={l.removeFilter}
                   collapsedLabel={l.filtersCollapsed}
                 />
+                {clearFilters && !clearFilters.hidden && (
+                  <Button
+                    data-slot="data-table-clear-filters"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters.onClear}
+                  >
+                    {l.clearFilters}
+                  </Button>
+                )}
               </ListHeaderChips>
             )}
           </ListHeader>
