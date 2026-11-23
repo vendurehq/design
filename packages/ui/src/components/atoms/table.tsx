@@ -51,9 +51,10 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     }
     const updateCue = () => {
       const { start, end } = overflowAtEdges(container)
-      // Sub-pixel overflow from fractional widths is not worth a cue.
-      container.toggleAttribute("data-overflow-start", start >= 1)
-      container.toggleAttribute("data-overflow-end", end >= 1)
+      // `scrollWidth` and `clientWidth` are rounded, so at the end of the
+      // scroll up to 1px can still seem hidden. That is not worth a cue.
+      container.toggleAttribute("data-overflow-start", start > 1)
+      container.toggleAttribute("data-overflow-end", end > 1)
       container.style.setProperty("--table-overflow-start", `${start}px`)
       container.style.setProperty("--table-overflow-end", `${end}px`)
     }
