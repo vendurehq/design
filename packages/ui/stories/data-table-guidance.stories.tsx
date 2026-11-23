@@ -191,7 +191,7 @@ const CAPABILITIES: CapabilityRow[] = [
   {
     capability: 'filters',
     enableWhen:
-      'Users narrow a large set; pass `columns` for the built-in add-filter menu, or omit it and supply your own trigger in `toolbar`. Set `clearFilters` for a "Clear filters" after the chips; your empty state for no matches keeps its own, and the table hides the toolbar one there.',
+      'Users narrow a large set; pass `columns` for the built-in add-filter menu, or omit it and supply your own trigger in `toolbar`. Set `clearFilters` for a "Clear filters" after the chips; your empty state for no matches keeps its own, and the table hides the toolbar one there. Give a column `renderEditor` to make its chip editable: the chip label opens your editor, anchored to the chip.',
     skipWhen: 'The set is small enough to scan, or search alone suffices.',
   },
   {
