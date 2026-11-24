@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ReactNode } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Switch } from '../src/components/atoms/switch.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
@@ -81,4 +82,80 @@ export const States: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+/**
+ * Toggling slides the thumb with `--ease-out` and fades the track colour;
+ * pressing stretches the thumb toward the middle of the track (`--ease-press`),
+ * which the preview shows with a real mouse down. Under reduced motion the
+ * thumb jumps and does not stretch, and only colours fade. Nothing plays on
+ * first render.
+ */
+export const Toggle: Story = {
+  args: { 'aria-label': 'Airplane mode' },
+  play: async ({ canvasElement, step }) => {
+    const control = within(canvasElement).getByRole('switch', { name: 'Airplane mode' });
+    const thumb = control.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const running = () => control.getAnimations({ subtree: true });
+    const settled = async () => {
+      for (const animation of running()) animation.finish();
+      await waitFor(() => expect(running()).toHaveLength(0));
+    };
+    const moves = () =>
+      running().some((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+
+    await step('nothing is running on first render', async () => {
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(getComputedStyle(thumb).translate).toBe('0px');
+    });
+
+    await step('a press response is set up: the thumb stretches from its resting side', async () => {
+      await expect(getComputedStyle(thumb).transformOrigin.split(' ')[0]).toBe('0px');
+      await expect(getComputedStyle(thumb).transitionProperty).toContain('scale');
+    });
+
+    await step('toggling on slides the thumb, or jumps under reduced motion', async () => {
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(moves()).toBe(!reduced);
+      await settled();
+      await expect(getComputedStyle(thumb).translate).toBe('14px');
+      // Checked, the thumb rests on the right and stretches from there.
+      await expect(getComputedStyle(thumb).transformOrigin.split(' ')[0]).toBe('16px');
+    });
+
+    await step('Space toggles back with the same motion', async () => {
+      control.focus();
+      await userEvent.keyboard(' ');
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(moves()).toBe(!reduced);
+      await settled();
+      await expect(getComputedStyle(thumb).translate).toBe('0px');
+    });
+
+    await step('a fast toggle twice reverses from where the thumb is', async () => {
+      if (reduced) return;
+      await userEvent.click(control);
+      const [slide] = running().filter((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+      if (!slide) throw new Error('the thumb is not sliding');
+      slide.pause();
+      slide.currentTime = 60;
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await settled();
+      await expect(getComputedStyle(thumb).translate).toBe('0px');
+    });
+  },
+};
+
+/** With reduced motion emulated the thumb has no slide or stretch. */
+export const ReducedMotion: Story = {
+  args: { 'aria-label': 'Airplane mode', defaultChecked: true },
+  play: async ({ canvasElement }) => {
+    const thumb = canvasElement.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    await expect(getComputedStyle(thumb).transitionProperty).not.toMatch(/translate|scale/);
+  },
 };
