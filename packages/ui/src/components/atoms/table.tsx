@@ -4,32 +4,117 @@ import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 
+// How far the table runs past each edge of its scroll container, in px.
+// Start and end follow the reading direction. Right to left, browsers report
+// `scrollLeft` from 0 at the start down to a negative number at the end, so
+// the distance from the start is its absolute value.
+function overflowAtEdges(container: HTMLElement) {
+  const overflow = Math.max(container.scrollWidth - container.clientWidth, 0)
+  const start = Math.min(Math.abs(container.scrollLeft), overflow)
+  return { start, end: overflow - start }
+}
+
+// The scroll cue: when the table is wider than its container, each edge with
+// hidden content past it fades out, so the column cut at the edge reads as
+// cut, not as the last column. The fade is a mask on the container, so it
+// needs no background colour and works on any surface (page, card). Each fade
+// is as wide as the content hidden past its edge, up to 32px, so it shrinks
+// with the scroll and is gone when that edge is reached; it follows the
+// scroll and has no transition of its own. `data-overflow-start` and
+// `data-overflow-end` mark the edges that fade. A table that fits has no mask.
+// The focus ring is drawn inside the container, where the mask would fade it,
+// so while it shows, a 2px frame under it stays opaque.
+const scrollCue = [
+  "[--table-fade-start:min(var(--table-overflow-start,0px),calc(var(--spacing)*8))] [--table-fade-end:min(var(--table-overflow-end,0px),calc(var(--spacing)*8))]",
+  "[--table-fade:linear-gradient(to_right,transparent,black_var(--table-fade-start),black_calc(100%_-_var(--table-fade-end)),transparent)]",
+  "rtl:[--table-fade:linear-gradient(to_left,transparent,black_var(--table-fade-start),black_calc(100%_-_var(--table-fade-end)),transparent)]",
+  "data-overflow-start:[mask-image:var(--table-fade)] data-overflow-end:[mask-image:var(--table-fade)]",
+  "focus-visible:[mask-image:var(--table-fade),var(--table-ring-strip),var(--table-ring-strip),var(--table-ring-strip),var(--table-ring-strip)]! [--table-ring-strip:linear-gradient(black,black)]",
+  "focus-visible:[mask-position:0_0,left,right,top,bottom] focus-visible:[mask-size:100%_100%,2px_100%,2px_100%,100%_2px,100%_2px] focus-visible:[mask-repeat:no-repeat]",
+].join(" ")
+
+// Pinning (`pinFirstColumn`): the first cell of every row (header, body,
+// footer) stays at the inline-start edge while the other columns scroll under
+// it. Every other cell is isolated, so a raised control inside it (`z-10`)
+// still scrolls under the pinned cell; popovers and menus render in a portal
+// and stay above. The selected-row bar is drawn above the pinned cell.
+// A pinned cell must be opaque. It paints `--table-surface` (default: the card
+// surface; set it on an ancestor when the table sits on another surface) and
+// layers the row's state fill over it (`--table-row-fill`, set by TableRow on
+// hover and selection and by TableFooter), so hover and selection still show.
+// While content is scrolled under it (`data-overflow-start`), the pinned cell
+// shows a 1px edge in the input colour on its inline-end side, the sideways
+// twin of `shadow-scrolled` on a sticky header. It is an inset shadow: a
+// table cell with collapsed borders does not paint an outer one. The edge fades in and out
+// (`fast`) and switches at once under reduced motion. The start fade is off
+// when pinned: it would fade the pinned cell, and the edge replaces it. The
+// end fade stays. The pinned cell stacks above the container's focus ring,
+// so while the container has keyboard focus the pinned cells draw their part
+// of the ring (inline-start side, and top and bottom on the first and last row).
+// Tailwind reads class names from this source as written, so each one is
+// spelled out in full.
+const pinnedColumn = [
+  "[&[data-pin-first-column]_tr>:first-child]:sticky [&[data-pin-first-column]_tr>:first-child]:start-0 [&[data-pin-first-column]_tr>:first-child]:z-3 [&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))] [&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]",
+  "[&[data-pin-first-column]_tr>:not(:first-child)]:isolate",
+  "[&[data-pin-first-column]_tr]:before:z-4 [&[data-pin-first-column]_tr]:after:z-4",
+  "[&[data-pin-first-column]_tr>:first-child]:[box-shadow:var(--table-pin-edge),var(--table-pin-ring-x,inset_0_0_0_transparent),var(--table-pin-ring-top,inset_0_0_0_transparent),var(--table-pin-ring-bottom,inset_0_0_0_transparent)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
+  "motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]",
+  "[&[data-pin-first-column]]:[--table-fade-start:0px]",
+  "[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)] rtl:[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_-2px_0_0_var(--ring)]",
+  "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:is(thead,tbody,tfoot)~*)>tr:first-child]:[--table-pin-ring-top:inset_0_2px_0_var(--ring)]",
+  "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:has(~:is(thead,tbody,tfoot)))>tr:last-child]:[--table-pin-ring-bottom:inset_0_-2px_0_var(--ring)]",
+].join(" ")
+
 // When the table is wider than its container, the container scrolls and must
 // be reachable by keyboard (axe scrollable-region-focusable), so it becomes a
 // tab stop with a focus ring. A table that fits adds no tab stop.
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function Table({
+  className,
+  pinFirstColumn = false,
+  ...props
+}: React.ComponentProps<"table"> & {
+  /** Keeps the first column in place while the others scroll sideways. */
+  pinFirstColumn?: boolean
+}) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [scrollable, setScrollable] = React.useState(false)
 
-  // Measure before the first paint, so an overflowing table is a tab stop
-  // from the start; the observer then tracks later size changes.
+  // Measure before the first paint, so an overflowing table is a tab stop and
+  // shows its cue from the start; the observer then tracks later size
+  // changes, and the scroll listener moves the cue. The cue is written to the
+  // container directly, not through state, so a scroll does not re-render.
   React.useLayoutEffect(() => {
     const container = containerRef.current
     if (!container) {
       return
     }
-    const update = () =>
+    const updateCue = () => {
+      const { start, end } = overflowAtEdges(container)
+      // `scrollWidth` and `clientWidth` are rounded, so at the end of the
+      // scroll up to 1px can still seem hidden. That is not worth a cue.
+      container.toggleAttribute("data-overflow-start", start > 1)
+      container.toggleAttribute("data-overflow-end", end > 1)
+      container.style.setProperty("--table-overflow-start", `${start}px`)
+      container.style.setProperty("--table-overflow-end", `${end}px`)
+    }
+    const update = () => {
       setScrollable(container.scrollWidth > container.clientWidth)
+      updateCue()
+    }
     update()
+    container.addEventListener("scroll", updateCue, { passive: true })
     if (typeof ResizeObserver === "undefined") {
-      return
+      return () => container.removeEventListener("scroll", updateCue)
     }
     const observer = new ResizeObserver(update)
     observer.observe(container)
     if (container.firstElementChild) {
       observer.observe(container.firstElementChild)
     }
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      container.removeEventListener("scroll", updateCue)
+    }
   }, [])
 
   return (
@@ -37,7 +122,8 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       ref={containerRef}
       data-slot="table-container"
       tabIndex={scrollable ? 0 : undefined}
-      className="focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none"
+      data-pin-first-column={pinFirstColumn ? "" : undefined}
+      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue} ${pinnedColumn}`}
     >
       <table
         data-slot="table"
@@ -141,7 +227,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0 [--table-row-fill:color-mix(in_oklab,var(--muted)_50%,transparent)]",
         className
       )}
       {...props}
@@ -217,7 +303,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted relative border-b border-border/50 transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-muted relative border-b border-border/50 transition-colors hover:[--table-row-fill:color-mix(in_oklab,var(--muted)_50%,transparent)] data-[state=selected]:[--table-row-fill:var(--muted)]",
         selectedBar,
         className
       )}
