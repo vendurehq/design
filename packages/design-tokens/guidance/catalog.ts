@@ -111,6 +111,10 @@ export const tokenGuidance = [
         body: 'Use display-xl (60px), display-lg (48px), display-md (36px) and display-sm (30px) for website hero and section headings. They set Public Sans (font-display), the website heading font. Never use them in product screens: a product page title is page-title. css/fonts self-hosts Public Sans.',
       },
       {
+        title: 'Font sizes come from the type scale',
+        body: 'Set a font size with a type role or a scale step: text-2xs, text-xs, text-sm, text-base, text-lg, text-xl, text-2xl, text-3xl, text-4xl or text-5xl. Tailwind also generates text-6xl to text-9xl from its own default theme. They are not design-system sizes: never use them. The only size above text-5xl is display-xl, through its role. Never write an arbitrary size (text-[15px], text-[2.9rem], text-[13vw]), a clamp() or viewport size, an inline fontSize, or a font-size rule in consumer CSS. When the scale lacks a size, add a step or a role in the design-tokens package and use that. Do not work around it at the call site.',
+      },
+      {
         title: 'Raw headings are not globally restyled',
         body: 'Use the design-system title components or apply the heading role explicitly. Do not rebind the heading font in consumer CSS.',
       },

@@ -140,6 +140,8 @@ All colors use the OKLCH color space for perceptual uniformity.
   - `text-style-code` — mono font
   - `text-style-display-xl` (60px on a 60px line, flagship hero), `text-style-display-lg` (48px on a 50px line, page hero), `text-style-display-md` (36px on a 38px line, small-screen hero, large stat or price), `text-style-display-sm` (30px on a 36px line, section heading) — display font (Public Sans), semibold, tight tracking. Use them for website headings only, never in product screens: a product page title is `text-style-page-title`. `css/fonts` self-hosts Public Sans; a consumer that loads fonts another way must load Public Sans itself
 
+Font sizes come from this scale only. Tailwind still generates `text-6xl` to `text-9xl` from its own default theme; they are not design-system sizes, so do not use them. The only size above `text-5xl` is `text-style-display-xl`. Do not write an arbitrary size (`text-[15px]`, `text-[13vw]`), a `clamp()` or viewport size, an inline `fontSize`, or a `font-size` rule in app CSS. If a size is missing, add a step or a text style to this package.
+
 The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the heading font with the `font-heading` utility (Inter) — don't rebind `--font-heading` in app CSS. The `@vendure-io/ui` title components (`DialogTitle`, `AlertDialogTitle`, `SheetTitle`, `DrawerTitle`, `PopoverTitle`, `CardTitle`, `EmptyTitle`) apply it out of the box.
 
 ### Radii
