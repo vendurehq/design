@@ -358,7 +358,7 @@ export const PinnedFirstColumnScrolled: Story = {
       }
     }
     // Back at the start, the edge goes; then scroll again for the picture.
-    const [first] = containers;
+    const first = containers[0] as HTMLElement;
     await scrollTo(first, 0);
     await expect(cueState(first)).toEqual({ start: false, end: true });
     for (const cell of pinnedCells(first)) {
