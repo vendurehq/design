@@ -76,7 +76,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-// The card-title role at body size: 14px/600 in foreground-secondary, quieter
+// The card-title role at body size: 13px/600 in foreground-secondary, quieter
 // than the data it labels. Spelled out because tailwind-merge would drop the
 // `text-style-card-title` utility next to `text-sm`. A title that holds a
 // CardCount lays out as a row: the gap is the 10px to the count, and the JSX
