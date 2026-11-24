@@ -1897,6 +1897,114 @@ export const PinnedFirstColumnRightToLeft: Story = {
   },
 };
 
+// A pinned row the consumer renders itself: the table's cell props, and a
+// row link host at the end of every cell, so the whole row opens the item.
+const renderPinnedRow: NonNullable<DataTableProps<Variant>['renderRow']> = (
+  row,
+  { ripple, cellProps, rowLinkHost, selectProps },
+) => (
+  <TableRow
+    {...selectProps}
+    data-custom-row=""
+    data-state={row.getIsSelected() ? 'selected' : undefined}
+    className={cn('group/row', ripple.className)}
+    style={ripple.style}
+  >
+    {row.getVisibleCells().map((cell) => (
+      <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        {rowLinkHost(cell.column.id)}
+      </TableCell>
+    ))}
+  </TableRow>
+);
+
+/**
+ * `pinFirstColumn` with a row from `renderRow`. Render
+ * `ctx.rowLinkHost(cell.column.id)` after the content of every cell and the
+ * row behaves like a built-in one: a click on a cell that scrolled under the
+ * pinned column opens the item, and the row keeps one link in the
+ * accessibility tree and one tab stop. A row that leaves the host out opens
+ * the item only from the cells on the name's side of the pinned edge.
+ */
+export const PinnedFirstColumnCustomRows: Story = {
+  parameters: { pressRowText: { text: '$1,678.80', expectHash: '#/variants/2' } },
+  render: () => (
+    <div className="max-w-md">
+      <DataTable<Variant>
+        pinFirstColumn
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ defaultValue: {} }}
+        renderRow={renderPinnedRow}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const container = tableContainer(canvasElement);
+    const user = userEvent.setup();
+    clearHash();
+    await scrollTable(container, 160);
+
+    await step('the rows are the custom rows, pinned like the built-in ones', async () => {
+      await expect(canvasElement.querySelectorAll('[data-custom-row]')).toHaveLength(variants.length);
+      await expectPinnedAtStart(canvasElement);
+    });
+
+    await step('a click on a cell that scrolled under the pinned column opens the item', async () => {
+      const link = canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' }) as HTMLAnchorElement;
+      const row = within(link.closest('tr') as HTMLTableRowElement);
+      const hit = hitAt(row.getByText('$1,558.80'));
+      await expect(hit).toHaveAttribute('data-slot', 'data-table-row-link-overlay');
+      await expect((hit as HTMLAnchorElement).href).toBe(link.href);
+      await user.click(hit);
+      await expect(location.hash).toBe('#/variants/1');
+      clearHash();
+    });
+
+    await step('the row has one link in the accessibility tree and one tab stop', async () => {
+      for (const variant of variants) {
+        const link = canvas.getByText(variant.name, {
+          selector: '[data-slot=data-table-row-link]',
+        }) as HTMLAnchorElement;
+        const tr = link.closest('tr') as HTMLTableRowElement;
+        const overlays = tr.querySelectorAll<HTMLAnchorElement>(
+          '[data-slot=data-table-row-link-overlay]',
+        );
+        await expect(overlays).toHaveLength(1);
+        const overlay = overlays[0] as HTMLAnchorElement;
+        await expect(overlay.href).toBe(link.href);
+        await expect(overlay).toHaveAttribute('aria-hidden', 'true');
+        await expect(overlay).toHaveAttribute('tabindex', '-1');
+        const row = within(tr);
+        // The name, the overlay and the Product link are in the DOM; the
+        // overlay is in neither the accessibility tree nor the tab order.
+        await expect(row.getAllByRole('link', { hidden: true })).toHaveLength(3);
+        const accessible = row.getAllByRole('link');
+        await expect(accessible).toHaveLength(2);
+        await expect(accessible).not.toContain(overlay);
+        await expect(accessible[0]).toBe(link);
+      }
+    });
+
+    await step('the name is the only tab stop of the row link', async () => {
+      const link = canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' });
+      const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+      checkbox.focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(link);
+      await user.tab();
+      await expect(document.activeElement).not.toHaveAttribute(
+        'data-slot',
+        'data-table-row-link-overlay',
+      );
+      (document.activeElement as HTMLElement).blur();
+    });
+  },
+};
+
 // Access tokens: every row opens its token. The token preview is an
 // AnonymizedToken, which copies from any point of the chip, as IdChip does.
 interface AccessToken {
