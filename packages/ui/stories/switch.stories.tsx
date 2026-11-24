@@ -102,13 +102,15 @@ export const Toggle: Story = {
       for (const animation of running()) animation.finish();
       await waitFor(() => expect(running()).toHaveLength(0));
     };
+    // How far the thumb sits from the track's start edge, border included.
+    const offset = () => thumb.getBoundingClientRect().left - control.getBoundingClientRect().left;
     const moves = () =>
       running().some((animation) => (animation as CSSTransition).transitionProperty === 'translate');
 
     await step('nothing is running on first render', async () => {
       await expect(control).toHaveAttribute('aria-checked', 'false');
       await expect(running()).toHaveLength(0);
-      await expect(getComputedStyle(thumb).translate).toBe('0px');
+      await expect(offset()).toBeCloseTo(1, 0);
     });
 
     await step('a press response is set up: the thumb stretches from its resting side', async () => {
@@ -121,7 +123,7 @@ export const Toggle: Story = {
       await expect(control).toHaveAttribute('aria-checked', 'true');
       await expect(moves()).toBe(!reduced);
       await settled();
-      await expect(getComputedStyle(thumb).translate).toBe('14px');
+      await expect(offset()).toBeCloseTo(15, 0);
       // Checked, the thumb rests on the right and stretches from there.
       await expect(getComputedStyle(thumb).transformOrigin.split(' ')[0]).toBe('16px');
     });
@@ -132,7 +134,7 @@ export const Toggle: Story = {
       await expect(control).toHaveAttribute('aria-checked', 'false');
       await expect(moves()).toBe(!reduced);
       await settled();
-      await expect(getComputedStyle(thumb).translate).toBe('0px');
+      await expect(offset()).toBeCloseTo(1, 0);
     });
 
     await step('a fast toggle twice reverses from where the thumb is', async () => {
@@ -145,7 +147,7 @@ export const Toggle: Story = {
       await userEvent.click(control);
       await expect(control).toHaveAttribute('aria-checked', 'false');
       await settled();
-      await expect(getComputedStyle(thumb).translate).toBe('0px');
+      await expect(offset()).toBeCloseTo(1, 0);
     });
   },
 };
