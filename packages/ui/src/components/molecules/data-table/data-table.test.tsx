@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
-import type { Column } from '@tanstack/react-table';
+import { type Column, flexRender } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { TableCell, TableRow } from '../../atoms/table.tsx';
@@ -1329,6 +1329,43 @@ describe('DataTable pinFirstColumn', () => {
       />,
     );
     expect(hostCount(markup)).toBe(2);
+  });
+
+  test('ctx.rowLinkHost gives a custom row the overlay hosts of a built-in row', () => {
+    const customRows = (pinned: boolean, withHost: boolean) =>
+      html(
+        <DataTable
+          pinFirstColumn={pinned}
+          rows={rows}
+          columns={linkedColumns}
+          getRowId={(row) => row.id}
+          rowSelection={selectable}
+          renderRow={(row, { cellProps, rowLinkHost }) => (
+            <TableRow data-custom-row="">
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  {withHost ? rowLinkHost(cell.column.id) : null}
+                </TableCell>
+              ))}
+            </TableRow>
+          )}
+        />,
+      );
+    const markup = customRows(true, true);
+    expect(count(markup, /data-custom-row/g)).toBe(rows.length);
+    expect(hostCount(markup)).toBe(4);
+    const firstRow = markup.split('<tbody')[1]?.split('</tr>')[0] ?? '';
+    // The same cells as a built-in row: the pinned name cell and the last cell.
+    expect(
+      firstRow
+        .split('<td')
+        .slice(1)
+        .map((cell) => cell.includes('data-table-row-link-overlay-host')),
+    ).toEqual([false, true, true]);
+    // Without the host the row has none; without pinning the host is empty.
+    expect(hostCount(customRows(true, false))).toBe(0);
+    expect(hostCount(customRows(false, true))).toBe(0);
   });
 
   test('the select cell takes the selection ripple on the bar it draws', () => {
