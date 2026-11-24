@@ -384,7 +384,9 @@ export interface DataTableProps<TData> {
    * are selected; a row without it keeps opening the item from anywhere on it.
    * A row with a `DataTableRowLink` needs nothing more: the table raises its
    * buttons, links, inputs and copy chips above the stretched link, as it does
-   * on a built-in row.
+   * on a built-in row. With `pinFirstColumn`, render `ctx.rowLinkHost(columnId)`
+   * at the end of every cell too, so the whole row opens the item (see
+   * `pinFirstColumn`).
    */
   renderRow?: (
     row: Row<TData>,
@@ -394,6 +396,13 @@ export interface DataTableProps<TData> {
       defaultRow: React.ReactNode;
       ripple: DataTableRowRipple;
       cellProps: (columnId: string) => DataTableRowCellProps;
+      /**
+       * Where a `DataTableRowLink` draws the anchor that opens the item from
+       * the cells on the other side of the pinned edge. Render it as the last
+       * child of every cell: `{ctx.rowLinkHost(cell.column.id)}`. It is `null`
+       * without `pinFirstColumn`, and in the cells that need no host.
+       */
+      rowLinkHost: (columnId: string) => React.ReactNode;
       selectProps: DataTableRowSelectProps;
     },
   ) => React.ReactNode;
@@ -445,8 +454,10 @@ export interface DataTableProps<TData> {
    * item from every cell: the name stays the row's one link, and the cells
    * that scroll under the pinned column open it through a second anchor with
    * the same href, hidden from assistive technology and the tab order. A row
-   * from `renderRow` that renders its own cells has no such anchor: there,
-   * only the cells on the link's side of the pinned edge open the item.
+   * from `renderRow` that renders its own cells gets that anchor when it
+   * renders `ctx.rowLinkHost(cell.column.id)` after the content of every cell;
+   * without it, only the cells on the link's side of the pinned edge open the
+   * item.
    */
   pinFirstColumn?: boolean;
   /**

@@ -1129,9 +1129,14 @@ function DataTable<TData>({
 
   // Pinned: where a DataTableRowLink renders its overlay (see rowLinkOverlay),
   // one host on each side of the pinned edge: in the pinned cell, and in the
-  // last cell when that one scrolls. A host has no box of its own.
-  const overlayHost = (columnId: string, last: boolean): React.ReactNode =>
-    pinFirstColumn && (columnId === pinnedColumnId || (last && pinnedColumnId != null)) ? (
+  // last cell when that one scrolls. A host has no box of its own. Handed to
+  // `renderRow` as `ctx.rowLinkHost`, so a row a consumer renders itself gets
+  // the same hosts.
+  const lastColumnId = table.getVisibleLeafColumns().at(-1)?.id;
+  const rowLinkHost = (columnId: string): React.ReactNode =>
+    pinFirstColumn &&
+    pinnedColumnId != null &&
+    (columnId === pinnedColumnId || columnId === lastColumnId) ? (
       <span data-slot="data-table-row-link-overlay-host" className="contents" />
     ) : null;
 
@@ -1476,10 +1481,10 @@ function DataTable<TData>({
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       {...selectProps}
                     >
-                      {row.getVisibleCells().map((cell, index, cells) => (
+                      {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} {...bodyCellProps(cell.column.id)}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          {overlayHost(cell.column.id, index === cells.length - 1)}
+                          {rowLinkHost(cell.column.id)}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -1509,6 +1514,7 @@ function DataTable<TData>({
                             defaultRow,
                             ripple,
                             cellProps: bodyCellProps,
+                            rowLinkHost,
                             selectProps,
                           })
                         : defaultRow}
