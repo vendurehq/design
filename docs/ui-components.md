@@ -146,6 +146,8 @@ behavior you need instead of rebuilding it from atoms.
 #### Date & number entry/display
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
+> **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
+
 #### Feedback & identity
 `confirm-dialog`, `state-views/*`, `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
