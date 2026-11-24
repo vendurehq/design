@@ -10,6 +10,7 @@ import {
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Button, buttonVariants } from "@vendure-io/ui/components/atoms/button"
+import { useFormatSettings } from "@vendure-io/ui/components/molecules/format-provider"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
 
 function Calendar({
@@ -26,6 +27,10 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  // The pickers render this Calendar, so the language set on FormatProvider
+  // reaches their popups without each caller passing `locale`.
+  const { calendarLocale } = useFormatSettings()
+  locale ??= calendarLocale
 
   return (
     <DayPicker
@@ -39,8 +44,12 @@ function Calendar({
       captionLayout={captionLayout}
       locale={locale}
       formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString(locale?.code, { month: "short" }),
+        // Through DayPicker's date library, so the month names follow `locale`
+        // (US English without one) like the caption, not the browser language.
+        formatMonthDropdown: (date, dateLib) =>
+          dateLib
+            ? dateLib.format(date, "LLL")
+            : date.toLocaleString(locale?.code, { month: "short" }),
         ...formatters,
       }}
       classNames={{
