@@ -149,7 +149,7 @@ behavior you need instead of rebuilding it from atoms.
 > **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
 
 #### Feedback & identity
-`confirm-dialog`, `state-views/*`, `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
+`confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
 > **IssuedSecret.** A secret that was just issued, such as a new API key, is copy-only: it is never rendered. One button copies it, or one button per format (`formats`). The value shows only when the clipboard write fails, in a read-only field for a copy by hand. `useIssuedSecretGuard` holds the close guard: before the first copy, a close request shows a warning, and only "Close without copying" closes. That button is `destructive-outline`, so the copy button stays the one filled button. Share one guard between `IssuedSecret` and `IssuedSecretFooter`, and pass `guard.onOpenChange` to the Dialog:
 >
@@ -718,6 +718,43 @@ A card or row that opens the same page drives the link's hover and takes its cli
 - The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its chevron.
 - Keep the link itself unpositioned: a `relative` link becomes the containing block of its `::after`, which then shrinks to the link.
 - Keyboard focus shows the same emphasis as hover, with the focus ring 2px outside the link.
+
+### Loading skeletons
+
+`LoadingState` is the one live region of a loading region: it announces "Loading…" once. It shows nothing for its first 150 ms (`delay`), while it holds its space, so a fast load never flashes a placeholder. `delay={0}` shows it at once.
+
+Pass skeleton parts as children, laid out like the loaded page. Each part is as tall as the component it stands for, so content fills in place. The parts are `aria-hidden`.
+
+| Part | Stands for |
+| --- | --- |
+| `SkeletonPageHeader` (`description`, `actions`) | `PageHeader` |
+| `SkeletonCard` (`description`, `action`, `lines`, or children for the body) | `Card` |
+| `SkeletonListRow` (`leading="icon" \| "avatar" \| "none"`, `meta`, `action`) | `ListRow` |
+| `SkeletonField` | `Field` with an `Input` |
+| `SkeletonFact` | `DescriptionListItem` |
+| `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width |
+
+```tsx
+import { CardContent } from "@vendure-io/ui/components/atoms/card";
+import { LoadingState } from "@vendure-io/ui/components/molecules/state-views/loading-state";
+import {
+  SkeletonCard,
+  SkeletonFact,
+  SkeletonPageHeader,
+} from "@vendure-io/ui/components/molecules/state-views/skeleton-parts";
+
+<LoadingState className="gap-6">
+  <SkeletonPageHeader actions={2} />
+  <SkeletonCard>
+    <CardContent className="flex flex-col gap-4">
+      <SkeletonFact />
+      <SkeletonFact />
+    </CardContent>
+  </SkeletonCard>
+</LoadingState>
+```
+
+Without children, `LoadingState` draws `rows` full-width bars, as before. Use the bars only where no part fits the shape.
 
 ### DataTable loading rows
 
