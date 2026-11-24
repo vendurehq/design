@@ -152,9 +152,9 @@ const products = [
 ];
 
 /** A table with more columns than its container can show, so it scrolls sideways. */
-function WideTable() {
+function WideTable({ pinFirstColumn, selectedSku }: { pinFirstColumn?: boolean; selectedSku?: string }) {
   return (
-    <Table>
+    <Table pinFirstColumn={pinFirstColumn}>
       <TableHeader>
         <TableRow>
           <TableHead>Product</TableHead>
@@ -168,7 +168,7 @@ function WideTable() {
       </TableHeader>
       <TableBody>
         {products.map((product) => (
-          <TableRow key={product.sku}>
+          <TableRow key={product.sku} data-state={product.sku === selectedSku ? 'selected' : undefined}>
             <TableCell className="font-medium">{product.name}</TableCell>
             <TableCell>{product.sku}</TableCell>
             <TableCell>{product.status}</TableCell>
@@ -211,16 +211,18 @@ async function scrollTo(container: HTMLElement, left: number) {
  * Narrow panels on the page and on a card, in light and dark. Each table is
  * wider than its panel, so it scrolls sideways.
  */
-function OverflowPanels({ dir }: { dir?: 'rtl' }) {
+function OverflowPanels({ dir, pinFirstColumn }: { dir?: 'rtl'; pinFirstColumn?: boolean }) {
+  // A pinned cell paints the table surface; on the page that is the page
+  // background, so the page panel sets `--table-surface`.
   return (
     <LightAndDark>
       {() => (
         <div dir={dir} className="flex flex-col gap-4">
-          <div className="max-w-xs">
-            <WideTable />
+          <div className="max-w-xs [--table-surface:var(--background)]">
+            <WideTable pinFirstColumn={pinFirstColumn} />
           </div>
           <div className="bg-card max-w-xs rounded-lg border">
-            <WideTable />
+            <WideTable pinFirstColumn={pinFirstColumn} selectedSku={pinFirstColumn ? 'WKB-1180' : undefined} />
           </div>
         </div>
       )}
@@ -291,4 +293,97 @@ export const OverflowRightToLeft: Story = {
     }
   },
   render: () => <OverflowPanels dir="rtl" />,
+};
+
+/** The inline-start offset of a cell inside its scroll container, in px. */
+function offsetInContainer(cell: Element, container: HTMLElement) {
+  const rtl = getComputedStyle(container).direction === 'rtl';
+  const box = cell.getBoundingClientRect();
+  const frame = container.getBoundingClientRect();
+  return rtl ? frame.right - box.right : box.left - frame.left;
+}
+
+function pinnedCells(container: HTMLElement) {
+  return [...container.querySelectorAll('tr > :first-child')];
+}
+
+/**
+ * The pinned edge a cell draws. Read from `--table-pin-edge`, not
+ * `box-shadow`: the shadow fades in, and a read right after a scroll would
+ * catch it part way.
+ */
+function pinEdge(cell: Element) {
+  return getComputedStyle(cell).getPropertyValue('--table-pin-edge').trim();
+}
+
+/**
+ * `pinFirstColumn`: the first column stays in place while the others scroll
+ * under it. At rest the pinned column has no edge and the end fades as usual.
+ * The card table has a selected row: the selected fill shows on the pinned
+ * cell too.
+ */
+export const PinnedFirstColumn: Story = {
+  globals: { theme: 'light' },
+  play: async ({ canvasElement }) => {
+    for (const container of await scrollContainers(canvasElement)) {
+      await expect(container.hasAttribute('data-pin-first-column')).toBe(true);
+      await expect(cueState(container)).toEqual({ start: false, end: true });
+      for (const cell of pinnedCells(container)) {
+        await expect(getComputedStyle(cell).position).toBe('sticky');
+        await expect(pinEdge(cell)).toMatch(/^inset 0 0 0/);
+      }
+    }
+  },
+  render: () => <OverflowPanels pinFirstColumn />,
+};
+
+/**
+ * Scrolled part of the way: the pinned column stays at the start edge and
+ * shows a 1px edge on its inline-end side, where the other columns pass under
+ * it. The start of the table does not fade: the edge replaces the start fade.
+ * Scrolling back to the start removes the edge.
+ */
+export const PinnedFirstColumnScrolled: Story = {
+  globals: { theme: 'light' },
+  play: async ({ canvasElement }) => {
+    const containers = await scrollContainers(canvasElement);
+    await expect(containers).toHaveLength(4);
+    for (const container of containers) {
+      await scrollTo(container, 120);
+      await expect(cueState(container)).toEqual({ start: true, end: true });
+      await expect(getComputedStyle(container).getPropertyValue('--table-fade-start').trim()).toBe('0px');
+      for (const cell of pinnedCells(container)) {
+        await expect(Math.abs(offsetInContainer(cell, container))).toBeLessThanOrEqual(0.5);
+        await expect(pinEdge(cell)).toMatch(/^inset -1px 0 0/);
+      }
+    }
+    // Back at the start, the edge goes; then scroll again for the picture.
+    const [first] = containers;
+    await scrollTo(first, 0);
+    await expect(cueState(first)).toEqual({ start: false, end: true });
+    for (const cell of pinnedCells(first)) {
+      await expect(pinEdge(cell)).toMatch(/^inset 0 0 0/);
+    }
+    await scrollTo(first, 120);
+  },
+  render: () => <OverflowPanels pinFirstColumn />,
+};
+
+/**
+ * Right to left, the first column is pinned on the right, and its edge is on
+ * its left side.
+ */
+export const PinnedFirstColumnRightToLeft: Story = {
+  globals: { theme: 'light' },
+  play: async ({ canvasElement }) => {
+    for (const container of await scrollContainers(canvasElement)) {
+      await scrollTo(container, -120);
+      await expect(cueState(container)).toEqual({ start: true, end: true });
+      for (const cell of pinnedCells(container)) {
+        await expect(Math.abs(offsetInContainer(cell, container))).toBeLessThanOrEqual(0.5);
+        await expect(pinEdge(cell)).toMatch(/^inset 1px 0 0/);
+      }
+    }
+  },
+  render: () => <OverflowPanels dir="rtl" pinFirstColumn />,
 };
