@@ -1,12 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useState } from 'react';
+import { fr } from 'react-day-picker/locale/fr';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 import {
   DateRangePicker,
   type DateRangeValue,
 } from '../src/components/molecules/date-range-picker.tsx';
 import { DateTimePicker } from '../src/components/molecules/date-time-picker.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { formatCalendarDate } from '../src/lib/date-value.ts';
 
 const meta = {
@@ -84,4 +86,79 @@ export const Open: Story = {
     await userEvent.click(within(canvasElement).getAllByRole('button')[0] as HTMLElement);
     await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Pick a date' })).toBeVisible());
   },
+};
+
+/**
+ * Opens the picker and checks the calendar follows the `FormatProvider` language:
+ * a French caption and a week that starts on Monday.
+ */
+async function expectFrenchCalendar(canvasElement: HTMLElement, caption: string) {
+  await userEvent.click(within(canvasElement).getAllByRole('button')[0] as HTMLElement);
+  const body = within(document.body);
+  const grid = await waitFor(() => {
+    const first = body.getAllByRole('grid', { name: caption })[0] as HTMLElement;
+    expect(first).toBeVisible();
+    return first;
+  });
+  // DayPicker hides the weekday row from assistive tech, so include hidden elements.
+  const weekdays = within(grid).getAllByRole('columnheader', { hidden: true });
+  await expect(weekdays[0]).toHaveAttribute('aria-label', 'lundi');
+  await expect(body.getByRole('button', { name: 'Aller au mois suivant' })).toBeVisible();
+}
+
+/**
+ * The calendar takes its language from `FormatProvider`'s `calendarLocale`.
+ * Import only the language you need (`react-day-picker/locale/fr`), never the
+ * `react-day-picker/locale` barrel.
+ */
+export const FrenchDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => {
+    const [value, setValue] = useState<string | undefined>('2026-03-10');
+    return (
+      <FormatProvider locale="fr-FR" calendarLocale={fr}>
+        <div className="w-80">
+          <DatePicker value={value} onValueChange={setValue} />
+        </div>
+      </FormatProvider>
+    );
+  },
+  play: ({ canvasElement }) => expectFrenchCalendar(canvasElement, 'mars 2026'),
+};
+
+export const FrenchDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: () => {
+    const [value, setValue] = useState<string | undefined>('2026-03-10T14:30:00.000Z');
+    return (
+      <FormatProvider locale="fr-FR" calendarLocale={fr}>
+        <div className="w-[460px]">
+          <DateTimePicker value={value} onValueChange={setValue} />
+        </div>
+      </FormatProvider>
+    );
+  },
+  play: ({ canvasElement }) => expectFrenchCalendar(canvasElement, 'mars 2026'),
+};
+
+export const FrenchRange: Story = {
+  tags: ['!autodocs'],
+  render: () => {
+    const [value, setValue] = useState<DateRangeValue | undefined>({
+      from: '2026-03-10',
+      to: '2026-03-17',
+    });
+    return (
+      <FormatProvider locale="fr-FR" calendarLocale={fr}>
+        <div className="w-80">
+          <DateRangePicker
+            value={value}
+            onValueChange={setValue}
+            calendarProps={{ numberOfMonths: 2 }}
+          />
+        </div>
+      </FormatProvider>
+    );
+  },
+  play: ({ canvasElement }) => expectFrenchCalendar(canvasElement, 'mars 2026'),
 };
