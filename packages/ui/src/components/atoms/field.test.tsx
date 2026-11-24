@@ -7,6 +7,7 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+  FieldSet,
   fieldDescribedBy,
   mergeFieldControlProps,
 } from './field.tsx';
@@ -158,5 +159,16 @@ describe('FieldLabel choice card', () => {
     expect(box(renderToStaticMarkup(<Checkbox aria-label="Ship" defaultChecked />))).not.toContain(
       'choice-checked',
     );
+  });
+});
+
+describe('FieldSet', () => {
+  // The overflow itself is proved in the WideTable story (needs layout); here
+  // the class that prevents it is pinned, and a caller's classes still merge.
+  test('can shrink below its content, so a wide child does not stretch it', () => {
+    const html = renderToStaticMarkup(<FieldSet className="gap-2" />);
+    const tag = html.match(/<fieldset[^>]*>/)?.[0] ?? '';
+    expect(tag).toMatch(/class="[^"]*\bmin-w-0\b/);
+    expect(tag).toContain('gap-2');
   });
 });
