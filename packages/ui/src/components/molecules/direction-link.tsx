@@ -8,7 +8,7 @@ import type * as React from 'react';
 // this, and PageHeaderFactLink renders ExternalArrow. The package exports map
 // this file to null.
 //
-// The v3 look: 13px medium text, and a 15px chevron at 45%: trailing forward,
+// The v3 look: 14px medium text, and a 15px chevron at 45%: trailing forward,
 // leading back. A straight direction takes a chevron; an arrow is for a
 // diagonal only, such as a link that leaves the app. On hover or keyboard
 // focus the text reaches full foreground and the chevron full strength, and

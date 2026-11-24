@@ -10,7 +10,7 @@ import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
 
-// The v3 look: 34px default and 28px sm, the xl radius, 13px medium text.
+// The v3 look: 34px default and 28px sm, the xl radius, 14px medium text.
 // Every size keeps its side padding with or without a `data-icon` icon;
 // default and sm have a 7px gap. Press feedback is a 0.97 scale on :active,
 // on ease-press in 150ms. Base UI's Button never emits data-pressed, so the
