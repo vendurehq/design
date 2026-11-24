@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Table, TableRow } from './table.tsx';
+import { Table, TableFooter, TableRow } from './table.tsx';
 
 // DataTable marks selected rows with data-state="selected" (TanStack), so the
 // selector is live. Selected must stay distinct from the bg-muted/50 hover.
@@ -146,5 +146,60 @@ describe('Table scroll cue', () => {
         'focus-visible:[mask-size:100%_100%,2px_100%,2px_100%,100%_2px,100%_2px]',
       ]),
     );
+  });
+});
+
+// `pinFirstColumn` keeps the first cell of each row in place. The stories
+// PinnedFirstColumn, PinnedFirstColumnScrolled and PinnedFirstColumnRightToLeft
+// scroll real tables and check the position, the edge and the start fade.
+describe('Table pinFirstColumn', () => {
+  const container = (html: string) => html.match(/<div data-slot="table-container"[^>]*>/)?.[0] ?? '';
+  const tokens = (html: string) => (container(html).match(/class="([^"]*)"/)?.[1] ?? '')
+    .replaceAll('&amp;', '&')
+    .replaceAll('&gt;', '>')
+    .split(/\s+/);
+
+  test('is off by default and marks the container when on', () => {
+    expect(container(renderToStaticMarkup(<Table />))).not.toMatch(/\sdata-pin-first-column=/);
+    expect(container(renderToStaticMarkup(<Table pinFirstColumn />))).toContain('data-pin-first-column=""');
+    // The prop is not passed on to the <table>.
+    expect(renderToStaticMarkup(<Table pinFirstColumn />)).not.toMatch(/<table[^>]*pin/i);
+  });
+
+  test('pins the first cell of each row on an opaque, overridable surface', () => {
+    expect(tokens(renderToStaticMarkup(<Table pinFirstColumn />))).toEqual(
+      expect.arrayContaining([
+        '[&[data-pin-first-column]_tr>:first-child]:sticky',
+        '[&[data-pin-first-column]_tr>:first-child]:start-0',
+        '[&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))]',
+        '[&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]',
+        '[&[data-pin-first-column]_tr>:not(:first-child)]:isolate',
+      ]),
+    );
+  });
+
+  test('shows an edge only while scrolled, on the inline-end side, and drops the start fade', () => {
+    expect(tokens(renderToStaticMarkup(<Table pinFirstColumn />))).toEqual(
+      expect.arrayContaining([
+        '[--table-pin-edge:inset_0_0_0_transparent]',
+        'data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)]',
+        'rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]',
+        'motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]',
+        '[&[data-pin-first-column]]:[--table-fade-start:0px]',
+      ]),
+    );
+  });
+
+  test('rows hand their hover, selected and footer fill to the pinned cell', () => {
+    const html = renderToStaticMarkup(
+      <table>
+        <TableFooter>
+          <TableRow />
+        </TableFooter>
+      </table>,
+    ).replaceAll('&amp;', '&');
+    expect(html).toContain('hover:[--table-row-fill:color-mix(in_oklab,var(--muted)_50%,transparent)]');
+    expect(html).toContain('data-[state=selected]:[--table-row-fill:var(--muted)]');
+    expect(html).toMatch(/data-slot="table-footer"[^>]*\[--table-row-fill:color-mix\(in_oklab,var\(--muted\)_50%,transparent\)\]/);
   });
 });

@@ -33,10 +33,44 @@ const scrollCue = [
   "focus-visible:[mask-position:0_0,left,right,top,bottom] focus-visible:[mask-size:100%_100%,2px_100%,2px_100%,100%_2px,100%_2px] focus-visible:[mask-repeat:no-repeat]",
 ].join(" ")
 
+// Pinning (`pinFirstColumn`): the first cell of every row (header, body,
+// footer) stays at the inline-start edge while the other columns scroll under
+// it. Every other cell is isolated, so a raised control inside it (`z-10`)
+// still scrolls under the pinned cell; popovers and menus render in a portal
+// and stay above. The selected-row bar is drawn above the pinned cell.
+// A pinned cell must be opaque. It paints `--table-surface` (default: the card
+// surface; set it on an ancestor when the table sits on another surface) and
+// layers the row's state fill over it (`--table-row-fill`, set by TableRow on
+// hover and selection and by TableFooter), so hover and selection still show.
+// While content is scrolled under it (`data-overflow-start`), the pinned cell
+// shows a 1px edge in the input colour on its inline-end side, the sideways
+// twin of `shadow-scrolled` on a sticky header. It is an inset shadow: a
+// table cell with collapsed borders does not paint an outer one. The edge fades in and out
+// (`fast`) and switches at once under reduced motion. The start fade is off
+// when pinned: it would fade the pinned cell, and the edge replaces it. The
+// end fade stays.
+// Tailwind reads class names from this source as written, so each one is
+// spelled out in full.
+const pinnedColumn = [
+  "[&[data-pin-first-column]_tr>:first-child]:sticky [&[data-pin-first-column]_tr>:first-child]:start-0 [&[data-pin-first-column]_tr>:first-child]:z-3 [&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))] [&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]",
+  "[&[data-pin-first-column]_tr>:not(:first-child)]:isolate",
+  "[&[data-pin-first-column]_tr]:before:z-4 [&[data-pin-first-column]_tr]:after:z-4",
+  "[&[data-pin-first-column]_tr>:first-child]:[box-shadow:var(--table-pin-edge)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
+  "motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]",
+  "[&[data-pin-first-column]]:[--table-fade-start:0px]",
+].join(" ")
+
 // When the table is wider than its container, the container scrolls and must
 // be reachable by keyboard (axe scrollable-region-focusable), so it becomes a
 // tab stop with a focus ring. A table that fits adds no tab stop.
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function Table({
+  className,
+  pinFirstColumn = false,
+  ...props
+}: React.ComponentProps<"table"> & {
+  /** Keeps the first column in place while the others scroll sideways. */
+  pinFirstColumn?: boolean
+}) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [scrollable, setScrollable] = React.useState(false)
 
@@ -83,7 +117,8 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       ref={containerRef}
       data-slot="table-container"
       tabIndex={scrollable ? 0 : undefined}
-      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue}`}
+      data-pin-first-column={pinFirstColumn ? "" : undefined}
+      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue} ${pinnedColumn}`}
     >
       <table
         data-slot="table"
@@ -187,7 +222,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0 [--table-row-fill:color-mix(in_oklab,var(--muted)_50%,transparent)]",
         className
       )}
       {...props}
@@ -263,7 +298,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted relative border-b border-border/50 transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-muted relative border-b border-border/50 transition-colors hover:[--table-row-fill:color-mix(in_oklab,var(--muted)_50%,transparent)] data-[state=selected]:[--table-row-fill:var(--muted)]",
         selectedBar,
         className
       )}
