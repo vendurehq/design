@@ -166,16 +166,69 @@ describe('Table pinFirstColumn', () => {
     expect(renderToStaticMarkup(<Table pinFirstColumn />)).not.toMatch(/<table[^>]*pin/i);
   });
 
-  test('pins the first cell of each row on an opaque, overridable surface', () => {
+  test('pins the first cell of each row, and a data-pinned cell with it, on an opaque, overridable surface', () => {
     expect(tokens(renderToStaticMarkup(<Table pinFirstColumn />))).toEqual(
       expect.arrayContaining([
-        '[&[data-pin-first-column]_tr>:first-child]:sticky',
-        '[&[data-pin-first-column]_tr>:first-child]:start-0',
-        '[&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))]',
-        '[&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]',
-        '[&[data-pin-first-column]_tr>:not(:first-child)]:isolate',
+        '[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:sticky',
+        '[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:start-0',
+        '[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[background-color:var(--table-surface,var(--card))]',
+        '[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]',
       ]),
     );
+  });
+
+  test('pinned cells stack above raised row controls, the first cell on top, inside an isolated container', () => {
+    const list = tokens(renderToStaticMarkup(<Table pinFirstColumn />));
+    expect(list).toEqual(
+      expect.arrayContaining([
+        '[&[data-pin-first-column]]:isolate',
+        '[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:z-12',
+        '[&[data-pin-first-column]_tr>[data-pinned]:not(:first-child)]:z-11',
+      ]),
+    );
+    // The other cells are not isolated: a row-wide link layer in one of them
+    // must stay under the controls of every cell.
+    expect(list.filter((token) => token.endsWith(':isolate'))).toEqual(['[&[data-pin-first-column]]:isolate']);
+  });
+
+  test('the first pinned cell draws the selected-row bar, and the row does not', () => {
+    const list = tokens(renderToStaticMarkup(<Table pinFirstColumn />));
+    expect(list).toEqual(
+      expect.arrayContaining([
+        '[&[data-pin-first-column]_tr]:before:hidden',
+        '[&[data-pin-first-column]_tr]:after:hidden',
+        '[&[data-pin-first-column]_tr>:first-child]:before:absolute',
+        '[&[data-pin-first-column]_tr>:first-child]:before:start-0',
+        '[&[data-pin-first-column]_tr>:first-child]:before:bg-brand-indicator',
+        '[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]!',
+        '[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!',
+        '[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:[clip-path:inset(0_0_100%_0)]',
+        '[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:[clip-path:inset(100%_0_0_0)]',
+        'motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:opacity-100',
+        'motion-reduce:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:opacity-100',
+        'rtl:[&[data-pin-first-column]_tr>:first-child]:before:origin-right',
+      ]),
+    );
+  });
+
+  test('the cell bar is the row bar, state for state', () => {
+    // Every utility of the row's bar has its twin on the first pinned cell.
+    const row = renderToStaticMarkup(
+      <table>
+        <tbody>
+          <TableRow />
+        </tbody>
+      </table>,
+    )
+      .replaceAll('&amp;', '&')
+      .match(/<tr [^>]*class="([^"]*)"/)?.[1]
+      ?.split(/\s+/)
+      .filter((token) => /(^|:)(before|after):/.test(token)) ?? [];
+    const cell = tokens(renderToStaticMarkup(<Table pinFirstColumn />)).filter((token) =>
+      /:first-child\]:(before|after):/.test(token),
+    );
+    expect(row.length).toBeGreaterThan(30);
+    expect(cell).toHaveLength(row.length);
   });
 
   test('shows an edge only while scrolled, on the inline-end side, and drops the start fade', () => {
@@ -184,7 +237,7 @@ describe('Table pinFirstColumn', () => {
         '[--table-pin-edge:inset_0_0_0_transparent]',
         'data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)]',
         'rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]',
-        'motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]',
+        'motion-safe:[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]',
         '[&[data-pin-first-column]]:[--table-fade-start:0px]',
       ]),
     );

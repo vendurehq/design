@@ -1229,6 +1229,166 @@ describe('DataTable selection column', () => {
   });
 });
 
+describe('DataTable pinFirstColumn', () => {
+  const selectable = { value: {}, onChange: () => {} };
+  const linkedColumns: ColumnDef<Country>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: ({ row }) => (
+        <DataTableRowLink href={`/countries/${row.original.id}`}>
+          {row.original.name}
+        </DataTableRowLink>
+      ),
+    },
+    { accessorKey: 'code', header: 'Code' },
+  ];
+  // The opening tag of every cell of each row, header first.
+  const cellTags = (markup: string) =>
+    markup
+      .split('</tr>')
+      .slice(0, -1)
+      .map((row) => [...row.matchAll(/<t[dh] [^>]*>/g)].map((match) => match[0]));
+  const hostCount = (markup: string) =>
+    count(markup, /data-slot="data-table-row-link-overlay-host"/g);
+
+  test('is off by default: no pin mark, no pinned cells, no overlay hosts', () => {
+    const markup = html(
+      <DataTable
+        rows={rows}
+        columns={linkedColumns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    expect(markup).not.toMatch(/\sdata-pin-first-column=/);
+    expect(markup).not.toMatch(/\sdata-pinned=/);
+    expect(hostCount(markup)).toBe(0);
+  });
+
+  test('passes the prop to Table and pins the leading column with the select cell', () => {
+    const markup = html(
+      <DataTable
+        pinFirstColumn
+        rows={rows}
+        columns={linkedColumns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    expect(markup).toContain('data-pin-first-column=""');
+    // Header and both body rows: the select cell is first (Table pins it as the
+    // first child), the name cell carries the mark, the code cell scrolls.
+    for (const [select, name, code] of cellTags(markup)) {
+      expect(select).toContain('data-column-id="select"');
+      expect(select).not.toContain('data-pinned');
+      expect(name).toContain('data-column-id="name"');
+      expect(name).toContain('data-pinned=""');
+      expect(code).not.toContain('data-pinned');
+    }
+  });
+
+  test('without selection the first column is the first cell, and still marked', () => {
+    const markup = html(<DataTable pinFirstColumn rows={rows} columns={columns} />);
+    for (const [name, code] of cellTags(markup)) {
+      expect(name).toContain('data-column-id="name"');
+      expect(name).toContain('data-pinned=""');
+      expect(code).not.toContain('data-pinned');
+    }
+  });
+
+  test('each body row has an overlay host on each side of the pinned edge', () => {
+    const markup = html(
+      <DataTable
+        pinFirstColumn
+        rows={rows}
+        columns={linkedColumns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    expect(hostCount(markup)).toBe(4);
+    const firstRow = markup.split('<tbody')[1]?.split('</tr>')[0] ?? '';
+    const cells = firstRow.split('<td').slice(1);
+    // In the pinned name cell and in the last cell, which scrolls.
+    expect(cells.map((cell) => cell.includes('data-table-row-link-overlay-host'))).toEqual([
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  test('a single data column is all pinned: one host, in its cell', () => {
+    const markup = html(
+      <DataTable
+        pinFirstColumn
+        rows={rows}
+        columns={linkedColumns.slice(0, 1)}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+      />,
+    );
+    expect(hostCount(markup)).toBe(2);
+  });
+
+  test('the select cell takes the selection ripple on the bar it draws', () => {
+    const selectCell = (pinned: boolean) =>
+      html(
+        <DataTable
+          pinFirstColumn={pinned}
+          rows={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          rowSelection={selectable}
+        />,
+      )
+        .split('<tbody')[1]
+        ?.match(/<td [^>]*data-column-id="select"[^>]*>/)?.[0]
+        .replaceAll('&gt;', '>')
+        .replaceAll('&amp;', '&') ?? '';
+    const ripple =
+      'in-data-[select-ripple=select]:[tr:not([data-state=selected])>&]:before:[clip-path:inset(0_0_100%_0)]!';
+    expect(selectCell(true)).toContain(ripple);
+    expect(selectCell(false)).not.toContain(ripple);
+  });
+
+  test('ctx.cellProps carries the pin mark to a custom row', () => {
+    const seen: Record<string, string | undefined> = {};
+    html(
+      <DataTable
+        pinFirstColumn
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowSelection={selectable}
+        renderRow={(row, { cellProps, defaultRow }) => {
+          for (const cell of row.getVisibleCells()) {
+            seen[cell.column.id] = cellProps(cell.column.id)['data-pinned'];
+          }
+          return defaultRow;
+        }}
+      />,
+    );
+    expect(seen).toEqual({ select: undefined, name: '', code: undefined });
+  });
+
+  test('the overlay stays under the row controls and is not one of them', () => {
+    const markup = html(<DataTable pinFirstColumn rows={rows} columns={linkedColumns} />)
+      .replaceAll('&gt;', '>')
+      .replaceAll('&amp;', '&');
+    const tableClass = markup.match(/<table [^>]*class="([^"]*)"/)?.[1] ?? '';
+    // The rule that raises row controls above the link skips the overlay.
+    expect(tableClass).toMatch(
+      /:not\(\[data-slot=data-table-row-link\],\[data-slot=data-table-row-link-overlay\],/,
+    );
+    // While the link holds keyboard focus, the pinned cells draw their part
+    // of the row's ring.
+    expect(tableClass).toContain(
+      '[&_tr:not([data-click-selects]):has([data-slot=data-table-row-link]:focus-visible)]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)]',
+    );
+  });
+});
+
 describe('DataTable pagination', () => {
   test('pagination wired → footer renders with the range', () => {
     const markup = html(

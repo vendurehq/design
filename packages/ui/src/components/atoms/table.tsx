@@ -35,9 +35,16 @@ const scrollCue = [
 
 // Pinning (`pinFirstColumn`): the first cell of every row (header, body,
 // footer) stays at the inline-start edge while the other columns scroll under
-// it. Every other cell is isolated, so a raised control inside it (`z-10`)
-// still scrolls under the pinned cell; popovers and menus render in a portal
-// and stay above. The selected-row bar is drawn above the pinned cell.
+// it. A cell marked `data-pinned` is pinned with it, at the same inline-start
+// 0: the DataTable marks its leading column, whose content starts in the
+// zero-width select cell's gutter, so the checkbox and the name stay together.
+// The pinned cells stack above the other cells and above their raised
+// controls (`z-10`, the stretched-link convention): the first cell at 12, a
+// `data-pinned` cell at 11, so the first cell (the select checkbox) stays on
+// top. The container is isolated, so this order stays inside the table;
+// popovers and menus render in a portal and stay above. The other cells are
+// not isolated: a row-wide link layer in them (DataTableRowLink's overlay)
+// must stay under the controls of every cell.
 // A pinned cell must be opaque. It paints `--table-surface` (default: the card
 // surface; set it on an ancestor when the table sits on another surface) and
 // layers the row's state fill over it (`--table-row-fill`, set by TableRow on
@@ -51,18 +58,47 @@ const scrollCue = [
 // end fade stays. The pinned cell stacks above the container's focus ring,
 // so while the container has keyboard focus the pinned cells draw their part
 // of the ring (inline-start side, and top and bottom on the first and last row).
+// The selected-row bar of a row sits on the row's start edge, which scrolls
+// away. While pinned, the first cell draws the bar instead (pinnedBar below,
+// the same recipe as selectedBar on the cell's own pseudo-elements) and the
+// row's bar is hidden.
 // Tailwind reads class names from this source as written, so each one is
 // spelled out in full.
 const pinnedColumn = [
-  "[&[data-pin-first-column]_tr>:first-child]:sticky [&[data-pin-first-column]_tr>:first-child]:start-0 [&[data-pin-first-column]_tr>:first-child]:z-3 [&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))] [&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]",
-  "[&[data-pin-first-column]_tr>:not(:first-child)]:isolate",
-  "[&[data-pin-first-column]_tr]:before:z-4 [&[data-pin-first-column]_tr]:after:z-4",
-  "[&[data-pin-first-column]_tr>:first-child]:[box-shadow:var(--table-pin-edge),var(--table-pin-ring-x,inset_0_0_0_transparent),var(--table-pin-ring-top,inset_0_0_0_transparent),var(--table-pin-ring-bottom,inset_0_0_0_transparent)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
-  "motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]",
+  "[&[data-pin-first-column]]:isolate",
+  "[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:sticky [&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:start-0 [&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:z-12 [&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[background-color:var(--table-surface,var(--card))] [&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]",
+  "[&[data-pin-first-column]_tr>[data-pinned]:not(:first-child)]:z-11",
+  "[&[data-pin-first-column]_tr]:before:hidden [&[data-pin-first-column]_tr]:after:hidden",
+  "[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[box-shadow:var(--table-pin-edge),var(--table-pin-ring-x,inset_0_0_0_transparent),var(--table-pin-ring-top,inset_0_0_0_transparent),var(--table-pin-ring-bottom,inset_0_0_0_transparent)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
+  "motion-safe:[&[data-pin-first-column]_tr>:is(:first-child,[data-pinned])]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]",
   "[&[data-pin-first-column]]:[--table-fade-start:0px]",
   "[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)] rtl:[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_-2px_0_0_var(--ring)]",
   "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:is(thead,tbody,tfoot)~*)>tr:first-child]:[--table-pin-ring-top:inset_0_2px_0_var(--ring)]",
   "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:has(~:is(thead,tbody,tfoot)))>tr:last-child]:[--table-pin-ring-bottom:inset_0_-2px_0_var(--ring)]",
+].join(" ")
+
+// The selected-row bar on the first pinned cell: selectedBar's recipe, with
+// each row state read from the cell's row.
+const pinnedBar = [
+  "[&[data-pin-first-column]_tr>:first-child]:before:pointer-events-none [&[data-pin-first-column]_tr>:first-child]:before:absolute [&[data-pin-first-column]_tr>:first-child]:before:inset-y-0 [&[data-pin-first-column]_tr>:first-child]:before:start-0 [&[data-pin-first-column]_tr>:first-child]:before:w-0.5 [&[data-pin-first-column]_tr>:first-child]:before:bg-brand-indicator",
+  "[&[data-pin-first-column]_tr>:first-child]:after:pointer-events-none [&[data-pin-first-column]_tr>:first-child]:after:absolute [&[data-pin-first-column]_tr>:first-child]:after:inset-y-0 [&[data-pin-first-column]_tr>:first-child]:after:start-0 [&[data-pin-first-column]_tr>:first-child]:after:w-0.5 [&[data-pin-first-column]_tr>:first-child]:after:bg-brand-indicator",
+  "[&[data-pin-first-column]_tr>:first-child]:before:[clip-path:inset(50%_0_50%_0)] [&[data-pin-first-column]_tr>:first-child]:after:[clip-path:inset(50%_0_50%_0)]",
+  "[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:[clip-path:inset(0_0_100%_0)] [&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:after:[clip-path:inset(0_0_100%_0)]",
+  "[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:before:[clip-path:inset(100%_0_0_0)] [&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:[clip-path:inset(100%_0_0_0)]",
+  "[&[data-pin-first-column]_[data-state=selected]+tr[data-next-selected]>:first-child]:before:[clip-path:inset(0_0_100%_0)] [&[data-pin-first-column]_[data-state=selected]+tr[data-next-selected]>:first-child]:after:[clip-path:inset(100%_0_0_0)]",
+  "[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:[clip-path:inset(0_0_calc(50%_-_0.5px)_0)]! [&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:[clip-path:inset(calc(50%_-_0.5px)_0_0_0)]!",
+  "[&[data-pin-first-column]_tr>:first-child]:before:origin-left [&[data-pin-first-column]_tr>:first-child]:after:origin-left rtl:[&[data-pin-first-column]_tr>:first-child]:before:origin-right rtl:[&[data-pin-first-column]_tr>:first-child]:after:origin-right",
+  "motion-safe:[&[data-pin-first-column]_tr>:first-child]:before:opacity-0 motion-safe:[&[data-pin-first-column]_tr>:first-child]:after:opacity-0 motion-safe:[&[data-pin-first-column]_tr>:first-child]:before:[scale:0.5_1] motion-safe:[&[data-pin-first-column]_tr>:first-child]:after:[scale:0.5_1]",
+  "motion-safe:[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:opacity-100 motion-safe:[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:after:opacity-100 motion-safe:[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:[scale:none] motion-safe:[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:after:[scale:none]",
+  "motion-safe:[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:before:opacity-100 motion-safe:[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:opacity-100 motion-safe:[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:before:[scale:none] motion-safe:[&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:[scale:none]",
+  "motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:opacity-100 motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:opacity-100 motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:[scale:none] motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:[scale:none]",
+  "[&[data-pin-first-column]_tr>:first-child]:before:[--bar-clip-duration:0s] [&[data-pin-first-column]_tr>:first-child]:after:[--bar-clip-duration:0s] [&[data-pin-first-column]_tr>:first-child]:before:[--bar-clip-delay:var(--transition-duration-fast)] [&[data-pin-first-column]_tr>:first-child]:after:[--bar-clip-delay:var(--transition-duration-fast)]",
+  "[&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:[--bar-clip-duration:var(--transition-duration-moderate)] [&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:after:[--bar-clip-duration:var(--transition-duration-moderate)] [&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:before:[--bar-clip-delay:0s] [&[data-pin-first-column]_[data-state=selected]+tr>:first-child]:after:[--bar-clip-delay:0s] [&[data-pin-first-column]_tr[data-next-selected]>:first-child]:before:[--bar-clip-duration:var(--transition-duration-moderate)] [&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:[--bar-clip-duration:var(--transition-duration-moderate)] [&[data-pin-first-column]_tr[data-next-selected]>:first-child]:before:[--bar-clip-delay:0s] [&[data-pin-first-column]_tr[data-next-selected]>:first-child]:after:[--bar-clip-delay:0s]",
+  "[&[data-pin-first-column]_tr>:first-child]:before:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)] [&[data-pin-first-column]_tr>:first-child]:after:[transition:clip-path_var(--bar-clip-duration)_var(--ease-out)_var(--bar-clip-delay),opacity_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-soft)]",
+  "motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)] motion-safe:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:[transition:clip-path_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-moderate)_var(--ease-soft),scale_var(--transition-duration-moderate)_var(--ease-out)]",
+  "motion-reduce:[&[data-pin-first-column]_tr>:first-child]:before:opacity-0 motion-reduce:[&[data-pin-first-column]_tr>:first-child]:after:opacity-0 motion-reduce:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:opacity-100 motion-reduce:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:opacity-100",
+  "motion-reduce:[&[data-pin-first-column]_tr>:first-child]:before:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)] motion-reduce:[&[data-pin-first-column]_tr>:first-child]:after:[transition:opacity_var(--transition-duration-fast)_var(--ease-soft),clip-path_0s_linear_var(--transition-duration-fast)]",
+  "motion-reduce:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:before:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)] motion-reduce:[&[data-pin-first-column]_tr[data-state=selected]>:first-child]:after:[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)]",
 ].join(" ")
 
 // When the table is wider than its container, the container scrolls and must
@@ -123,7 +159,7 @@ function Table({
       data-slot="table-container"
       tabIndex={scrollable ? 0 : undefined}
       data-pin-first-column={pinFirstColumn ? "" : undefined}
-      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue} ${pinnedColumn}`}
+      className={`focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring relative w-full overflow-x-auto rounded-[inherit] outline-none ${scrollCue} ${pinnedColumn} ${pinnedBar}`}
     >
       <table
         data-slot="table"
@@ -275,7 +311,8 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 // table then drops frames. At rest
 // the bar is the same as without the motion: opacity 1, no scale. Under
 // reduced motion the bar is whole and only fades: the clip jumps on select and
-// waits for the fade on deselect.
+// waits for the fade on deselect. With `pinFirstColumn` the first cell draws
+// the bar instead (pinnedBar), so it stays on the pinned edge.
 const selectedBar = [
   "before:pointer-events-none before:absolute before:inset-y-0 before:start-0 before:w-0.5 before:bg-brand-indicator",
   "after:pointer-events-none after:absolute after:inset-y-0 after:start-0 after:w-0.5 after:bg-brand-indicator",

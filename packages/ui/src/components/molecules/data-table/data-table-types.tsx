@@ -225,11 +225,14 @@ export interface DataTableRowRipple {
  * (`<TableCell {...cellProps(cell.column.id)}>`) and the cell matches the
  * built-in row: the select cell is the zero-width cell the checkbox floats
  * over, the leading data cell carries the checkbox gutter, and every cell
- * lines its content up with the header. Merge your own classes with `cn`.
+ * lines its content up with the header. With `pinFirstColumn`, the leading
+ * data cell carries `data-pinned`, so it stays at the edge with the select
+ * cell. Merge your own classes with `cn`.
  */
 export interface DataTableRowCellProps {
   'data-column-id': string;
   'data-content-inset-cell': string;
+  'data-pinned': '' | undefined;
   className: string;
   style: React.CSSProperties | undefined;
 }
@@ -435,6 +438,17 @@ export interface DataTableProps<TData> {
    * edge-cell alignment — the host card is the frame.
    */
   frame?: 'card' | 'plain';
+  /**
+   * Keeps the first column in place while the others scroll sideways (Table's
+   * `pinFirstColumn`). The select checkbox is pinned with it, and a selected
+   * row's bar stays on the pinned edge. A `DataTableRowLink` still opens the
+   * item from every cell: the name stays the row's one link, and the cells
+   * that scroll under the pinned column open it through a second anchor with
+   * the same href, hidden from assistive technology and the tab order. A row
+   * from `renderRow` that renders its own cells has no such anchor: there,
+   * only the cells on the link's side of the pinned edge open the item.
+   */
+  pinFirstColumn?: boolean;
   /**
    * Extra `<TableRow>`s appended inside `TableBody` after the data rows — e.g.
    * an order table's subtotal/shipping/total rows. Rendered only alongside

@@ -69,6 +69,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
   buildDisplayColumns,
@@ -130,11 +131,15 @@ const LINKED_ROW_CLASS = cn(
   // before the click (useSelectAllRipple): the cursor is inherited, so its
   // change restyles every cell of every row.
   '[&[data-selecting-cursor]_tr]:cursor-default!',
-  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
-  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=data-table-row-link-overlay],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative',
+  '[&_tr:has([data-slot=data-table-row-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]):not([data-slot=data-table-row-link],[data-slot=data-table-row-link-overlay],[data-slot=checkbox],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10',
   // Only the first row link of a row stretches. A later one (a variant's
   // Product, rendered by the same link component) is a plain link above it,
   // underlined on hover, without a chevron.
+  // Pinned (`pinFirstColumn`): while the row link holds keyboard focus, the
+  // pinned cells draw their part of the row's focus ring (inline-start side,
+  // top and bottom): they stack above the ring the link draws over the row.
+  '[&_tr:not([data-click-selects]):has([data-slot=data-table-row-link]:focus-visible)]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)] rtl:[&_tr:not([data-click-selects]):has([data-slot=data-table-row-link]:focus-visible)]:[--table-pin-ring-x:inset_-2px_0_0_var(--ring)] [&_tr:not([data-click-selects]):has([data-slot=data-table-row-link]:focus-visible)]:[--table-pin-ring-top:inset_0_2px_0_var(--ring)] [&_tr:not([data-click-selects]):has([data-slot=data-table-row-link]:focus-visible)]:[--table-pin-ring-bottom:inset_0_-2px_0_var(--ring)]',
   '[&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:relative [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:z-10 [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:underline-offset-4 [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-link]]:hover:underline [&_td:has([data-slot=data-table-row-link])~td_[data-slot=data-table-row-chevron]]:hidden',
 );
 
@@ -145,6 +150,38 @@ const LINKED_ROW_CLASS = cn(
 // sets the edge padding with a descendant rule.
 const ROW_CHEVRON_SLOT_CLASS =
   '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
+
+// Pinned (`pinFirstColumn`): a pinned cell is positioned, so it becomes the
+// containing block of the link's stretched ::after. A link in the pinned cell
+// then covers only that cell, and a link in a scrolling cell covers every cell
+// but the pinned ones, which stack above it. The cells on the other side of
+// the pinned edge open the item through an overlay: a second anchor with the
+// same href, hidden from assistive technology and from the tab order, so the
+// row keeps one link and one tab stop. Cmd+click, middle-click and the hover
+// URL work on it as on the link. It renders (in a portal) into a host the
+// DataTable puts in the other side: in the last cell when the link is pinned,
+// so the row is its containing block, else in the pinned cell. It sits under
+// the row controls, as the ::after does.
+const PINNED_CELL_SELECTOR = ':first-child, [data-pinned]';
+const OVERLAY_HOST_SELECTOR = ':scope > * > [data-slot=data-table-row-link-overlay-host]';
+
+interface RowLinkOverlay {
+  host: Element;
+  pinnedLink: boolean;
+}
+
+function rowLinkOverlay(link: HTMLElement): RowLinkOverlay | null {
+  const cell = link.closest('td, th');
+  const row = cell?.parentElement;
+  if (!cell || !row || row.tagName !== 'TR' || !row.closest('[data-pin-first-column]')) return null;
+  // Only the first row link of a row stretches.
+  if (row.querySelector('[data-slot=data-table-row-link]') !== link) return null;
+  const pinnedLink = cell.matches(PINNED_CELL_SELECTOR);
+  const host = Array.from(row.querySelectorAll(OVERLAY_HOST_SELECTOR)).find(
+    (candidate) => candidate.parentElement?.matches(PINNED_CELL_SELECTOR) !== pinnedLink,
+  );
+  return host ? { host, pinnedLink } : null;
+}
 
 /**
  * Opens the row's item from any point of the row. Render it in the cell that
@@ -178,6 +215,11 @@ const ROW_CHEVRON_SLOT_CLASS =
  * the end of the row, the full row height, the chevron stays on row hover and
  * turns blue on the target's hover or focus, and the focus ring goes around
  * the slot. A click anywhere else on the row selects it.
+ *
+ * In a table with `pinFirstColumn`, the cells on the other side of the pinned
+ * edge open the item through an overlay anchor with the same href (see
+ * rowLinkOverlay). It is hidden from assistive technology and from the tab
+ * order, so the row still has one link and one tab stop.
  */
 function DataTableRowLink({
   className,
@@ -190,16 +232,62 @@ function DataTableRowLink({
   // target is the row-end chevron instead.
   const linkRef = React.useRef<HTMLAnchorElement>(null);
   const [nameless, setNameless] = React.useState(false);
+  const [overlay, setOverlay] = React.useState<RowLinkOverlay | null>(null);
   React.useLayoutEffect(() => {
     const link = linkRef.current;
-    if (link) setNameless(link.getBoundingClientRect().width < 1);
+    if (!link) return;
+    setNameless(link.getBoundingClientRect().width < 1);
+    const next = rowLinkOverlay(link);
+    setOverlay((current) =>
+      current?.host === next?.host && current?.pinnedLink === next?.pinnedLink ? current : next,
+    );
   });
-  return useRender({
+  // In a pinned cell the link's ::after covers only that cell, and its
+  // chevron would sit at the cell's end: the overlay draws both for the row.
+  const pinnedLink = overlay?.pinnedLink === true;
+  // The overlay goes to the same place as the link, with the link's own props
+  // (a router link's `render` included), but no id and no styling of its own.
+  const { id: _id, style: _style, ...overlayLinkProps } = props;
+  const overlayNode = useRender({
+    defaultTagName: 'a',
+    render,
+    enabled: overlay != null,
+    props: mergeProps<'a'>(overlayLinkProps, {
+      'aria-hidden': true,
+      tabIndex: -1,
+      className: cn(
+        'group/row-link-overlay absolute inset-0 z-1 cursor-pointer outline-none',
+        // While rows are selected a click on the row selects it.
+        'in-data-click-selects:hidden',
+        pinnedLink && [
+          // The row's focus ring while the link holds keyboard focus; the
+          // pinned cells draw their part of it (LINKED_ROW_CLASS).
+          'in-[tr:has([data-slot=data-table-row-link]:focus-visible)]:outline-2 in-[tr:has([data-slot=data-table-row-link]:focus-visible)]:-outline-offset-2 in-[tr:has([data-slot=data-table-row-link]:focus-visible)]:outline-ring in-[tr:has([data-slot=data-table-row-link]:focus-visible)]:outline-solid',
+          // A link without a visible name: while rows are selected the
+          // overlay is its target over the row-end chevron slot.
+          'in-data-click-selects:data-nameless:block in-data-click-selects:data-nameless:start-auto in-data-click-selects:data-nameless:w-[calc(var(--card-px)+--spacing(7))] in-data-click-selects:data-nameless:rounded-md',
+        ],
+      ),
+      children: pinnedLink ? (
+        <ListRowChevron
+          data-slot="data-table-row-link-overlay-chevron"
+          className={cn(
+            'pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden',
+            'in-data-click-selects:group-data-nameless/row-link-overlay:block in-data-click-selects:group-data-nameless/row-link-overlay:transition-[opacity,translate,color]',
+            'in-data-click-selects:group-data-nameless/row-link-overlay:group-hover/row-link-overlay:text-brand-text in-data-click-selects:group-data-nameless/row-link-overlay:in-[tr:has([data-slot=data-table-row-link]:focus-visible)]:text-brand-text',
+          )}
+        />
+      ) : null,
+    }),
+    state: { slot: 'data-table-row-link-overlay', nameless },
+  });
+  const linkNode = useRender({
     defaultTagName: 'a',
     render,
     ref: linkRef,
     props: mergeProps<'a'>(
       {
+        ...(pinnedLink ? { 'data-pinned-link': '' } : {}),
         className: cn(
           'group/row-link cursor-pointer font-medium text-foreground outline-none',
           'after:absolute after:inset-0 after:z-1 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring focus-visible:after:outline-solid',
@@ -212,6 +300,8 @@ function DataTableRowLink({
           // is drawn around that slot.
           'in-data-click-selects:data-nameless:after:block in-data-click-selects:data-nameless:after:start-auto in-data-click-selects:data-nameless:after:w-[calc(var(--card-px)+--spacing(7))] in-data-click-selects:data-nameless:after:rounded-md',
           'in-data-click-selects:data-nameless:focus-visible:outline-none',
+          // In a pinned cell the overlay draws the ring and the row-end target.
+          'data-pinned-link:focus-visible:after:outline-none in-data-click-selects:data-nameless:data-pinned-link:after:hidden',
           className,
         ),
         children: (
@@ -234,7 +324,7 @@ function DataTableRowLink({
             <ListRowChevron
               data-slot="data-table-row-chevron"
               className={cn(
-                'pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden',
+                'pointer-events-none absolute end-(--card-px) top-1/2 -translate-y-1/2 in-data-selecting:hidden group-data-pinned-link/row-link:hidden!',
                 // The target of a link without a visible name while rows are
                 // selected: shown on row hover, blue on its own hover or focus.
                 'in-data-click-selects:group-data-nameless/row-link:block in-data-click-selects:group-data-nameless/row-link:transition-[opacity,translate,color]',
@@ -249,6 +339,12 @@ function DataTableRowLink({
     // `nameless` renders as `data-nameless` while true.
     state: { slot: 'data-table-row-link', nameless },
   });
+  return (
+    <>
+      {linkNode}
+      {overlay != null && overlayNode != null && createPortal(overlayNode, overlay.host)}
+    </>
+  );
 }
 
 // The composition root. Owns the single `useReactTable` instance and the
@@ -338,7 +434,7 @@ const HEADER_LABEL_UNDER_BULK_CLASS =
 // control inside the row counts: an ancestor of the table that matches (an app
 // shell's `<main tabindex="-1">`, the skip link target) is not a row control.
 const ROW_CONTROL_SELECTOR =
-  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link]),[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
+  '[data-slot=data-table-select-area],a:not([data-slot=data-table-row-link],[data-slot=data-table-row-link-overlay]),button,input,select,textarea,[role=button],[role=checkbox],[role=menuitem],[tabindex]:not([data-slot=data-table-row-link],[data-slot=data-table-row-link-overlay]),[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-table-row-control]';
 
 // The select gutter is `--spacing(10)`, 40px: the checkbox (8px in, 16px wide,
 // ending at 24px), a 5px gap, then the 11px `--content-inset` of a sortable
@@ -398,6 +494,16 @@ const SELECT_RIPPLE_ROW_CLASS = cn(
   'in-data-[select-ripple=select]:not-data-[state=selected]:before:[clip-path:inset(0_0_100%_0)]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[clip-path:inset(0_0_100%_0)]!',
   'in-data-[select-ripple=select]:not-data-[state=selected]:before:[transition:none]! in-data-[select-ripple=select]:not-data-[state=selected]:after:[transition:none]!',
   'in-data-[select-ripple=clear]:not-data-[state=selected]:before:[clip-path:inset(100%_0_0_0)]! in-data-[select-ripple=clear]:not-data-[state=selected]:after:[clip-path:inset(100%_0_0_0)]!',
+);
+// Pinned (`pinFirstColumn`), the first cell draws the selected-row bar (see
+// Table), so the select cell takes the row's ripple on its own bar: the same
+// rules, reading the row's state and delay.
+const SELECT_RIPPLE_PINNED_BAR_CLASS = cn(
+  'in-data-[select-ripple=select]:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-moderate)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-moderate)_var(--ease-out)_var(--row-ripple-delay)]! in-data-[select-ripple=select]:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-moderate)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-moderate)_var(--ease-out)_var(--row-ripple-delay)]!',
+  'in-data-[select-ripple=clear]:before:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay)]! in-data-[select-ripple=clear]:after:[transition:clip-path_var(--row-ripple-span)_linear_var(--row-ripple-delay),opacity_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay),scale_var(--transition-duration-fast)_var(--ease-soft)_var(--row-ripple-delay)]!',
+  'in-data-[select-ripple=select]:[tr:not([data-state=selected])>&]:before:[clip-path:inset(0_0_100%_0)]! in-data-[select-ripple=select]:[tr:not([data-state=selected])>&]:after:[clip-path:inset(0_0_100%_0)]!',
+  'in-data-[select-ripple=select]:[tr:not([data-state=selected])>&]:before:[transition:none]! in-data-[select-ripple=select]:[tr:not([data-state=selected])>&]:after:[transition:none]!',
+  'in-data-[select-ripple=clear]:[tr:not([data-state=selected])>&]:before:[clip-path:inset(100%_0_0_0)]! in-data-[select-ripple=clear]:[tr:not([data-state=selected])>&]:after:[clip-path:inset(100%_0_0_0)]!',
 );
 // The row checkbox keeps its own transitions (the fill, the mark revealed with
 // it, the fade in) and only takes the row's delay. Row checkboxes are never
@@ -650,6 +756,7 @@ function DataTable<TData>({
   setTableOptions,
   onTableReady,
   frame = 'card',
+  pinFirstColumn = false,
   footerRows,
   labels,
   className,
@@ -925,6 +1032,14 @@ function DataTable<TData>({
     if (rowActions != null && id === ACTIONS_COLUMN_ID) return 'actions';
     return undefined;
   };
+  // Pinned (`pinFirstColumn`): the first data column. With row selection the
+  // zero-width select cell is the first cell and the checkbox floats over this
+  // column's gutter, so its cells carry `data-pinned` and Table pins them
+  // with the select cell, at the same inline-start edge.
+  const pinnedColumnId = pinFirstColumn
+    ? table.getVisibleLeafColumns().find((column) => generatedColumn(column.id) !== 'select')?.id
+    : undefined;
+  const pinnedMark = (id: string): '' | undefined => (id === pinnedColumnId ? '' : undefined);
   // Columns whose `meta.align` is `'end'`: their header, sort control and
   // cells line up on the end side, so the digits of a number column line up.
   const endColumnIds = new Set(
@@ -1002,13 +1117,23 @@ function DataTable<TData>({
   const bodyCellProps = (columnId: string): DataTableRowCellProps => ({
     'data-column-id': columnId,
     'data-content-inset-cell': '',
+    'data-pinned': pinnedMark(columnId),
     className: cn(
       columnClass(columnId),
       bodyCellClass,
       endColumnIds.has(columnId) ? endPullClass : startPullClass,
+      pinFirstColumn && generatedColumn(columnId) === 'select' && SELECT_RIPPLE_PINNED_BAR_CLASS,
     ),
     style: columnIndentStyle(columnId),
   });
+
+  // Pinned: where a DataTableRowLink renders its overlay (see rowLinkOverlay),
+  // one host on each side of the pinned edge: in the pinned cell, and in the
+  // last cell when that one scrolls. A host has no box of its own.
+  const overlayHost = (columnId: string, last: boolean): React.ReactNode =>
+    pinFirstColumn && (columnId === pinnedColumnId || (last && pinnedColumnId != null)) ? (
+      <span data-slot="data-table-row-link-overlay-host" className="contents" />
+    ) : null;
 
   // Loading cells follow the real column layout (same ids, same cell classes),
   // so a consumer's `skeletonCells` entry can match its loaded cell's height.
@@ -1107,8 +1232,13 @@ function DataTable<TData>({
     if (!event.currentTarget.contains(target) || isRowControl(target, event.currentTarget)) return;
     // The name: the row link does not stretch while rows are selected, so a
     // click that lands in it was on the name, and opens the item. Shift+click
-    // on it still extends the selection.
-    if (!event.shiftKey && target.closest('[data-slot=data-table-row-link]')) return;
+    // on it still extends the selection. In a pinned table the link's overlay
+    // then shows only as the row-end target of a link without a visible name.
+    if (
+      !event.shiftKey &&
+      target.closest('[data-slot=data-table-row-link],[data-slot=data-table-row-link-overlay]')
+    )
+      return;
     event.preventDefault();
     event.stopPropagation();
     selectAllRipple.end();
@@ -1257,6 +1387,7 @@ function DataTable<TData>({
         )}
         <Table
           ref={tableRef}
+          pinFirstColumn={pinFirstColumn}
           className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
           data-bulk-over-header={bulkOverHeader && showBulk ? '' : undefined}
@@ -1273,6 +1404,7 @@ function DataTable<TData>({
                       key={headerCell.id}
                       aria-sort={ariaSort(sorting != null, headerCell.column)}
                       data-column-id={headerCell.column.id}
+                      data-pinned={pinnedMark(headerCell.column.id)}
                       className={cn(
                         columnClass(headerCell.column.id),
                         generatedColumn(headerCell.column.id) !== 'select' &&
@@ -1310,6 +1442,7 @@ function DataTable<TData>({
                       <TableCell
                         key={column.id}
                         data-column-id={column.id}
+                        data-pinned={pinnedMark(column.id)}
                         className={columnClass(column.id)}
                         style={columnIndentStyle(column.id)}
                       >
@@ -1343,9 +1476,10 @@ function DataTable<TData>({
                       data-state={row.getIsSelected() ? 'selected' : undefined}
                       {...selectProps}
                     >
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getVisibleCells().map((cell, index, cells) => (
                         <TableCell key={cell.id} {...bodyCellProps(cell.column.id)}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {overlayHost(cell.column.id, index === cells.length - 1)}
                         </TableCell>
                       ))}
                     </TableRow>

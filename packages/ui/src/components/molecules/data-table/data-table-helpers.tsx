@@ -123,7 +123,12 @@ export function measureColumnIndents(table: HTMLTableElement): Record<string, nu
   for (const cell of cells) {
     const id = cell.dataset.columnId;
     const first = cell.firstElementChild;
-    if (id == null || first == null) continue;
+    // A pinned table's row-link overlay host comes after the content, so it is
+    // first only in a cell without content elements. It is not content: its
+    // overlay spans the whole row.
+    const host =
+      (first as HTMLElement | null)?.dataset?.slot === 'data-table-row-link-overlay-host';
+    if (id == null || first == null || host) continue;
     const style = getComputedStyle(cell);
     const rtl = style.direction === 'rtl';
     const start = (rect: DOMRect) => (rtl ? -rect.right : rect.left);
