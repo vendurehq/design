@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ArchiveIcon, Trash2Icon } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -21,6 +22,7 @@ import {
 import {
   type ColumnDef,
   DataTable,
+  DataTableRowLink,
   DataTableSkeletonLine,
   type SortingState,
 } from '../src/components/molecules/data-table/data-table.tsx';
@@ -41,7 +43,8 @@ import {
  * persistence; the core never fetches), on the frame (the card is the table's
  * frame; frame="plain" only inside an existing card), on where the line
  * falls between this core and richer consumer table shells, and on shaping
- * loading rows like loaded rows. For the
+ * loading rows like loaded rows, and on pinning the first column of a wide
+ * table. For the
  * prop-by-prop API, see the DataTable stories.
  */
 const meta = {
@@ -131,6 +134,33 @@ const twoLineProductColumns: ColumnDef<Product>[] = [
     ),
   },
   { accessorKey: 'stock', header: 'Availability' },
+];
+
+// A wide products table: many columns, so it scrolls sideways in a narrow frame.
+// The name links to the product; its first column identifies the row.
+type WideProduct = Product & { category: string; supplier: string; price: string; updated: string };
+
+const WIDE_PRODUCTS: WideProduct[] = [
+  { ...PRODUCTS[0], category: 'Knitwear', supplier: 'Northern Mills', price: '$129.00', updated: '2 days ago' },
+  { ...PRODUCTS[1], category: 'Shirts', supplier: 'Atlas Textiles', price: '$89.00', updated: '5 days ago' },
+  { ...PRODUCTS[2], category: 'Outerwear', supplier: 'Northern Mills', price: '$349.00', updated: 'Last week' },
+  { ...PRODUCTS[3], category: 'Accessories', supplier: 'Harbour Leather', price: '$59.00', updated: 'Last month' },
+] as WideProduct[];
+
+const wideProductColumns: ColumnDef<WideProduct>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Product',
+    cell: ({ row }) => (
+      <DataTableRowLink href={`#/products/${row.original.id}`}>{row.original.name}</DataTableRowLink>
+    ),
+  },
+  { accessorKey: 'sku', header: 'SKU' },
+  { accessorKey: 'category', header: 'Category' },
+  { accessorKey: 'supplier', header: 'Supplier' },
+  { accessorKey: 'stock', header: 'Availability' },
+  { accessorKey: 'price', header: 'Price' },
+  { accessorKey: 'updated', header: 'Updated' },
 ];
 
 // A tiny controlled-sorting host: the URL would own `sorting` in a real page; a
@@ -700,6 +730,91 @@ export const LoadingRowShape: Story = {
               skeletonRowCount={2}
             />
           </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 7 · pin the first column of a wide table ──────────────────────────────────
+
+export const PinFirstColumn: Story = {
+  name: '7 · Pin the first column of a wide table',
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Pin the column that names the row, when the table scrolls sideways"
+        intro="pinFirstColumn keeps the first column at the edge while the others scroll under it, so a user who scrolls to the price still sees which product it belongs to. Use it on a wide table, one that overflows its frame at the widths your users have, and whose first column identifies the row (a name, a code). The select checkbox is pinned with it. Leave it off for a table that fits, and for one whose first column does not identify the row: a pinned column that means nothing takes width from the columns that do."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Example
+            verdict="do"
+            caption="Seven columns in a narrow frame, with the product name pinned. Scroll sideways: the name stays, and the rest of the row scrolls under it."
+          >
+            <div className="max-w-md">
+              <DataTable
+                pinFirstColumn
+                rows={WIDE_PRODUCTS}
+                columns={wideProductColumns}
+                getRowId={(p) => p.id}
+                rowSelection={{ defaultValue: {} }}
+              />
+            </div>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="A three-column table that fits its frame. Nothing scrolls, so there is nothing to keep in place: the prop only adds a pinned edge."
+          >
+            <DataTable
+              pinFirstColumn
+              rows={PRODUCTS}
+              columns={productColumns}
+              getRowId={(p) => p.id}
+            />
+          </Example>
+        </div>
+      </Section>
+
+      <Section
+        title="The row link keeps working from every cell"
+        intro="A DataTableRowLink in the first column still opens the item from any point of the row, pinned or scrolled away: a click on the price, the supplier or the empty space opens the product. The name stays the row's one link, so a screen reader finds one link per row and the keyboard has one tab stop. Nothing changes in how you write the column."
+      >
+        <div className="max-w-md">
+          <DataTable
+            pinFirstColumn
+            rows={WIDE_PRODUCTS.slice(0, 2)}
+            columns={wideProductColumns}
+            getRowId={(p) => p.id}
+          />
+        </div>
+      </Section>
+
+      <Section
+        title="A row you render yourself needs the link host"
+        intro="A row from renderRow draws its own cells, so the table cannot place the anchor that covers the cells on the other side of the pinned edge. Render ctx.rowLinkHost(cell.column.id) after the content of every cell, next to the cell props you already spread. Without it, only the cells on the name's side of the pinned edge open the item."
+      >
+        <div className="max-w-md">
+          <DataTable
+            pinFirstColumn
+            rows={WIDE_PRODUCTS.slice(0, 2)}
+            columns={wideProductColumns}
+            getRowId={(p) => p.id}
+            renderRow={(row, { ripple, cellProps, rowLinkHost, selectProps }) => (
+              <TableRow
+                {...selectProps}
+                data-state={row.getIsSelected() ? 'selected' : undefined}
+                className={`group/row ${ripple.className}`}
+                style={ripple.style}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {rowLinkHost(cell.column.id)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            )}
+          />
         </div>
       </Section>
     </div>
