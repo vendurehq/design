@@ -27,12 +27,12 @@ export const fontFeatureSettings = {
   display: 'normal',
 } as const;
 
-// `sm` is the body and UI text size (13px). `2xs` is micro text; no
+// `sm` is the body and UI text size (14px). `2xs` is micro text; no
 // component uses it. Keyboard hints (Kbd) use `xs`.
 export const fontSize = {
   '2xs': '0.6875rem',
   xs: '0.75rem',
-  sm: '0.8125rem',
+  sm: '0.875rem',
   base: '1rem',
   lg: '1.125rem',
   xl: '1.25rem',
@@ -47,7 +47,7 @@ export const fontSize = {
 // Tailwind's defaults. `sm` keeps a 20px line so row heights do not change.
 export const fontSizeLineHeight = {
   '2xs': 'calc(1 / 0.6875)',
-  sm: 'calc(1.25 / 0.8125)',
+  sm: 'calc(1.25 / 0.875)',
 } as const;
 
 export const fontWeight = {
@@ -113,7 +113,7 @@ export const textStyles = {
     lineHeight: '1.5rem',
     textWrapStyle: 'balance',
   },
-  // 14px: card and panel titles, one step above the 13px body.
+  // 14px: card and panel titles, the body size in the semibold heading font.
   'card-title': {
     fontFamily: fontFamily.heading,
     fontSize: '0.875rem',
