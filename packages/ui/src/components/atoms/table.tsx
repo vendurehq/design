@@ -48,16 +48,21 @@ const scrollCue = [
 // table cell with collapsed borders does not paint an outer one. The edge fades in and out
 // (`fast`) and switches at once under reduced motion. The start fade is off
 // when pinned: it would fade the pinned cell, and the edge replaces it. The
-// end fade stays.
+// end fade stays. The pinned cell stacks above the container's focus ring,
+// so while the container has keyboard focus the pinned cells draw their part
+// of the ring (inline-start side, and top and bottom on the first and last row).
 // Tailwind reads class names from this source as written, so each one is
 // spelled out in full.
 const pinnedColumn = [
   "[&[data-pin-first-column]_tr>:first-child]:sticky [&[data-pin-first-column]_tr>:first-child]:start-0 [&[data-pin-first-column]_tr>:first-child]:z-3 [&[data-pin-first-column]_tr>:first-child]:[background-color:var(--table-surface,var(--card))] [&[data-pin-first-column]_tr>:first-child]:[background-image:linear-gradient(var(--table-row-fill,transparent),var(--table-row-fill,transparent))]",
   "[&[data-pin-first-column]_tr>:not(:first-child)]:isolate",
   "[&[data-pin-first-column]_tr]:before:z-4 [&[data-pin-first-column]_tr]:after:z-4",
-  "[&[data-pin-first-column]_tr>:first-child]:[box-shadow:var(--table-pin-edge)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
+  "[&[data-pin-first-column]_tr>:first-child]:[box-shadow:var(--table-pin-edge),var(--table-pin-ring-x,inset_0_0_0_transparent),var(--table-pin-ring-top,inset_0_0_0_transparent),var(--table-pin-ring-bottom,inset_0_0_0_transparent)] [--table-pin-edge:inset_0_0_0_transparent] data-overflow-start:[--table-pin-edge:inset_-1px_0_0_var(--input)] rtl:data-overflow-start:[--table-pin-edge:inset_1px_0_0_var(--input)]",
   "motion-safe:[&[data-pin-first-column]_tr>:first-child]:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)]",
   "[&[data-pin-first-column]]:[--table-fade-start:0px]",
+  "[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)] rtl:[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_-2px_0_0_var(--ring)]",
+  "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:is(thead,tbody,tfoot)~*)>tr:first-child]:[--table-pin-ring-top:inset_0_2px_0_var(--ring)]",
+  "[&[data-pin-first-column]:focus-visible_table>:is(thead,tbody,tfoot):not(:has(~:is(thead,tbody,tfoot)))>tr:last-child]:[--table-pin-ring-bottom:inset_0_-2px_0_var(--ring)]",
 ].join(" ")
 
 // When the table is wider than its container, the container scrolls and must

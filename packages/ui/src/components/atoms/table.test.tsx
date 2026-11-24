@@ -190,6 +190,15 @@ describe('Table pinFirstColumn', () => {
     );
   });
 
+  test('pinned cells draw their part of the focus ring, which they cover', () => {
+    expect(tokens(renderToStaticMarkup(<Table pinFirstColumn />))).toEqual(
+      expect.arrayContaining([
+        '[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_2px_0_0_var(--ring)]',
+        'rtl:[&[data-pin-first-column]:focus-visible]:[--table-pin-ring-x:inset_-2px_0_0_var(--ring)]',
+      ]),
+    );
+  });
+
   test('rows hand their hover, selected and footer fill to the pinned cell', () => {
     const html = renderToStaticMarkup(
       <table>
