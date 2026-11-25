@@ -652,6 +652,54 @@ export const LoadingRemembersRowCount: Story = {
   },
 };
 
+// The sized columns, with a readable floor on Customer, the column without a
+// width.
+const flooredColumns: ColumnDef<Order>[] = sizedColumns.map((column) =>
+  (column as { accessorKey?: string }).accessorKey === 'customer'
+    ? { ...column, meta: { ...column.meta, minWidth: 160 } satisfies DataTableColumnMeta }
+    : column,
+);
+
+/**
+ * In a table narrower than its columns, `meta.width` and `meta.minWidth` are
+ * floors: the table scrolls sideways instead of squeezing the columns, so the
+ * headers stay put when the rows replace the skeleton. A 390px card, loaded
+ * (top) and loading (bottom).
+ */
+export const NarrowKeepsColumnWidths: Story = {
+  render: () => (
+    <div className="flex w-[390px] flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order>
+          rows={orders.slice(0, 3)}
+          columns={flooredColumns}
+          getRowId={(o) => o.id}
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={flooredColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          skeletonRowCount={3}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const widths = (testId: string) =>
+      Array.from(
+        within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+        (cell) => Math.round(cell.getBoundingClientRect().width),
+      );
+    await expect(widths('loading')).toEqual(widths('loaded'));
+    await expect(headerLefts(canvasElement, 'loading')).toEqual(headerLefts(canvasElement, 'loaded'));
+    // The floors hold: Customer is 160px, the sized columns their width.
+    await expect(widths('loaded')).toEqual([112, 160, 176, 80, 112]);
+  },
+};
+
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.
 export const Empty: Story = {
   render: () => (

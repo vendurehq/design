@@ -18,6 +18,7 @@ import {
 import {
   buildDisplayColumns,
   columnAlign,
+  columnMinWidth,
   columnWidth,
   getHideableLeafColumns,
   getSelectedOriginals,
@@ -488,6 +489,24 @@ describe('DataTable column widths', () => {
     expect(columnWidth({ width: '8rem' })).toBe('8rem');
     expect(columnWidth({ width: null })).toBeUndefined();
     expect(columnWidth(undefined)).toBeUndefined();
+  });
+
+  test('meta.width is also the minimum width, and meta.minWidth sets a floor alone', () => {
+    const floorColumns: ColumnDef<Country>[] = [
+      { accessorKey: 'name', header: 'Name', meta: { minWidth: '12rem' } },
+      { accessorKey: 'code', header: 'Code', meta: { width: 96 } },
+    ];
+    for (const markup of [
+      html(<DataTable rows={[]} columns={floorColumns} isLoading />),
+      html(<DataTable rows={rows} columns={floorColumns} />),
+    ]) {
+      expect(headerTag(markup, 'code')).toContain('width:96px;min-width:96px');
+      expect(headerTag(markup, 'name')).toContain('min-width:12rem');
+      expect(headerTag(markup, 'name')).not.toMatch(/[;"]width:/);
+    }
+    expect(columnMinWidth({ width: 96 })).toBe(96);
+    expect(columnMinWidth({ width: 96, minWidth: 64 })).toBe(64);
+    expect(columnMinWidth({})).toBeUndefined();
   });
 });
 

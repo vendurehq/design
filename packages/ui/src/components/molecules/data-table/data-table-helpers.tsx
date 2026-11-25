@@ -176,6 +176,18 @@ export function columnAlign(meta: unknown): NonNullable<DataTableColumnMeta['ali
 
 /** A column's width from its `meta.width` (see DataTableColumnMeta), if it sets one. */
 export function columnWidth(meta: unknown): DataTableColumnMeta['width'] {
-  const width = (meta as DataTableColumnMeta | undefined)?.width;
-  return typeof width === 'number' || typeof width === 'string' ? width : undefined;
+  return cssLength((meta as DataTableColumnMeta | undefined)?.width);
+}
+
+/**
+ * A column's minimum width: its `meta.minWidth`, else its `meta.width`, so a
+ * set width is also a floor (see DataTableColumnMeta).
+ */
+export function columnMinWidth(meta: unknown): DataTableColumnMeta['minWidth'] {
+  const column = meta as DataTableColumnMeta | undefined;
+  return cssLength(column?.minWidth) ?? cssLength(column?.width);
+}
+
+function cssLength(value: unknown): number | string | undefined {
+  return typeof value === 'number' || typeof value === 'string' ? value : undefined;
 }

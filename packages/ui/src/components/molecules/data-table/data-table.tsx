@@ -75,6 +75,7 @@ import { createPortal } from 'react-dom';
 import {
   buildDisplayColumns,
   columnAlign,
+  columnMinWidth,
   columnWidth,
   getSelectedRowIds,
   measureColumnIndents,
@@ -1114,7 +1115,8 @@ function DataTable<TData>({
   const headerCellStyle = (column: Column<TData, any>): React.CSSProperties | undefined => {
     const indent = columnIndentStyle(column.id);
     const width = columnWidth(column.columnDef.meta);
-    return width == null ? indent : { ...indent, width };
+    const minWidth = columnMinWidth(column.columnDef.meta);
+    return width == null && minWidth == null ? indent : { ...indent, width, minWidth };
   };
 
   // What a built-in body cell of this column carries. Handed to `renderRow` as

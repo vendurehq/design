@@ -32,10 +32,19 @@ export interface DataTableColumnMeta {
    * whose content has a known width (a code, a status, a date, a total) and
    * leave the widest text column without, so it takes the rest of the row.
    * Wider content still widens the column (the table keeps its automatic
-   * layout). TanStack's `size` is not read: TanStack gives every column a
-   * default `size`, so a set one can't be told from the default.
+   * layout). It is also the column's minimum: a table narrower than its
+   * columns scrolls sideways instead of squeezing them. TanStack's `size` is
+   * not read: TanStack gives every column a default `size`, so a set one can't
+   * be told from the default.
    */
   width?: number | string;
+  /**
+   * The column's minimum width, for a text column without a `width`: it still
+   * takes the rest of the row, but never gets narrower than this, so in a
+   * narrow table it keeps a readable width and the same width while the
+   * skeleton shows and once the rows arrive.
+   */
+  minWidth?: number | string;
 }
 
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be
