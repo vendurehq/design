@@ -76,6 +76,7 @@ import {
   columnAlign,
   getSelectedRowIds,
   measureColumnIndents,
+  PENDING_CLASS,
   resolveClearFilters,
   resolveSlot,
   sameIndents,
@@ -1188,12 +1189,17 @@ function DataTable<TData>({
     filters.showAppliedFilters !== false &&
     table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
+  // The first load: no rows yet, so the body shows skeleton rows. A load with
+  // rows on screen (a page, sort or filter change with the previous rows kept)
+  // is pending instead: the rows stay and dim after a short delay.
+  const firstLoad = Boolean(isLoading) && rows.length === 0;
+  const pending = Boolean(isLoading) && !firstLoad;
   // "Clear filters" after the chips. With no rows (and not loading) the empty
   // state has the only one.
   const clearFilters = resolveClearFilters(
     filters?.clearFilters,
     table,
-    !(isLoading && rows.length === 0) && bodyRows.length === 0,
+    !firstLoad && bodyRows.length === 0,
   );
   // The bulk bar exists only while rows are selected. It takes the controls
   // row's place, or, with no controls row, covers the column header row (see
@@ -1434,8 +1440,12 @@ function DataTable<TData>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading && rows.length === 0 ? (
+          <TableBody
+            aria-busy={isLoading ? true : undefined}
+            data-pending={pending ? '' : undefined}
+            className={PENDING_CLASS}
+          >
+            {firstLoad ? (
               Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
@@ -1534,7 +1544,13 @@ function DataTable<TData>({
             className="w-full"
             page={pagination.page}
             pageSize={pagination.pageSize}
-            totalItems={pagination.totalItems ?? table.getPrePaginationRowModel().rows.length}
+            // Unknown while the first page loads: a skeleton instead of "0 of 0".
+            totalItems={
+              firstLoad
+                ? undefined
+                : (pagination.totalItems ?? table.getPrePaginationRowModel().rows.length)
+            }
+            isLoading={pending}
             onPageChange={pagination.onPageChange}
             onPageSizeChange={pagination.onPageSizeChange}
             pageSizeOptions={pagination.pageSizeOptions}
