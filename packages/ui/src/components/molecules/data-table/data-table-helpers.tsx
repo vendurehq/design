@@ -9,6 +9,16 @@ import type {
 // so each function is unit-testable in isolation (the getRange/clampPage
 // precedent from table-pagination.tsx).
 
+/**
+ * The pending look of a range or a table body whose next content is loading:
+ * after `--transition-duration-slow` (300ms) it fades to half opacity, so a
+ * read that ends sooner shows nothing. Leaving pending is immediate. Under
+ * reduced motion the dim still waits, then steps instead of fading. Set
+ * `data-pending` on the element to turn it on.
+ */
+export const PENDING_CLASS =
+  '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)] data-pending:opacity-50 data-pending:[transition-delay:var(--transition-duration-slow)] motion-reduce:[transition-duration:0s]';
+
 // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
 type AnyColumnDef<TData> = ColumnDef<TData, any>;
 

@@ -9,9 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@vendure-io/ui/components/atoms/select';
+import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import type * as React from 'react';
+// Relative: `data-table-helpers` is closed in the package exports.
+import { PENDING_CLASS } from './data-table-helpers.tsx';
 
 // The list-page pagination footer: range text on one side, optional page-size
 // selector and prev/next controls on the other. TanStack-free and
@@ -21,6 +24,11 @@ import type * as React from 'react';
 // page-size selector appears only with `onPageSizeChange`; prev/next appear only
 // with `onPageChange` or `getPageHref`. There are no feature flags and no
 // disabled placeholder UI for capabilities the consumer didn't opt into.
+//
+// Loading: an unknown `totalItems` (the first page is still loading) shows a
+// skeleton where the range goes and disables prev/next. `isLoading` with a
+// known total (a later page, sort or filter is loading) keeps the range and
+// marks it and prev/next as pending: see `PENDING_CLASS`.
 
 /** max(1, …) so an empty result still reports a single page, never zero pages. */
 function getPageCount(totalItems: number, pageSize: number): number {
@@ -72,8 +80,20 @@ interface TablePaginationProps extends React.ComponentProps<'div'> {
   page: number;
   /** Items per page — also scales the range math. */
   pageSize: number;
-  /** Total items across all pages, used for the range text and last-page detection. */
-  totalItems: number;
+  /**
+   * Total items across all pages, used for the range text and last-page
+   * detection. `undefined` means not known yet (the first page is loading):
+   * the range shows a skeleton of the same height and prev/next are disabled.
+   * Pass `undefined` rather than `0` while loading: `0` renders "0 of 0".
+   */
+  totalItems: number | undefined;
+  /**
+   * The page, page size, sort or filter just changed and its rows are loading.
+   * The range text dims after a short delay (a fast read shows nothing), and
+   * prev/next ignore presses until it ends, so a second click does not skip a
+   * page. They keep focus and stay in the tab order (`aria-disabled`).
+   */
+  isLoading?: boolean;
   /**
    * Wires button-mode prev/next: renders `<button>`s that call this with the
    * target page. Ignored for navigation rendering when `getPageHref` is set.
@@ -114,6 +134,7 @@ function TablePagination({
   page,
   pageSize,
   totalItems,
+  isLoading = false,
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = [10, 25, 50, 100],
@@ -126,16 +147,17 @@ function TablePagination({
   className,
   ...props
 }: TablePaginationProps) {
-  const pageCount = getPageCount(totalItems, pageSize);
+  const totalKnown = totalItems != null;
+  const pageCount = getPageCount(totalItems ?? 0, pageSize);
   const current = clampPage(page, pageCount);
-  const { start, end } = getRange(page, pageSize, totalItems);
-
-  const rangeText = formatRange({ start, end, total: totalItems });
+  const { start, end } = getRange(page, pageSize, totalItems ?? 0);
 
   const anchorMode = Boolean(getPageHref);
   const showNav = anchorMode || Boolean(onPageChange);
-  const isFirst = current <= 1;
-  const isLast = current >= pageCount;
+  // With the total unknown there is no page to go to yet.
+  const isFirst = !totalKnown || current <= 1;
+  const isLast = !totalKnown || current >= pageCount;
+  const pending = isLoading && totalKnown;
 
   return (
     <div
@@ -143,7 +165,21 @@ function TablePagination({
       className={cn('flex items-center justify-between gap-4', className)}
       {...props}
     >
-      <span className="text-muted-foreground text-sm tabular-nums">{rangeText}</span>
+      <span
+        data-slot="table-pagination-range"
+        data-pending={pending ? '' : undefined}
+        className={cn('text-muted-foreground text-sm tabular-nums', PENDING_CLASS)}
+      >
+        {totalKnown ? (
+          formatRange({ start, end, total: totalItems })
+        ) : (
+          // One line box tall, so the footer keeps the height it has with the
+          // range text. The text is not known, so there is nothing to announce.
+          <span className="flex h-[1lh] w-24 items-center" aria-hidden>
+            <Skeleton className="h-[0.8lh] w-full" />
+          </span>
+        )}
+      </span>
 
       {(onPageSizeChange || showNav) && (
         <div className="flex items-center gap-4">
@@ -171,11 +207,16 @@ function TablePagination({
             // Only the prev/next group is a navigation landmark — not the range
             // text or size selector. Mirrors the shadcn pagination atom's
             // role="navigation" + aria-label.
-            <nav aria-label={navLabel} className="flex items-center gap-1">
+            <nav
+              aria-label={navLabel}
+              data-pending={pending ? '' : undefined}
+              className={cn('flex items-center gap-1', PENDING_CLASS)}
+            >
               <NavButton
                 slot="table-pagination-previous"
                 anchor={anchorMode}
                 disabled={isFirst}
+                pending={pending}
                 label={previousLabel}
                 href={anchorMode && !isFirst ? getPageHref?.(current - 1) : undefined}
                 onClick={onPageChange ? () => onPageChange(current - 1) : undefined}
@@ -186,6 +227,7 @@ function TablePagination({
                 slot="table-pagination-next"
                 anchor={anchorMode}
                 disabled={isLast}
+                pending={pending}
                 label={nextLabel}
                 href={anchorMode && !isLast ? getPageHref?.(current + 1) : undefined}
                 onClick={onPageChange ? () => onPageChange(current + 1) : undefined}
@@ -206,6 +248,7 @@ function NavButton({
   href,
   onClick,
   disabled,
+  pending,
   label,
   children,
 }: {
@@ -214,6 +257,11 @@ function NavButton({
   href?: string;
   onClick?: () => void;
   disabled: boolean;
+  /**
+   * The next page is loading: presses do nothing, but the control keeps
+   * focus, its tab stop and its look (the nav dims as a whole, after a delay).
+   */
+  pending: boolean;
   label: string;
   children: React.ReactNode;
 }) {
@@ -222,6 +270,15 @@ function NavButton({
     size: 'icon' as const,
     'data-slot': slot,
   };
+  // `aria-disabled:opacity-100`: the nav dims as a whole after a delay (see
+  // PENDING_CLASS), so the button does not dim at once on every fast read.
+  const pendingProps = pending
+    ? {
+        'aria-disabled': true,
+        className:
+          'aria-disabled:opacity-100 aria-disabled:shadow-control aria-disabled:cursor-progress',
+      }
+    : {};
 
   if (anchor) {
     // A disabled edge is a non-link (span) so it isn't focusable or followable.
@@ -242,8 +299,10 @@ function NavButton({
     return (
       <Button
         {...shared}
+        {...pendingProps}
         aria-label={label}
         nativeButton={false}
+        onClick={pending ? (event) => event.preventDefault() : undefined}
         render={
           <a href={href} aria-label={label}>
             {children}
@@ -254,7 +313,13 @@ function NavButton({
   }
 
   return (
-    <Button {...shared} aria-label={label} disabled={disabled} onClick={onClick}>
+    <Button
+      {...shared}
+      {...pendingProps}
+      aria-label={label}
+      disabled={disabled}
+      onClick={pending ? undefined : onClick}
+    >
       {children}
     </Button>
   );
