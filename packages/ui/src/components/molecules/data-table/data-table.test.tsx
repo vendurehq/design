@@ -16,6 +16,7 @@ import {
 import {
   buildDisplayColumns,
   columnAlign,
+  columnWidth,
   getHideableLeafColumns,
   getSelectedOriginals,
   getSelectedRowIds,
@@ -393,6 +394,89 @@ describe('DataTable loading state', () => {
     const markup = html(<DataTable rows={rows} columns={columns} isLoading />);
     expect(markup).not.toContain('data-slot="skeleton"');
     expect(markup).toContain('Aland Islands');
+  });
+});
+
+describe('DataTable loading pagination and pending rows', () => {
+  const pagination = { page: 2, pageSize: 1, totalItems: 2, onPageChange: () => {} };
+  const tbody = (markup: string) => markup.match(/<tbody[^>]*>/)?.[0] ?? '';
+
+  test('the first load shows a skeleton range, not "0 of 0", even when totalItems is 0', () => {
+    const markup = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        pagination={{ ...pagination, page: 1, totalItems: 0 }}
+      />,
+    );
+    expect(markup).not.toContain('0 of 0');
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*>.*data-slot="skeleton"/);
+    const next = markup.match(/<button[^>]*data-slot="table-pagination-next"[^>]*>/)?.[0] ?? '';
+    expect(next).toContain('disabled=""');
+  });
+
+  test('the first load marks the body busy, not pending', () => {
+    const markup = html(<DataTable rows={[]} columns={columns} isLoading />);
+    expect(tbody(markup)).toContain('aria-busy="true"');
+    expect(tbody(markup)).not.toContain('data-pending=""');
+  });
+
+  test('loading with rows on screen keeps the rows and marks the body busy and pending', () => {
+    const markup = html(
+      <DataTable rows={[brazil]} columns={columns} isLoading pagination={pagination} />,
+    );
+    expect(markup).toContain('Brazil');
+    expect(markup).not.toContain('data-slot="skeleton"');
+    expect(tbody(markup)).toContain('aria-busy="true"');
+    expect(tbody(markup)).toContain('data-pending=""');
+  });
+
+  test('loading with rows on screen keeps the range and makes prev/next ignore presses', () => {
+    const markup = html(
+      <DataTable rows={[brazil]} columns={columns} isLoading pagination={pagination} />,
+    );
+    expect(markup).toContain('2–2 of 2');
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*data-pending=""/);
+    const previous = markup.match(/<button[^>]*data-slot="table-pagination-previous"[^>]*>/)?.[0];
+    expect(previous).toContain('aria-disabled="true"');
+  });
+
+  test('not loading: the body is neither busy nor pending', () => {
+    const markup = html(<DataTable rows={rows} columns={columns} pagination={pagination} />);
+    expect(tbody(markup)).not.toContain('aria-busy');
+    expect(tbody(markup)).not.toContain('data-pending=""');
+  });
+});
+
+describe('DataTable column widths', () => {
+  const headerTag = (markup: string, id: string) =>
+    markup.match(new RegExp(`<th[^>]*data-column-id="${id}"[^>]*>`))?.[0] ?? '';
+  const widthColumns: ColumnDef<Country>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'code', header: 'Code', meta: { width: 96 } },
+  ];
+
+  test('meta.width sets the header cell width, while loading and with rows', () => {
+    for (const markup of [
+      html(<DataTable rows={[]} columns={widthColumns} isLoading />),
+      html(<DataTable rows={rows} columns={widthColumns} />),
+    ]) {
+      expect(headerTag(markup, 'code')).toContain('width:96px');
+      expect(headerTag(markup, 'name')).not.toContain('width');
+    }
+  });
+
+  test("a column without meta.width gets no width, not TanStack's default size", () => {
+    const markup = html(<DataTable rows={rows} columns={columns} />);
+    expect(markup).not.toMatch(/<th[^>]*width/);
+  });
+
+  test('columnWidth reads a number or a CSS length and ignores anything else', () => {
+    expect(columnWidth({ width: 96 })).toBe(96);
+    expect(columnWidth({ width: '8rem' })).toBe('8rem');
+    expect(columnWidth({ width: null })).toBeUndefined();
+    expect(columnWidth(undefined)).toBeUndefined();
   });
 });
 
