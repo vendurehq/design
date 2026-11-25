@@ -11,7 +11,6 @@ import {
   ListRow,
   ListRowContent,
   ListRowLeading,
-  ListRowMeta,
   ListRowTrailing,
 } from '@vendure-io/ui/components/molecules/list-row';
 import { cn } from '@vendure-io/ui/lib/utils';
@@ -84,9 +83,12 @@ function SkeletonListRow({
       <ListRowContent>
         <SkeletonLine className="w-2/5 max-w-60" />
         {meta ? (
-          <ListRowMeta>
+          // ListRowMeta is a <span> and a skeleton bar is a <div>, so the meta
+          // line is a <div> with the same slot (ListRow's two-line padding keys
+          // on it) and the same text style (`1lh` stays 18px).
+          <div data-slot="list-row-meta" className="text-xs leading-4.5">
             <SkeletonLine className="w-1/4 max-w-40" />
-          </ListRowMeta>
+          </div>
         ) : null}
       </ListRowContent>
       {action ? (
