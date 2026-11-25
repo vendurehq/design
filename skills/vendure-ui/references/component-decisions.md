@@ -460,6 +460,8 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Errors own the failure:** Use ErrorState, take responsibility in the copy, and offer retry only when retry can help.
 - **One illustration, once per region:** Use a scenario-matched illustration for a whole empty or error region, never inside populated rows or repeated cards.
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.
+- **A page loads into a skeleton in its own shape:** Pass skeleton parts as LoadingState children, laid out like the loaded page: SkeletonPageHeader for a PageHeader, SkeletonCard for a Card, SkeletonListRow for a ListRow, SkeletonField for a Field with an input, SkeletonFact for a DescriptionList item, and SkeletonLine for any other line of text (size it with the text utility of the text it stands in for). Each part is as tall as its real component, so content fills in place. Use one LoadingState per region that loads together: it is the one live region, and the parts stay silent. A DataTable draws its own loading rows. Do not fall back to the bare rows bars where the shape is known.
+- **Nothing shows for a fast load:** LoadingState stays transparent for its first 150ms (delay), while holding its space, so a fast load never flashes a placeholder. Keep the default. Pass delay={0} only when something else already delays the loading view.
 
 Related decisions: `button`.
 ## StatusBadge and state dictionary
