@@ -318,8 +318,9 @@ export interface DataTableProps<TData> {
    * Remembers how many rows the current page showed, in local storage under
    * this key. On the next first load the body draws that many skeleton rows,
    * at the loaded row height, so the table does not change height when the
-   * rows arrive. A remembered 0 draws a blank body at the height of the
-   * built-in "No results" row instead, so the empty state lands in place.
+   * rows arrive. A remembered 0 renders the empty state (`emptyState` or "No
+   * results") hidden and inert instead, so the body has its exact height and
+   * the empty result shows in place.
    *
    * - The count is read once, when the table mounts (or the key changes),
    *   before the first paint. Nothing remembered keeps `skeletonRowCount`.
@@ -330,8 +331,7 @@ export interface DataTableProps<TData> {
    *
    * The key names the list and anything that scopes its rows, such as a
    * channel: `${route}:${channelId}`. Rows taller than one text line still
-   * need `skeletonCells`; a custom `emptyState` taller than the built-in row
-   * still grows. Without the prop nothing changes.
+   * need `skeletonCells`. Without the prop nothing changes.
    */
   rowCountKey?: string;
   /**

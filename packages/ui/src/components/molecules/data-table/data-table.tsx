@@ -92,8 +92,7 @@ import { useSelectionStorage } from './data-table-selection-storage.tsx';
 // for the actions cell.
 const ACTIONS_COLUMN_ID = 'actions';
 
-// The built-in empty-state cell. The blank body drawn while a list whose last
-// load was empty loads again uses the same class, so the two match in height.
+// The built-in empty-state cell.
 const EMPTY_CELL_CLASS = 'text-muted-foreground h-24 text-center';
 
 // The row link is a stretched link, like ListRowLink: one real link per row,
@@ -1448,13 +1447,7 @@ function DataTable<TData>({
             data-pending={pending ? '' : undefined}
             className={PENDING_CLASS}
           >
-            {firstLoad && rememberedRowCount === 0 ? (
-              // The last load was empty: a blank row at the height of the
-              // empty-state row below, so "No results" lands in place.
-              <TableRow data-slot="data-table-skeleton-empty" className="hover:bg-transparent">
-                <TableCell colSpan={Math.max(columnCount, 1)} className={EMPTY_CELL_CLASS} />
-              </TableRow>
-            ) : firstLoad ? (
+            {firstLoad && rememberedRowCount !== 0 ? (
               Array.from({ length: rememberedRowCount ?? skeletonRowCount }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
@@ -1477,7 +1470,15 @@ function DataTable<TData>({
                 </TableRow>
               ))
             ) : bodyRows.length === 0 ? (
-              <TableRow className="hover:bg-transparent">
+              // The empty state. While a list whose last load was empty loads
+              // again, it is already here but hidden and inert, so the body
+              // has its exact height and the empty result shows in place.
+              <TableRow
+                data-slot={firstLoad ? 'data-table-empty-placeholder' : undefined}
+                aria-hidden={firstLoad ? true : undefined}
+                inert={firstLoad ? true : undefined}
+                className={cn('hover:bg-transparent', firstLoad && 'invisible')}
+              >
                 <TableCell colSpan={Math.max(columnCount, 1)} className={EMPTY_CELL_CLASS}>
                   {emptyState ?? l.empty}
                 </TableCell>
