@@ -148,10 +148,7 @@ function SkeletonCard({
       ) : lines > 0 ? (
         <CardContent>
           {Array.from({ length: lines }).map((_, i) => (
-            <SkeletonLine
-              key={i}
-              className={i === lines - 1 && lines > 1 ? 'w-3/5' : undefined}
-            />
+            <SkeletonLine key={i} className={i === lines - 1 && lines > 1 ? 'w-3/5' : undefined} />
           ))}
         </CardContent>
       ) : null}
