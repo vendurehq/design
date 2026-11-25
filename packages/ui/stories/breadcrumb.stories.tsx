@@ -723,3 +723,189 @@ export const SearchMenuRetry: Story = {
     await expect(within(canvasElement).getByRole('button', { name: 'Projects: Acme Storefront' })).toBeInTheDocument();
   },
 };
+
+/**
+ * Records the cross-fades of a crumb's label: the opacity transitions that
+ * start inside its label swap. A transition event bubbles, so the recorder
+ * on the canvas also sees a crumb that mounts after it starts.
+ */
+function recordLabelFades(root: HTMLElement) {
+  const fades: Element[] = [];
+  const record = (event: TransitionEvent) => {
+    const target = event.target as Element;
+    if (event.propertyName === 'opacity' && target.closest('[data-slot="breadcrumb-menu-label"]')) fades.push(target);
+  };
+  root.addEventListener('transitionrun', record);
+  return { fades, stop: () => root.removeEventListener('transitionrun', record) };
+}
+
+/** Two frames: a transition the last render starts has run by then. */
+function nextFrames() {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+/**
+ * A pending crumb is one status with the list label, not a button: a
+ * skeleton bar at 0.8 of the line height, hidden from screen readers, in the
+ * crumb's 28px box at the trigger's 10px start inset.
+ */
+async function checkPendingCrumb(canvasElement: HTMLElement, label: string) {
+  const canvas = within(canvasElement);
+  const status = canvas.getByRole('status');
+  await expect(status).toHaveTextContent(`${label}: Loading…`);
+  await expect(canvas.queryByRole('button', { name: new RegExp(`^${label}`) })).toBeNull();
+  const bar = status.querySelector<HTMLElement>('[data-slot="skeleton"]')!;
+  await expect(bar).toHaveAttribute('aria-hidden', 'true');
+  const box = status.getBoundingClientRect();
+  await expectPx(box.height, 28);
+  await expectPx(bar.getBoundingClientRect().height, Number.parseFloat(getComputedStyle(status).lineHeight) * 0.8);
+  await expectPx(bar.getBoundingClientRect().left - box.left, 10);
+}
+
+/**
+ * Pending, then the first name: it shows without a cross-fade. A later
+ * name cross-fades as before.
+ */
+async function checkPendingThenLoaded(canvasElement: HTMLElement, label: string, first: string, second: string) {
+  const canvas = within(canvasElement);
+  await checkPendingCrumb(canvasElement, label);
+  const { fades, stop } = recordLabelFades(canvasElement);
+  try {
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
+    const crumb = await canvas.findByRole('button', { name: `${label}: ${first}` });
+    await expect(canvas.queryByRole('status')).toBeNull();
+    await nextFrames();
+    await expect(fades).toHaveLength(0);
+    await userEvent.click(canvas.getByRole('button', { name: 'Switch' }));
+    await waitFor(() => expect(crumb).toHaveAccessibleName(`${label}: ${second}`));
+    await waitFor(() => expect(fades.length).toBeGreaterThan(0));
+  } finally {
+    stop();
+  }
+}
+
+/** A crumb menu whose name loads: pending until Finish loading. */
+function PendingEnvironment() {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('production');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbMenu
+              label="Environment"
+              pending={!loaded}
+              options={loaded ? environments : []}
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Overview</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" disabled={loaded} onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+      <Button variant="outline" size="sm" disabled={!loaded} onClick={() => setValue('staging')}>
+        Switch
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * While the current item's name loads, pass `pending` instead of a
+ * placeholder word such as "Environment". The crumb shows a text skeleton
+ * one line tall, takes no clicks or focus, and a screen reader hears
+ * "Environment: Loading…". When the name is known it shows at once, without
+ * a swap from a placeholder; a later change of the name swaps as usual.
+ * Keep `placeholder` for a state with real words, such as "All projects".
+ */
+export const WithMenuPending: Story = {
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Environment'),
+};
+
+/** The pending crumb in dark mode. */
+export const WithMenuPendingDark: Story = {
+  tags: ['!autodocs'],
+  globals: { theme: 'dark' },
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Environment'),
+};
+
+/** Pending, then the first name with no cross-fade, then a switch that cross-fades. */
+export const WithMenuPendingLoaded: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingThenLoaded(canvasElement, 'Environment', 'Production', 'Staging'),
+};
+
+/** A search crumb whose project name loads: pending until Finish loading. */
+function PendingProject() {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('p3');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList className="flex-nowrap">
+          <BreadcrumbItem className="min-w-0 max-w-56">
+            <BreadcrumbSearchMenu
+              label="Projects"
+              pending={!loaded}
+              loading={!loaded}
+              options={(loaded ? allProjects : []).map((project) => ({
+                value: project.id,
+                label: project.name,
+                keywords: [project.slug],
+              }))}
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Activity</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" disabled={loaded} onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+      <Button variant="outline" size="sm" disabled={!loaded} onClick={() => setValue('p1')}>
+        Switch
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * `BreadcrumbSearchMenu` takes the same `pending`. It is about the crumb;
+ * `loading` is about the list in the open popup. While the project list
+ * loads the first time, the open project's name is unknown too: pass both.
+ * The long name shows cut from its first frame, with no placeholder before it.
+ */
+export const SearchMenuPending: Story = {
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Projects'),
+};
+
+/** The pending search crumb in dark mode. */
+export const SearchMenuPendingDark: Story = {
+  tags: ['!autodocs'],
+  globals: { theme: 'dark' },
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Projects'),
+};
+
+/** Pending, then the first name with no cross-fade, then a switch that cross-fades. */
+export const SearchMenuPendingLoaded: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) =>
+    checkPendingThenLoaded(canvasElement, 'Projects', 'Northwind Outdoor Equipment and Apparel Europe', 'Acme Storefront'),
+};
