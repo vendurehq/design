@@ -14,7 +14,7 @@ import {
   ListRowTrailing,
 } from '@vendure-io/ui/components/molecules/list-row';
 import { cn } from '@vendure-io/ui/lib/utils';
-import type * as React from 'react';
+import * as React from 'react';
 
 // Skeleton parts: placeholders in the shape of a real component, at its height
 // and spacing, so content fills in place when data arrives. Compose them inside
@@ -114,6 +114,9 @@ interface SkeletonCardProps extends Omit<React.ComponentProps<typeof Card>, 'var
  * lines. Renders the real Card parts, so the header and the body keep the
  * card's padding, gap and one-line header height. Pass children to replace the
  * body lines with another shape (SkeletonField, SkeletonFact, SkeletonLine).
+ * Children are wrapped in a CardContent stack (gap-4), so they keep the card
+ * padding: do not add your own CardContent. Children that render nothing
+ * (`false`, `null`, `undefined`, `[]`) count as no children.
  */
 function SkeletonCard({
   description = false,
@@ -122,6 +125,7 @@ function SkeletonCard({
   children,
   ...props
 }: SkeletonCardProps) {
+  const hasChildren = React.Children.toArray(children).length > 0;
   return (
     <Card data-skeleton="card" aria-hidden="true" {...props}>
       <CardHeader>
@@ -139,17 +143,18 @@ function SkeletonCard({
           </CardAction>
         ) : null}
       </CardHeader>
-      {children ??
-        (lines > 0 ? (
-          <CardContent>
-            {Array.from({ length: lines }).map((_, i) => (
-              <SkeletonLine
-                key={i}
-                className={i === lines - 1 && lines > 1 ? 'w-3/5' : undefined}
-              />
-            ))}
-          </CardContent>
-        ) : null)}
+      {hasChildren ? (
+        <CardContent className="flex flex-col gap-4">{children}</CardContent>
+      ) : lines > 0 ? (
+        <CardContent>
+          {Array.from({ length: lines }).map((_, i) => (
+            <SkeletonLine
+              key={i}
+              className={i === lines - 1 && lines > 1 ? 'w-3/5' : undefined}
+            />
+          ))}
+        </CardContent>
+      ) : null}
     </Card>
   );
 }

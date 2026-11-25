@@ -99,7 +99,7 @@ describe('skeleton parts', () => {
     expect(count(markup, 'data-skeleton="line"')).toBe(5);
   });
 
-  test('SkeletonCard children replace the body lines', () => {
+  test('SkeletonCard children replace the body lines and keep the card padding', () => {
     const markup = html(
       <SkeletonCard description action>
         <SkeletonField />
@@ -109,7 +109,24 @@ describe('skeleton parts', () => {
     expect(markup).toContain('data-slot="card-description"');
     expect(markup).toContain('data-slot="card-action"');
     expect(markup).toContain('data-skeleton="field"');
-    expect(markup).not.toContain('data-slot="card-content"');
+    // The children sit inside one CardContent stack, not against the card edge.
+    expect(count(markup, 'data-slot="card-content"')).toBe(1);
+    expect(markup).toMatch(
+      /data-slot="card-content"[^>]*flex-col gap-4[^>]*>\s*<[^>]*data-skeleton="field"/,
+    );
+    // Title, description and the field label: the body lines are gone.
+    expect(count(markup, 'data-skeleton="line"')).toBe(3);
+  });
+
+  test('SkeletonCard children that render nothing show the body lines', () => {
+    for (const empty of [false, null, undefined, []]) {
+      const markup = html(<SkeletonCard lines={2}>{empty}</SkeletonCard>);
+
+      expect(count(markup, 'data-slot="card-content"')).toBe(1);
+      expect(markup).not.toContain('flex-col gap-4');
+      // One title line and two body lines.
+      expect(count(markup, 'data-skeleton="line"')).toBe(3);
+    }
   });
 
   test('SkeletonPageHeader draws the page-title line and the actions', () => {

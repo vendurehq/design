@@ -568,15 +568,11 @@ export const PageShape: Story = {
               <SkeletonPageHeader />
               <div className="grid gap-4 sm:grid-cols-2">
                 <SkeletonCard>
-                  <CardContent className="flex flex-col gap-4">
-                    <SkeletonFact />
-                    <SkeletonFact />
-                  </CardContent>
+                  <SkeletonFact />
+                  <SkeletonFact />
                 </SkeletonCard>
                 <SkeletonCard>
-                  <CardContent className="flex flex-col gap-4">
-                    <SkeletonField />
-                  </CardContent>
+                  <SkeletonField />
                 </SkeletonCard>
               </div>
               <Card className="gap-0 py-0">
