@@ -533,6 +533,79 @@ export const LoadingKeepsColumnWidths: Story = {
   },
 };
 
+const ROW_COUNT_PREFIX = 'vendure-ui:row-count:';
+
+/** The height of the table body inside `[data-testid=testId]`. */
+function bodyHeight(canvasElement: HTMLElement, testId: string) {
+  const body = within(canvasElement).getByTestId(testId).querySelector('tbody');
+  return Math.round(body?.getBoundingClientRect().height ?? 0);
+}
+
+/**
+ * With `rowCountKey`, a first load draws as many skeleton rows as the last
+ * load showed, so the body keeps its height when the rows arrive. A last load
+ * with no rows draws a blank body at the height of "No results".
+ * From the top: 3 loaded rows (stored under their key), a load that
+ * remembers 3, the empty state, a load that remembers 0.
+ */
+export const LoadingRemembersRowCount: Story = {
+  beforeEach: () => {
+    localStorage.setItem(`${ROW_COUNT_PREFIX}story:three`, '3');
+    localStorage.setItem(`${ROW_COUNT_PREFIX}story:none`, '0');
+    return () => {
+      for (const key of ['three', 'none', 'loaded']) {
+        localStorage.removeItem(`${ROW_COUNT_PREFIX}story:${key}`);
+      }
+    };
+  },
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order>
+          rows={orders.slice(0, 3)}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          rowCountKey="story:loaded"
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={[]}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          rowCountKey="story:three"
+        />
+      </div>
+      <div data-testid="empty">
+        <DataTable<Order> rows={[]} columns={sizedColumns} getRowId={(o) => o.id} />
+      </div>
+      <div data-testid="loading-empty">
+        <DataTable<Order>
+          rows={[]}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          rowCountKey="story:none"
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Remembered 3: three skeleton rows instead of the default ten, as tall
+    // as the three loaded rows.
+    await expectSameRowHeights(canvasElement, 3);
+    await expect(bodyHeight(canvasElement, 'loading')).toBe(bodyHeight(canvasElement, 'loaded'));
+    // Remembered 0: a blank body as tall as the empty state.
+    await expect(bodyHeight(canvasElement, 'loading-empty')).toBe(
+      bodyHeight(canvasElement, 'empty'),
+    );
+    // A finished load stores its count; a load in progress stores nothing.
+    await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:loaded`)).toBe('3');
+    await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:three`)).toBe('3');
+  },
+};
+
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.
 export const Empty: Story = {
   render: () => (
