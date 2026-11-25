@@ -173,3 +173,9 @@ export function sameIndents(a: Record<string, number>, b: Record<string, number>
 export function columnAlign(meta: unknown): NonNullable<DataTableColumnMeta['align']> {
   return (meta as DataTableColumnMeta | undefined)?.align === 'end' ? 'end' : 'start';
 }
+
+/** A column's width from its `meta.width` (see DataTableColumnMeta), if it sets one. */
+export function columnWidth(meta: unknown): DataTableColumnMeta['width'] {
+  const width = (meta as DataTableColumnMeta | undefined)?.width;
+  return typeof width === 'number' || typeof width === 'string' ? width : undefined;
+}

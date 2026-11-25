@@ -25,6 +25,17 @@ export interface DataTableColumnMeta {
    * Logical, so it flips in right-to-left. Defaults to `'start'`.
    */
   align?: 'start' | 'end';
+  /**
+   * The column's width: a number in px or a CSS length (`'8rem'`). The column
+   * has it while the skeleton shows and once the rows arrive, so the headers
+   * do not move when the data replaces the skeleton. Give one to each column
+   * whose content has a known width (a code, a status, a date, a total) and
+   * leave the widest text column without, so it takes the rest of the row.
+   * Wider content still widens the column (the table keeps its automatic
+   * layout). TanStack's `size` is not read: TanStack gives every column a
+   * default `size`, so a set one can't be told from the default.
+   */
+  width?: number | string;
 }
 
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be
@@ -283,12 +294,24 @@ export interface DataTableLabels {
 
 export interface DataTableProps<TData> {
   rows: TData[]; // current page (server) or full set (client). The core never fetches.
+  /**
+   * THE cell/header seam. `meta` is passed through; the DataTable reads
+   * `meta.align` and `meta.width` (see `DataTableColumnMeta`).
+   */
   // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
-  columns: ColumnDef<TData, any>[]; // `meta` passed through untouched. THE cell/header seam.
+  columns: ColumnDef<TData, any>[];
   /** TanStack getRowId. Required with server pagination + rowSelection. */
   getRowId?: (row: TData, index: number) => string;
 
-  isLoading?: boolean; // skeleton rows only while `rows` is empty; never blanks populated rows
+  /**
+   * The rows are loading. With `rows` empty (the first load) the body shows
+   * `skeletonRowCount` skeleton rows and the pagination footer a skeleton range
+   * with prev/next disabled. With rows on screen (a page, sort or filter
+   * change that keeps the previous rows) the rows stay: the body is
+   * `aria-busy`, the rows and the footer range dim after a short delay, and
+   * prev/next ignore presses. Never blanks populated rows.
+   */
+  isLoading?: boolean;
   skeletonRowCount?: number; // default 10
   /**
    * Per-column loading cells, keyed by column id, for cells that are not one

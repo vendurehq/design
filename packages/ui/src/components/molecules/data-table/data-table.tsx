@@ -74,6 +74,7 @@ import { createPortal } from 'react-dom';
 import {
   buildDisplayColumns,
   columnAlign,
+  columnWidth,
   getSelectedRowIds,
   measureColumnIndents,
   PENDING_CLASS,
@@ -1112,6 +1113,16 @@ function DataTable<TData>({
       : undefined;
   };
 
+  // A column's `meta.width` is set on its header cell, so the column has that
+  // width while the skeleton shows and once the rows arrive (the table keeps
+  // its automatic layout: wider content still widens it).
+  // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
+  const headerCellStyle = (column: Column<TData, any>): React.CSSProperties | undefined => {
+    const indent = columnIndentStyle(column.id);
+    const width = columnWidth(column.columnDef.meta);
+    return width == null ? indent : { ...indent, width };
+  };
+
   // What a built-in body cell of this column carries. Handed to `renderRow` as
   // `ctx.cellProps`, so a row a consumer renders itself takes the select cell's
   // and the leading cell's classes from here instead of copying them.
@@ -1421,7 +1432,7 @@ function DataTable<TData>({
                         generatedColumn(headerCell.column.id) !== 'select' &&
                           HEADER_LABEL_UNDER_BULK_CLASS,
                       )}
-                      style={columnIndentStyle(headerCell.column.id)}
+                      style={headerCellStyle(headerCell.column)}
                     >
                       {sorting != null && !headerCell.isPlaceholder ? (
                         <DataTableColumnHeader
