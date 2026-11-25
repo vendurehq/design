@@ -93,6 +93,10 @@ export const uiGuidance = [
         body: 'Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.',
       },
       {
+        title: 'AppShellPage is the page frame',
+        body: 'AppShellPage centres the page in AppShellMain, caps its content at 1180px and puts a 32px gutter (16px below 768px) on every side, the top included; the gutter sits outside the 1180px. The values are the CSS variables --app-shell-page-width and --app-shell-page-gutter. Do not add page padding or a page max width in the app. A narrower column, such as a settings form at max-w-4xl, goes inside the frame and stays left-aligned. A layout with its own page wrapper uses pageFrameClassName.',
+      },
+      {
         title: 'The routed page enters with AppShellPage',
         body: 'Wrap the routed page in AppShellPage inside AppShellMain, keyed by the pathname, so a new page fades in and rises 6px while the sidebar and the header stay still. A change of search params keeps the key and does not replay it. A layout without AppShell, such as the Dashboard, puts pageEnterClassName on its own wrapper, keyed the same way. A page that switches its content in place, such as the environment switch, reloads in place instead: see the motion tokens.',
       },

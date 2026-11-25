@@ -127,6 +127,8 @@ behavior you need instead of rebuilding it from atoms.
 >
 > A layout without AppShell (the Dashboard) gets the same motion from `pageEnterClassName` (`animate-page-enter motion-reduce:animate-page-fade`) on its own wrapper, keyed the same way. Only opacity and transform move, so nothing shifts and the page takes clicks while it settles.
 
+> **The page frame.** `AppShellPage` is also the frame of the page, the same in every app: the page is centred in `AppShellMain`, its content is at most 1180px wide, and a 32px gutter (16px below 768px) sits on every side, the top included. The gutter is outside the 1180px. The values are the CSS variables `--app-shell-page-width` and `--app-shell-page-gutter` on the frame. The app sets no page padding or page width of its own. A page that wants a narrower column (a settings form at `max-w-4xl`) puts it inside the frame, left-aligned. A layout with its own page wrapper takes the frame from `pageFrameClassName`.
+
 > **SearchTrigger.** The search field at the end of the top bar: a button that looks like a 28px field, with a search icon, the word "Search" and the shortcut (⌘K on Apple platforms, Ctrl K elsewhere). Its accessible name is "Search (command palette)", and it announces a dialog. It only shows the shortcut: open the palette in `onClick` and bind the same key yourself. `shortcutKey` sets the letter (`null` for none). `collapse` shrinks it to an icon button: below 768px by default (`md`), `never` or `always`.
 >
 > ```tsx
