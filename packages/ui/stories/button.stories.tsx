@@ -245,7 +245,10 @@ export const DisabledLink: Story = {
     expect(window.location.hash).toBe('');
     // The tooltip trigger keeps its handlers: the hover still opens it.
     await userEvent.hover(audit);
-    await waitFor(() => expect(canvas.getByText('The audit log is part of the Enterprise plan.')).toBeVisible());
+    // The tooltip renders in a portal, outside the canvas.
+    await waitFor(() =>
+      expect(within(document.body).getByText('The audit log is part of the Enterprise plan.')).toBeVisible(),
+    );
     await userEvent.unhover(audit);
   },
 };
