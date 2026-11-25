@@ -366,16 +366,12 @@ export const ComposedPage: Story = {
       <SkeletonPageHeader actions={2} />
       <div className="grid gap-4 md:grid-cols-2">
         <SkeletonCard>
-          <CardContent className="flex flex-col gap-4">
-            <SkeletonFact />
-            <SkeletonFact />
-          </CardContent>
+          <SkeletonFact />
+          <SkeletonFact />
         </SkeletonCard>
         <SkeletonCard description>
-          <CardContent className="flex flex-col gap-4">
-            <SkeletonField />
-            <SkeletonField />
-          </CardContent>
+          <SkeletonField />
+          <SkeletonField />
         </SkeletonCard>
       </div>
       <Card className={ROW_CARD}>

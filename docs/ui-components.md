@@ -735,7 +735,6 @@ Pass skeleton parts as children, laid out like the loaded page. Each part is as 
 | `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width |
 
 ```tsx
-import { CardContent } from "@vendure-io/ui/components/atoms/card";
 import { LoadingState } from "@vendure-io/ui/components/molecules/state-views/loading-state";
 import {
   SkeletonCard,
@@ -746,10 +745,8 @@ import {
 <LoadingState className="gap-6">
   <SkeletonPageHeader actions={2} />
   <SkeletonCard>
-    <CardContent className="flex flex-col gap-4">
-      <SkeletonFact />
-      <SkeletonFact />
-    </CardContent>
+    <SkeletonFact />
+    <SkeletonFact />
   </SkeletonCard>
 </LoadingState>
 ```
