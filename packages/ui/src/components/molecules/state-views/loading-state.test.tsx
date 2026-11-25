@@ -36,6 +36,13 @@ describe('LoadingState delay', () => {
     expect(markup).toContain('motion-reduce:[animation-duration:0s]');
   });
 
+  test('fades in over the page-fade duration token', () => {
+    const markup = html(<LoadingState />);
+
+    expect(markup).toContain('[animation:page-fade_var(--transition-duration-page-fade)_');
+    expect(markup).not.toContain('--transition-duration-normal');
+  });
+
   test('takes a custom delay', () => {
     expect(html(<LoadingState delay={400} />)).toContain('--loading-state-delay:400ms');
   });
