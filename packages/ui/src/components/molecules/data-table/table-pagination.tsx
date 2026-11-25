@@ -25,6 +25,11 @@ import { PENDING_CLASS } from './data-table-helpers.tsx';
 // with `onPageChange` or `getPageHref`. There are no feature flags and no
 // disabled placeholder UI for capabilities the consumer didn't opt into.
 //
+// One line at every width: the range and the page-size label never wrap, and
+// in a footer narrower than 28rem the label is visually hidden (it stays the
+// select's accessible name), so the footer height does not depend on the
+// range text.
+//
 // Loading: an unknown `totalItems` (the first page is still loading) shows a
 // skeleton where the range goes and disables prev/next. `isLoading` with a
 // known total (a later page, sort or filter is loading) keeps the range and
@@ -57,6 +62,10 @@ function getRange(
   return { start, end };
 }
 
+// Group digits in the default range text ("1–10 of 123,456"), in the language
+// of its English words, so a server render and the browser agree.
+const rangeNumber = new Intl.NumberFormat('en');
+
 /** Default range string: "0 of 0" when empty, else "start–end of total" (en dash). */
 function defaultFormatRange({
   start,
@@ -67,7 +76,9 @@ function defaultFormatRange({
   end: number;
   total: number;
 }): string {
-  return total <= 0 ? '0 of 0' : `${start}–${end} of ${total}`;
+  if (total <= 0) return '0 of 0';
+  const n = (value: number) => rangeNumber.format(value);
+  return `${n(start)}–${n(end)} of ${n(total)}`;
 }
 
 interface TablePaginationProps extends React.ComponentProps<'div'> {
@@ -162,13 +173,19 @@ function TablePagination({
   return (
     <div
       data-slot="table-pagination"
-      className={cn('flex items-center justify-between gap-4', className)}
+      className={cn(
+        '@container/table-pagination flex items-center justify-between gap-4',
+        className,
+      )}
       {...props}
     >
       <div
         data-slot="table-pagination-range"
         data-pending={pending ? '' : undefined}
-        className={cn('text-muted-foreground text-sm tabular-nums', PENDING_CLASS)}
+        className={cn(
+          'text-muted-foreground text-sm whitespace-nowrap tabular-nums',
+          PENDING_CLASS,
+        )}
       >
         {totalKnown ? (
           formatRange({ start, end, total: totalItems })
@@ -183,7 +200,9 @@ function TablePagination({
         <div className="flex items-center gap-4">
           {onPageSizeChange && (
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">{pageSizeLabel}</span>
+              <span className="text-muted-foreground text-sm whitespace-nowrap @max-md/table-pagination:sr-only">
+                {pageSizeLabel}
+              </span>
               <Select value={pageSize} onValueChange={(value) => onPageSizeChange(Number(value))}>
                 <SelectTrigger aria-label={pageSizeLabel} className="w-fit">
                   <SelectValue />

@@ -280,6 +280,28 @@ describe('TablePagination labels', () => {
   });
 });
 
+describe('TablePagination one-line footer', () => {
+  test('the default range groups digits', () => {
+    expect(rangeText(<TablePagination page={1} pageSize={10} totalItems={123456} />)).toBe(
+      '1–10 of 123,456',
+    );
+    expect(rangeText(<TablePagination page={12346} pageSize={10} totalItems={123456} />)).toBe(
+      '123,451–123,456 of 123,456',
+    );
+  });
+
+  test('the range and the page-size label never wrap; the label hides in a narrow footer', () => {
+    const markup = html(
+      <TablePagination page={1} pageSize={10} totalItems={20} onPageSizeChange={noop} />,
+    );
+    expect(markup).toMatch(/data-slot="table-pagination"[^>]*@container\/table-pagination/);
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*whitespace-nowrap/);
+    expect(markup).toMatch(
+      /whitespace-nowrap @max-md\/table-pagination:sr-only[^>]*>Items per page</,
+    );
+  });
+});
+
 describe('TablePagination loading', () => {
   /** The opening tag of the element with `data-slot="<slot>"`. */
   const tag = (markup: string, slot: string) =>
