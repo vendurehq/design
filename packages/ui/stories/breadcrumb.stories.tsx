@@ -723,3 +723,257 @@ export const SearchMenuRetry: Story = {
     await expect(within(canvasElement).getByRole('button', { name: 'Projects: Acme Storefront' })).toBeInTheDocument();
   },
 };
+
+/**
+ * Records the cross-fades of a crumb's label: the opacity transitions that
+ * start inside its label swap. A transition event bubbles, so the recorder
+ * on the canvas also sees a crumb that mounts after it starts.
+ */
+function recordLabelFades(root: HTMLElement) {
+  const fades: Element[] = [];
+  const record = (event: TransitionEvent) => {
+    const target = event.target as Element;
+    if (event.propertyName === 'opacity' && target.closest('[data-slot="breadcrumb-menu-label"]')) fades.push(target);
+  };
+  root.addEventListener('transitionrun', record);
+  return { fades, stop: () => root.removeEventListener('transitionrun', record) };
+}
+
+/** Two frames: a transition the last render starts has run by then. */
+function nextFrames() {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
+/**
+ * A pending crumb is one status with the list label, not a button: a
+ * skeleton bar at 0.8 of the line height, hidden from screen readers, in the
+ * crumb's 28px box at the trigger's 10px start inset.
+ */
+async function checkPendingCrumb(canvasElement: HTMLElement, label: string) {
+  const canvas = within(canvasElement);
+  const status = canvas.getByRole('status');
+  await expect(status).toHaveTextContent(`${label}: Loading…`);
+  await expect(canvas.queryByRole('button', { name: new RegExp(`^${label}`) })).toBeNull();
+  const bar = status.querySelector<HTMLElement>('[data-slot="skeleton"]')!;
+  await expect(bar).toHaveAttribute('aria-hidden', 'true');
+  const box = status.getBoundingClientRect();
+  await expectPx(box.height, 28);
+  await expectPx(bar.getBoundingClientRect().height, Number.parseFloat(getComputedStyle(status).lineHeight) * 0.8);
+  await expectPx(bar.getBoundingClientRect().left - box.left, 10);
+}
+
+/**
+ * Pending, then the first name: it shows without a cross-fade. A later
+ * name cross-fades as before.
+ */
+async function checkPendingThenLoaded(canvasElement: HTMLElement, label: string, first: string, second: string) {
+  const canvas = within(canvasElement);
+  await checkPendingCrumb(canvasElement, label);
+  const { fades, stop } = recordLabelFades(canvasElement);
+  try {
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
+    const crumb = await canvas.findByRole('button', { name: `${label}: ${first}` });
+    await expect(canvas.queryByRole('status')).toBeNull();
+    await nextFrames();
+    await expect(fades).toHaveLength(0);
+    await userEvent.click(canvas.getByRole('button', { name: 'Switch' }));
+    await waitFor(() => expect(crumb).toHaveAccessibleName(`${label}: ${second}`));
+    await waitFor(() => expect(fades.length).toBeGreaterThan(0));
+  } finally {
+    stop();
+  }
+}
+
+/**
+ * Pending, then the name is confirmed. While it is the same as the last
+ * known name, nothing moves; a different name cross-fades.
+ */
+async function checkKnownThenConfirmed(
+  canvasElement: HTMLElement,
+  label: string,
+  shown: string,
+  confirmed: string,
+) {
+  const canvas = within(canvasElement);
+  // The last known name shows while pending: a normal crumb, no skeleton.
+  const crumb = canvas.getByRole('button', { name: `${label}: ${shown}` });
+  await expect(canvas.queryByRole('status')).toBeNull();
+  await expect(crumb.querySelector('[data-slot="skeleton"]')).toBeNull();
+  const { fades, stop } = recordLabelFades(canvasElement);
+  try {
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
+    await waitFor(() => expect(crumb).toHaveAccessibleName(`${label}: ${confirmed}`));
+    if (shown === confirmed) {
+      await nextFrames();
+      await expect(fades).toHaveLength(0);
+    } else {
+      await waitFor(() => expect(fades.length).toBeGreaterThan(0));
+    }
+  } finally {
+    stop();
+  }
+}
+
+/**
+ * A crumb menu while its item loads: pending until Finish loading. `known`
+ * is the last known name the app passes as `placeholder` while pending, or
+ * nothing.
+ */
+function PendingEnvironment({ known }: { known?: string }) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('production');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbMenu
+              label="Environment"
+              pending={!loaded}
+              options={loaded ? environments : []}
+              placeholder={loaded ? undefined : known}
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Overview</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" disabled={loaded} onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+      <Button variant="outline" size="sm" disabled={!loaded} onClick={() => setValue('staging')}>
+        Switch
+      </Button>
+    </div>
+  );
+}
+
+/**
+ * While the current item loads or is confirmed, pass `pending`. Show the
+ * name until it is known to be wrong: keep the options of the last read, or
+ * pass the last known name as `placeholder`. Only when no name is known
+ * does the crumb show a text skeleton one line tall. It takes no clicks or
+ * focus, and a screen reader hears "Environment: Loading…". The first name
+ * after the skeleton shows at once, without a swap. Never pass a
+ * placeholder word such as "Environment" for an unknown name. Keep
+ * `placeholder` for real words, such as "All projects".
+ */
+export const WithMenuPending: Story = {
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Environment'),
+};
+
+/** The pending crumb in dark mode. */
+export const WithMenuPendingDark: Story = {
+  tags: ['!autodocs'],
+  globals: { theme: 'dark' },
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Environment'),
+};
+
+/** No name known: the skeleton, then the first name with no cross-fade, then a switch that cross-fades. */
+export const WithMenuPendingLoaded: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingEnvironment />,
+  play: ({ canvasElement }) => checkPendingThenLoaded(canvasElement, 'Environment', 'Production', 'Staging'),
+};
+
+/**
+ * Pending with the last known name: the crumb shows it as usual. When the
+ * read confirms the same name, nothing moves.
+ */
+export const WithMenuPendingKnownName: Story = {
+  render: () => <PendingEnvironment known="Production" />,
+  play: ({ canvasElement }) => checkKnownThenConfirmed(canvasElement, 'Environment', 'Production', 'Production'),
+};
+
+/** The last known name was stale: the confirmed name cross-fades in. */
+export const WithMenuPendingRenamed: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingEnvironment known="Prod" />,
+  play: ({ canvasElement }) => checkKnownThenConfirmed(canvasElement, 'Environment', 'Prod', 'Production'),
+};
+
+/** A search crumb while its project loads: pending until Finish loading. */
+function PendingProject({ known }: { known?: string }) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('p3');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList className="flex-nowrap">
+          <BreadcrumbItem className="min-w-0 max-w-56">
+            <BreadcrumbSearchMenu
+              label="Projects"
+              pending={!loaded}
+              loading={!loaded}
+              options={(loaded ? allProjects : []).map((project) => ({
+                value: project.id,
+                label: project.name,
+                keywords: [project.slug],
+              }))}
+              placeholder={loaded ? undefined : known}
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Activity</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" disabled={loaded} onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+      <Button variant="outline" size="sm" disabled={!loaded} onClick={() => setValue('p1')}>
+        Switch
+      </Button>
+    </div>
+  );
+}
+
+const northwind = 'Northwind Outdoor Equipment and Apparel Europe';
+
+/**
+ * `BreadcrumbSearchMenu` takes the same `pending`. It is about the crumb;
+ * `loading` is about the list in the open popup. On the first load, with no
+ * name known, pass both: the crumb shows the skeleton. On a later read, keep
+ * the last known name, and the crumb shows it.
+ */
+export const SearchMenuPending: Story = {
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Projects'),
+};
+
+/** The pending search crumb in dark mode. */
+export const SearchMenuPendingDark: Story = {
+  tags: ['!autodocs'],
+  globals: { theme: 'dark' },
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) => checkPendingCrumb(canvasElement, 'Projects'),
+};
+
+/** No name known: the skeleton, then the first name with no cross-fade, then a switch that cross-fades. */
+export const SearchMenuPendingLoaded: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingProject />,
+  play: ({ canvasElement }) => checkPendingThenLoaded(canvasElement, 'Projects', northwind, 'Acme Storefront'),
+};
+
+/** Pending with the last known name: it shows, and the same confirmed name does not move. */
+export const SearchMenuPendingKnownName: Story = {
+  render: () => <PendingProject known={northwind} />,
+  play: ({ canvasElement }) => checkKnownThenConfirmed(canvasElement, 'Projects', northwind, northwind),
+};
+
+/** The last known name was stale: the confirmed name cross-fades in. */
+export const SearchMenuPendingRenamed: Story = {
+  tags: ['!autodocs'],
+  render: () => <PendingProject known="Northwind EU" />,
+  play: ({ canvasElement }) => checkKnownThenConfirmed(canvasElement, 'Projects', 'Northwind EU', northwind),
+};

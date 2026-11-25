@@ -65,6 +65,7 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/list-header';
 import { TablePagination } from '@vendure-io/ui/components/molecules/data-table/table-pagination';
 import { ListRowChevron } from '@vendure-io/ui/components/molecules/list-row';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
@@ -88,25 +89,6 @@ import { useSelectionStorage } from './data-table-selection-storage.tsx';
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
 const ACTIONS_COLUMN_ID = 'actions';
-
-/**
- * One text line of loading placeholder: a box exactly one line box tall (`1lh`
- * of the inherited font) with a bar centred in it, so a skeleton line is as tall
- * as the text line it stands in for. Size the line with a text utility
- * (`text-xs` for a muted sub-line) and its width with `w-*`. DataTable uses it as
- * the default loading cell; stack several for multi-line `skeletonCells`.
- */
-function DataTableSkeletonLine({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="data-table-skeleton-line"
-      className={cn('flex h-[1lh] w-full items-center', className)}
-      {...props}
-    >
-      <Skeleton className="h-[0.8lh] w-full" />
-    </div>
-  );
-}
 
 // The row link is a stretched link, like ListRowLink: one real link per row,
 // whose ::after covers the row (the row is `relative`), so a click on any point
@@ -1163,7 +1145,7 @@ function DataTable<TData>({
     const custom = skeletonCells?.[id];
     if (custom !== undefined) return custom;
     if (generated === 'actions') return <Skeleton className="size-8" />;
-    return <DataTableSkeletonLine />;
+    return <SkeletonLine data-slot="data-table-skeleton-line" />;
   };
 
   const warnedUnknownSkeletonCells = React.useRef(false);
@@ -1461,7 +1443,7 @@ function DataTable<TData>({
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
                     <TableCell>
-                      <DataTableSkeletonLine />
+                      <SkeletonLine data-slot="data-table-skeleton-line" />
                     </TableCell>
                   ) : (
                     table.getVisibleLeafColumns().map((column) => (
@@ -1599,7 +1581,9 @@ function DataTable<TData>({
   );
 }
 
-export { DataTable, DataTableRowLink, DataTableSkeletonLine };
+// `DataTableSkeletonLine` is the shared SkeletonLine under its old name, kept for
+// consumers that stack it in `skeletonCells`.
+export { DataTable, DataTableRowLink, SkeletonLine as DataTableSkeletonLine };
 
 // Re-export the consumer-facing TanStack types so columns can be authored from
 // the same import as `DataTable` — no direct `@tanstack/react-table` dependency
