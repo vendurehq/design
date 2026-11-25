@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { duration, easing } from '@vendure-io/design-tokens';
 import { Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTag } from '../../../test/slot-tokens.ts';
@@ -343,5 +346,57 @@ describe('Checklist', () => {
         </ChecklistStep>,
       ),
     ).toThrow('ChecklistStep must be used inside a Checklist.');
+  });
+});
+
+// checklist.tsx keeps its Motion values as numbers so the ui source needs no
+// runtime import of the tokens package. They must match the tokens.
+describe('Checklist motion tokens', () => {
+  const source = readFileSync(join(import.meta.dir, 'checklist.tsx'), 'utf8');
+  const seconds = (token: string) => Number.parseFloat(token) / 1000;
+  const curve = (token: string) => `[${token.slice('cubic-bezier('.length, -1)}]`;
+
+  test('the move settles in `slow` with no bounce', () => {
+    expect(source).toContain(
+      `const MOVE = { type: 'spring', visualDuration: ${seconds(duration.slow)}, bounce: 0 }`,
+    );
+  });
+
+  test('a fade takes `moderate` on `soft`', () => {
+    expect(source).toContain(
+      `const FADE = { duration: ${seconds(duration.moderate)}, ease: ${curve(easing.soft)} }`,
+    );
+  });
+
+  test('the Completed height takes `slow` on `height`', () => {
+    expect(source).toContain(
+      `const HEIGHT = { duration: ${seconds(duration.slow)}, ease: ${curve(easing.height)} }`,
+    );
+  });
+});
+
+describe('Checklist texts', () => {
+  test('the step state words and the new-tab note are props', () => {
+    const html = renderToStaticMarkup(
+      <Checklist title="Setup" stepDoneLabel="erledigt" stepOpenLabel="offen">
+        <ChecklistStep id="a" done>
+          <ChecklistStepLabel>a</ChecklistStepLabel>
+          <ChecklistStepGuide href="https://docs.example" newTabLabel="(neuer Tab)">
+            Guide
+          </ChecklistStepGuide>
+        </ChecklistStep>
+        <ChecklistStep id="b" done={false}>
+          <ChecklistStepLabel>b</ChecklistStepLabel>
+        </ChecklistStep>
+      </Checklist>,
+    );
+    expect(html).toContain('<span class="sr-only">, erledigt</span>');
+    expect(html).toContain('<span class="sr-only">, offen</span>');
+    expect(html).toContain('(neuer Tab)');
+  });
+
+  test('steps on the first render do not replay their strike', () => {
+    const html = renderToStaticMarkup(<Checklist title="Setup">{steps({ a: true })}</Checklist>);
+    expect(html).not.toContain('data-arrived=""');
   });
 });

@@ -5,6 +5,7 @@ import { Button } from '@vendure-io/ui/components/atoms/button';
 import { Card, CardCount } from '@vendure-io/ui/components/atoms/card';
 import { Checkbox } from '@vendure-io/ui/components/atoms/checkbox';
 import { Progress } from '@vendure-io/ui/components/atoms/progress';
+import { ArrowLink } from '@vendure-io/ui/components/molecules/arrow-link';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronDown, X } from 'lucide-react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
@@ -102,6 +103,10 @@ type ChecklistContextValue = {
   isDone: (id: string) => boolean;
   /** Whether the step was in the Checklist before this render: a step that moves keeps it. */
   isKnown: (id: string) => boolean;
+  /** Whether the step turned done since the last render: it strikes and ticks as it arrives. */
+  justDone: (id: string) => boolean;
+  doneLabel: string;
+  openLabel: string;
   toggle: (id: string, checked: boolean, input: ChecklistInput) => void;
   release: (id: string, event: 'pointerleave' | 'focusout') => void;
 };
@@ -114,7 +119,14 @@ function useChecklist(part: string) {
   return context;
 }
 
-type StepContextValue = { id: string; done: boolean; labelId: string; controlId: string };
+type StepContextValue = {
+  id: string;
+  done: boolean;
+  /** The step mounted done right after it turned done: its strike and tick play on arrival. */
+  arrived: boolean;
+  labelId: string;
+  controlId: string;
+};
 
 const StepContext = React.createContext<StepContextValue | null>(null);
 
@@ -157,6 +169,10 @@ type ChecklistProps = Omit<React.ComponentProps<'div'>, 'title' | 'children'> & 
   /** Whether the Completed group starts open. Default `true`. */
   defaultCompletedOpen?: boolean;
   onCompletedOpenChange?: (open: boolean) => void;
+  /** What a screen reader hears after a done step's label in system mode. Default "done". */
+  stepDoneLabel?: string;
+  /** What a screen reader hears after an open step's label in system mode. Default "not done". */
+  stepOpenLabel?: string;
   /** The count beside the title. Default "2 of 6". */
   formatCount?: (done: number, total: number) => string;
   /** What a screen reader hears when the count changes. Default "2 of 6 steps done". */
@@ -199,6 +215,8 @@ function Checklist({
   onDismiss,
   dismissLabel = 'Dismiss checklist',
   completedLabel = 'Completed',
+  stepDoneLabel = 'done',
+  stepOpenLabel = 'not done',
   completedOpen: completedOpenProp,
   defaultCompletedOpen = true,
   onCompletedOpenChange,
@@ -223,10 +241,13 @@ function Checklist({
 
   // The steps of the last render. A step that mounts in the other list is
   // moving there and arrives whole; only a new step fades in.
-  const known = React.useRef(new Set<string>());
+  // A step that was open in the last render and arrives done in Completed
+  // mounts there with its strike and tick already set: it replays them from
+  // the start (see `data-arrived-done`).
+  const known = React.useRef(new Map<string, boolean>());
   const knownBefore = known.current;
   React.useEffect(() => {
-    known.current = new Set(doneById.keys());
+    known.current = doneById;
   });
 
   const [holds, setHolds] = React.useState<Record<string, ChecklistHold>>({});
@@ -268,6 +289,9 @@ function Checklist({
     reduce,
     isDone: (id) => doneById.get(id) ?? false,
     isKnown: (id) => knownBefore.has(id),
+    justDone: (id) => knownBefore.get(id) === false && doneById.get(id) === true,
+    doneLabel: stepDoneLabel,
+    openLabel: stepOpenLabel,
     toggle: (id, checked, input) => {
       const from = checklistSection(!checked, holdsRef.current[id]);
       setToggled((prev) => ({ ...prev, [id]: checked }));
@@ -304,8 +328,13 @@ function Checklist({
     if (!id) return;
     refocus.current = null;
     const root = rootRef.current;
+    // The row that leaves fades out for a moment beside its new copy: look in
+    // the list the step moved to.
+    const list = open.some((step) => step.props.id === id)
+      ? 'checklist-steps'
+      : 'checklist-completed-steps';
     const control = root?.querySelector<HTMLElement>(
-      `[data-step-id="${CSS.escape(id)}"] [data-slot=checklist-step-control]`,
+      `[data-slot=${list}] [data-step-id="${CSS.escape(id)}"] [data-slot=checklist-step-control]`,
     );
     (
       control ?? root?.querySelector<HTMLElement>('[data-slot=checklist-completed-trigger]')
@@ -525,11 +554,12 @@ type ChecklistStepProps = Omit<React.ComponentProps<'li'>, 'id' | 'children'> & 
 };
 
 // The row grid. The label and the detail share the first line; the
-// description and the guide stack under the label; the action sits at the end,
-// centred on the text. The body spans the row under it all. Empty rows take no
-// space: every part brings its own top margin.
+// description and the guide stack under the label. From a 448px row (`@md`)
+// the action sits at the end, centred on the text; on a narrower row it goes
+// under the text, at its start. The body spans the row under it all. Empty
+// rows take no space: every part brings its own top margin.
 const STEP_GRID =
-  'grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-x-3 [grid-template-areas:"label_detail_action""description_description_action""guide_guide_action""body_body_body"]';
+  'grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 [grid-template-areas:"label_detail""description_description""guide_guide""action_action""body_body"] @md:grid-cols-[minmax(0,1fr)_auto_auto] @md:[grid-template-areas:"label_detail_action""description_description_action""guide_guide_action""body_body_body"]';
 
 /**
  * One step of a Checklist: the tick or the checkbox, then its parts. Must be
@@ -556,9 +586,12 @@ function ChecklistStep({
   // How the user last pressed on this row: the toggle that follows lets go
   // by the same means.
   const input = React.useRef<ChecklistInput>('keyboard');
+  // Latched at mount: a row that arrives done right after the step turned
+  // done plays its strike and tick as it lands.
+  const [arrived] = React.useState(() => checklist.justDone(id));
   const step = React.useMemo(
-    () => ({ id, done, labelId, controlId }),
-    [id, done, labelId, controlId],
+    () => ({ id, done, arrived: arrived && done, labelId, controlId }),
+    [id, done, arrived, labelId, controlId],
   );
 
   return (
@@ -617,10 +650,12 @@ function ChecklistStep({
               onCheckedChange={(checked) => checklist.toggle(id, checked, input.current)}
             />
           ) : (
-            <SystemTick done={done} />
+            <SystemTick done={done} arrived={step.arrived} />
           )}
         </span>
-        <div className={STEP_GRID}>{children}</div>
+        <div className="@container min-w-0 flex-1">
+          <div className={STEP_GRID}>{children}</div>
+        </div>
       </motion.li>
     </StepContext.Provider>
   );
@@ -628,18 +663,20 @@ function ChecklistStep({
 
 /**
  * System mode: a round tick, not a control. Open, an empty ring; done, the
- * ring fills and the tick draws in. Reduced motion: the fill and the tick
- * fade.
+ * ring fills and the tick draws in. A row that arrives done in Completed
+ * starts from the open look (`@starting-style`), so the fill and the draw play
+ * as it lands. Reduced motion: the fill and the tick fade.
  */
-function SystemTick({ done }: { done: boolean }) {
+function SystemTick({ done, arrived }: { done: boolean; arrived: boolean }) {
   return (
     <span
       data-slot="checklist-step-tick"
       data-done={done ? '' : undefined}
+      data-arrived={arrived ? '' : undefined}
       aria-hidden="true"
-      className="group/tick border-control-border relative grid size-4 place-items-center rounded-full border transition-[border-color] duration-slow ease-out data-done:border-primary"
+      className="group/tick border-control-border relative grid size-4 place-items-center rounded-full border transition-[border-color] duration-slow ease-out data-done:border-primary data-arrived:starting:border-control-border"
     >
-      <span className="bg-primary absolute -inset-px rounded-full opacity-0 transition-opacity duration-moderate ease-soft group-data-done/tick:opacity-100" />
+      <span className="bg-primary absolute -inset-px rounded-full opacity-0 transition-opacity duration-moderate ease-soft group-data-done/tick:opacity-100 group-data-arrived/tick:starting:opacity-0" />
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
@@ -653,7 +690,7 @@ function SystemTick({ done }: { done: boolean }) {
         <path
           d="M5 12.5l4.5 4.5L19 7.5"
           pathLength={1}
-          className="[stroke-dasharray:1] [stroke-dashoffset:1] transition-[stroke-dashoffset] duration-fast ease-soft group-data-done/tick:[stroke-dashoffset:0] group-data-done/tick:delay-(--transition-duration-fast) group-data-done/tick:duration-slow group-data-done/tick:ease-out motion-reduce:transition-opacity motion-reduce:[stroke-dashoffset:0] motion-reduce:opacity-0 motion-reduce:group-data-done/tick:opacity-100"
+          className="[stroke-dasharray:1] [stroke-dashoffset:1] transition-[stroke-dashoffset] duration-fast ease-soft group-data-done/tick:[stroke-dashoffset:0] group-data-done/tick:delay-(--transition-duration-fast) group-data-done/tick:duration-slow group-data-done/tick:ease-out motion-safe:group-data-arrived/tick:starting:[stroke-dashoffset:1] motion-reduce:transition-opacity motion-reduce:[stroke-dashoffset:0] motion-reduce:opacity-0 motion-reduce:group-data-done/tick:opacity-100"
         />
       </svg>
     </span>
@@ -663,7 +700,8 @@ function SystemTick({ done }: { done: boolean }) {
 /**
  * The step's name. In manual mode it labels the checkbox, and a click on it
  * toggles the step. A done step strikes through: the line sweeps across from
- * the start edge, over every wrapped line.
+ * the start edge, over every wrapped line. A row that arrives done in
+ * Completed sweeps as it lands.
  */
 function ChecklistStepLabel({ className, children, ...props }: React.ComponentProps<'span'>) {
   const checklist = useChecklist('ChecklistStepLabel');
@@ -683,12 +721,13 @@ function ChecklistStepLabel({ className, children, ...props }: React.ComponentPr
     >
       <span
         data-done={step.done ? '' : undefined}
-        className="text-foreground data-done:text-muted-foreground bg-linear-to-r from-current to-current bg-no-repeat [background-position:0_55%] rtl:[background-position:100%_55%] [background-size:0%_1px] [transition:background-size_var(--transition-duration-slow)_var(--ease-out),color_var(--transition-duration-slow)_var(--ease-out)] data-done:[background-size:100%_1px] motion-reduce:[transition:color_var(--transition-duration-moderate)_var(--ease-soft)]"
+        data-arrived={step.arrived ? '' : undefined}
+        className="data-arrived:starting:text-foreground motion-safe:data-arrived:starting:[background-size:0%_1px] text-foreground data-done:text-muted-foreground bg-linear-to-r from-current to-current bg-no-repeat [background-position:0_55%] rtl:[background-position:100%_55%] [background-size:0%_1px] [transition:background-size_var(--transition-duration-slow)_var(--ease-out),color_var(--transition-duration-slow)_var(--ease-out)] data-done:[background-size:100%_1px] motion-reduce:[transition:color_var(--transition-duration-moderate)_var(--ease-soft)]"
       >
         {children}
       </span>
       {checklist.mode === 'system' ? (
-        <span className="sr-only">{step.done ? ', done' : ', not done'}</span>
+        <span className="sr-only">, {step.done ? checklist.doneLabel : checklist.openLabel}</span>
       ) : null}
     </Tag>
   );
@@ -729,37 +768,43 @@ function ChecklistStepAction({ className, ...props }: React.ComponentProps<'div'
   return (
     <div
       data-slot="checklist-step-action"
-      className={cn('flex shrink-0 items-center self-center [grid-area:action]', className)}
+      className={cn(
+        'mt-3 flex shrink-0 items-center justify-self-start [grid-area:action] @md:mt-0 @md:self-center @md:justify-self-end',
+        className,
+      )}
       {...props}
     />
   );
 }
 
 /**
- * A link to the guide that explains the step. Renders an `<a>`; it opens a new
- * tab unless you pass `target`. Shows on open and done steps.
+ * A link to the guide that explains the step: an external ArrowLink. It opens
+ * a new tab unless you pass `target`; a screen reader then hears
+ * `newTabLabel` after the text. Shows on open and done steps.
  */
 function ChecklistStepGuide({
   className,
   children,
   target = '_blank',
   rel = target === '_blank' ? 'noreferrer' : undefined,
+  newTabLabel = '(opens in a new tab)',
   ...props
-}: React.ComponentProps<'a'>) {
+}: React.ComponentProps<'a'> & {
+  /** Read after the text when the link opens a new tab. Default "(opens in a new tab)". */
+  newTabLabel?: string;
+}) {
   return (
-    <a
+    <ArrowLink
+      direction="external"
       data-slot="checklist-step-guide"
       target={target}
       rel={rel}
-      className={cn(
-        'text-foreground-secondary hover:text-foreground mt-1 w-fit text-xs font-medium underline decoration-border underline-offset-4 transition-colors duration-quick ease-soft hover:decoration-current [grid-area:guide] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-xs',
-        className,
-      )}
+      className={cn('mt-1 w-fit [grid-area:guide]', className)}
       {...props}
     >
       {children}
-      {target === '_blank' ? <span className="sr-only"> (opens in a new tab)</span> : null}
-    </a>
+      {target === '_blank' ? <span className="sr-only"> {newTabLabel}</span> : null}
+    </ArrowLink>
   );
 }
 
