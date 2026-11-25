@@ -98,7 +98,7 @@ behavior you need instead of rebuilding it from atoms.
 > **Triggers and `data-slot`.** A trigger (`TooltipTrigger`, `PopoverTrigger`, `HoverCardTrigger`, `DropdownMenuTrigger`, `DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `DrawerTrigger`, `CollapsibleTrigger`, `ContextMenuTrigger`) always marks its element with `data-<slot>`, for example `data-tooltip-trigger`. It sets `data-slot="<slot>"` only when it renders a plain element: no `render`, a render function, or an HTML element such as `<span>`. A component passed as `render` keeps its own slot: `<TooltipTrigger render={<Button />}>` renders `data-slot="button"` and `data-tooltip-trigger`. Select a trigger by `[data-tooltip-trigger]`, not by `[data-slot=tooltip-trigger]`.
 
 ### Navigation
-`breadcrumb`, `navigation-menu`, `pagination`
+`breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
 > **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
 
@@ -718,6 +718,30 @@ A card or row that opens the same page drives the link's hover and takes its cli
 - The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its chevron.
 - Keep the link itself unpositioned: a `relative` link becomes the containing block of its `::after`, which then shrinks to the link.
 - Keyboard focus shows the same emphasis as hover, with the focus ring 2px outside the link.
+
+### TextLink
+
+`TextLink` is a link inside running text, or a small standalone link. It renders an `<a>`; pass `render` with a router link. It keeps the link role.
+
+```tsx
+<p className="text-sm">
+  To capture payments at checkout, change the capture setting of your{' '}
+  <TextLink render={<Link to="/payment-handlers" />}>payment handlers</TextLink>.
+</p>
+```
+
+- It takes the font size, weight and line height of the text around it, and wraps with it.
+- `tone="default"`: link colour, always underlined. Use it in a sentence: the underline marks the link without relying on colour.
+- `tone="quiet"`: muted, underlined on hover and keyboard focus. Use it for a small standalone link next to more important actions, such as "Forgot password?". Not inside a sentence.
+- `external`: opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and adds "(opens in a new tab)" for screen readers. Translate the note with `externalLabel`. Your own `target` and `rel` win.
+
+Which link to use:
+
+| Part | Use for |
+| --- | --- |
+| `TextLink` | A link inside a sentence, a description or a form hint; a small standalone link. |
+| `ArrowLink` | More of the same subject, at the end of a panel head, card or notice. |
+| `Button` | An action: it changes data or opens a dialog. Do not force `variant="link"` to `h-auto p-0` to draw a link in text. |
 
 ### Loading skeletons
 
