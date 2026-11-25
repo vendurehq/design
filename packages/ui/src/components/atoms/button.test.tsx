@@ -1,4 +1,4 @@
-import { describe, expect, spyOn, test } from 'bun:test';
+import { describe, expect, mock, test } from 'bun:test';
 import type * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -347,7 +347,7 @@ describe('Button rendered as a link', () => {
       </Button>,
     );
     for (const handler of [received.onClick, received.onAuxClick]) {
-      const preventDefault = spyOn({ preventDefault() {} }, 'preventDefault');
+      const preventDefault = mock(() => {});
       handler?.({ preventDefault } as unknown as React.MouseEvent<HTMLAnchorElement>);
       expect(preventDefault).toHaveBeenCalledTimes(1);
     }
