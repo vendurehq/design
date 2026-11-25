@@ -452,7 +452,7 @@ Map domain states to the six shared tones by consequence for the viewer.
 
 - **Tone follows consequence, not the verb:** The same state word can map differently across domains. Build domain-specific state dictionaries rather than a global string map.
 - **Critical means intervene:** Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.
-- **Pending splits by resolver:** Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.
+- **Pending splits by who acts next:** Waiting that the system or another person resolves is progress. Pending that waits for the viewer's own action is warning, declared by that domain.
 - **Positive terminal or healthy operating is success:** Use success for completed, approved, enabled, healthy, and operating states rather than brand or neutral.
 - **Unknown wire values fall back safely:** Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color. An unknown state shows its name in sentence case words ("ValidatingCustomer" reads "Validating customer"), never the code word.
 - **Pick the appearance by the room it has:** Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A status that every row of a table or list shows uses appearance="icon": the tone icon and a neutral label. Never plain coloured text (appearance="text") in a column. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.
@@ -468,12 +468,12 @@ Map domain states to the six shared tones by consequence for the viewer.
 
 **Choose:**
 
-- `neutral`: Inert, terminal without failure, or waiting on system/time.
+- `neutral`: Inert, or terminal without failure.
 - `info`: A noteworthy fact with no positive or negative valence.
 - `success`: Positive terminal, healthy, enabled, or operating.
 - `warning`: Human action is needed or risk is present.
 - `critical`: Failed, blocked, invalid, or service-affecting.
-- `progress`: The system is actively working right now.
+- `progress`: The system is working, or waiting on the system or another person.
 
 Related decisions: `badge`, `chip`.
 ## TablePagination

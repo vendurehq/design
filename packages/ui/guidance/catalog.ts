@@ -1140,8 +1140,8 @@ export const uiGuidance = [
         body: 'Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.',
       },
       {
-        title: 'Pending splits by resolver',
-        body: 'Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.',
+        title: 'Pending splits by who acts next',
+        body: "Waiting that the system or another person resolves is progress. Pending that waits for the viewer's own action is warning, declared by that domain.",
       },
       {
         title: 'Positive terminal or healthy operating is success',
@@ -1193,12 +1193,15 @@ export const uiGuidance = [
       },
     ],
     choices: [
-      { choice: 'neutral', when: 'Inert, terminal without failure, or waiting on system/time.' },
+      { choice: 'neutral', when: 'Inert, or terminal without failure.' },
       { choice: 'info', when: 'A noteworthy fact with no positive or negative valence.' },
       { choice: 'success', when: 'Positive terminal, healthy, enabled, or operating.' },
       { choice: 'warning', when: 'Human action is needed or risk is present.' },
       { choice: 'critical', when: 'Failed, blocked, invalid, or service-affecting.' },
-      { choice: 'progress', when: 'The system is actively working right now.' },
+      {
+        choice: 'progress',
+        when: 'The system is working, or waiting on the system or another person.',
+      },
     ],
     related: ['badge', 'chip'],
   },

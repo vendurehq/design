@@ -103,8 +103,8 @@ const TONES: { tone: Tone; sample: string; def: string; examples: string }[] = [
   {
     tone: 'progress',
     sample: 'Deploying',
-    def: 'The system is working right now. Transient; resolves itself.',
-    examples: 'Running (a job), building, deploying, validating. Always shows a spinner.',
+    def: 'The system is working, or waiting on the system or another person. Transient; resolves without the viewer acting.',
+    examples: 'Pending, running (a job), building, deploying, validating. Always shows a spinner.',
   },
 ];
 
@@ -121,8 +121,8 @@ const PRINCIPLES: { n: number; title: string; body: string }[] = [
   },
   {
     n: 3,
-    title: 'Pending splits by who resolves it',
-    body: 'Waits on a human decision: warning. Waits on the system or on time: neutral. Actively executing right now: progress. The word gets no single color; the situation does.',
+    title: 'Pending splits by who acts next',
+    body: 'Waits for the viewer\'s own action: warning, declared by that domain. Waits on the system or another person: progress. The word gets no single color; the situation does.',
   },
   {
     n: 4,
@@ -139,8 +139,8 @@ const RULINGS: { conflict: string; ruling: Tone[]; note: string }[] = [
   },
   {
     conflict: 'Pending',
-    ruling: ['warning', 'neutral'],
-    note: 'Split by resolver (principle 3): human-blocking is warning; system or time is neutral.',
+    ruling: ['progress', 'warning'],
+    note: 'Split by who acts next (principle 3): the system or another person is progress; the viewer is warning.',
   },
   {
     conflict: 'In progress',
@@ -219,10 +219,11 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Fulfillment',
     rows: [
+      { states: 'Created', tone: 'neutral' },
       {
-        states: 'Created · Pending',
-        tone: 'neutral',
-        note: 'Pending is system-resolved, not human-blocked (ruling 2)',
+        states: 'Pending',
+        tone: 'progress',
+        note: 'Pending is system-resolved, not waiting on the viewer (ruling 2)',
       },
       { states: 'Shipped', tone: 'neutral', note: 'On its way: a still truck icon' },
       { states: 'Delivered', tone: 'success' },
@@ -270,7 +271,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Workflows',
     rows: [
-      { states: 'PENDING / pending', tone: 'neutral' },
+      { states: 'PENDING / pending', tone: 'progress' },
       { states: 'RUNNING / running', tone: 'progress' },
       {
         states: 'COMPLETED / completed',
@@ -343,7 +344,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Store credit',
     rows: [
-      { states: 'Pending', tone: 'neutral', note: 'Settles asynchronously; system-resolved' },
+      { states: 'Pending', tone: 'progress', note: 'Settles asynchronously; system-resolved' },
       { states: 'Settled', tone: 'success' },
       { states: 'Cancelled', tone: 'neutral' },
     ],
