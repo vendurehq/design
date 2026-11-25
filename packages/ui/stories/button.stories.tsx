@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { type ReactNode, useState } from 'react';
 import { Bold, Check, ChevronRight, Copy, Italic, Loader2, Mail, MoreHorizontal, Pin, Trash2, Underline } from 'lucide-react';
 import { Button, ButtonLabelSwap } from '../src/components/atoms/button.tsx';
@@ -168,14 +168,106 @@ export const DisabledWithReasonLightAndDark: Story = {
   ),
 };
 
-// Passing `render` swaps the underlying element for an anchor. The Button
-// defaults nativeButton to false in this case, so Base UI doesn't warn.
+/**
+ * A Button rendered as a link: `render={<a href="…" />}`, or a router link
+ * (`render={<Link to="…" />}`). It keeps the link role, which a screen reader
+ * announces as "link", and takes the full button look: hover, press, focus
+ * ring and every variant. Enter follows it; Space scrolls the page, as on any
+ * link. Button finds the link from the element you pass (an `<a>`, or an
+ * element with `href` or `to`), so there is no extra prop. Do not call
+ * `buttonVariants()` on your own `<a>`. The test runner tabs to the link,
+ * checks its role and presses Enter.
+ */
 export const AsLink: Story = {
   args: {
     variant: 'outline',
-    render: <a href="https://vendure.io" />,
+    render: <a href="#as-link-target" />,
     children: 'Rendered as a link',
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    window.location.hash = '';
+    const link = await canvas.findByRole('link', { name: 'Rendered as a link' });
+    expect(canvas.queryByRole('button')).toBeNull();
+    link.focus();
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(window.location.hash).toBe('#as-link-target'));
+    window.location.hash = '';
+  },
+};
+
+function DisabledLinkRow() {
+  return (
+    <TooltipProvider>
+      <div className="flex gap-3">
+        <Button variant="outline" disabled render={<a href="#disabled-link-target" />}>
+          Billing
+        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button variant="outline" disabled focusableWhenDisabled render={<a href="#disabled-link-target" />}>
+                Audit log
+              </Button>
+            }
+          />
+          <TooltipContent>The audit log is part of the Enterprise plan.</TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+/**
+ * A disabled link has `role="link"` and `aria-disabled="true"` and follows
+ * nothing: an `<a>` loses its href, and a router link, which computes its own,
+ * has its click and middle click stopped. `disabled` also takes it out of the
+ * tab order. Add `focusableWhenDisabled` to keep the tab stop, for a link with
+ * a Tooltip that says why. It looks like a disabled button. The test runner
+ * presses Enter on each and checks that the page does not move.
+ */
+export const DisabledLink: Story = {
+  render: () => <DisabledLinkRow />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    window.location.hash = '';
+    const billing = await canvas.findByRole('link', { name: 'Billing' });
+    const audit = await canvas.findByRole('link', { name: 'Audit log' });
+    for (const link of [billing, audit]) {
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).not.toHaveAttribute('href');
+    }
+    expect(billing).toHaveAttribute('tabindex', '-1');
+    expect(audit).not.toHaveAttribute('tabindex');
+    audit.focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(billing);
+    expect(window.location.hash).toBe('');
+    // The tooltip trigger keeps its handlers: the hover still opens it.
+    await userEvent.hover(audit);
+    await waitFor(() => expect(canvas.getByText('The audit log is part of the Enterprise plan.')).toBeVisible());
+    await userEvent.unhover(audit);
+  },
+};
+
+/** Every variant as a link, in light and dark. Pinned to the light page theme. */
+export const AsLinkLightAndDark: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <LightAndDark>
+      {() => (
+        <div className="flex flex-wrap items-center gap-3">
+          {(['default', 'brand', 'secondary', 'outline', 'ghost', 'destructive-outline', 'link'] as const).map(
+            (variant) => (
+              <Button key={variant} variant={variant} render={<a href={`#${variant}`} />}>
+                {variant}
+              </Button>
+            ),
+          )}
+        </div>
+      )}
+    </LightAndDark>
+  ),
 };
 
 function PlanCard() {

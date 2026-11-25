@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
+import type * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Button, ButtonLabelSwap } from './button.tsx';
@@ -260,5 +261,101 @@ describe('Button aria-disabled', () => {
     const primary = buttonTokens(<Button>Deploy</Button>);
     expect(primary).toContain(`aria-disabled:hover:${icon}:opacity-75`);
     expect(primary).not.toContain(`aria-disabled:hover:${icon}:opacity-55`);
+  });
+});
+
+// There is no DOM in this suite, so the keyboard and click behaviour is read
+// from the props the link receives. Real Enter and click activation runs in the
+// AsLink and DisabledLink stories (test-storybook).
+describe('Button rendered as a link', () => {
+  // A router link: takes `to`, draws an `<a href>`, and records its props.
+  let received: React.ComponentProps<'a'> = {};
+  function RouterLink({ to, ...props }: React.ComponentProps<'a'> & { to: string }) {
+    received = props;
+    return <a href={to} {...props} />;
+  }
+
+  test('an anchor render keeps the link role and the full button look', () => {
+    const html = renderToStaticMarkup(
+      <Button variant="outline" render={<a href="/projects" />}>
+        Projects
+      </Button>,
+    );
+    expect(html).toMatch(/^<a /);
+    expect(html).toContain('href="/projects"');
+    expect(html).not.toMatch(/ role="/);
+    expect(html).not.toMatch(/ type="/);
+    const tokens = slotTokens(html, 'button');
+    expect(tokens).toEqual(
+      expect.arrayContaining(['bg-card', 'shadow-control', 'h-8.5', 'active:scale-[0.97]', 'aria-disabled:opacity-50']),
+    );
+    expect(tokens).toContain('focus-visible:outline-ring');
+  });
+
+  test('a custom link component keeps the link role, found by its `to` or `href`', () => {
+    const router = renderToStaticMarkup(<Button render={<RouterLink to="/team" />}>Team</Button>);
+    expect(router).toContain('href="/team"');
+    expect(router).not.toMatch(/ role="/);
+    expect(router).toContain('data-slot="button"');
+    const href = renderToStaticMarkup(<Button render={<RouterLink to="/x" href="/y" />}>Team</Button>);
+    expect(href).not.toMatch(/ role="/);
+  });
+
+  test('the default and a non-link render keep the button role', () => {
+    expect(renderToStaticMarkup(<Button>Save</Button>)).toMatch(/^<button [^>]*type="button"/);
+    expect(renderToStaticMarkup(<Button>Save</Button>)).not.toMatch(/ role="/);
+    expect(renderToStaticMarkup(<Button render={<div />}>Save</Button>)).toContain('role="button"');
+  });
+
+  test('a link gets none of the button key handling: Enter follows it, Space scrolls', () => {
+    renderToStaticMarkup(<Button render={<RouterLink to="/team" />}>Team</Button>);
+    expect(received.onKeyDown).toBeUndefined();
+    expect(received.onKeyUp).toBeUndefined();
+    expect(received.tabIndex).toBeUndefined();
+  });
+
+  test('a disabled anchor loses its href, says it is disabled and leaves the tab order', () => {
+    const html = renderToStaticMarkup(
+      <Button disabled render={<a href="/billing" />}>
+        Billing
+      </Button>,
+    );
+    expect(html).not.toContain('href=');
+    expect(html).toContain('role="link"');
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('data-disabled=""');
+    expect(html).toContain('tabindex="-1"');
+  });
+
+  test('focusableWhenDisabled keeps the tab stop, for a link with a tooltip', () => {
+    const html = renderToStaticMarkup(
+      <Button disabled focusableWhenDisabled render={<a href="/billing" />}>
+        Billing
+      </Button>,
+    );
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).not.toContain('tabindex');
+    // disabled and nativeButton never reach the DOM
+    expect(html).not.toMatch(/ disabled[ =>]/);
+    expect(html).not.toContain('nativebutton');
+  });
+
+  test('a disabled link does not navigate: its click and middle click are prevented', () => {
+    renderToStaticMarkup(
+      <Button disabled render={<RouterLink to="/billing" />}>
+        Billing
+      </Button>,
+    );
+    for (const handler of [received.onClick, received.onAuxClick]) {
+      const preventDefault = spyOn({ preventDefault() {} }, 'preventDefault');
+      handler?.({ preventDefault } as unknown as React.MouseEvent<HTMLAnchorElement>);
+      expect(preventDefault).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  test('an enabled link has no click handler of its own', () => {
+    renderToStaticMarkup(<Button render={<RouterLink to="/team" />}>Team</Button>);
+    expect(received.onClick).toBeUndefined();
+    expect(received['aria-disabled']).toBeUndefined();
   });
 });
