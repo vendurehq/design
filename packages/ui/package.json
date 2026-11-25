@@ -30,7 +30,8 @@
     "./lib/trigger-slot": null,
     "./hooks/*": "./src/hooks/*.ts",
     "./hooks/use-active-label-size": null,
-    "./hooks/use-pinned-height": null
+    "./hooks/use-pinned-height": null,
+    "./hooks/use-user-toggle-motion": null
   },
   "files": [
     "src",
