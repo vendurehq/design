@@ -75,6 +75,7 @@ import { createPortal } from 'react-dom';
 import {
   buildDisplayColumns,
   columnAlign,
+  columnContentIndent,
   columnMinWidth,
   columnWidth,
   getSelectedRowIds,
@@ -1103,9 +1104,11 @@ function DataTable<TData>({
       generatedColumn(columnId) === 'select' && leadingColumnId != null
         ? leadingColumnId
         : columnId;
-    return columnIndents[id]
-      ? ({ '--column-indent': `${columnIndents[id]}px` } as React.CSSProperties)
-      : undefined;
+    // A declared inset (`meta.contentInset`) indents the column the same in
+    // every state; the measured indent is the fallback.
+    const declared = columnContentIndent(table.getColumn(id)?.columnDef.meta);
+    const indent = declared ?? (columnIndents[id] ? `${columnIndents[id]}px` : undefined);
+    return indent ? ({ '--column-indent': indent } as React.CSSProperties) : undefined;
   };
 
   // A column's `meta.width` is set on its header cell, so the column has that

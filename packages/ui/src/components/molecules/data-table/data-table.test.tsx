@@ -18,6 +18,7 @@ import {
 import {
   buildDisplayColumns,
   columnAlign,
+  columnContentIndent,
   columnMinWidth,
   columnWidth,
   getHideableLeafColumns,
@@ -27,6 +28,7 @@ import {
   measureColumnIndents,
   resolveClearFilters,
   resolveSlot,
+  STATUS_BADGE_CONTENT_INSETS,
   sameIndents,
 } from './data-table-helpers.tsx';
 import { readRowCount, writeRowCount } from './data-table-row-count-storage.tsx';
@@ -507,6 +509,55 @@ describe('DataTable column widths', () => {
     expect(columnMinWidth({ width: 96 })).toBe(96);
     expect(columnMinWidth({ width: 96, minWidth: 64 })).toBe(64);
     expect(columnMinWidth({})).toBeUndefined();
+  });
+});
+
+describe('DataTable declared content inset', () => {
+  const insetColumns: ColumnDef<Country>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'code', header: 'Code', meta: { contentInset: 'status-badge' } },
+  ];
+  const indent = 'max(0px, calc(calc(var(--spacing)*6.75) - var(--spacing)*2))';
+
+  test('meta.contentInset indents the header and cells the same while loading, empty and with rows', () => {
+    for (const markup of [
+      html(<DataTable rows={[]} columns={insetColumns} isLoading skeletonRowCount={2} />),
+      html(<DataTable rows={[]} columns={insetColumns} />),
+      html(<DataTable rows={rows} columns={insetColumns} />),
+    ]) {
+      const th = markup.match(/<th[^>]*data-column-id="code"[^>]*>/)?.[0] ?? '';
+      expect(th).toContain(`--column-indent:${indent}`);
+      for (const td of markup.match(/<td[^>]*data-column-id="code"[^>]*>/g) ?? []) {
+        expect(td).toContain(`--column-indent:${indent}`);
+      }
+      expect(markup.match(/<th[^>]*data-column-id="name"[^>]*>/)?.[0]).not.toContain('style=');
+    }
+  });
+
+  test('columnContentIndent reads a keyword, px or a CSS length', () => {
+    expect(columnContentIndent({ contentInset: 'status-icon' })).toBe(
+      'max(0px, calc(calc(var(--spacing)*6) - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({ contentInset: 20 })).toBe(
+      'max(0px, calc(20px - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({ contentInset: '1.5rem' })).toBe(
+      'max(0px, calc(1.5rem - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({})).toBeUndefined();
+  });
+
+  test('the StatusBadge keywords match the insets status-badge.tsx sets', async () => {
+    const source = await Bun.file(new URL('../status-badge.tsx', import.meta.url)).text();
+    const {
+      'status-badge': icon,
+      'status-badge-dot': dot,
+      'status-icon': appearance,
+    } = STATUS_BADGE_CONTENT_INSETS;
+    expect(source).toContain(
+      `has-data-[marker=icon]:[--content-inset:${icon}] has-data-[marker=dot]:[--content-inset:${dot}]`,
+    );
+    expect(source).toContain(`'[--content-inset:${appearance}]'`);
   });
 });
 

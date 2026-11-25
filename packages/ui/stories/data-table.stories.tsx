@@ -489,13 +489,29 @@ export const PendingPage: Story = {
 
 // Widths for the columns whose content has a known width. The Customer column
 // has none and takes the rest of the row.
+// Status declares its content inset (an icon StatusBadge), so its header
+// sits where the label will be in every state.
 const columnWidths: Record<string, number> = { code: 112, state: 176, items: 80, total: 112 };
 const sizedColumns: ColumnDef<Order>[] = columns.map((column) => {
-  const width = columnWidths[(column as { accessorKey?: string }).accessorKey ?? ''];
-  return width == null
-    ? column
-    : { ...column, meta: { width } satisfies DataTableColumnMeta };
+  const key = (column as { accessorKey?: string }).accessorKey ?? '';
+  const width = columnWidths[key];
+  if (width == null) return column;
+  const meta: DataTableColumnMeta = { ...column.meta, width };
+  if (key === 'state') meta.contentInset = 'status-icon';
+  return { ...column, meta };
 });
+
+/** The left edge of each column header's label, where its text starts. */
+function headerLabelLefts(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+    (cell) => {
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      return Math.round(range.getBoundingClientRect().left);
+    },
+  );
+}
 
 /** The left edge of each column header in the DataTable inside `[data-testid=testId]`. */
 function headerLefts(canvasElement: HTMLElement, testId: string) {
@@ -529,6 +545,9 @@ export const LoadingKeepsColumnWidths: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(headerLefts(canvasElement, 'loading')).toEqual(headerLefts(canvasElement, 'loaded'));
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
+    );
     await expectSameRowHeights(canvasElement, 3);
   },
 };
@@ -695,6 +714,9 @@ export const NarrowKeepsColumnWidths: Story = {
       );
     await expect(widths('loading')).toEqual(widths('loaded'));
     await expect(headerLefts(canvasElement, 'loading')).toEqual(headerLefts(canvasElement, 'loaded'));
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
+    );
     // The floors hold: Customer is 160px, the sized columns their width.
     await expect(widths('loaded')).toEqual([112, 160, 176, 80, 112]);
   },
@@ -1906,9 +1928,12 @@ const variantActions = () => (
 const sizedVariantColumns: ColumnDef<Variant>[] = variantColumns.map((column) => {
   const key = (column as { accessorKey?: string }).accessorKey ?? column.id ?? '';
   const width = variantWidths[key];
-  return width == null
-    ? column
-    : { ...column, meta: { ...column.meta, width } satisfies DataTableColumnMeta };
+  if (width == null) return column;
+  const meta: DataTableColumnMeta = { ...column.meta, width };
+  // Status is a StatusBadge chip with an icon: its header sits where the
+  // label will be in every state.
+  if (key === 'enabled') meta.contentInset = 'status-badge';
+  return { ...column, meta };
 });
 
 /** The end padding of the last header cell: it holds the row chevron's slot. */
@@ -1955,6 +1980,9 @@ export const LoadingKeepsRowLinkSlot: Story = {
     await expect(chevronSlot(canvasElement, 'loading')).toBe(chevronSlot(canvasElement, 'loaded'));
     await expect(headerRects(canvasElement, 'loading')).toEqual(
       headerRects(canvasElement, 'loaded'),
+    );
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
     );
   },
 };

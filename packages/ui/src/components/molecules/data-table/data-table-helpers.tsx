@@ -188,6 +188,32 @@ export function columnMinWidth(meta: unknown): DataTableColumnMeta['minWidth'] {
   return cssLength(column?.minWidth) ?? cssLength(column?.width);
 }
 
+// The `--content-inset` of a default-size StatusBadge, as status-badge.tsx
+// sets it: the chip with an icon or a dot marker, and `appearance="icon"`.
+// A test keeps them equal to that file.
+export const STATUS_BADGE_CONTENT_INSETS = {
+  'status-badge': 'calc(var(--spacing)*6.75)',
+  'status-badge-dot': 'calc(var(--spacing)*5)',
+  'status-icon': 'calc(var(--spacing)*6)',
+} as const;
+
+/**
+ * A column's declared indent (see DataTableColumnMeta.contentInset), as the
+ * `--column-indent` value: the content's pull-back past the cell's gutter
+ * (TableCell's `px-2`), or none. Undefined when the meta sets no inset, so
+ * the table measures it instead.
+ */
+export function columnContentIndent(meta: unknown): string | undefined {
+  const inset = (meta as DataTableColumnMeta | undefined)?.contentInset;
+  const length =
+    typeof inset === 'number'
+      ? `${inset}px`
+      : typeof inset === 'string'
+        ? (STATUS_BADGE_CONTENT_INSETS[inset as keyof typeof STATUS_BADGE_CONTENT_INSETS] ?? inset)
+        : undefined;
+  return length == null ? undefined : `max(0px, calc(${length} - var(--spacing)*2))`;
+}
+
 function cssLength(value: unknown): number | string | undefined {
   return typeof value === 'number' || typeof value === 'string' ? value : undefined;
 }

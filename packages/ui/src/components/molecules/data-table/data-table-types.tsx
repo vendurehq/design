@@ -45,6 +45,18 @@ export interface DataTableColumnMeta {
    * skeleton shows and once the rows arrive.
    */
   minWidth?: number | string;
+  /**
+   * The `--content-inset` of the column's cell content: how far it pulls back
+   * so its first letter lines up with the header. For a default-size
+   * StatusBadge: `'status-badge'` (chip with an icon), `'status-badge-dot'`
+   * (chip with a dot) or `'status-icon'` (`appearance="icon"`). Otherwise a
+   * number in px or a CSS length. When the pull-back is wider than the cell's gutter, the column's
+   * header and cells indent by the rest. With this set, that indent applies in
+   * every state, so the header does not move when the rows replace the
+   * skeleton. Without it the table measures the indent from the loaded cells,
+   * so the header moves once they arrive.
+   */
+  contentInset?: 'status-badge' | 'status-badge-dot' | 'status-icon' | number | string;
 }
 
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be
