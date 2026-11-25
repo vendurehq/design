@@ -8,7 +8,7 @@ import { Progress } from '@vendure-io/ui/components/atoms/progress';
 import { ArrowLink } from '@vendure-io/ui/components/molecules/arrow-link';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronDown, X } from 'lucide-react';
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, LayoutGroup, motion, useIsPresent, useReducedMotion } from 'motion/react';
 import * as React from 'react';
 
 // What was taken from Stealth UI's Checklist: the two lists (open steps, then
@@ -23,12 +23,18 @@ import * as React from 'react';
 // - A step moves to its new list on a spring with no bounce that settles in
 //   `slow` (300ms). So do the lists around it.
 // - The strike sweeps in `slow` on the strong ease-out; the label greys in the
-//   same time. The count's digits roll in `slow` on the strong ease-out.
+//   same time. Unchecked, the strike draws back quicker, in `moderate`. The
+//   count's digits roll in `slow` on the strong ease-out.
 // - A row that appears or leaves without a place to go fades in `moderate`
-//   (150ms) on `soft`.
+//   (150ms) on `soft`. A row that turns done while the Completed group is
+//   closed also folds its height in `slow` on `height`, so the card and the
+//   group under it close up with it rather than jump.
 // - The Completed group opens and closes its height in `slow` on `height`.
+// - The Completed header and the dismiss button fade in `moderate` on `soft`
+//   when they first show after the Checklist mounted.
 // Reduced motion: nothing moves and nothing sweeps. Rows, the strike and the
-// group change at once; rows and the system tick fade.
+// group change at once; rows, the header, the dismiss button and the system
+// tick fade.
 const MOVE = { type: 'spring', visualDuration: 0.3, bounce: 0 } as const;
 const FADE = { duration: 0.15, ease: [0.25, 0.1, 0.25, 1] } as const;
 const HEIGHT = { duration: 0.3, ease: [0.25, 1, 0.5, 1] } as const;
@@ -243,12 +249,19 @@ function Checklist({
   // moving there and arrives whole; only a new step fades in.
   // A step that was open in the last render and arrives done in Completed
   // mounts there with its strike and tick already set: it replays them from
-  // the start (see `data-arrived-done`).
+  // the start (see `data-arrived`).
   const known = React.useRef(new Map<string, boolean>());
   const knownBefore = known.current;
   React.useEffect(() => {
     known.current = doneById;
   });
+  // False in the first render: what shows then is there on arrival and does
+  // not fade in.
+  const mounted = React.useRef(false);
+  React.useEffect(() => {
+    mounted.current = true;
+  }, []);
+  const arriving = mounted.current ? '' : undefined;
 
   const [holds, setHolds] = React.useState<Record<string, ChecklistHold>>({});
   const holdsRef = React.useRef(holds);
@@ -384,16 +397,21 @@ function Checklist({
               <RollingCount value={complete} format={(value) => formatCount(value, total)} />
             </span>
             {allDone && onDismiss ? (
-              <Button
-                data-slot="checklist-dismiss"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={dismissLabel}
-                onClick={onDismiss}
-                className="-me-1.5"
+              <span
+                data-arrived={arriving}
+                className="flex transition-opacity duration-moderate ease-soft data-arrived:starting:opacity-0"
               >
-                <X />
-              </Button>
+                <Button
+                  data-slot="checklist-dismiss"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={dismissLabel}
+                  onClick={onDismiss}
+                  className="-me-1.5"
+                >
+                  <X />
+                </Button>
+              </span>
             ) : null}
           </div>
           <Progress
@@ -415,7 +433,14 @@ function Checklist({
             aria-labelledby={titleId}
             className="relative flex flex-col border-t border-border empty:hidden"
           >
-            <AnimatePresence initial={false} mode="popLayout">
+            {/* With the Completed group open, a row that turns done flies to
+                it and leaves no gap. With it closed, the row has nowhere to
+                go: it stays in the flow and folds (see ChecklistStep). */}
+            <AnimatePresence
+              initial={false}
+              mode={completedOpen ? 'popLayout' : 'sync'}
+              custom={!completedOpen}
+            >
               {open.map((step) => React.cloneElement(step, { key: step.props.id }))}
             </AnimatePresence>
           </ul>
@@ -430,10 +455,11 @@ function Checklist({
               <button
                 type="button"
                 data-slot="checklist-completed-trigger"
+                data-arrived={arriving}
                 aria-expanded={completedOpen}
                 aria-controls={completedOpen ? completedId : undefined}
                 onClick={() => setCompletedOpen(!completedOpen)}
-                className="group/checklist-completed text-foreground-secondary flex min-h-11 w-full cursor-pointer items-center gap-2 ps-(--card-ps) pe-(--card-px) text-start text-sm font-medium outline-none transition-colors duration-fast ease-default hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                className="group/checklist-completed text-foreground-secondary flex min-h-11 w-full cursor-pointer items-center gap-2 ps-(--card-ps) pe-(--card-px) text-start text-sm font-medium outline-none [transition:color_var(--transition-duration-fast)_var(--ease-default),background-color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-moderate)_var(--ease-soft)] data-arrived:starting:opacity-0 hover:bg-muted focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
               >
                 {completedLabel}
                 <CardCount className="ms-0">{finished.length}</CardCount>
@@ -590,6 +616,8 @@ function ChecklistStep({
   // Latched at mount: a row that arrives done right after the step turned
   // done plays its strike and tick as it lands.
   const [arrived] = React.useState(() => checklist.justDone(id));
+  const present = useIsPresent();
+  const reduce = checklist.reduce;
   const step = React.useMemo(
     () => ({ id, done, arrived: arrived && done, labelId, controlId }),
     [id, done, arrived, labelId, controlId],
@@ -598,20 +626,36 @@ function ChecklistStep({
   return (
     <StepContext.Provider value={step}>
       <motion.li
-        layout={checklist.reduce ? false : 'position'}
-        layoutId={checklist.reduce ? undefined : `${checklist.groupId}-${id}`}
+        layout={reduce ? false : 'position'}
+        layoutId={reduce ? undefined : `${checklist.groupId}-${id}`}
         // The row flies whole: no crossfade with the copy it leaves behind,
         // so the rows it passes never show through it.
         layoutCrossfade={false}
         initial={checklist.isKnown(id) ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0, transition: FADE }}
-        transition={checklist.reduce ? { ...INSTANT, opacity: FADE } : { ...MOVE, opacity: FADE }}
+        // `fold` comes from the list's AnimatePresence: true when the row
+        // leaves with no place to go and the rows under it must close up.
+        variants={{
+          exit: (fold: boolean) =>
+            fold
+              ? {
+                  opacity: 0,
+                  height: 0,
+                  paddingTop: 0,
+                  paddingBottom: 0,
+                  borderTopWidth: 0,
+                  transition: reduce ? { ...INSTANT, opacity: FADE } : { ...HEIGHT, opacity: FADE },
+                }
+              : { opacity: 0, transition: FADE },
+        }}
+        exit="exit"
+        transition={reduce ? { ...INSTANT, opacity: FADE } : { ...MOVE, opacity: FADE }}
         data-slot="checklist-step"
         data-step-id={id}
         data-done={done ? '' : undefined}
         className={cn(
           'bg-card relative flex items-start gap-3 border-t border-border py-3 ps-(--card-ps) pe-(--card-px) first:border-t-0',
+          !present && 'overflow-hidden',
           className,
         )}
         onPointerDown={(event) => {
@@ -723,7 +767,7 @@ function ChecklistStepLabel({ className, children, ...props }: React.ComponentPr
       <span
         data-done={step.done ? '' : undefined}
         data-arrived={step.arrived ? '' : undefined}
-        className="data-arrived:starting:text-foreground motion-safe:data-arrived:starting:[background-size:0%_1px] text-foreground data-done:text-muted-foreground bg-linear-to-r from-current to-current bg-no-repeat [background-position:0_55%] rtl:[background-position:100%_55%] [background-size:0%_1px] [transition:background-size_var(--transition-duration-slow)_var(--ease-out),color_var(--transition-duration-slow)_var(--ease-out)] data-done:[background-size:100%_1px] motion-reduce:[transition:color_var(--transition-duration-moderate)_var(--ease-soft)]"
+        className="data-arrived:starting:text-foreground motion-safe:data-arrived:starting:[background-size:0%_1px] text-foreground data-done:text-muted-foreground bg-linear-to-r from-current to-current bg-no-repeat [background-position:0_55%] rtl:[background-position:100%_55%] [background-size:0%_1px] [transition:background-size_var(--transition-duration-moderate)_var(--ease-out),color_var(--transition-duration-moderate)_var(--ease-out)] data-done:[background-size:100%_1px] motion-safe:data-done:[transition:background-size_var(--transition-duration-slow)_var(--ease-out),color_var(--transition-duration-slow)_var(--ease-out)] motion-reduce:[transition:color_var(--transition-duration-moderate)_var(--ease-soft)]"
       >
         {children}
       </span>

@@ -373,6 +373,16 @@ describe('Checklist motion tokens', () => {
       `const HEIGHT = { duration: ${seconds(duration.slow)}, ease: ${curve(easing.height)} }`,
     );
   });
+
+  test('the strike sweeps in `slow` and draws back in `moderate`', () => {
+    const html = renderToStaticMarkup(<Checklist title="Setup">{steps({ a: true })}</Checklist>);
+    expect(html).toContain(
+      '[transition:background-size_var(--transition-duration-moderate)_var(--ease-out),color_var(--transition-duration-moderate)_var(--ease-out)]',
+    );
+    expect(html).toContain(
+      'motion-safe:data-done:[transition:background-size_var(--transition-duration-slow)_var(--ease-out),color_var(--transition-duration-slow)_var(--ease-out)]',
+    );
+  });
 });
 
 describe('Checklist texts', () => {
@@ -395,8 +405,14 @@ describe('Checklist texts', () => {
     expect(html).toContain('(neuer Tab)');
   });
 
-  test('steps on the first render do not replay their strike', () => {
-    const html = renderToStaticMarkup(<Checklist title="Setup">{steps({ a: true })}</Checklist>);
+  test('nothing on the first render plays its arrival', () => {
+    const html = renderToStaticMarkup(
+      <Checklist title="Setup" onDismiss={() => {}}>
+        {steps({ a: true })}
+      </Checklist>,
+    );
+    expect(html).toContain('data-slot="checklist-dismiss"');
+    expect(html).toContain('data-slot="checklist-completed-trigger"');
     expect(html).not.toContain('data-arrived=""');
   });
 });

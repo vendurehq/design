@@ -280,12 +280,34 @@ export const AllDone: Story = {
 };
 
 // The Completed group starts closed. A step that turns done fades out of the
-// open list; the group's count goes up.
+// open list and folds its height, so the card closes up smoothly; the group's
+// count goes up.
 export const CompletedClosed: Story = {
   args: { defaultCompletedOpen: false },
   render: SystemDriven.render,
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
+    const card = canvas.getByRole('region', { name: 'Set up your store' });
+
+    await step('a step that turns done folds: the card shrinks over frames', async () => {
+      const start = card.getBoundingClientRect().height;
+      await userEvent.click(canvas.getByRole('button', { name: 'Complete next step' }));
+      const heights: number[] = [];
+      await new Promise<void>((resolve) => {
+        const sample = () => {
+          heights.push(card.getBoundingClientRect().height);
+          if (heights.length < 40) requestAnimationFrame(sample);
+          else resolve();
+        };
+        requestAnimationFrame(sample);
+      });
+      const end = heights[heights.length - 1] ?? start;
+      await expect(end).toBeLessThan(start - 40);
+      // At least one frame in between: no jump.
+      await expect(heights.some((h) => h < start - 2 && h > end + 2)).toBe(true);
+      await expect(canvas.getByRole('button', { name: /Completed/ })).toHaveTextContent('3');
+    });
+
     const trigger = canvas.getByRole('button', { name: /Completed/ });
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(trigger);
