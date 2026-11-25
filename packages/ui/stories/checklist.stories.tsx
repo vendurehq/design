@@ -195,6 +195,12 @@ export const ManualHoldRule: Story = {
       await waitFor(() =>
         expect(within(completed()).getByText('Add your first product')).toBeInTheDocument(),
       );
+      // Focus follows the step into Completed, onto its checkbox there.
+      await waitFor(() =>
+        expect(document.activeElement).toBe(
+          within(completed()).getByRole('checkbox', { name: 'Add your first product' }),
+        ),
+      );
     });
 
     await step('checked and unchecked before leaving: no move', async () => {
@@ -219,6 +225,18 @@ export const ManualHoldRule: Story = {
       canvas.getByRole('checkbox', { name: 'Invite your team' }).focus();
       await waitFor(() =>
         expect(within(completed()).getByText('Connect a payment provider')).toBeInTheDocument(),
+      );
+    });
+
+    await step('touch: it moves after a short pause', async () => {
+      const box = canvas.getByRole('checkbox', { name: 'Set up a shipping method' });
+      await userEvent.pointer([{ keys: '[TouchA]', target: box }]);
+      await expect(box).toHaveAttribute('aria-checked', 'true');
+      await expect(within(open()).getByText('Set up a shipping method')).toBeInTheDocument();
+      await waitFor(
+        () =>
+          expect(within(completed()).getByText('Set up a shipping method')).toBeInTheDocument(),
+        { timeout: 2000 },
       );
     });
 
