@@ -105,6 +105,22 @@ Give every shape a chart draws an accessible name, from the config where Chart c
 - **A table or text carries the data too:** Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.
 
 Related decisions: `stat-card`.
+## Checklist
+
+Show a short set of steps the person completes, with its progress, until every step is done.
+
+- **Steps the person completes:** Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.
+- **Let the data decide when it can:** Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.
+- **One action per open step:** Give an open step at most one secondary Button or link in ChecklistStepAction. Put longer content, such as commands to run, in ChecklistStepBody. Split a step that needs two actions.
+- **Dismiss only when every step is done:** Pass `onDismiss`: its button shows once the last step is done. Remove the Checklist there and remember the choice. Keep a half-done checklist in view.
+
+**Choose:**
+
+- `Checklist`: Steps the person completes, each with its own action.
+- `Timeline`: What already happened to one thing, newest first.
+- `Progress`: One task the system runs.
+
+Related decisions: `timeline`, `collapsible-section`.
 ## Chip
 
 Use Chip for removable members of an editable set or applied filters.
