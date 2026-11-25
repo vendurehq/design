@@ -136,9 +136,11 @@ const LINKED_ROW_CLASS = cn(
 // cell of every row, header included, so the chevron never covers a cell and
 // a row without a link lines up with the others. The chevron is 15px and sits
 // one 12px gap after the last cell, like ListRowChevron. Important: CardTable
-// sets the edge padding with a descendant rule.
+// sets the edge padding with a descendant rule. `rowLinks` (`data-row-links`)
+// keeps the slot in every state, also while skeleton or empty rows have no
+// link to find, so the columns do not move when the linked rows arrive.
 const ROW_CHEVRON_SLOT_CLASS =
-  '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
+  '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]! [&[data-row-links]_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
 
 // Pinned (`pinFirstColumn`): a pinned cell is positioned, so it becomes the
 // containing block of the link's stretched ::after. A link in the pinned cell
@@ -747,6 +749,7 @@ function DataTable<TData>({
   onTableReady,
   frame = 'card',
   pinFirstColumn = false,
+  rowLinks = false,
   footerRows,
   labels,
   className,
@@ -1403,6 +1406,7 @@ function DataTable<TData>({
           pinFirstColumn={pinFirstColumn}
           className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
+          data-row-links={rowLinks ? '' : undefined}
           data-bulk-over-header={bulkOverHeader && showBulk ? '' : undefined}
         >
           <TableHeader>

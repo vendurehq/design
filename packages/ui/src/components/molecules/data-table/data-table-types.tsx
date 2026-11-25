@@ -505,6 +505,14 @@ export interface DataTableProps<TData> {
    */
   pinFirstColumn?: boolean;
   /**
+   * The rows open an item through `DataTableRowLink`. The table then keeps the
+   * row chevron's slot after the last column in every state: while the
+   * skeleton shows, when empty and with rows. Without it the slot appears only
+   * once a row with a link renders, so on the first load every column moves
+   * sideways by the slot's width when the rows arrive.
+   */
+  rowLinks?: boolean;
+  /**
    * Extra `<TableRow>`s appended inside `TableBody` after the data rows — e.g.
    * an order table's subtotal/shipping/total rows. Rendered only alongside
    * real rows, never with the skeleton or empty states, and has no interaction

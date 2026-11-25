@@ -1830,6 +1830,87 @@ function clearHash() {
   history.replaceState(null, '', `${location.pathname}${location.search}`);
 }
 
+/** Each column header's left edge and width in the DataTable inside `[data-testid=testId]`. */
+function headerRects(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+    (cell) => {
+      const box = cell.getBoundingClientRect();
+      return [Math.round(box.left), Math.round(box.width)];
+    },
+  );
+}
+
+// The variant columns with widths, as a list page sets them. The actions
+// column after them takes the rest of the row.
+const variantWidths: Record<string, number> = {
+  name: 320,
+  sku: 176,
+  enabled: 144,
+  price: 128,
+  product: 192,
+};
+const variantActions = () => (
+  <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
+    <MoreHorizontalIcon />
+  </Button>
+);
+const sizedVariantColumns: ColumnDef<Variant>[] = variantColumns.map((column) => {
+  const key = (column as { accessorKey?: string }).accessorKey ?? column.id ?? '';
+  const width = variantWidths[key];
+  return width == null
+    ? column
+    : { ...column, meta: { ...column.meta, width } satisfies DataTableColumnMeta };
+});
+
+/** The end padding of the last header cell: it holds the row chevron's slot. */
+function chevronSlot(canvasElement: HTMLElement, testId: string) {
+  const last = within(canvasElement).getByTestId(testId).querySelector('thead th:last-child');
+  return last ? getComputedStyle(last).paddingInlineEnd : '';
+}
+
+/**
+ * With `rowLinks`, the table keeps the row chevron's slot after the last
+ * column while it loads, so the columns do not move when the linked rows
+ * arrive. Loaded (top) and loading (bottom) have the same header cells.
+ */
+export const LoadingKeepsRowLinkSlot: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Variant>
+          rows={variants.slice(0, 3)}
+          columns={sizedVariantColumns}
+          getRowId={(variant) => variant.id}
+          rowActions={variantActions}
+          rowLinks
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Variant>
+          rows={[]}
+          columns={sizedVariantColumns}
+          getRowId={(variant) => variant.id}
+          isLoading
+          skeletonRowCount={3}
+          rowActions={variantActions}
+          rowLinks
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // The skeleton has no row link, and still keeps the slot.
+    await expect(
+      within(canvasElement).getByTestId('loading').querySelector('[data-slot=data-table-row-link]'),
+    ).toBeNull();
+    await expect(chevronSlot(canvasElement, 'loading')).toBe(chevronSlot(canvasElement, 'loaded'));
+    await expect(headerRects(canvasElement, 'loading')).toEqual(
+      headerRects(canvasElement, 'loaded'),
+    );
+  },
+};
+
 /**
  * The whole row opens the item. Render a `DataTableRowLink` around the name:
  * a click on any point of the row opens it, and the row has one tab stop. A

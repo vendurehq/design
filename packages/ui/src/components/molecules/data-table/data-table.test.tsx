@@ -491,6 +491,21 @@ describe('DataTable column widths', () => {
   });
 });
 
+describe('DataTable rowLinks', () => {
+  const tableTag = (markup: string) => markup.match(/<table[^>]*>/)?.[0] ?? '';
+
+  test('rowLinks marks the table in every state, so the chevron slot does not wait for a link', () => {
+    for (const props of [{ rows }, { rows: [], isLoading: true }, { rows: [] }]) {
+      expect(tableTag(html(<DataTable {...props} columns={columns} rowLinks />))).toContain(
+        'data-row-links=""',
+      );
+      expect(tableTag(html(<DataTable {...props} columns={columns} />))).not.toContain(
+        ' data-row-links=',
+      );
+    }
+  });
+});
+
 describe('DataTable empty state', () => {
   test('default empty renders the "No results" label', () => {
     const markup = html(<DataTable rows={[]} columns={columns} />);
