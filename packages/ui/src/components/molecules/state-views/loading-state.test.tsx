@@ -68,4 +68,26 @@ describe('LoadingState children', () => {
   test('without children draws the rows bars', () => {
     expect(html(<LoadingState rows={2} />).match(/h-14 w-full/g)).toHaveLength(2);
   });
+
+  test('falls back to the rows bars when children is false', () => {
+    const markup = html(<LoadingState rows={3}>{false}</LoadingState>);
+
+    expect(markup.match(/h-14 w-full/g)).toHaveLength(3);
+  });
+
+  test('falls back to the rows bars for a conditional part that is off', () => {
+    const isAdmin = false;
+    const markup = html(
+      <LoadingState rows={2}>{isAdmin && <div data-testid="part" />}</LoadingState>,
+    );
+
+    expect(markup).not.toContain('data-testid="part"');
+    expect(markup.match(/h-14 w-full/g)).toHaveLength(2);
+  });
+
+  test('falls back to the rows bars when children is an empty array', () => {
+    const markup = html(<LoadingState rows={2}>{[]}</LoadingState>);
+
+    expect(markup.match(/h-14 w-full/g)).toHaveLength(2);
+  });
 });
