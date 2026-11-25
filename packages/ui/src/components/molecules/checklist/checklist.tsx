@@ -554,12 +554,13 @@ type ChecklistStepProps = Omit<React.ComponentProps<'li'>, 'id' | 'children'> & 
 };
 
 // The row grid. The label and the detail share the first line; the
-// description and the guide stack under the label. From a 448px row (`@md`)
-// the action sits at the end, centred on the text; on a narrower row it goes
-// under the text, at its start. The body spans the row under it all. Empty
+// description and the guide stack under the label. The detail ends at the
+// row's end edge, so it lines up on every row. From a 448px row (`@md`) the
+// action sits in the same end column, under the detail; on a narrower row it
+// goes under the text, at its start. The body spans the row under it all. Empty
 // rows take no space: every part brings its own top margin.
 const STEP_GRID =
-  'grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 [grid-template-areas:"label_detail""description_description""guide_guide""action_action""body_body"] @md:grid-cols-[minmax(0,1fr)_auto_auto] @md:[grid-template-areas:"label_detail_action""description_description_action""guide_guide_action""body_body_body"]';
+  'grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 [grid-template-areas:"label_detail""description_description""guide_guide""action_action""body_body"] @md:[grid-template-areas:"label_detail""description_action""guide_action""body_body"]';
 
 /**
  * One step of a Checklist: the tick or the checkbox, then its parts. Must be
@@ -750,7 +751,7 @@ function ChecklistStepDetail({ className, ...props }: React.ComponentProps<'span
     <span
       data-slot="checklist-step-detail"
       className={cn(
-        'text-muted-foreground text-xs leading-5 tabular-nums whitespace-nowrap [grid-area:detail]',
+        'text-muted-foreground justify-self-end text-xs leading-5 tabular-nums whitespace-nowrap [grid-area:detail]',
         className,
       )}
       {...props}
