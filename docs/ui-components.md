@@ -170,9 +170,36 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/*`, `list-row`, `timeline`, `checklist/checklist`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
-> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
+> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
+> **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
+>
+> ```tsx
+> <Checklist title="Set up your project" onDismiss={hide}>
+>   {steps.map((step) => (
+>     <ChecklistStep key={step.key} id={step.key} done={step.done}>
+>       <ChecklistStepLabel>{step.title}</ChecklistStepLabel>
+>       <ChecklistStepDescription>{step.description}</ChecklistStepDescription>
+>       <ChecklistStepGuide href={step.guide.href}>{step.guide.label}</ChecklistStepGuide>
+>       <ChecklistStepAction>
+>         <Button size="sm" variant="secondary" render={<Link to={step.to} />} nativeButton={false}>
+>           {step.actionLabel}
+>         </Button>
+>       </ChecklistStepAction>
+>     </ChecklistStep>
+>   ))}
+> </Checklist>
+> ```
+>
+> - The title row shows a count ("2 of 6") that rolls when it changes, and a thin bar. A screen reader hears the count politely when it changes.
+> - Open steps come first. A done step strikes through and moves into a "Completed" group that opens and closes (`completedOpen`, `defaultCompletedOpen`).
+> - `mode="system"` (default): the app sets `done` from its data, each step shows a tick, and a step that turns done moves at once. `mode="manual"`: the user checks a step off with its checkbox (`onStepCheckedChange`, or `defaultDone` to let the Checklist keep the state). A checked step stays in place while the pointer is on its row and moves when the pointer leaves it (focus, for the keyboard; 700ms after the tap, on touch). Unchecking in Completed works the same way back.
+> - `ChecklistStepAction` (one Button or link) and `ChecklistStepBody` (more content across the row, such as commands) show on open steps only. `ChecklistStepDetail` is a short fact on the label's line. `ChecklistStepGuide` links to the guide and opens a new tab.
+> - `onDismiss` adds a dismiss button once every step is done; remove the Checklist in it.
+> - Steps must be direct children (fragments, arrays and conditionals are fine). Every built-in text is a prop (`completedLabel`, `dismissLabel`, `formatCount`, `formatAnnouncement`).
+> - Reduced motion: nothing moves or sweeps; rows and ticks fade.
+n takes `enter="new"`.
 
 ## Utilities
 
