@@ -243,7 +243,7 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    *   already names the tone, or for pending (`progress` without its spinner:
    *   waiting on the system or another person, not running). `dot` still
    *   shows the dot. `appearance="icon"` always shows a marker: the tone icon,
-   *   or for pending a still dot.
+   *   or for pending a still dot. A `bare` pending badge shows that dot too.
    *
    * Put the icon here, not in `children`: the chip sizes and colours it. An
    * `<svg>` in `children` (code written for 2.x) hides the tone icon, so the
@@ -357,7 +357,15 @@ function StatusBadge({
     );
     content = (
       <>
-        <StatusBadgeMarker tone={tone} size={size} dot={dot} icon={icon} />
+        <StatusBadgeMarker
+          tone={tone}
+          size={size}
+          dot={dot || (isPending && appearance === 'bare')}
+          // Pending in a bare badge has no box to carry the blue, so its dot
+          // takes the icon's slot.
+          slot={isPending && appearance === 'bare'}
+          icon={icon}
+        />
         {children}
       </>
     );
@@ -402,12 +410,15 @@ function StatusBadgeMarker({
   tone,
   size,
   dot,
+  slot = false,
   icon,
   className,
 }: {
   tone: Tone;
   size: StatusBadgeSize | 'icon';
   dot: boolean;
+  /** The dot takes the size of an icon, so it sits where the spinner would. */
+  slot?: boolean;
   icon: React.ReactNode;
   className?: string;
 }) {
@@ -466,12 +477,16 @@ function StatusBadgeMarker({
       className={cn('size-1.5 shrink-0 rounded-full bg-current', toneDot[tone])}
     />
   );
-  // In the `icon` appearance the dot takes the 16px slot of an icon, so the
-  // labels of a column start on the same edge.
-  return size === 'icon' ? (
+  // In the `icon` appearance and in a bare pending badge the dot takes the
+  // slot of an icon, so the labels start on the same edge as with a spinner.
+  return size === 'icon' || slot ? (
     <span
       aria-hidden
-      className={cn('inline-flex size-4 shrink-0 items-center justify-center', className)}
+      className={cn(
+        'inline-flex shrink-0 items-center justify-center',
+        size === 'icon' ? 'size-4' : size === 'lg' ? 'size-3.5' : 'size-3.25',
+        className,
+      )}
     >
       {dotMarker}
     </span>

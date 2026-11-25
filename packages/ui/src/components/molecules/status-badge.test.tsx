@@ -121,7 +121,7 @@ describe('StatusBadge', () => {
     expect(running).toContain('animate-spin-slow');
   });
 
-  test('pending shows a still dot in the icon appearance and no word-side spinner in text', () => {
+  test('pending shows a still dot in the icon and bare appearances, and no spinner in text', () => {
     const column = html(
       <StatusBadge appearance="icon" tone="progress" icon={false}>
         Pending
@@ -132,11 +132,25 @@ describe('StatusBadge', () => {
         Pending
       </StatusBadge>,
     );
+    const bare = html(
+      <StatusBadge appearance="bare" tone="progress" icon={false}>
+        Pending
+      </StatusBadge>,
+    );
+    const bareLg = html(
+      <StatusBadge appearance="bare" size="lg" tone="progress" icon={false}>
+        Pending
+      </StatusBadge>,
+    );
 
     expect(column).toContain('data-marker="dot"');
     expect(column).toContain('size-4');
     expect(column).not.toContain('lucide-loader');
     expect(text).not.toContain('lucide-loader');
+    expect(bare).toContain('data-marker="dot"');
+    expect(bare).toContain('size-3.25');
+    expect(bare).not.toContain('lucide-loader');
+    expect(bareLg).toContain('size-3.5');
   });
 
   test('progress keeps its spinner with dot', () => {

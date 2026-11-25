@@ -92,7 +92,8 @@ export const Progress: Story = {
 // tone without an icon: blue, no spinner. `commonStates` declares it
 // (`icon: false`), so `icon={commonStates.iconFor(state)}` is all a consumer
 // passes. A running state next to it keeps the spinner. In a list column
-// (`appearance="icon"`) pending shows a still dot in the icon's place.
+// (`appearance="icon"`) and in a bare badge, pending shows a still dot in the
+// icon's place.
 export const Pending: Story = {
   render: () => (
     <div className="flex flex-col gap-3">
@@ -121,6 +122,16 @@ export const Pending: Story = {
       const running = canvas.getByTestId(`running-${appearance}`);
       await expect(pending.querySelector('svg')).toBeNull();
       await expect(running.querySelector('svg')).not.toBeNull();
+      // Bare and icon: the still dot sits in the same slot as the spinner.
+      if (appearance === 'bare' || appearance === 'icon') {
+        const dotSlot = pending.querySelector('[data-marker=dot]')?.parentElement;
+        const spinnerSlot = running.querySelector('[data-marker=icon]');
+        await expect(dotSlot).not.toBeNull();
+        const dotBox = dotSlot?.getBoundingClientRect();
+        const spinnerBox = spinnerSlot?.getBoundingClientRect();
+        await expect(dotBox?.width).toBe(spinnerBox?.width);
+        await expect(dotBox?.height).toBe(spinnerBox?.height);
+      }
     }
   },
 };

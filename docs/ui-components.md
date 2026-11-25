@@ -485,7 +485,8 @@ its own row, so the label, the time and the rows above and below stay readable.
 - `icon={false}` or `icon={null}` shows no icon, for an inline chip whose label
   already names the tone, and for pending: `progress` with `icon={false}` is
   blue with no spinner. `dot` keeps the dot, and `appearance="icon"` always
-  shows a marker (the tone icon, or a still dot for pending).
+  shows a marker (the tone icon, or a still dot for pending). A `bare` pending
+  badge shows the same dot in the icon's slot.
 - To explain a state on hover, render the badge as the tooltip trigger:
   `<TooltipTrigger render={<StatusBadge tone="warning">Degraded</StatusBadge>} />`.
   The badge becomes a tab stop with the focus ring, and a chip takes the hover
