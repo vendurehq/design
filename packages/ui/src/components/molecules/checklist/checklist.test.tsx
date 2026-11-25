@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTag } from '../../../test/slot-tokens.ts';
 import { Button } from '../../atoms/button.tsx';
@@ -265,11 +266,14 @@ describe('Checklist', () => {
     const showC = false;
     const html = renderToStaticMarkup(
       <Checklist title="Setup">
-        <>
+        <Fragment key="ad">
           <ChecklistStep id="a" done={false}>
             <ChecklistStepLabel>Step a</ChecklistStepLabel>
           </ChecklistStep>
-        </>
+          <ChecklistStep id="d" done>
+            <ChecklistStepLabel>Step d</ChecklistStepLabel>
+          </ChecklistStep>
+        </Fragment>
         {[false].map((done) => (
           <ChecklistStep key="b" id="b" done={done}>
             <ChecklistStepLabel>Step b</ChecklistStepLabel>
@@ -285,9 +289,10 @@ describe('Checklist', () => {
     );
     expect(html).toContain('Step a');
     expect(html).toContain('Step b');
+    expect(html).toContain('Step d');
     expect(html).not.toContain('Step c');
     expect(html).not.toContain('not a step');
-    expect(slotTag(html, 'checklist-progress')).toContain('aria-valuetext="0 of 2"');
+    expect(slotTag(html, 'checklist-progress')).toContain('aria-valuetext="1 of 3"');
   });
 
   test('the parts render in their slots; body and action leave a done step', () => {
