@@ -2,6 +2,7 @@ import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
 import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Children } from 'react';
 
 const loadingStateVariants = cva('flex w-full min-w-0 flex-col gap-3', {
   variants: {
@@ -36,7 +37,8 @@ export interface LoadingStateProps
   /**
    * Skeleton parts in the shape of the page (`SkeletonPageHeader`,
    * `SkeletonCard`, `SkeletonListRow`, …). Replace the `rows` bars.
-   * `skeleton` variant only.
+   * `skeleton` variant only. Children that render nothing (`false`, `null`,
+   * an empty array) fall back to the `rows` bars.
    */
   children?: React.ReactNode;
 }
@@ -98,10 +100,11 @@ function LoadingState({
               {label}
             </span>
           ) : null}
-          {children ??
-            Array.from({ length: rows }).map((_, i) => (
-              <Skeleton key={i} className={cn('h-14 w-full rounded-md', rowClassName)} />
-            ))}
+          {Children.toArray(children).length > 0
+            ? children
+            : Array.from({ length: rows }).map((_, i) => (
+                <Skeleton key={i} className={cn('h-14 w-full rounded-md', rowClassName)} />
+              ))}
         </>
       )}
     </output>
