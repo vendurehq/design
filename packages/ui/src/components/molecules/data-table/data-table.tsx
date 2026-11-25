@@ -83,12 +83,18 @@ import {
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+// Relative: `data-table-row-count-storage` is closed in the package exports.
+import { useRememberedRowCount } from './data-table-row-count-storage.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
 const ACTIONS_COLUMN_ID = 'actions';
+
+// The built-in empty-state cell. The blank body drawn while a list whose last
+// load was empty loads again uses the same class, so the two match in height.
+const EMPTY_CELL_CLASS = 'text-muted-foreground h-24 text-center';
 
 // The row link is a stretched link, like ListRowLink: one real link per row,
 // whose ::after covers the row (the row is `relative`), so a click on any point
@@ -724,6 +730,7 @@ function DataTable<TData>({
   isLoading,
   skeletonRowCount = 10,
   skeletonCells,
+  rowCountKey,
   pagination,
   sorting,
   filters,
@@ -1000,6 +1007,9 @@ function DataTable<TData>({
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
+  // The row count of the last load, read at mount. Each finished load stores
+  // the current page's count for the next first load.
+  const rememberedRowCount = useRememberedRowCount(rowCountKey, bodyRows.length, !isLoading);
 
   // The select checkbox is floated absolutely over a zero-width cell, so the
   // gutter it needs is folded into the leading data column as left padding —
@@ -1438,8 +1448,14 @@ function DataTable<TData>({
             data-pending={pending ? '' : undefined}
             className={PENDING_CLASS}
           >
-            {firstLoad ? (
-              Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+            {firstLoad && rememberedRowCount === 0 ? (
+              // The last load was empty: a blank row at the height of the
+              // empty-state row below, so "No results" lands in place.
+              <TableRow data-slot="data-table-skeleton-empty" className="hover:bg-transparent">
+                <TableCell colSpan={Math.max(columnCount, 1)} className={EMPTY_CELL_CLASS} />
+              </TableRow>
+            ) : firstLoad ? (
+              Array.from({ length: rememberedRowCount ?? skeletonRowCount }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
                     <TableCell>
@@ -1462,10 +1478,7 @@ function DataTable<TData>({
               ))
             ) : bodyRows.length === 0 ? (
               <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={Math.max(columnCount, 1)}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={Math.max(columnCount, 1)} className={EMPTY_CELL_CLASS}>
                   {emptyState ?? l.empty}
                 </TableCell>
               </TableRow>

@@ -305,7 +305,8 @@ export interface DataTableProps<TData> {
 
   /**
    * The rows are loading. With `rows` empty (the first load) the body shows
-   * `skeletonRowCount` skeleton rows and the pagination footer a skeleton range
+   * skeleton rows (`skeletonRowCount`, or the count remembered under
+   * `rowCountKey`) and the pagination footer a skeleton range
    * with prev/next disabled. With rows on screen (a page, sort or filter
    * change that keeps the previous rows) the rows stay: the body is
    * `aria-busy`, the rows and the footer range dim after a short delay, and
@@ -313,6 +314,26 @@ export interface DataTableProps<TData> {
    */
   isLoading?: boolean;
   skeletonRowCount?: number; // default 10
+  /**
+   * Remembers how many rows the current page showed, in local storage under
+   * this key. On the next first load the body draws that many skeleton rows,
+   * at the loaded row height, so the table does not change height when the
+   * rows arrive. A remembered 0 draws a blank body at the height of the
+   * built-in "No results" row instead, so the empty state lands in place.
+   *
+   * - The count is read once, when the table mounts (or the key changes),
+   *   before the first paint. Nothing remembered keeps `skeletonRowCount`.
+   * - Each finished load (`isLoading` false) stores the count of the rows on
+   *   the current page.
+   * - Blocked or full storage is ignored. A server render draws
+   *   `skeletonRowCount`.
+   *
+   * The key names the list and anything that scopes its rows, such as a
+   * channel: `${route}:${channelId}`. Rows taller than one text line still
+   * need `skeletonCells`; a custom `emptyState` taller than the built-in row
+   * still grows. Without the prop nothing changes.
+   */
+  rowCountKey?: string;
   /**
    * Per-column loading cells, keyed by column id, for cells that are not one
    * text line tall (a title over a muted sub-line, an avatar, a button), so the
