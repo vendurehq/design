@@ -8,6 +8,8 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // A link for running text and for small standalone links. It is `inline`,
 // not `inline-flex`, so a long label wraps with the sentence, and it sets no
 // font size, weight or line height: it takes them from the text around it.
+// `w-fit` keeps it to its label when it is a flex or grid item, where it
+// would otherwise stretch, and has no effect inline.
 //
 // The underline sits 4px under the baseline (`underline-offset-4`, as the
 // Button link look) and is 1px. `box-decoration-clone` keeps the rounded
@@ -30,11 +32,12 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // `external`: opens in a new tab with `rel="noopener noreferrer"`, ends with a
 // decorative up-right arrow sized to the text (60%, full on hover or focus),
 // and adds "(opens in a new tab)" for screen readers. A word joiner keeps the
-// arrow on the line of the last word. In right-to-left the arrow points
+// arrow on the line of the last word; it is hidden with the arrow, so it
+// stays out of the accessible name. In right-to-left the arrow points
 // up-left.
 
 const textLinkVariants = cva(
-  "group/text-link inline cursor-pointer rounded-sm underline decoration-1 underline-offset-4 box-decoration-clone transition-colors duration-quick ease-soft outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  "group/text-link inline w-fit cursor-pointer rounded-sm underline decoration-1 underline-offset-4 box-decoration-clone transition-colors duration-quick ease-soft outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   {
     variants: {
       tone: {
@@ -91,13 +94,15 @@ function TextLink({
           <>
             {children}
             <span className="sr-only"> {externalLabel}</span>
-            {"⁠"}
-            <ArrowUpRight
-              aria-hidden="true"
-              data-slot="text-link-external-icon"
-              strokeWidth={1.75}
-              className="ms-0.5 inline-block size-[0.875em] align-[-0.0625em] opacity-60 transition-opacity duration-moderate ease-soft group-hover/text-link:opacity-100 group-focus-visible/text-link:opacity-100 rtl:-scale-x-100"
-            />
+            <span aria-hidden="true">
+              {"⁠"}
+              <ArrowUpRight
+                aria-hidden="true"
+                data-slot="text-link-external-icon"
+                strokeWidth={1.75}
+                className="ms-0.5 inline-block size-[0.875em] align-[-0.0625em] opacity-60 transition-opacity duration-moderate ease-soft group-hover/text-link:opacity-100 group-focus-visible/text-link:opacity-100 rtl:-scale-x-100"
+              />
+            </span>
           </>
         ) : (
           children

@@ -132,3 +132,12 @@ describe('TextLink', () => {
     expect(classes).toContain('text-primary');
   });
 });
+
+test('external: the word joiner before the arrow is hidden with it, out of the accessible name', () => {
+  const html = renderToStaticMarkup(
+    <TextLink href="https://example.com" external>
+      Docs
+    </TextLink>,
+  );
+  expect(html).toMatch(/<span aria-hidden="true">⁠<svg/);
+});
