@@ -368,7 +368,7 @@ describe('v3 overlay look', () => {
     );
   });
 
-  test('a toast is 44px, 10px 14px, 13px medium, 320px wide on the card surface', () => {
+  test('a toast is 44px, 10px 14px, 14px medium, 320px wide on the card surface', () => {
     const code = source('sonner.tsx');
     expect(code).toContain('min-h-11! gap-2.5! px-3.5! py-2.5! text-sm! font-medium!');
     expect(code).toContain('"--width": "320px"');

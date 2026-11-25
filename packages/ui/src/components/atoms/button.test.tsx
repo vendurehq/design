@@ -23,7 +23,7 @@ describe('Button press feedback', () => {
 });
 
 describe('Button v3 look', () => {
-  test('uses the xl radius and 13px medium text', () => {
+  test('uses the xl radius and 14px medium text', () => {
     const tokens = buttonTokens(<Button>Save</Button>);
     expect(tokens).toContain('rounded-xl');
     expect(tokens).toContain('text-sm');

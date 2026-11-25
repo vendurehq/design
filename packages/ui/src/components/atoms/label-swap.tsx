@@ -38,6 +38,22 @@ type LabelSwapProps = Omit<React.ComponentProps<"span">, "children"> & {
   activeKey?: string
 }
 
+/** The label a swap shows, and whether it arrived without the swap. */
+type Shown = { active: number; label: React.ReactNode; still: boolean }
+
+/**
+ * The next `Shown` when `active` or its label changes, or `undefined` when
+ * nothing changed. A move to another index whose label has the same words
+ * (text or a number) is still: the words do not change, so nothing moves.
+ * A new text at the same index rewrites in place, as before.
+ */
+function nextShown(shown: Shown, active: number, label: React.ReactNode): Shown | undefined {
+  if (shown.active === active && shown.label === label) return undefined
+  const sameWords =
+    (typeof label === "string" || typeof label === "number") && shown.label === label
+  return { active, label, still: shown.active !== active && sameWords }
+}
+
 /**
  * Internal: the one label swap behind `ButtonLabelSwap` and
  * `TooltipLabelSwap`. Not exported from the package.
@@ -48,6 +64,8 @@ type LabelSwapProps = Omit<React.ComponentProps<"span">, "children"> & {
  * the swap eases to the active label's width and height on the drawer curve.
  * The size follows the label while it is active (see `useActiveLabelSize`).
  * With reduced motion the labels only crossfade, and the size changes at once.
+ * When `active` moves to a label with the same words as the one shown, the
+ * labels change places without a transition, so nothing moves.
  */
 function LabelSwap({
   labels,
@@ -61,6 +79,12 @@ function LabelSwap({
   ...props
 }: LabelSwapProps) {
   const { refs, width, height } = useActiveLabelSize(active, { natural: truncate, key: activeKey })
+  // Kept across renders, so a move between labels with the same words is
+  // known in the render that makes it.
+  const [shown, setShown] = React.useState<Shown>({ active, label: labels[active], still: false })
+  const next = nextShown(shown, active, labels[active])
+  if (next) setShown(next)
+  const still = (next ?? shown).still ? { transition: "none" } : undefined
   // While the width eases, a growing label is clipped, as without
   // `truncate`; the ellipsis shows only at rest, so it does not flash.
   const [resizing, setResizing] = React.useState(false)
@@ -84,7 +108,7 @@ function LabelSwap({
         truncate && "min-w-0 shrink",
         className
       )}
-      style={width === undefined ? style : { ...style, width, height }}
+      style={width === undefined ? { ...style, ...still } : { ...style, ...still, width, height }}
       {...props}
     >
       {labels.map((label, index) => (
@@ -95,6 +119,7 @@ function LabelSwap({
             refs.current[index] = element
           }}
           data-swap={index === active ? "in" : index < active ? "before" : "after"}
+          style={still}
           aria-hidden={index === active ? undefined : true}
           className={cn(
             "col-start-1 row-start-1 [transition:opacity_var(--label-swap-fade)_var(--ease-soft),translate_var(--label-swap-move)_var(--ease-out),filter_var(--label-swap-fade)_var(--ease-soft)] data-[swap=after]:opacity-0 data-[swap=before]:opacity-0 motion-safe:data-[swap=after]:translate-y-(--label-swap-shift) motion-safe:data-[swap=before]:-translate-y-(--label-swap-shift) motion-safe:data-[swap=after]:blur-[2px] motion-safe:data-[swap=before]:blur-[2px]",
@@ -109,5 +134,5 @@ function LabelSwap({
   )
 }
 
-export { LabelSwap }
+export { LabelSwap, nextShown }
 export type { LabelSwapProps }

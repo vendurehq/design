@@ -8,6 +8,13 @@ import { NoResultsIllustration } from '../src/components/molecules/illustrations
 import { EmptyState } from '../src/components/molecules/state-views/empty-state.tsx';
 import { ErrorState } from '../src/components/molecules/state-views/error-state.tsx';
 import { LoadingState } from '../src/components/molecules/state-views/loading-state.tsx';
+import {
+  SkeletonCard,
+  SkeletonFact,
+  SkeletonField,
+  SkeletonListRow,
+  SkeletonPageHeader,
+} from '../src/components/molecules/state-views/skeleton-parts.tsx';
 
 /**
  * Guidance, not props. The three state views answer three different questions
@@ -106,7 +113,7 @@ type LoadingChoice = {
 const LOADING_CHOICES: LoadingChoice[] = [
   {
     variant: 'skeleton',
-    use: 'Known-shape regions: tables, lists, detail panes. Shimmer rows mirror the layout that is coming, so nothing reflows when data arrives. The default.',
+    use: 'Known-shape regions: pages, cards, lists, forms. Pass skeleton parts as children in the layout that is coming (see 6), so nothing reflows when data arrives. The bare rows bars are the fallback when no part fits. The default.',
   },
   {
     variant: 'spinner',
@@ -177,7 +184,7 @@ export const WhichView: Story = {
 
       <Section
         title="LoadingState vs the raw Skeleton atom"
-        intro="Reach for LoadingState, not a bare Skeleton, whenever a whole region is loading. LoadingState wraps the Skeleton atom in an aria-live output with an always-present sr-only 'Loading…' label, so screen readers announce the wait; the raw atom is silent. Drop to a bare Skeleton only for a single inline placeholder (one avatar, one value) inside otherwise-rendered content. Pick the variant by what the region's real shape will be."
+        intro="Reach for LoadingState, not a bare Skeleton, whenever a whole region is loading. LoadingState wraps the Skeleton atom in an aria-live output with an always-present sr-only 'Loading…' label, so screen readers announce the wait; the raw atom is silent. Drop to a bare Skeleton only for a single inline placeholder (one avatar, one value) inside otherwise-rendered content. Pick the variant by what the region's real shape will be. LoadingState shows nothing for its first 150ms, so a fast load never flashes."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -476,6 +483,109 @@ export const CompactForSmallPanels: Story = {
                 <p className="text-muted-foreground text-sm">Couldn&apos;t load usage.</p>
               </CardContent>
             </Card>
+          </Example>
+        </div>
+      </Section>
+    </div>
+  ),
+};
+
+// ── 6 · load into the page's shape ───────────────────────────────────────────
+
+const SKELETON_PARTS: { part: string; standsFor: string; use: string }[] = [
+  {
+    part: 'SkeletonPageHeader',
+    standsFor: 'PageHeader',
+    use: 'The top of a page: title, description (description), buttons on the end (actions).',
+  },
+  {
+    part: 'SkeletonCard',
+    standsFor: 'Card',
+    use: 'A card: title, description and action in the header, body lines (lines). Pass children for another body shape, such as facts or fields.',
+  },
+  {
+    part: 'SkeletonListRow',
+    standsFor: 'ListRow',
+    use: 'A row of a list: an icon or avatar (leading), a title, a meta line (meta), an end action (action).',
+  },
+  {
+    part: 'SkeletonField',
+    standsFor: 'Field with an Input',
+    use: 'A row of a form: the label above the control.',
+  },
+  {
+    part: 'SkeletonFact',
+    standsFor: 'DescriptionListItem',
+    use: 'A key-value fact on a detail page: the label above the value.',
+  },
+  {
+    part: 'SkeletonLine',
+    standsFor: 'One line of text',
+    use: 'Anything else: one line box of the text style it inherits. Size it with the same text utility as the text (text-xs, text-style-page-title) and a width.',
+  },
+];
+
+export const PageShape: Story = {
+  name: "6 · Load into the page's shape",
+  render: () => (
+    <div className="text-foreground max-w-4xl p-1">
+      <Section
+        title="Skeleton parts: one per real component"
+        intro="Pass skeleton parts as LoadingState children, laid out like the loaded page. Each part is as tall as the component it stands for, so content fills in place when data arrives. One LoadingState holds a region that loads together: it announces 'Loading…' once, and the parts stay silent. A DataTable draws its own loading rows."
+      >
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b text-xs uppercase tracking-wide">
+                <th className="p-3 font-medium">Part</th>
+                <th className="p-3 font-medium">Stands for</th>
+                <th className="p-3 font-medium">Use for</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SKELETON_PARTS.map(({ part, standsFor, use }) => (
+                <tr key={part} className="border-b align-top last:border-0">
+                  <td className="p-3 font-mono text-xs">{part}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{standsFor}</td>
+                  <td className="text-muted-foreground p-3 text-xs">{use}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section
+        title="A settings page, while it loads"
+        intro="The skeleton has the page header, the cards and the rows of the page that is coming. Bars that do not match the page make it jump when the data lands."
+      >
+        <div className="grid gap-3">
+          <Example
+            verdict="do"
+            caption="The page header, a card of facts, a form card and a list card, each in its own shape."
+          >
+            <LoadingState className="gap-4">
+              <SkeletonPageHeader />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SkeletonCard>
+                  <SkeletonFact />
+                  <SkeletonFact />
+                </SkeletonCard>
+                <SkeletonCard>
+                  <SkeletonField />
+                </SkeletonCard>
+              </div>
+              <Card className="gap-0 py-0">
+                <SkeletonListRow />
+                <SkeletonListRow />
+              </Card>
+            </LoadingState>
+          </Example>
+          <Example
+            verdict="dont"
+            caption="Five full-width bars for a page of cards: no header, no card edges. Every part of the page moves when it loads."
+          >
+            <LoadingState />
           </Example>
         </div>
       </Section>

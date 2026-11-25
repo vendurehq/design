@@ -164,7 +164,7 @@ function TimelineContent({ className, ...props }: React.ComponentProps<'div'>) {
 
 const titleClassName = 'text-sm leading-5 text-foreground text-pretty';
 
-/** The sentence of an entry: what happened, in 13px on a 20px line. */
+/** The sentence of an entry: what happened, in 14px on a 20px line. */
 function TimelineTitle({ className, ...props }: React.ComponentProps<'p'>) {
   return <p data-slot="timeline-title" className={cn(titleClassName, className)} {...props} />;
 }

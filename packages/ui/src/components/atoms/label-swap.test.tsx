@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTag, slotTokens, tagTokens } from '../../test/slot-tokens.ts';
 import { ButtonLabelSwap } from './button.tsx';
 import { TooltipLabelSwap } from './tooltip.tsx';
+import { nextShown } from './label-swap.tsx';
 
 const labels = ['Copy', 'Copied'];
 
@@ -53,5 +54,30 @@ describe('Tooltip width', () => {
   test('a changing label wraps at the 320px bubble, less its padding', () => {
     expect(tooltip.label).toContain('max-w-[calc(--spacing(80)-1.25rem)]');
     expect(tooltip.label).not.toContain('--tooltip-max-w');
+  });
+});
+
+describe('LabelSwap: a move to the same words', () => {
+  const shown = { active: 0, label: 'Acme Storefront', still: false };
+
+  test('to another index with the same text is still: nothing moves', () => {
+    expect(nextShown(shown, 2, 'Acme Storefront')).toEqual({ active: 2, label: 'Acme Storefront', still: true });
+  });
+
+  test('to another index with other words swaps as usual', () => {
+    expect(nextShown(shown, 2, 'Globex')?.still).toBe(false);
+  });
+
+  test('a new text at the same index rewrites in place, not still', () => {
+    expect(nextShown(shown, 0, 'Globex')).toEqual({ active: 0, label: 'Globex', still: false });
+  });
+
+  test('an element label is never taken for the same words', () => {
+    const element = <b>Acme</b>;
+    expect(nextShown({ active: 0, label: element, still: false }, 1, element)?.still).toBe(false);
+  });
+
+  test('no change returns nothing, so the swap does not render again', () => {
+    expect(nextShown(shown, 0, 'Acme Storefront')).toBeUndefined();
   });
 });

@@ -1679,6 +1679,332 @@ export const RowLink: Story = {
   },
 };
 
+// Pinned first column with row links: the variants table in a narrow frame,
+// so it scrolls sideways. The select checkbox and the name stay at the
+// inline-start edge; the other columns scroll under them.
+function PinnedVariants({ dir, selected }: { dir?: 'rtl'; selected?: string }) {
+  const [selection, setSelection] = useState<RowSelectionState>(selected ? { [selected]: true } : {});
+  return (
+    <div dir={dir} className="max-w-md">
+      <DataTable<Variant>
+        pinFirstColumn
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ value: selection, onChange: setSelection }}
+        rowActions={(variant) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreHorizontalIcon />
+                  <span className="sr-only">Open menu for {variant.name}</span>
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Duplicate</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">Delete variant</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      />
+    </div>
+  );
+}
+
+function tableContainer(canvasElement: HTMLElement): HTMLElement {
+  const container = canvasElement.querySelector<HTMLElement>('[data-slot=table-container]');
+  if (!container) throw new Error('No table container');
+  return container;
+}
+
+/** Scrolls the table sideways and waits for its scroll cue to follow. */
+async function scrollTable(container: HTMLElement, left: number) {
+  container.scrollLeft = left;
+  container.dispatchEvent(new Event('scroll'));
+  await waitFor(() => expect(container.hasAttribute('data-overflow-start')).toBe(left !== 0));
+}
+
+/** The inline-start offset of an element inside the table container, in px. */
+function startOffset(element: Element, container: HTMLElement) {
+  const rtl = getComputedStyle(container).direction === 'rtl';
+  const box = element.getBoundingClientRect();
+  const frame = container.getBoundingClientRect();
+  return rtl ? frame.right - box.right : box.left - frame.left;
+}
+
+/** The select cell and the name cell of each row: the pinned cells. */
+function pinnedCellsOf(canvasElement: HTMLElement) {
+  return [
+    ...canvasElement.querySelectorAll('tr > :first-child, tr > [data-pinned]'),
+  ] as HTMLElement[];
+}
+
+async function expectPinnedAtStart(canvasElement: HTMLElement) {
+  const container = tableContainer(canvasElement);
+  const cells = pinnedCellsOf(canvasElement);
+  // Header, four body rows: a select cell and a name cell each.
+  await expect(cells).toHaveLength(10);
+  for (const cell of cells) {
+    await expect(getComputedStyle(cell).position).toBe('sticky');
+    await expect(Math.abs(startOffset(cell, container))).toBeLessThanOrEqual(PIXEL_TOLERANCE);
+  }
+}
+
+/**
+ * `pinFirstColumn` with row links and selection: the select checkbox and the
+ * name stay at the inline-start edge while the other columns scroll under
+ * them. The name keeps the row's one link. The rest of the row opens the item
+ * through a second anchor with the same href, hidden from assistive
+ * technology and from the tab order, so a click, Cmd+click, middle-click and
+ * the hover URL work from any cell.
+ */
+export const PinnedFirstColumn: Story = {
+  render: () => <PinnedVariants />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('the select cell and the name cell are pinned together', async () => {
+      await expect(tableContainer(canvasElement)).toHaveAttribute('data-pin-first-column');
+      await expectPinnedAtStart(canvasElement);
+    });
+
+    await step('a screen reader finds one link per row to its item', async () => {
+      for (const variant of variants) {
+        const link = canvas.getByText(variant.name, {
+          selector: '[data-slot=data-table-row-link]',
+        }) as HTMLAnchorElement;
+        const row = within(link.closest('tr') as HTMLTableRowElement);
+        const overlay = link
+          .closest('tr')
+          ?.querySelector('[data-slot=data-table-row-link-overlay]') as HTMLAnchorElement;
+        await expect(overlay.href).toBe(link.href);
+        await expect(overlay).toHaveAttribute('aria-hidden', 'true');
+        await expect(overlay).toHaveAttribute('tabindex', '-1');
+        // The DOM holds three links: the name, the overlay and the Product
+        // link. The accessibility tree and the tab order hold two: the
+        // overlay is in neither.
+        await expect(row.getAllByRole('link', { hidden: true })).toHaveLength(3);
+        const accessible = row.getAllByRole('link');
+        await expect(accessible).toHaveLength(2);
+        await expect(accessible).toContain(link);
+        await expect(accessible).not.toContain(overlay);
+        await expect(row.getAllByRole('link', { name: variant.name })[0]).toBe(link);
+      }
+    });
+  },
+};
+
+/**
+ * Scrolled: the pinned cells stay at the edge. A click on a cell that scrolled
+ * under them opens the item; the checkbox still selects, and the selected-row
+ * bar stays on the pinned edge. The test runner also presses the price text
+ * with a real mouse and expects the variant to open.
+ */
+export const PinnedFirstColumnScrolled: Story = {
+  parameters: { pressRowText: { text: '$1,678.80', expectHash: '#/variants/2' } },
+  render: () => <PinnedVariants />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const container = tableContainer(canvasElement);
+    const link = canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' });
+    const row = within(link.closest('tr') as HTMLTableRowElement);
+    clearHash();
+    await scrollTable(container, 160);
+
+    await step('the pinned cells stay at the edge', async () => {
+      await expectPinnedAtStart(canvasElement);
+    });
+
+    await step('a click on a cell that scrolled under them opens the item', async () => {
+      const hit = hitAt(row.getByText('$1,558.80'));
+      await expect(hit).toHaveAttribute('data-slot', 'data-table-row-link-overlay');
+      await expect((hit as HTMLAnchorElement).href).toBe((link as HTMLAnchorElement).href);
+      await userEvent.click(hit);
+      await expect(location.hash).toBe('#/variants/1');
+      clearHash();
+    });
+
+    await step('the name opens the item through its own link', async () => {
+      await expect(hitAt(link)).toBe(link);
+    });
+
+    await step('the Product link and the actions menu keep their own action', async () => {
+      const product = row.getByRole('link', { name: 'Laptop' });
+      await expect(hitAt(product)).toBe(product);
+      // The actions column is at the far end.
+      await scrollTable(container, container.scrollWidth);
+      const trigger = row.getByRole('button', { name: 'Open menu for Laptop 13 inch 8GB' });
+      await expect(hitAt(trigger).closest('button')).toBe(trigger);
+      await scrollTable(container, 160);
+    });
+
+    await step('the checkbox selects, and the selected-row bar stays on the edge', async () => {
+      const checkbox = () => canvas.getByRole('checkbox', { name: 'Select row 2' });
+      await expect(hitAt(checkbox()).closest('[data-slot=checkbox]')).toBe(checkbox());
+      await userEvent.click(checkbox());
+      await waitFor(() => expect(checkbox()).toHaveAttribute('aria-checked', 'true'));
+      await expect(location.hash).toBe('');
+      const selectedRow = checkbox().closest('tr') as HTMLTableRowElement;
+      // The row's own bar would scroll away with the row; the first pinned
+      // cell draws it instead.
+      await expect(getComputedStyle(selectedRow, '::before').display).toBe('none');
+      const cell = selectedRow.firstElementChild as HTMLElement;
+      await waitFor(() => expect(getComputedStyle(cell, '::before').opacity).toBe('1'));
+      // The row's hidden bar still computes the bar colour.
+      await expect(getComputedStyle(cell, '::before').backgroundColor).toBe(
+        getComputedStyle(selectedRow, '::before').backgroundColor,
+      );
+      await expect(Math.abs(startOffset(cell, container))).toBeLessThanOrEqual(PIXEL_TOLERANCE);
+      await userEvent.click(checkbox());
+      await waitFor(() => expect(checkbox()).toHaveAttribute('aria-checked', 'false'));
+    });
+  },
+};
+
+/** Scrolled with a selected row, for the picture. */
+export const PinnedFirstColumnSelected: Story = {
+  render: () => <PinnedVariants selected="2" />,
+  play: async ({ canvasElement }) => {
+    const container = tableContainer(canvasElement);
+    await scrollTable(container, 160);
+    await expectPinnedAtStart(canvasElement);
+    const cell = canvasElement.querySelector('tr[data-state=selected] > :first-child') as HTMLElement;
+    await waitFor(() => expect(getComputedStyle(cell, '::before').opacity).toBe('1'));
+  },
+};
+
+/**
+ * Right to left, the pinned cells stay on the right, and a click on a cell
+ * that scrolled under them still opens the item.
+ */
+export const PinnedFirstColumnRightToLeft: Story = {
+  render: () => <PinnedVariants dir="rtl" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const container = tableContainer(canvasElement);
+    clearHash();
+    await scrollTable(container, -160);
+    await expectPinnedAtStart(canvasElement);
+    const link = canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' });
+    const row = within(link.closest('tr') as HTMLTableRowElement);
+    const hit = hitAt(row.getByText('$1,678.80'));
+    await expect(hit).toHaveAttribute('data-slot', 'data-table-row-link-overlay');
+    await userEvent.click(hit);
+    await expect(location.hash).toBe('#/variants/2');
+    clearHash();
+  },
+};
+
+// A pinned row the consumer renders itself: the table's cell props, and a
+// row link host at the end of every cell, so the whole row opens the item.
+const renderPinnedRow: NonNullable<DataTableProps<Variant>['renderRow']> = (
+  row,
+  { ripple, cellProps, rowLinkHost, selectProps },
+) => (
+  <TableRow
+    {...selectProps}
+    data-custom-row=""
+    data-state={row.getIsSelected() ? 'selected' : undefined}
+    className={cn('group/row', ripple.className)}
+    style={ripple.style}
+  >
+    {row.getVisibleCells().map((cell) => (
+      <TableCell key={cell.id} {...cellProps(cell.column.id)}>
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        {rowLinkHost(cell.column.id)}
+      </TableCell>
+    ))}
+  </TableRow>
+);
+
+/**
+ * `pinFirstColumn` with a row from `renderRow`. Render
+ * `ctx.rowLinkHost(cell.column.id)` after the content of every cell and the
+ * row behaves like a built-in one: a click on a cell that scrolled under the
+ * pinned column opens the item, and the row keeps one link in the
+ * accessibility tree and one tab stop. A row that leaves the host out opens
+ * the item only from the cells on the name's side of the pinned edge.
+ */
+export const PinnedFirstColumnCustomRows: Story = {
+  parameters: { pressRowText: { text: '$1,678.80', expectHash: '#/variants/2' } },
+  render: () => (
+    <div className="max-w-md">
+      <DataTable<Variant>
+        pinFirstColumn
+        rows={variants}
+        columns={variantColumns}
+        getRowId={(variant) => variant.id}
+        rowSelection={{ defaultValue: {} }}
+        renderRow={renderPinnedRow}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const container = tableContainer(canvasElement);
+    const user = userEvent.setup();
+    clearHash();
+    await scrollTable(container, 160);
+
+    await step('the rows are the custom rows, pinned like the built-in ones', async () => {
+      await expect(canvasElement.querySelectorAll('[data-custom-row]')).toHaveLength(variants.length);
+      await expectPinnedAtStart(canvasElement);
+    });
+
+    await step('a click on a cell that scrolled under the pinned column opens the item', async () => {
+      const link = canvas.getByRole('link', { name: 'Laptop 13 inch 8GB' }) as HTMLAnchorElement;
+      const row = within(link.closest('tr') as HTMLTableRowElement);
+      const hit = hitAt(row.getByText('$1,558.80'));
+      await expect(hit).toHaveAttribute('data-slot', 'data-table-row-link-overlay');
+      await expect((hit as HTMLAnchorElement).href).toBe(link.href);
+      await user.click(hit);
+      await expect(location.hash).toBe('#/variants/1');
+      clearHash();
+    });
+
+    await step('the row has one link in the accessibility tree and one tab stop', async () => {
+      for (const variant of variants) {
+        const link = canvas.getByText(variant.name, {
+          selector: '[data-slot=data-table-row-link]',
+        }) as HTMLAnchorElement;
+        const tr = link.closest('tr') as HTMLTableRowElement;
+        const overlays = tr.querySelectorAll<HTMLAnchorElement>(
+          '[data-slot=data-table-row-link-overlay]',
+        );
+        await expect(overlays).toHaveLength(1);
+        const overlay = overlays[0] as HTMLAnchorElement;
+        await expect(overlay.href).toBe(link.href);
+        await expect(overlay).toHaveAttribute('aria-hidden', 'true');
+        await expect(overlay).toHaveAttribute('tabindex', '-1');
+        const row = within(tr);
+        // The name, the overlay and the Product link are in the DOM; the
+        // overlay is in neither the accessibility tree nor the tab order.
+        await expect(row.getAllByRole('link', { hidden: true })).toHaveLength(3);
+        const accessible = row.getAllByRole('link');
+        await expect(accessible).toHaveLength(2);
+        await expect(accessible).not.toContain(overlay);
+        await expect(accessible[0]).toBe(link);
+      }
+    });
+
+    await step('the name is the only tab stop of the row link', async () => {
+      const link = canvas.getByRole('link', { name: 'Laptop 15 inch 8GB' });
+      const checkbox = canvas.getByRole('checkbox', { name: 'Select row 2' });
+      checkbox.focus();
+      await user.tab();
+      await expect(document.activeElement).toBe(link);
+      await user.tab();
+      await expect(document.activeElement).not.toHaveAttribute(
+        'data-slot',
+        'data-table-row-link-overlay',
+      );
+      (document.activeElement as HTMLElement).blur();
+    });
+  },
+};
+
 // Access tokens: every row opens its token. The token preview is an
 // AnonymizedToken, which copies from any point of the chip, as IdChip does.
 interface AccessToken {

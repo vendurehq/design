@@ -32,7 +32,7 @@ const productSteps = [
   { name: 'page-title', spec: '22px on 26px', className: 'text-style-page-title' },
   { name: 'section-title', spec: '16px', className: 'text-style-section-title' },
   { name: 'card-title', spec: '14px', className: 'text-style-card-title' },
-  { name: 'body', spec: '13px on 20px', className: 'text-style-body' },
+  { name: 'body', spec: '14px on 21px', className: 'text-style-body' },
 ];
 
 function StepRow({
