@@ -47,7 +47,7 @@ export interface LoadingStateProps
 // then fades in. Under reduced motion it appears without the fade, still after
 // the delay: the delay is not motion, it keeps fast loads from flashing.
 const DELAYED_ENTRY =
-  '[animation:page-fade_var(--transition-duration-normal)_var(--ease-out)_var(--loading-state-delay)_both] motion-reduce:[animation-duration:0s]';
+  '[animation:page-fade_var(--transition-duration-page-fade)_var(--ease-out)_var(--loading-state-delay)_both] motion-reduce:[animation-duration:0s]';
 
 /**
  * Placeholder shell for in-flight list/detail queries. Renders as an
