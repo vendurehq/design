@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@vendure-io/ui/components/atoms/select';
-import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import type * as React from 'react';
@@ -165,7 +165,7 @@ function TablePagination({
       className={cn('flex items-center justify-between gap-4', className)}
       {...props}
     >
-      <span
+      <div
         data-slot="table-pagination-range"
         data-pending={pending ? '' : undefined}
         className={cn('text-muted-foreground text-sm tabular-nums', PENDING_CLASS)}
@@ -175,11 +175,9 @@ function TablePagination({
         ) : (
           // One line box tall, so the footer keeps the height it has with the
           // range text. The text is not known, so there is nothing to announce.
-          <span className="flex h-[1lh] w-24 items-center" aria-hidden>
-            <Skeleton className="h-[0.8lh] w-full" />
-          </span>
+          <SkeletonLine className="w-24" />
         )}
-      </span>
+      </div>
 
       {(onPageSizeChange || showNav) && (
         <div className="flex items-center gap-4">
