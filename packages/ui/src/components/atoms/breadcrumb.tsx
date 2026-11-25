@@ -32,6 +32,7 @@ import {
   CommandList,
 } from "./command.tsx"
 import { Popover, PopoverContent, PopoverTrigger } from "./popover.tsx"
+import { Skeleton } from "./skeleton.tsx"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip.tsx"
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
@@ -198,6 +199,16 @@ type BreadcrumbMenuBaseProps = {
    * while none is open, or "Projects unavailable". It swaps like an option.
    */
   placeholder?: string
+  /**
+   * The current item's name is still loading. The crumb shows a text
+   * skeleton one line tall in place of the name, takes no clicks or focus,
+   * and a screen reader hears one status, "<label>: Loading…". When it turns
+   * false the name shows at once, without the label swap; a later change of
+   * the name swaps as usual. Use it instead of a placeholder word, such as
+   * "Project", while the name is unknown. `placeholder` stays for a state
+   * that has words, such as "All projects".
+   */
+  pending?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
   defaultOpen?: boolean
@@ -235,6 +246,30 @@ function useMenuOpen(
  */
 const crumbTriggerClassName =
   "text-foreground hover:text-foreground aria-expanded:text-foreground min-w-0 shrink gap-2.25 rounded-lg ps-2.25 pe-1.75 text-sm font-semibold [--content-inset:calc(var(--spacing)*2.25+1px)]"
+
+/**
+ * A crumb menu while its name loads: the crumb's box (28px tall, the same
+ * insets and transparent border) with a text skeleton where the name goes.
+ * The bar is `0.8lh` of the `text-sm` line, so it follows the line-height
+ * token, not a pixel size. It is not a button: nothing opens until the name
+ * is known. The skeleton is hidden from screen readers, which hear the
+ * status text instead. A `div`, as the skeleton is one.
+ */
+function PendingCrumb({ label, className }: { label: string; className?: string }) {
+  return (
+    <div
+      role="status"
+      data-slot="breadcrumb-menu-pending"
+      className={cn(
+        "inline-flex h-7 min-w-0 shrink items-center rounded-lg border border-transparent ps-2.25 pe-1.75 text-sm",
+        className
+      )}
+    >
+      <span className="sr-only">{`${label}: Loading…`}</span>
+      <Skeleton aria-hidden className="h-[0.8lh] w-24 min-w-0 shrink" />
+    </div>
+  )
+}
 
 /**
  * The inside of the crumb, and its tooltip. The crumb's accessible name is
@@ -372,6 +407,9 @@ function isNewTabClick(event: Event | undefined) {
  * shows it in full. An option with `href` or `render` is a link; the current
  * row stays a checked `menuitemradio`. `open` and `onOpenChange` control the
  * menu. For a long list with a search field, use `BreadcrumbSearchMenu`.
+ *
+ * While the current item's name loads, pass `pending`: the crumb shows a
+ * text skeleton, and the name shows without a swap once it is known.
  */
 function BreadcrumbMenu({
   options,
@@ -379,6 +417,7 @@ function BreadcrumbMenu({
   onValueChange,
   label,
   placeholder,
+  pending = false,
   open: openProp,
   onOpenChange,
   defaultOpen = false,
@@ -391,6 +430,8 @@ function BreadcrumbMenu({
 }) {
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
   const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
+  // The trigger mounts with the name, so the first name shows without a swap.
+  if (pending) return <PendingCrumb label={label} className={className} />
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -471,7 +512,10 @@ function searchFilter(_value: string, search: string, keywords?: string[]) {
  * options. `error` shows its text as a row that cannot be picked and, with
  * `onRetry`, a Retry row. A search that matches nothing shows `emptyText`.
  * Footer items are `CommandItem`s with `forceMount`, so a search does not
- * hide them, and close the popup themselves through `onOpenChange`.
+ * hide them, and close the popup themselves through `onOpenChange`. *
+ * `loading` is about the list in the open popup. `pending` is about the
+ * crumb: while the current item's name loads, the crumb shows a text
+ * skeleton in place of a placeholder word and cannot be opened.
  */
 function BreadcrumbSearchMenu({
   options,
@@ -479,6 +523,7 @@ function BreadcrumbSearchMenu({
   onValueChange,
   label,
   placeholder,
+  pending = false,
   open: openProp,
   onOpenChange,
   defaultOpen = false,
@@ -507,6 +552,8 @@ function BreadcrumbSearchMenu({
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
   const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
   const failed = error != null && error !== false
+  // The trigger mounts with the name, so the first name shows without a swap.
+  if (pending) return <PendingCrumb label={label} className={className} />
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
