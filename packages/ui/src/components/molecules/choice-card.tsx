@@ -105,7 +105,7 @@ const choiceCardVariants = cva(
     'group/choice-card flex text-start',
     // Selected: the primary border plus a 1px inset line drawn over the
     // content (a media image too), so the edge reads 2px with no shift.
-    "after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-checked:border-primary data-checked:hover:border-primary data-checked:after:shadow-[inset_0_0_0_1px_var(--primary)]",
+    'after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-checked:border-primary data-checked:hover:border-primary data-checked:after:shadow-[inset_0_0_0_1px_var(--primary)]',
   ],
   {
     variants: {
@@ -134,6 +134,9 @@ const choiceCardVariants = cva(
 // the media variant it sits in the corner on a background disc so it reads on
 // any image, and while unchecked it shows only on hover or keyboard focus
 // (always on a touch screen, where there is no hover).
+// Motion: colours and the corner reveal fade in `fast`. The radio dot grows
+// from half size on the strong ease-out (never from 0) while it fades in;
+// reduced motion keeps the fade and drops the growth.
 const indicatorClassName = [
   'relative z-20 flex size-4 shrink-0 items-center justify-center border border-control-border bg-background text-primary-foreground [transition:background-color_var(--transition-duration-fast)_var(--ease-soft),border-color_var(--transition-duration-fast)_var(--ease-soft),opacity_var(--transition-duration-fast)_var(--ease-soft)] group-data-checked/choice-card:border-primary group-data-checked/choice-card:bg-primary',
   // Lines the box up with the first line of the title.
@@ -149,7 +152,7 @@ function ChoiceCardIndicator({ mode }: { mode: ChoiceCardMode }) {
         aria-hidden="true"
         className={cn(indicatorClassName, 'rounded-full')}
       >
-        <span className="size-1.5 scale-0 rounded-full bg-primary-foreground [transition:scale_var(--transition-duration-fast)_var(--ease-out)] group-data-checked/choice-card:scale-100 motion-reduce:transition-none" />
+        <span className="size-1.5 scale-50 rounded-full bg-primary-foreground opacity-0 [transition:scale_var(--transition-duration-moderate)_var(--ease-out),opacity_var(--transition-duration-fast)_var(--ease-soft)] group-data-checked/choice-card:scale-100 group-data-checked/choice-card:opacity-100 motion-reduce:scale-100" />
       </span>
     );
   }

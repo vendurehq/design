@@ -115,6 +115,25 @@ Use Chip for removable members of an editable set or applied filters.
 - **Disabled means a pending mutation:** Disable a Chip while membership removal is in flight, not to represent a deactivated entity.
 
 Related decisions: `badge`, `id-chip`, `status-badge`.
+## ChoiceCard
+
+Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.
+
+- **The card is the control:** A ChoiceCard is a radio (single choice) or a checkbox (`multiple`) itself. Do not build a picker from a clickable Card with onClick, or a div with a role: it misses the arrow keys, Space and the checked state.
+- **Nothing interactive inside:** Slots hold text, icons and images. A link or button inside a card is not reachable as its own control. Put an action that belongs to one option next to the group, not in the card.
+- **Current is not selected:** Mark the option the customer already has (their current plan) with a ChoiceCardBadge on the title line. The selection is the option they are moving to. Never pre-select the current option to show that it is current.
+- **Name the group and every media tile:** Give ChoiceCardGroup an aria-label or aria-labelledby. A media card has no title, so give it an aria-label.
+- **Keep the indicator:** The radio dot or check box shows the state in shape, not only in colour. Do not hide it.
+
+**Choose:**
+
+- `ChoiceCard`: Two to about six options that each need more than a label: a plan, a shipping method, an address, an asset.
+- `RadioGroup`: One choice of a few short labels, as one field in a form.
+- `Select`: More than about six options, or little room on the screen.
+- `Checkbox`: Independent on/off settings with short labels.
+- `A card link`: The whole card opens a page. That is navigation, not a choice.
+
+Related decisions: `form`, `badge`, `list-row`.
 ## CodeBlock
 
 Present multi-line code for reading, with the switcher reserved for runnable instructions and one annotation intent per block.

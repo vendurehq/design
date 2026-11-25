@@ -70,7 +70,9 @@ describe('ChoiceCard, single choice', () => {
 
   test('the indicator is hidden from assistive tech: the role carries the state', () => {
     const html = renderToStaticMarkup(plans());
-    expect(html).toMatch(/data-slot="choice-card-indicator" aria-hidden="true"|aria-hidden="true"[^>]*data-slot="choice-card-indicator"/);
+    expect(html).toMatch(
+      /data-slot="choice-card-indicator" aria-hidden="true"|aria-hidden="true"[^>]*data-slot="choice-card-indicator"/,
+    );
   });
 
   test('the badge sits in the title, apart from the checked state', () => {
@@ -102,7 +104,8 @@ describe('ChoiceCard, multiple choice', () => {
 describe('ChoiceCard look', () => {
   test('takes the shared interactive card look', () => {
     const tag = cardTag(renderToStaticMarkup(plans()), 'Starter');
-    for (const token of interactiveCardVariants().split(' ').slice(0, 8)) expect(tag).toContain(token);
+    for (const token of interactiveCardVariants().split(' ').slice(0, 8))
+      expect(tag).toContain(token);
   });
 
   test('the shared look draws the design-system ring 2px outside', () => {
@@ -126,6 +129,13 @@ describe('ChoiceCard look', () => {
 
   test('the press scale stays still with reduced motion', () => {
     expect(interactiveCardVariants()).toContain('motion-reduce:active:scale-100');
+  });
+
+  test('the radio dot grows from half size, never from 0, and only fades with reduced motion', () => {
+    const html = renderToStaticMarkup(plans());
+    expect(html).toContain('scale-50');
+    expect(html).not.toContain('scale-0 ');
+    expect(html).toContain('motion-reduce:scale-100');
   });
 
   test('the media variant fills the card with its image', () => {
