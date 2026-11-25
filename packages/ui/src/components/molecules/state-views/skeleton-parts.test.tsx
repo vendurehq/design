@@ -13,6 +13,24 @@ import {
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 const count = (markup: string, needle: string) => markup.split(needle).length - 1;
 
+// Walks the markup with a tag stack and returns every <div> that sits inside a
+// <span>: a block element in an inline one, which is invalid HTML.
+const divsInsideSpans = (markup: string) => {
+  const stack: string[] = [];
+  const found: string[] = [];
+  for (const { 1: closing = '', 2: tag = '' } of markup.matchAll(
+    /<(\/?)([a-z][a-z0-9]*)\b[^>]*>/g,
+  )) {
+    if (closing) {
+      stack.splice(stack.lastIndexOf(tag));
+    } else if (!['svg', 'path', 'img', 'input', 'br'].includes(tag)) {
+      if (tag === 'div' && stack.includes('span')) found.push(stack.join(' > '));
+      stack.push(tag);
+    }
+  }
+  return found;
+};
+
 describe('skeleton parts', () => {
   test('every part is hidden from assistive tech', () => {
     for (const part of [
@@ -58,6 +76,11 @@ describe('skeleton parts', () => {
     expect(markup).not.toContain('data-slot="list-row-leading"');
     expect(markup).not.toContain('data-slot="list-row-meta"');
     expect(markup).not.toContain('data-slot="list-row-trailing"');
+  });
+
+  test('SkeletonListRow puts no <div> inside a <span>', () => {
+    expect(divsInsideSpans(html(<SkeletonListRow />))).toEqual([]);
+    expect(divsInsideSpans(html(<SkeletonListRow leading="avatar" meta={false} />))).toEqual([]);
   });
 
   test('SkeletonListRow draws a round avatar', () => {
