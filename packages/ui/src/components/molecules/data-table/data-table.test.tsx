@@ -4,12 +4,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { TableCell, TableRow } from '../../atoms/table.tsx';
 import { ListRowChevron } from '../list-row.tsx';
+import { SkeletonLine } from '../state-views/skeleton-parts.tsx';
 
 import {
   type ColumnDef,
   DataTable,
   type DataTableFilterEditorContext,
   DataTableRowLink,
+  DataTableSkeletonLine,
   type TableInstance as Table,
   type TableOptions,
 } from './data-table.tsx';
@@ -280,7 +282,15 @@ describe('DataTable loading state', () => {
   test('default loading cell is one line box tall', () => {
     const markup = html(<DataTable rows={[]} columns={columns} isLoading skeletonRowCount={1} />);
     expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(2);
-    expect(count(markup, /h-\[1lh\]/g)).toBe(2);
+    // Each line is the shared SkeletonLine (one `1lh` box, hidden from assistive
+    // tech) with the DataTable's own marker, not a DataTable-only copy.
+    const line = html(<SkeletonLine data-slot="data-table-skeleton-line" />);
+    expect(markup.split(line).length - 1).toBe(2);
+    expect(markup).toContain('aria-hidden="true"');
+  });
+
+  test('DataTableSkeletonLine is the shared SkeletonLine', () => {
+    expect(DataTableSkeletonLine).toBe(SkeletonLine);
   });
 
   test('skeletonCells replaces the default line for the keyed column only', () => {
