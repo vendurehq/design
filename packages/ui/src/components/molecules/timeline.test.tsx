@@ -78,7 +78,7 @@ describe('Timeline', () => {
     expect(item).toContain('has-[[data-slot=timeline-marker][data-marker=icon]]:after:top-[21px]');
   });
 
-  test('the sentence is 13px on a 20px line; the meta line is 12px muted', () => {
+  test('the sentence is 14px on a 20px line; the meta line is 12px muted', () => {
     const title = slotTag(
       renderToStaticMarkup(<TimelineTitle>Live</TimelineTitle>),
       'timeline-title',

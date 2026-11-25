@@ -199,7 +199,7 @@ export const DropdownMenuLook: Story = {
     // offsetHeight ignores the entrance scale.
     await expect(item.offsetHeight).toBe(34);
     await expect(itemStyle.borderTopLeftRadius).toBe('6px');
-    await expect(itemStyle.fontSize).toBe('13px');
+    await expect(itemStyle.fontSize).toBe('14px');
     const icon = item.querySelector('svg') as SVGElement;
     await expect(getComputedStyle(icon).strokeWidth).toBe('1.75px');
     await expect(getComputedStyle(icon).width).toBe('15px');

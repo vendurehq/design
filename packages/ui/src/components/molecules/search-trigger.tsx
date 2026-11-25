@@ -9,7 +9,7 @@ import type * as React from 'react';
 type SearchTriggerCollapse = 'md' | 'never' | 'always';
 
 // The v3 look: a button that looks like a field. 28px high, 220px wide, on
-// the muted fill with a 1px inset hairline and the lg radius. The 13px text
+// the muted fill with a 1px inset hairline and the lg radius. The 14px text
 // is `foreground-secondary`: muted text on the muted fill is under 4.5:1.
 // The icon is 14px and quieter than the text (55%). Hover steps the fill up
 // to `accent` in 120ms. No press scale: it is a field, not a button, to

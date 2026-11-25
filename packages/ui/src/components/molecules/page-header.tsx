@@ -67,7 +67,7 @@ function PageHeaderActions({ className, ...props }: React.ComponentProps<'div'>)
 }
 
 /**
- * The facts under the title: branch, region, host, owner. 13px text in
+ * The facts under the title: branch, region, host, owner. 14px text in
  * `foreground-secondary`, 18px between facts and 6px between rows when they
  * wrap. Put it in PageHeaderContent, below the title.
  */

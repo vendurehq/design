@@ -39,7 +39,7 @@ test('PageHeaderBack is a link with a leading chevron, not an arrow', () => {
   expect(html.indexOf('lucide-chevron-left')).toBeLessThan(html.indexOf('Deployments'));
 });
 
-test('PageHeaderBack: muted 13px text that reaches foreground; the chevron moves 2px back', () => {
+test('PageHeaderBack: muted 14px text that reaches foreground; the chevron moves 2px back', () => {
   const html = renderToStaticMarkup(<PageHeaderBack href="/">Deployments</PageHeaderBack>);
   const link = slotTokens(html, 'page-header-back');
   expect(link).toEqual(
@@ -94,7 +94,7 @@ test('PageHeaderBack renders a router link through render', () => {
   expect(html.startsWith('<button')).toBe(true);
 });
 
-test('PageHeaderFacts: 13px secondary text, 18px between facts, icons at 45%', () => {
+test('PageHeaderFacts: 14px secondary text, 18px between facts, icons at 45%', () => {
   const html = renderToStaticMarkup(
     <PageHeaderFacts>
       <PageHeaderFact>

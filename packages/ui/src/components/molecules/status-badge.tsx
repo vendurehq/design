@@ -405,8 +405,8 @@ function StatusBadgeMarker({
   icon: React.ReactNode;
   className?: string;
 }) {
-  // 13px icons in the 12px chip, 14px in the 13px chip, 16px beside the
-  // 13px label of the `icon` appearance, all at stroke 2. The
+  // 13px icons in the 12px chip, 14px in the 14px chip, 16px beside the
+  // 14px label of the `icon` appearance, all at stroke 2. The
   // marker eases to a new tone with the outline, when a status changes in place.
   // Size and stroke are `!important`: a Button sizes every icon inside it to
   // 16px at stroke 1.75, with a selector that outranks this one, and a badge
