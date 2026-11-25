@@ -28,6 +28,7 @@ import {
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+import { readRowCount, writeRowCount } from './data-table-row-count-storage.tsx';
 import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
@@ -1279,6 +1280,76 @@ describe('DataTable selection storage', () => {
     );
     expect(keyed).toBe(plain);
     expect(Object.keys(store)).toHaveLength(0);
+  });
+});
+
+describe('DataTable row count storage', () => {
+  const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const stubStorage = (store: Record<string, string>) =>
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+      },
+    });
+  afterEach(() => {
+    if (real) Object.defineProperty(globalThis, 'localStorage', real);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  });
+
+  test('a write stores the count under the prefixed key, and a read gives it back', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeRowCount('orders', 3);
+    expect(store).toEqual({ 'vendure-ui:row-count:orders': '3' });
+    expect(readRowCount('orders')).toBe(3);
+    writeRowCount('orders', 0);
+    expect(readRowCount('orders')).toBe(0);
+    expect(readRowCount('customers')).toBeNull();
+  });
+
+  test('malformed, negative or fractional counts read as nothing remembered', () => {
+    stubStorage({
+      'vendure-ui:row-count:a': 'abc',
+      'vendure-ui:row-count:b': '-1',
+      'vendure-ui:row-count:c': '2.5',
+      'vendure-ui:row-count:d': '',
+    });
+    for (const key of ['a', 'b', 'c', 'd']) expect(readRowCount(key)).toBeNull();
+  });
+
+  test('blocked storage, or none at all, is ignored', () => {
+    const blocked = () => {
+      throw new DOMException('blocked', 'SecurityError');
+    };
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: { getItem: blocked, setItem: blocked },
+    });
+    expect(readRowCount('orders')).toBeNull();
+    expect(() => writeRowCount('orders', 3)).not.toThrow();
+    Reflect.deleteProperty(globalThis, 'localStorage');
+    expect(readRowCount('orders')).toBeNull();
+    expect(() => writeRowCount('orders', 3)).not.toThrow();
+  });
+
+  test('a server render ignores the key and draws skeletonRowCount rows', () => {
+    stubStorage({ 'vendure-ui:row-count:countries': '3' });
+    const plain = html(<DataTable rows={[]} columns={columns} isLoading skeletonRowCount={6} />);
+    const keyed = html(
+      <DataTable
+        rows={[]}
+        columns={columns}
+        isLoading
+        skeletonRowCount={6}
+        rowCountKey="countries"
+      />,
+    );
+    expect(keyed).toBe(plain);
+    expect(keyed.match(/<tr[^>]*>/g)?.length).toBe(1 + 6);
   });
 });
 
