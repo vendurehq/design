@@ -5,33 +5,29 @@ import { BreadcrumbMenu, BreadcrumbSearchMenu } from './breadcrumb.tsx';
 
 const options = [{ value: 'p1', label: 'Acme Storefront' }];
 
+type Crumb = { pending: boolean; known?: 'option' | 'placeholder' };
+
+/** `known`: the name comes from the option for `value`, the placeholder, or nothing. */
+function props({ pending, known }: Crumb) {
+  return {
+    label: 'Project',
+    options: known === 'option' ? options : [],
+    placeholder: known === 'placeholder' ? 'Acme Storefront' : undefined,
+    value: 'p1',
+    pending,
+    className: 'max-w-56',
+  };
+}
+
 const menus = {
-  BreadcrumbMenu: (pending: boolean) =>
-    renderToStaticMarkup(
-      <BreadcrumbMenu
-        label="Project"
-        options={options}
-        value="p1"
-        pending={pending}
-        className="max-w-56"
-      />,
-    ),
-  BreadcrumbSearchMenu: (pending: boolean) =>
-    renderToStaticMarkup(
-      <BreadcrumbSearchMenu
-        label="Project"
-        options={options}
-        value="p1"
-        pending={pending}
-        className="max-w-56"
-      />,
-    ),
+  BreadcrumbMenu: (crumb: Crumb) => renderToStaticMarkup(<BreadcrumbMenu {...props(crumb)} />),
+  BreadcrumbSearchMenu: (crumb: Crumb) => renderToStaticMarkup(<BreadcrumbSearchMenu {...props(crumb)} />),
 };
 
 describe.each(Object.entries(menus))('%s pending', (_name, render) => {
-  const html = render(true);
+  const html = render({ pending: true });
 
-  test('renders no trigger and no name, only the pending crumb', () => {
+  test('with no name known: renders no trigger, only the pending crumb', () => {
     expect(html).not.toContain('<button');
     expect(html).not.toContain('data-slot="breadcrumb-menu"');
     expect(html).not.toContain('Acme Storefront');
@@ -56,8 +52,19 @@ describe.each(Object.entries(menus))('%s pending', (_name, render) => {
     }
   });
 
+  test.each(['option', 'placeholder'] as const)(
+    'with a name from the %s: shows the name on the trigger, no skeleton or status',
+    (known) => {
+      const named = render({ pending: true, known });
+      expect(named).not.toContain('breadcrumb-menu-pending');
+      expect(named).not.toContain('role="status"');
+      expect(slotTag(named, 'breadcrumb-menu')).toMatch(/^<button/);
+      expect(named).toContain('Acme Storefront');
+    },
+  );
+
   test('renders the trigger with the name once not pending', () => {
-    const loaded = render(false);
+    const loaded = render({ pending: false, known: 'option' });
     expect(loaded).not.toContain('breadcrumb-menu-pending');
     expect(slotTag(loaded, 'breadcrumb-menu')).toMatch(/^<button/);
     expect(loaded).toContain('Acme Storefront');

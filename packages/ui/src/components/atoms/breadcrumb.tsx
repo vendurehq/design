@@ -197,16 +197,22 @@ type BreadcrumbMenuBaseProps = {
   /**
    * The crumb's label when no option has `value`, such as "All projects"
    * while none is open, or "Projects unavailable". It swaps like an option.
+   * While `pending`, pass the last known name here (from a cache or the
+   * previous page) when the options do not have it yet; `undefined` when
+   * nothing is known.
    */
   placeholder?: string
   /**
-   * The current item's name is still loading. The crumb shows a text
-   * skeleton one line tall in place of the name, takes no clicks or focus,
-   * and a screen reader hears one status, "<label>: Loading…". When it turns
-   * false the name shows at once, without the label swap; a later change of
-   * the name swaps as usual. Use it instead of a placeholder word, such as
-   * "Project", while the name is unknown. `placeholder` stays for a state
-   * that has words, such as "All projects".
+   * The current item is still loading or being confirmed. Show the name
+   * until it is known to be wrong: while pending, the crumb shows the
+   * option for `value`, or else `placeholder`, as usual. Only when neither
+   * names the item does it show a text skeleton one line tall: it takes no
+   * clicks or focus, and a screen reader hears one status, "<label>:
+   * Loading…". The first name after the skeleton shows at once, with no
+   * swap. When the confirmed name differs from the one shown, the label
+   * swaps as usual; when it is the same, nothing moves. Never pass a
+   * placeholder word such as "Project" for an unknown name: leave
+   * `placeholder` undefined and the skeleton shows.
    */
   pending?: boolean
   open?: boolean
@@ -289,14 +295,16 @@ function useCrumbTrigger({
 }) {
   const found = options.findIndex((option) => option.value === value)
   const fallback = placeholder !== undefined && found === -1
-  // The placeholder has its own place before the options, so the options
-  // arriving after a read swap the label, never rewrite it in place.
-  const offset = placeholder === undefined ? 0 : 1
-  const active = fallback ? 0 : Math.max(0, found) + offset
-  const current = fallback ? undefined : options[active - offset]
-  const labels = options.map((option) => option.label)
-  if (placeholder !== undefined) labels.unshift(placeholder)
+  // The placeholder has its own place before the options, also while it is
+  // undefined, so the options arriving after a read swap the label, never
+  // rewrite it in place: a last known name passed while pending and then
+  // dropped does not shift the options' places.
+  const active = fallback ? 0 : Math.max(0, found) + 1
+  const current = fallback ? undefined : options[active - 1]
+  const labels = [placeholder ?? "", ...options.map((option) => option.label)]
   const currentLabel = labels[active] ?? ""
+  // Whether an option or the placeholder names the current item.
+  const named = found !== -1 || placeholder !== undefined
   // With a status, the name is set so the status comes after the label.
   // Without one, the name comes from the content, as before.
   const name = current?.status ? `${label}: ${currentLabel}, ${current.status}` : undefined
@@ -332,7 +340,7 @@ function useCrumbTrigger({
   // The tooltip shows only for a cut label, and never over the open menu.
   const tooltip =
     cut && !open ? <TooltipContent side="bottom">{currentLabel}</TooltipContent> : null
-  return { triggerProps, content, tooltip }
+  return { triggerProps, content, tooltip, named }
 }
 
 function stopPropagation(event: React.SyntheticEvent) {
@@ -408,8 +416,9 @@ function isNewTabClick(event: Event | undefined) {
  * row stays a checked `menuitemradio`. `open` and `onOpenChange` control the
  * menu. For a long list with a search field, use `BreadcrumbSearchMenu`.
  *
- * While the current item's name loads, pass `pending`: the crumb shows a
- * text skeleton, and the name shows without a swap once it is known.
+ * While the current item loads, pass `pending`, and the last known name as an
+ * option or `placeholder` if there is one: the crumb shows that name, or a
+ * text skeleton when there is none.
  */
 function BreadcrumbMenu({
   options,
@@ -430,8 +439,9 @@ function BreadcrumbMenu({
 }) {
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
   const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
-  // The trigger mounts with the name, so the first name shows without a swap.
-  if (pending) return <PendingCrumb label={label} className={className} />
+  // Without a name, a skeleton. The trigger mounts with the first name, so
+  // it shows without a swap.
+  if (pending && !crumb.named) return <PendingCrumb label={label} className={className} />
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -514,8 +524,8 @@ function searchFilter(_value: string, search: string, keywords?: string[]) {
  * Footer items are `CommandItem`s with `forceMount`, so a search does not
  * hide them, and close the popup themselves through `onOpenChange`. *
  * `loading` is about the list in the open popup. `pending` is about the
- * crumb: while the current item's name loads, the crumb shows a text
- * skeleton in place of a placeholder word and cannot be opened.
+ * crumb: while the current item loads, it shows the last known name, or a
+ * text skeleton in place of a placeholder word when no name is known.
  */
 function BreadcrumbSearchMenu({
   options,
@@ -552,8 +562,9 @@ function BreadcrumbSearchMenu({
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
   const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
   const failed = error != null && error !== false
-  // The trigger mounts with the name, so the first name shows without a swap.
-  if (pending) return <PendingCrumb label={label} className={className} />
+  // Without a name, a skeleton. The trigger mounts with the first name, so
+  // it shows without a swap.
+  if (pending && !crumb.named) return <PendingCrumb label={label} className={className} />
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
