@@ -35,6 +35,14 @@ describe('skeleton parts', () => {
     expect(markup).toContain('h-[0.8lh]');
   });
 
+  test('a skeleton line marks itself like the other parts, and a caller can still add a data-slot', () => {
+    const markup = html(<SkeletonLine />);
+
+    expect(markup).toContain('data-skeleton="line"');
+    expect(markup).not.toContain('data-slot="skeleton-line"');
+    expect(html(<SkeletonLine data-slot="title" />)).toContain('data-slot="title"');
+  });
+
   test('SkeletonListRow renders the real ListRow with a meta line by default', () => {
     const markup = html(<SkeletonListRow />);
 
@@ -65,7 +73,7 @@ describe('skeleton parts', () => {
     expect(markup).not.toContain('data-slot="card-description"');
     expect(markup).not.toContain('data-slot="card-action"');
     // One title line and four body lines.
-    expect(count(markup, 'data-slot="skeleton-line"')).toBe(5);
+    expect(count(markup, 'data-skeleton="line"')).toBe(5);
   });
 
   test('SkeletonCard children replace the body lines and keep the card padding', () => {
