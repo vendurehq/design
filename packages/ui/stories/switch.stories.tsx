@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Switch } from '../src/components/atoms/switch.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
@@ -159,5 +160,76 @@ export const ReducedMotion: Story = {
     const thumb = canvasElement.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     await expect(getComputedStyle(thumb).transitionProperty).not.toMatch(/translate|scale/);
+  },
+};
+
+/**
+ * A button outside the Switch flips `checked`, like data that loads after
+ * render, a form reset or another control would. The thumb jumps to its new
+ * place with no motion. A click or Space on the Switch itself still slides it.
+ */
+export const SetFromCode: Story = {
+  render: () => {
+    const [checked, setChecked] = useState(false);
+    return (
+      <div className="flex items-center gap-4">
+        <Switch aria-label="Airplane mode" checked={checked} onCheckedChange={setChecked} />
+        <Button variant="outline" size="sm" onClick={() => setChecked((value) => !value)}>
+          Set from code
+        </Button>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const control = canvas.getByRole('switch', { name: 'Airplane mode' });
+    const outside = canvas.getByRole('button', { name: 'Set from code' });
+    const thumb = control.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const running = () => control.getAnimations({ subtree: true });
+    const settled = async () => {
+      for (const animation of running()) animation.finish();
+      await waitFor(() => expect(running()).toHaveLength(0));
+    };
+    const offset = () => thumb.getBoundingClientRect().left - control.getBoundingClientRect().left;
+    const slides = () =>
+      running().some((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+
+    await step('a change from code jumps with no transition', async () => {
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(15, 0);
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a click on the Switch slides the thumb', async () => {
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(slides()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(15, 0);
+    });
+
+    await step('Space slides it back', async () => {
+      control.focus();
+      await userEvent.keyboard(' ');
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(slides()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a change from code after a user toggle jumps again', async () => {
+      await userEvent.click(control);
+      await settled();
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
   },
 };
