@@ -241,7 +241,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Job queue',
     rows: [
-      { states: 'PENDING', tone: 'neutral', note: 'Queued, system-resolved' },
+      { states: 'PENDING', tone: 'progress', note: 'Queued, system-resolved' },
       { states: 'RUNNING', tone: 'progress', note: 'The badge brings its own spinner' },
       { states: 'RETRYING', tone: 'warning', note: 'Something went wrong; recovering' },
       { states: 'COMPLETED', tone: 'success' },
@@ -389,7 +389,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Deployment',
     rows: [
-      { states: 'PENDING', tone: 'neutral' },
+      { states: 'PENDING', tone: 'progress' },
       {
         states: 'QUEUED · BUILDING · BUILT · DEPLOYING',
         tone: 'progress',
