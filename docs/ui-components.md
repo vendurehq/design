@@ -388,7 +388,7 @@ const orderStates = defineStateEntries<OrderState>({
 ```
 
 `StatusBadge` renders as a chip by default, with the tone's own icon in front
-of the label (`progress` spins). A status that every row of a table shows uses
+of the label (`progress` spins while work runs). A status that every row of a table shows uses
 `appearance="icon"`: the tone icon with no box and a neutral label. Use
 `appearance="dot"` only where no word fits (the label stays as screen-reader
 text). `size="lg"` is the 28px chip for a page header.
@@ -411,6 +411,16 @@ as a shipped order, gets a still icon and a neutral tone:
 <StatusBadge appearance="icon" tone="neutral" icon={<TruckIcon />}>
   Shipped
 </StatusBadge>
+```
+
+Pending, waiting on the system or another person, is `progress` with no icon:
+blue, and nothing spins. Running is blue with the spinner.
+`commonStates.pending` declares `icon: false`, so
+`icon={commonStates.iconFor(state)}` is all a consumer passes:
+
+```tsx
+<StatusBadge tone="progress" icon={commonStates.iconFor("pending")}>Pending</StatusBadge>; // blue, no icon
+<StatusBadge tone="progress">Running</StatusBadge>; // blue, spinner
 ```
 
 `LiveIndicator` is the mark for a state that stays on: a live log stream, a
@@ -473,7 +483,9 @@ its own row, so the label, the time and the rows above and below stay readable.
 - `dot` shows a dot in place of the icon, for a group of chips that is not a
   column.
 - `icon={false}` or `icon={null}` shows no icon, for an inline chip whose label
-  already names the tone. `progress` keeps its spinner and `dot` keeps the dot.
+  already names the tone, and for pending: `progress` with `icon={false}` is
+  blue with no spinner. `dot` keeps the dot, and `appearance="icon"` always
+  shows a marker (the tone icon, or a still dot for pending).
 - To explain a state on hover, render the badge as the tooltip trigger:
   `<TooltipTrigger render={<StatusBadge tone="warning">Degraded</StatusBadge>} />`.
   The badge becomes a tab stop with the focus ring, and a chip takes the hover

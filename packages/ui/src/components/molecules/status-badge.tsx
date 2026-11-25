@@ -199,7 +199,8 @@ const triggerFocus =
 const spinnerClass = 'animate-spin-slow motion-reduce:animate-none';
 
 // The icon a chip shows when the caller passes none comes from `toneIcons`,
-// the map the toast reads too. `progress` always spins its loader.
+// the map the toast reads too. `progress` spins its loader unless the caller
+// passes `icon={false}`: that is pending, blue and without an icon.
 const ProgressIcon = toneIcons.progress;
 
 interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
@@ -227,19 +228,22 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    * Show a leading dot in the tone colour in place of the tone icon, for a
    * group of chips that is not a list column (a list column uses
    * `appearance="icon"`). Only for `appearance="chip"` and `"bare"`. `progress` keeps its
-   * spinner, regardless of this prop.
+   * spinner, regardless of this prop, unless `icon={false}`.
    */
   dot?: boolean;
   /**
    * The leading icon, in the tone colour. Only for `appearance="chip"`, `"bare"` and `"icon"`.
    * - Leave it out for the tone's own icon: `CircleCheck` (success),
    *   `TriangleAlert` (warning), `CircleX` (critical), `CircleDot` (info),
-   *   `CircleDashed` (neutral) and a spinning `Loader` (progress).
+   *   `CircleDashed` (neutral) and a spinning `Loader` (progress, for work that
+   *   runs right now).
    * - Pass a lucide icon element for a state whose shape says more, e.g.
    *   `<MoonStarIcon />` for Asleep. It replaces the dot and the spinner too.
    * - Pass `false` or `null` for no icon, on an inline chip whose label
-   *   already names the tone. `progress` still shows its spinner, and `dot`
-   *   still shows the dot. `appearance="icon"` always shows an icon.
+   *   already names the tone, or for pending (`progress` without its spinner:
+   *   waiting on the system or another person, not running). `dot` still
+   *   shows the dot. `appearance="icon"` always shows a marker: the tone icon,
+   *   or for pending a still dot.
    *
    * Put the icon here, not in `children`: the chip sizes and colours it. An
    * `<svg>` in `children` (code written for 2.x) hides the tone icon, so the
@@ -287,6 +291,7 @@ function StatusBadge({
   // dictionary is a fallback the caller resolves, not something rendered here.
   let classes: string;
   let content: React.ReactNode;
+  const isPending = tone === 'progress' && icon !== undefined && !isValidElement(icon);
   const hasDetail =
     appearance === 'icon' && detail !== undefined && detail !== null && detail !== false;
 
@@ -306,9 +311,10 @@ function StatusBadge({
         <StatusBadgeMarker
           tone={tone}
           size="icon"
-          dot={false}
-          // The icon always shows here: it carries the tone.
-          icon={isValidElement(icon) ? icon : undefined}
+          // The icon always shows here: it carries the tone. Pending
+          // (`progress` with `icon={false}`) shows a still dot in its place.
+          icon={isValidElement(icon) ? icon : isPending ? false : undefined}
+          dot={isPending}
           className={hasDetail ? 'row-span-2' : undefined}
         />
         <span data-slot="status-badge-label" className={hasDetail ? 'leading-4.5' : undefined}>
@@ -337,7 +343,7 @@ function StatusBadge({
     content = (
       <>
         {children}
-        {tone === 'progress' ? (
+        {tone === 'progress' && icon === undefined ? (
           <ProgressIcon aria-hidden className={cn('size-3 shrink-0 stroke-2', spinnerClass)} />
         ) : null}
       </>
@@ -430,9 +436,9 @@ function StatusBadgeMarker({
     );
   }
 
-  // `progress` keeps its spinner over a dot and without an icon: the motion is
-  // its meaning, and without it the chip looks like `info`.
-  if (tone === 'progress') {
+  // `progress` keeps its spinner over a dot and when no icon is passed: the
+  // motion is its meaning. `icon={false}` is pending: the blue tone, no spinner.
+  if (tone === 'progress' && icon === undefined) {
     return (
       <span aria-hidden data-marker="icon" data-slot="status-badge-marker" className={iconClasses}>
         <ProgressIcon className={spinnerClass} />
@@ -452,13 +458,25 @@ function StatusBadgeMarker({
     );
   }
 
-  return (
+  const dotMarker = (
     <span
       aria-hidden
       data-marker="dot"
       data-slot="status-badge-marker"
       className={cn('size-1.5 shrink-0 rounded-full bg-current', toneDot[tone])}
     />
+  );
+  // In the `icon` appearance the dot takes the 16px slot of an icon, so the
+  // labels of a column start on the same edge.
+  return size === 'icon' ? (
+    <span
+      aria-hidden
+      className={cn('inline-flex size-4 shrink-0 items-center justify-center', className)}
+    >
+      {dotMarker}
+    </span>
+  ) : (
+    dotMarker
   );
 }
 

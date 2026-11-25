@@ -133,6 +133,7 @@ describe('commonStates', () => {
     expect(commonStates.toneFor('active')).toBe('success');
     expect(commonStates.toneFor('inactive')).toBe('neutral');
     expect(commonStates.toneFor('pending')).toBe('progress');
+    expect(commonStates.iconFor('pending')).toBe(false);
     expect(commonStates.toneFor('revoked')).toBe('neutral');
     expect(commonStates.labelFor('revoked')).toBe('Revoked');
   });

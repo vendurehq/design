@@ -1149,7 +1149,7 @@ export const uiGuidance = [
       },
       {
         title: 'Pending splits by who acts next',
-        body: "Waiting that the system or another person resolves is progress. Pending that waits for the viewer's own action is warning, declared by that domain.",
+        body: "Waiting that the system or another person resolves is progress, blue with no icon: commonStates.pending sets icon to false. Pending that waits for the viewer's own action is warning, declared by that domain.",
       },
       {
         title: 'Positive terminal or healthy operating is success',
@@ -1173,7 +1173,7 @@ export const uiGuidance = [
       },
       {
         title: 'A spinner means work that runs right now',
-        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
+        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone. Pending, waiting on the system or another person, is the progress tone with no icon (icon={false}): blue, and nothing spins.',
       },
       {
         title: 'A live dot means a state that stays on',
@@ -1189,7 +1189,7 @@ export const uiGuidance = [
       },
       {
         title: 'The chip brings its own icon',
-        body: 'Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
+        body: 'Each tone shows its own icon, and progress spins. Pending is progress with icon={false}: blue, no icon, no spinner. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
       },
       {
         title: 'Quiet normal, loud abnormal in a list column',
@@ -1208,7 +1208,7 @@ export const uiGuidance = [
       { choice: 'critical', when: 'Failed, blocked, invalid, or service-affecting.' },
       {
         choice: 'progress',
-        when: 'The system is working, or waiting on the system or another person.',
+        when: 'The system is working (spinner), or waiting on the system or another person (pending: no icon).',
       },
     ],
     related: ['badge', 'chip'],

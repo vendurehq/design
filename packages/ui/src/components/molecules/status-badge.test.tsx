@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { CircleSlashIcon } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
-
+import { commonStates, defineStateEntries } from '../../lib/state-dictionary.ts';
 import { slotTag, tagTokens } from '../../test/slot-tokens.ts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../atoms/tooltip.tsx';
 import { StatusBadge } from './status-badge.tsx';
@@ -75,17 +75,68 @@ describe('StatusBadge', () => {
     }
   });
 
-  test('progress keeps its spinner with icon={false} or icon={null}', () => {
+  test('progress without an icon keeps its spinner', () => {
+    const markup = html(<StatusBadge tone="progress">Deploying</StatusBadge>);
+
+    expect(markup).toContain('lucide-loader');
+    expect(markup).toContain('animate-spin-slow');
+  });
+
+  test('progress with icon={false} or icon={null} is blue and has no icon: pending', () => {
     for (const icon of [false, null]) {
       const markup = html(
         <StatusBadge tone="progress" icon={icon}>
-          Deploying
+          Pending
         </StatusBadge>,
       );
 
-      expect(markup).toContain('lucide-loader');
-      expect(markup).toContain('animate-spin-slow');
+      expect(markup).toContain('Pending');
+      expect(markup).toContain('data-tone="progress"');
+      expect(markup).not.toContain('data-slot="status-badge-marker"');
+      expect(markup).not.toContain('lucide-loader');
+      expect(markup).not.toContain('animate-spin-slow');
     }
+  });
+
+  test('commonStates: pending is blue with no icon, and a running job spins', () => {
+    const jobStates = defineStateEntries<'running'>({
+      running: { tone: 'progress', defaultLabel: 'Running' },
+    });
+    const pending = html(
+      <StatusBadge tone={commonStates.toneFor('pending')} icon={commonStates.iconFor('pending')}>
+        {commonStates.labelFor('pending')}
+      </StatusBadge>,
+    );
+    const running = html(
+      <StatusBadge tone={jobStates.toneFor('running')} icon={jobStates.iconFor('running')}>
+        {jobStates.labelFor('running')}
+      </StatusBadge>,
+    );
+
+    expect(pending).toContain('data-tone="progress"');
+    expect(pending).not.toContain('data-slot="status-badge-marker"');
+    expect(pending).not.toContain('lucide-loader');
+    expect(running).toContain('data-tone="progress"');
+    expect(running).toContain('lucide-loader');
+    expect(running).toContain('animate-spin-slow');
+  });
+
+  test('pending shows a still dot in the icon appearance and no word-side spinner in text', () => {
+    const column = html(
+      <StatusBadge appearance="icon" tone="progress" icon={false}>
+        Pending
+      </StatusBadge>,
+    );
+    const text = html(
+      <StatusBadge appearance="text" tone="progress" icon={false}>
+        Pending
+      </StatusBadge>,
+    );
+
+    expect(column).toContain('data-marker="dot"');
+    expect(column).toContain('size-4');
+    expect(column).not.toContain('lucide-loader');
+    expect(text).not.toContain('lucide-loader');
   });
 
   test('progress keeps its spinner with dot', () => {

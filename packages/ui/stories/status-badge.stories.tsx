@@ -68,7 +68,7 @@ export const AllTones: Story = {
 
 // The leading dot replaces the tone icon, for a group of chips that is not a
 // list column (a column uses `appearance="icon"`). Progress ignores the prop
-// and keeps its spinner.
+// and keeps its spinner. Pending (`icon={false}`) shows the dot.
 export const WithDot: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
@@ -81,10 +81,48 @@ export const WithDot: Story = {
   ),
 };
 
-// `progress` renders a spinner, also with `dot` and with `icon={false}`. It
-// turns once every 1.6s and stands still under prefers-reduced-motion.
+// `progress` renders a spinner, also with `dot`. It turns once every 1.6s and
+// stands still under prefers-reduced-motion. Only work that runs right now
+// spins: a deploy, a build, a job in progress.
 export const Progress: Story = {
   args: { tone: 'progress', children: 'Deploying' },
+};
+
+// Pending is waiting on the system or another person. It is the `progress`
+// tone without an icon: blue, no spinner. `commonStates` declares it
+// (`icon: false`), so `icon={commonStates.iconFor(state)}` is all a consumer
+// passes. A running state next to it keeps the spinner. In a list column
+// (`appearance="icon"`) pending shows a still dot in the icon's place.
+export const Pending: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      {(['chip', 'bare', 'text', 'icon'] as const).map((appearance) => (
+        <div key={appearance} className="flex items-center gap-6">
+          <span className="w-12 text-xs text-muted-foreground">{appearance}</span>
+          <StatusBadge
+            appearance={appearance}
+            tone={commonStates.toneFor('pending')}
+            icon={commonStates.iconFor('pending')}
+            data-testid={`pending-${appearance}`}
+          >
+            {commonStates.labelFor('pending')}
+          </StatusBadge>
+          <StatusBadge appearance={appearance} tone="progress" data-testid={`running-${appearance}`}>
+            Running
+          </StatusBadge>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const appearance of ['chip', 'bare', 'text', 'icon'] as const) {
+      const pending = canvas.getByTestId(`pending-${appearance}`);
+      const running = canvas.getByTestId(`running-${appearance}`);
+      await expect(pending.querySelector('svg')).toBeNull();
+      await expect(running.querySelector('svg')).not.toBeNull();
+    }
+  },
 };
 
 // The default tone icons, and `icon` for a state whose shape says more than
@@ -153,11 +191,11 @@ export const IconInChildren: Story = {
 };
 
 // `icon={false}`: an inline chip whose label already names the tone. A list
-// column uses `appearance="icon"` instead. `progress` keeps its spinner, so it
-// never looks like `info`.
+// column uses `appearance="icon"` instead. With `progress` it is pending: blue
+// and without a spinner.
 const INLINE: { text: string; tone: Tone; label: string }[] = [
   { text: 'The last deploy', tone: 'critical', label: 'Failed' },
-  { text: 'The rollback is', tone: 'progress', label: 'In progress' },
+  { text: 'The invitation is', tone: 'progress', label: 'Pending' },
   { text: 'The staging environment is', tone: 'success', label: 'Healthy' },
 ];
 
