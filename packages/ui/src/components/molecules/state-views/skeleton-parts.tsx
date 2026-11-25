@@ -41,7 +41,7 @@ import type * as React from 'react';
 function SkeletonLine({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      data-slot="skeleton-line"
+      data-skeleton="line"
       aria-hidden="true"
       className={cn('flex h-lh w-full items-center', className)}
       {...props}
