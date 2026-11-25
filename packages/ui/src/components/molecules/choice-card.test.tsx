@@ -64,6 +64,24 @@ describe('ChoiceCard, single choice', () => {
     expect(pro).toContain('data-disabled');
   });
 
+  test('the title names the card from the first render', () => {
+    const starter = cardTag(renderToStaticMarkup(plans()), 'Starter');
+    const id = starter.match(/aria-labelledby="([^"]+)"/)?.[1];
+    expect(id).toBeDefined();
+    expect(renderToStaticMarkup(plans())).toContain(`id="${id}"`);
+  });
+
+  test('an aria-label replaces the title reference', () => {
+    const html = renderToStaticMarkup(
+      <ChoiceCardGroup aria-label="Assets">
+        <ChoiceCard value="a" variant="media" aria-label="Blue shirt">
+          <img src="/a.jpg" alt="" />
+        </ChoiceCard>
+      </ChoiceCardGroup>,
+    );
+    expect(cardTag(html, '<img')).not.toContain('aria-labelledby');
+  });
+
   test('a card renders a div, so block content inside it is valid', () => {
     expect(cardTag(renderToStaticMarkup(plans()), 'Starter')).toStartWith('<div');
   });

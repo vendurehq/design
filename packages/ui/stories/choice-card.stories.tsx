@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { HomeIcon, PackageIcon, TruckIcon, ZapIcon } from 'lucide-react';
 import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ChoiceCard,
   ChoiceCardBadge,
@@ -60,7 +60,8 @@ export const SingleChoice: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const express = canvas.getByRole('radio', { name: 'Express' });
-    await expect(express).toHaveAccessibleDescription('Next working day €12.00');
+    // The description and the meta join the description once they mount.
+    await waitFor(() => expect(express).toHaveAccessibleDescription('Next working day €12.00'));
     await expect(canvas.getByRole('radio', { name: 'Standard' })).toBeChecked();
   },
 };

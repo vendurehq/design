@@ -76,9 +76,11 @@ function ChoiceCardGroup(props: ChoiceCardGroupProps) {
   );
 }
 
-// The ids the card points its aria-labelledby and aria-describedby at. A part
-// registers its id once it mounts; until then (and on the server) the card is
-// named from its content, which also holds the title.
+// The ids the card points its aria-labelledby and aria-describedby at. The
+// title is the name from the first render, so a card without a ChoiceCardTitle
+// needs an aria-label (the media variant). The description and the meta
+// register their ids once they mount, so the card never points at a missing
+// element.
 interface ChoiceCardParts {
   titleId: string;
   descriptionId: string;
@@ -231,8 +233,7 @@ function ChoiceCard({
     .join(' ');
   const ariaProps = {
     'aria-labelledby':
-      props['aria-labelledby'] ??
-      (props['aria-label'] || !mounted.has('title') ? undefined : parts.titleId),
+      props['aria-labelledby'] ?? (props['aria-label'] ? undefined : parts.titleId),
     'aria-describedby': describedBy || undefined,
   };
 
