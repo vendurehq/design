@@ -541,19 +541,29 @@ function bodyHeight(canvasElement: HTMLElement, testId: string) {
   return Math.round(body?.getBoundingClientRect().height ?? 0);
 }
 
+// An empty state much taller than the built-in "No results" row, like the
+// Dashboard's: illustration, title, description and an action.
+const tallEmptyState = (
+  <EmptyState title="No orders yet" description="Orders appear here after the first checkout.">
+    <Button>Create order</Button>
+  </EmptyState>
+);
+
 /**
  * With `rowCountKey`, a first load draws as many skeleton rows as the last
  * load showed, so the body keeps its height when the rows arrive. A last load
- * with no rows draws a blank body at the height of "No results".
- * From the top: 3 loaded rows (stored under their key), a load that
- * remembers 3, the empty state, a load that remembers 0.
+ * with no rows renders the empty state hidden and inert, so the body has its
+ * exact height. From the top: 3 loaded rows (stored under their key), a load
+ * that remembers 3, "No results", a load that remembers 0, then the same
+ * pair with a tall custom `emptyState`.
  */
 export const LoadingRemembersRowCount: Story = {
   beforeEach: () => {
     localStorage.setItem(`${ROW_COUNT_PREFIX}story:three`, '3');
     localStorage.setItem(`${ROW_COUNT_PREFIX}story:none`, '0');
+    localStorage.setItem(`${ROW_COUNT_PREFIX}story:none-custom`, '0');
     return () => {
-      for (const key of ['three', 'none', 'loaded']) {
+      for (const key of ['three', 'none', 'none-custom', 'loaded']) {
         localStorage.removeItem(`${ROW_COUNT_PREFIX}story:${key}`);
       }
     };
@@ -589,6 +599,24 @@ export const LoadingRemembersRowCount: Story = {
           rowCountKey="story:none"
         />
       </div>
+      <div data-testid="empty-custom">
+        <DataTable<Order>
+          rows={[]}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          emptyState={tallEmptyState}
+        />
+      </div>
+      <div data-testid="loading-empty-custom">
+        <DataTable<Order>
+          rows={[]}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          rowCountKey="story:none-custom"
+          emptyState={tallEmptyState}
+        />
+      </div>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -596,10 +624,28 @@ export const LoadingRemembersRowCount: Story = {
     // as the three loaded rows.
     await expectSameRowHeights(canvasElement, 3);
     await expect(bodyHeight(canvasElement, 'loading')).toBe(bodyHeight(canvasElement, 'loaded'));
-    // Remembered 0: a blank body as tall as the empty state.
+    // Remembered 0: the empty state, hidden, so the body is exactly as tall
+    // as the loaded empty result, also for a tall custom `emptyState`.
     await expect(bodyHeight(canvasElement, 'loading-empty')).toBe(
       bodyHeight(canvasElement, 'empty'),
     );
+    await expect(bodyHeight(canvasElement, 'empty-custom')).toBeGreaterThan(
+      bodyHeight(canvasElement, 'empty'),
+    );
+    await expect(bodyHeight(canvasElement, 'loading-empty-custom')).toBe(
+      bodyHeight(canvasElement, 'empty-custom'),
+    );
+    // The hidden copy is invisible, out of the accessibility tree and inert:
+    // its button cannot be reached or found.
+    const held = within(canvasElement)
+      .getByTestId('loading-empty-custom')
+      .querySelector<HTMLElement>('[data-slot="data-table-empty-placeholder"]');
+    await expect(held).toHaveAttribute('aria-hidden', 'true');
+    await expect(held).toHaveAttribute('inert');
+    await expect(held && getComputedStyle(held).visibility).toBe('hidden');
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'Create order' }),
+    ).toHaveLength(1);
     // A finished load stores its count; a load in progress stores nothing.
     await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:loaded`)).toBe('3');
     await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:three`)).toBe('3');
