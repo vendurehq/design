@@ -48,3 +48,26 @@ describe('Switch motion', () => {
     expect(classes).toContain('motion-safe:group-[');
   });
 });
+
+// A controlled `checked` that the page sets from code shows at once. The
+// press stretch stays; the slide and the colour fades are gone. A click or a
+// Space press moves the thumb: that path is covered by the story play tests
+// (the `SetFromCode` and `Toggle` stories), because the package has no DOM
+// test environment. `use-user-toggle-motion.test.ts` pins the decision.
+describe('Switch programmatic changes', () => {
+  const controlled = renderToStaticMarkup(<Switch aria-label="Airplane mode" checked onCheckedChange={() => {}} />);
+  const uncontrolled = renderToStaticMarkup(<Switch aria-label="Airplane mode" defaultChecked />);
+
+  test('a controlled switch starts with no slide and no colour fade', () => {
+    for (const classes of [track(controlled), thumb(controlled)]) {
+      expect(classes).not.toMatch(/\[transition:[^\]]*(translate|background-color|border-color)/);
+    }
+    expect(thumb(controlled)).toContain('[transition:scale_var(--transition-duration-fast)_var(--ease-press)]');
+    expect(thumb(controlled)).toContain('motion-safe:group-[:active:not([data-disabled])]/switch:scale-x-[1.15]');
+  });
+
+  test('an uncontrolled switch only changes by the user, so it keeps the motion', () => {
+    expect(track(uncontrolled)).toContain('data-checked:[transition:background-color_var(--transition-duration-normal)_var(--ease-out)');
+    expect(thumb(uncontrolled)).toContain('[transition:translate_var(--transition-duration-moderate)_var(--ease-out)');
+  });
+});
