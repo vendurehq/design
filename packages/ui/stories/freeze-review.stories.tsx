@@ -151,8 +151,16 @@ export const AllItems: Story = {
   name: 'All items',
   render: () => (
     <div className="flex flex-col gap-12">
+      <p className="text-muted-foreground max-w-5xl text-sm">
+        Menus, the dialog, the drawer, the sidebar, the combobox chips and the calendar labels are drawn as static
+        stand-ins with the component's classes, so they stay open on this page. The real components are in their own
+        stories.
+      </p>
       {items.map(([id, item]) => (
-        <div key={id}>{item()}</div>
+        <div key={id} className="flex flex-col gap-6">
+          {groups[id] && <h1 className="text-style-page-title border-b pb-2">{groups[id]}</h1>}
+          {item()}
+        </div>
       ))}
     </div>
   ),
@@ -475,6 +483,66 @@ export const R6: Story = {
   },
 };
 
+export const R7: Story = {
+  name: 'R7. Chart tooltip is a popup',
+  render: () => {
+    const tip = (radius: string) => (
+      <div className={`bg-popover text-popover-foreground grid min-w-32 gap-1.5 px-2.5 py-1.5 text-xs shadow-overlay ${radius}`}>
+        <span className="font-medium">March</span>
+        <span className="flex items-center gap-1.5">
+          <span className="bg-chart-1 size-2.5 rounded-sm" />
+          <span className="text-muted-foreground">Orders</span>
+          <span className="ms-auto font-mono font-medium tabular-nums">1,204</span>
+        </span>
+      </div>
+    );
+    return (
+      <Item
+        id="R7"
+        title="Chart tooltip: 8px → 12px"
+        why="The chart tooltip is a popup surface (popover colour, overlay shadow), so it takes the popup radius like menus. The dark text tooltip stays 6px."
+        options={[before(() => tip('rounded-xl')), after(() => tip('rounded-2xl'))]}
+      />
+    );
+  },
+};
+
+export const R8: Story = {
+  name: 'R8. Radius roles rule',
+  render: () => {
+    const roles = [
+      ['Inner', 'rounded-lg', '6px', 'menu items, chips, xs buttons'],
+      ['Control', 'rounded-xl', '8px', 'buttons, fields'],
+      ['Surface', 'rounded-2xl', '12px', 'cards, dialogs, popups'],
+      ['Palette', 'rounded-3xl', '16px', 'command palette'],
+      ['Pill', 'rounded-full', 'full', 'badges, avatars, switches'],
+    ];
+    return (
+      <Item
+        id="R8"
+        title="New guidance rule: Radius roles"
+        why="Every corner comes from one of five roles. rounded-xs and rounded-4xl no longer exist. The rule is in the token guidance and the vendure-tokens skill."
+        options={[
+          before(() => <p className="text-muted-foreground text-sm">No rule. Seven radius steps, picked per component.</p>),
+          after(() => (
+            <div className="flex flex-wrap gap-3">
+              {roles.map(([role, cls, px, use]) => (
+                <div key={role} className="flex w-24 flex-col items-start gap-1.5">
+                  <div className={`bg-muted inset-ring inset-ring-border size-12 ${cls}`} />
+                  <span className="text-xs font-medium">
+                    {role} · {px}
+                  </span>
+                  <span className="text-muted-foreground text-2xs">{use}</span>
+                </div>
+              ))}
+            </div>
+          )),
+        ]}
+      />
+    );
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Buttons and inputs
 // ---------------------------------------------------------------------------
@@ -622,6 +690,14 @@ export const T3: Story = {
   },
 };
 
+const groups: Record<string, string> = {
+  D1: 'Decisions',
+  S1: 'Shadows',
+  R1: 'Radii',
+  B1: 'Buttons and inputs',
+  T1: 'Type',
+};
+
 // Order of the review page. A function per item, so `AllItems` can render it.
 const items: [string, () => ReactNode][] = [
   ['D1', () => D1.render?.({} as never, {} as never)],
@@ -639,6 +715,8 @@ const items: [string, () => ReactNode][] = [
   ['R4', () => R4.render?.({} as never, {} as never)],
   ['R5', () => R5.render?.({} as never, {} as never)],
   ['R6', () => R6.render?.({} as never, {} as never)],
+  ['R7', () => R7.render?.({} as never, {} as never)],
+  ['R8', () => R8.render?.({} as never, {} as never)],
   ['B1', () => B1.render?.({} as never, {} as never)],
   ['B2', () => B2.render?.({} as never, {} as never)],
   ['B3', () => B3.render?.({} as never, {} as never)],
