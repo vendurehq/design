@@ -93,11 +93,11 @@ export const tokenGuidance = [
       },
       {
         title: 'Radius roles',
-        body: "A shape that stands on its own takes a role radius. Control, rounded-xl (8px): buttons, toggles and fields, so a field and a button in one row match. Surface, rounded-2xl (12px): cards, toasts and dialogs. Palette, rounded-3xl (16px): the command palette. Pill, rounded-full: badges, avatars and switches. Popups (menus, select, combobox, popover, hover card) are rounded-xl (8px). Our names are one step smaller than Tailwind's: rounded-md is 4px. rounded-xs and rounded-4xl do not exist. Never write a radius in px.",
+        body: "A shape that stands on its own takes a role radius. Control, rounded-xl (8px): buttons, toggles and fields, so a field and a button in one row match. Surface, rounded-2xl (12px): cards, toasts, dialogs and every popup (menu, select, combobox, popover, hover card, chart tooltip). Palette, rounded-3xl (16px): the command palette. Pill, rounded-full: badges, avatars and switches. Our names are one step smaller than Tailwind's: rounded-md is 4px. rounded-xs and rounded-4xl do not exist. Never write a radius in px.",
       },
       {
         title: 'Nested corners follow outer minus gap',
-        body: "A shape inside another rounded shape, with a small gap between them, derives its corner: inner radius = outer radius - gap, where the gap is the parent's padding plus its border width. Write it from the outer token: rounded-[calc(var(--radius-xl)-5px)] for a chip 5px inside an 8px field. A flush shape (gap 0) takes the outer radius. When the gap is as big as the outer radius or bigger, such as the padded content of a dialog or a card, the inner shape keeps its own role radius instead.",
+        body: "A shape inside another rounded shape, with a small gap between them, derives its corner: inner radius = outer radius - gap, where the gap is the parent's padding plus its border width. Write it from the outer token: rounded-[calc(var(--radius-xl)-5px)] for a chip 5px inside an 8px field (3px), rounded-[calc(var(--radius-2xl)-5px)] for a menu item 5px inside a 12px popup (7px). A flush shape (gap 0) takes the outer radius. When the gap is as big as the outer radius or bigger, such as the padded content of a dialog or a card, the inner shape keeps its own role radius instead.",
       },
       {
         title: 'Neutral intensity has an order',

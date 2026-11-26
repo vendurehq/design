@@ -148,8 +148,8 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 
 - `--radius` — Base radius value
 - Scaled variants: `--radius-sm` (2px), `--radius-md` (4px), `--radius-lg` (6px), `--radius-xl` (8px), `--radius-2xl` (12px), `--radius-3xl` (16px), `--radius-full`. The names are one step smaller than Tailwind's. The theme resets Tailwind's own radius steps, so `rounded-xs` and `rounded-4xl` do not exist
-- Roles, for a shape that stands on its own: control `rounded-xl` (buttons, toggles, fields), surface `rounded-2xl` (cards, toasts, dialogs), palette `rounded-3xl` (command palette), pill `rounded-full` (badges, avatars, switches). Popups are `rounded-xl` (8px)
-- Nested corners: a shape inside another with a small gap takes the outer radius minus the gap, where the gap is the parent's padding plus its border width: `rounded-[calc(var(--radius-<outer>)-<gap>)]`. A flush shape takes the outer radius. When the gap is as big as the outer radius or bigger (the padded content of a dialog or a card), the inner shape keeps its own role radius
+- Roles, for a shape that stands on its own: control `rounded-xl` (buttons, toggles, fields), surface `rounded-2xl` (cards, toasts, dialogs, popups), palette `rounded-3xl` (command palette), pill `rounded-full` (badges, avatars, switches)
+- Nested corners: a shape inside another with a small gap takes the outer radius minus the gap, where the gap is the parent's padding plus its border width: `rounded-[calc(var(--radius-<outer>)-<gap>)]`, for example `rounded-[calc(var(--radius-2xl)-5px)]` (7px) for a menu item in a 12px popup with 5px padding. A flush shape takes the outer radius. When the gap is as big as the outer radius or bigger (the padded content of a dialog or a card), the inner shape keeps its own role radius
 
 ### Shadows
 
