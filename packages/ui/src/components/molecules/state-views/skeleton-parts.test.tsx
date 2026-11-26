@@ -165,17 +165,20 @@ describe('skeleton parts', () => {
   });
 
   test('a skeleton bar is a block box, so its width and height apply outside a flex parent', () => {
-    expect(html(<Skeleton className="h-4 w-8" />)).toMatch(/^<span [^>]*class="(?:[^"]*\s)?block[\s"]/);
+    expect(html(<Skeleton className="h-4 w-8" />)).toMatch(
+      /^<span [^>]*class="(?:[^"]*\s)?block[\s"]/,
+    );
     // A caller's display class still wins.
-    expect(html(<Skeleton className="inline-block" />)).not.toMatch(/class="(?:[^"]*\s)?block[\s"]/);
+    expect(html(<Skeleton className="inline-block" />)).not.toMatch(
+      /class="(?:[^"]*\s)?block[\s"]/,
+    );
   });
 
-  test('a skeleton takes span props and a span ref', () => {
+  test('a skeleton takes a span ref, and a ref typed for the old <div> still compiles', () => {
     const spanRef = (_element: HTMLSpanElement | null) => {};
-    const divRef = (_element: HTMLDivElement | null) => {};
+    const divRef = { current: null as HTMLDivElement | null };
     void (<Skeleton ref={spanRef} />);
     void (<SkeletonLine ref={spanRef} />);
-    // @ts-expect-error a skeleton is a <span> since 3.0, so a <div> ref no longer fits
     void (<Skeleton ref={divRef} />);
   });
 });
