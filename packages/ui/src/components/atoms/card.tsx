@@ -103,7 +103,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-sm font-semibold tracking-[-0.005em] text-foreground-secondary has-data-[slot=card-count]:flex has-data-[slot=card-count]:items-baseline has-data-[slot=card-count]:gap-2.5",
+        "font-heading text-sm font-semibold tracking-[-0.005em] text-foreground-secondary has-data-[slot=card-count]:flex has-data-[slot=card-count]:items-baseline has-data-[slot=card-count]:gap-2.5 @max-xs/card-header:col-span-full",
         className
       )}
       {...props}
@@ -176,7 +176,10 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-foreground-secondary text-sm", className)}
+      className={cn(
+        "text-foreground-secondary text-sm @max-xs/card-header:col-span-full",
+        className
+      )}
       {...props}
     />
   )
@@ -185,12 +188,22 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
 // The action box is one title line high and centres its content, so a small
 // button lines up with the title and overflows into the card padding instead
 // of making the header row taller.
+// When the header is narrower than 20rem (a container query on the header,
+// so it follows the card and not the viewport) the action leaves the second
+// column and takes its own row under the title and description, which then
+// span the header too. The action starts at the inline start (the right in
+// RTL), grows to its content's height and wraps inside the header instead of
+// overflowing.
+const NARROW_ACTION =
+  "@max-xs/card-header:order-last @max-xs/card-header:col-span-full @max-xs/card-header:col-start-1 @max-xs/card-header:row-span-1 @max-xs/card-header:row-start-auto @max-xs/card-header:mt-2 @max-xs/card-header:h-auto @max-xs/card-header:max-w-full @max-xs/card-header:justify-self-start"
+
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-action"
       className={cn(
         "col-start-2 row-span-2 row-start-1 flex h-lh flex-wrap content-center items-center gap-2 self-start justify-self-end",
+        NARROW_ACTION,
         className
       )}
       {...props}

@@ -62,25 +62,29 @@ function SheetCloseButton({ className }: { className?: string }) {
   )
 }
 
-// The width of a left or right sheet per size, as whole class strings so
+// The width of a start or end sheet per size, as whole class strings so
 // Tailwind finds them in this source. A top or bottom sheet spans the viewport
 // and ignores the size. Below `sm` every side sheet is 3/4 of the viewport.
 const sheetSizes = {
-  default: "data-[side=left]:sm:max-w-lg data-[side=right]:sm:max-w-lg",
-  xl: "data-[side=left]:sm:max-w-200 data-[side=right]:sm:max-w-200",
+  default: "data-[side=start]:sm:max-w-lg data-[side=end]:sm:max-w-lg",
+  xl: "data-[side=start]:sm:max-w-200 data-[side=end]:sm:max-w-200",
 } as const
 
 function SheetContent({
   className,
   children,
-  side = "right",
+  side = "end",
   size = "default",
   showCloseButton = true,
   ...props
 }: SheetPrimitive.Popup.Props & {
-  side?: "top" | "right" | "bottom" | "left"
   /**
-   * The width of a left or right sheet. `default` (512px): a short form or a
+   * The edge the sheet slides in from. `start` and `end` follow the reading
+   * direction: in right-to-left, `start` is the right edge. Defaults to `end`.
+   */
+  side?: "top" | "bottom" | "start" | "end"
+  /**
+   * The width of a start or end sheet. `default` (512px): a short form or a
    * settings list. `xl` (800px): a table or a wide form. Both stay at 3/4 of
    * the viewport below 640px. Top and bottom sheets ignore it.
    */
@@ -98,7 +102,7 @@ function SheetContent({
         data-side={side}
         data-size={size}
         className={cn(
-          "group/sheet-content bg-overlay fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] bg-clip-padding text-sm shadow-overlay transition-[opacity,translate] duration-normal ease-drawer data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-[side=right]:data-starting-style:translate-x-10 motion-safe:data-[side=right]:data-ending-style:translate-x-10 motion-safe:data-[side=left]:data-starting-style:-translate-x-10 motion-safe:data-[side=left]:data-ending-style:-translate-x-10 motion-safe:data-[side=top]:data-starting-style:-translate-y-10 motion-safe:data-[side=top]:data-ending-style:-translate-y-10 motion-safe:data-[side=bottom]:data-starting-style:translate-y-10 motion-safe:data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:max-h-dvh data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-dvh",
+          "group/sheet-content bg-overlay fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] bg-clip-padding text-sm shadow-overlay transition-[opacity,translate] duration-normal ease-drawer data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-fast motion-safe:data-[side=end]:data-starting-style:translate-x-10 motion-safe:data-[side=end]:data-ending-style:translate-x-10 motion-safe:rtl:data-[side=end]:data-starting-style:-translate-x-10 motion-safe:rtl:data-[side=end]:data-ending-style:-translate-x-10 motion-safe:data-[side=start]:data-starting-style:-translate-x-10 motion-safe:data-[side=start]:data-ending-style:-translate-x-10 motion-safe:rtl:data-[side=start]:data-starting-style:translate-x-10 motion-safe:rtl:data-[side=start]:data-ending-style:translate-x-10 motion-safe:data-[side=top]:data-starting-style:-translate-y-10 motion-safe:data-[side=top]:data-ending-style:-translate-y-10 motion-safe:data-[side=bottom]:data-starting-style:translate-y-10 motion-safe:data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:max-h-dvh data-[side=start]:inset-y-0 data-[side=start]:start-0 data-[side=start]:h-full data-[side=start]:w-3/4 data-[side=end]:inset-y-0 data-[side=end]:end-0 data-[side=end]:h-full data-[side=end]:w-3/4 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-dvh",
           sheetSizes[size],
           className
         )}

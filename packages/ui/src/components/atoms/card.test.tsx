@@ -3,7 +3,17 @@ import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { Tone } from '../../lib/state-dictionary.ts';
-import { Card, CardAction, CardCount, type CardCountTone, CardHeader, CardRow, CardRows, CardTitle } from './card.tsx';
+import {
+  Card,
+  CardAction,
+  CardCount,
+  type CardCountTone,
+  CardDescription,
+  CardHeader,
+  CardRow,
+  CardRows,
+  CardTitle,
+} from './card.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
 
 describe('Card', () => {
@@ -108,5 +118,58 @@ describe('Card', () => {
     expect(oneLine.some((token) => token.includes(':[&.border-b]:*:my-'))).toBe(true);
     // The header's own box keeps its place: no negative margin or min-height on it.
     expect(header.filter((token) => /(^|:)-m[tby]-|(^|:)min-h-/.test(token))).toEqual([]);
+  });
+
+  test('CardAction leaves the second column and takes its own row when the header is narrow', () => {
+    const html = renderToStaticMarkup(
+      <Card>
+        <CardHeader>
+          <CardTitle>Insights</CardTitle>
+          <CardDescription>Orders and revenue.</CardDescription>
+          <CardAction>Last 30 days</CardAction>
+        </CardHeader>
+      </Card>,
+    );
+    // The header is the query container, so the action reacts to the card width, not the viewport.
+    expect(slotTokens(html, 'card-header')).toContain('@container/card-header');
+    const action = slotTokens(html, 'card-action');
+    // Wide layout is unchanged.
+    expect(action).toEqual(
+      expect.arrayContaining(['col-start-2', 'row-span-2', 'row-start-1', 'h-lh', 'self-start', 'justify-self-end']),
+    );
+    // Narrow layout: a row under the title, from the inline start, as tall as its content.
+    const narrow = action.filter((token) => token.startsWith('@max-xs/card-header:'));
+    expect(narrow).toEqual(
+      expect.arrayContaining([
+        '@max-xs/card-header:order-last',
+        '@max-xs/card-header:col-span-full',
+        '@max-xs/card-header:col-start-1',
+        '@max-xs/card-header:row-span-1',
+        '@max-xs/card-header:row-start-auto',
+        '@max-xs/card-header:h-auto',
+        '@max-xs/card-header:max-w-full',
+        '@max-xs/card-header:justify-self-start',
+      ]),
+    );
+    // The title and description span the header, so they do not share a row with each other.
+    expect(slotTokens(html, 'card-title')).toContain('@max-xs/card-header:col-span-full');
+    expect(slotTokens(html, 'card-description')).toContain('@max-xs/card-header:col-span-full');
+    // Logical alignment only, so the row follows the writing direction.
+    expect(action.filter((token) => /(^|:)(left|right|text-left|text-right|ml|mr|pl|pr)-/.test(token))).toEqual([]);
+  });
+
+  test('a className on CardAction still wins over the narrow layout', () => {
+    const tokens = slotTokens(
+      renderToStaticMarkup(
+        <Card>
+          <CardHeader>
+            <CardAction className="@max-xs/card-header:mt-0">More</CardAction>
+          </CardHeader>
+        </Card>,
+      ),
+      'card-action',
+    );
+    expect(tokens).toContain('@max-xs/card-header:mt-0');
+    expect(tokens).not.toContain('@max-xs/card-header:mt-2');
   });
 });
