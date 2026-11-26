@@ -5,6 +5,9 @@ import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { DatePicker } from '../src/components/molecules/date-picker.tsx';
+import { DateRangePicker } from '../src/components/molecules/date-range-picker.tsx';
+import { DateTimePicker } from '../src/components/molecules/date-time-picker.tsx';
 import {
   InputGroup,
   InputGroupAddon,
@@ -620,6 +623,30 @@ export const B3: Story = {
   ),
 };
 
+export const B4: Story = {
+  name: 'B4. Date picker size sm',
+  render: () => {
+    const pickers = (size?: 'sm') => (
+      <div className="flex w-full flex-col items-start gap-2">
+        <div className="flex w-full items-center gap-2">
+          <Input size={size} placeholder="Search" className="w-32" />
+          <DatePicker size={size} defaultValue="2026-03-10" clearable={false} />
+        </div>
+        <DateTimePicker size={size} defaultValue="2026-03-10T12:00:00.000Z" clearable={false} />
+        <DateRangePicker size={size} defaultValue={{ from: '2026-03-10', to: '2026-03-17' }} clearable={false} />
+      </div>
+    );
+    return (
+      <Item
+        id="B4"
+        title='DatePicker, DateTimePicker and DateRangePicker size="sm" (28px)'
+        why="A dense filter row with a small Input had no 28px date picker. The trigger and the time field follow the size."
+        options={[before(() => pickers()), after(() => pickers('sm'))]}
+      />
+    );
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Type
 // ---------------------------------------------------------------------------
@@ -720,6 +747,7 @@ const items: [string, () => ReactNode][] = [
   ['B1', () => B1.render?.({} as never, {} as never)],
   ['B2', () => B2.render?.({} as never, {} as never)],
   ['B3', () => B3.render?.({} as never, {} as never)],
+  ['B4', () => B4.render?.({} as never, {} as never)],
   ['T1', () => T1.render?.({} as never, {} as never)],
   ['T2', () => T2.render?.({} as never, {} as never)],
   ['T3', () => T3.render?.({} as never, {} as never)],
