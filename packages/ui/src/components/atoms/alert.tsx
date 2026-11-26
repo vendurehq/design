@@ -3,7 +3,7 @@ import { cva } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
-import { alertTint, alertToneVars } from "@vendure-io/ui/lib/tint-recipes"
+import { alertTint, alertToneVars } from "../../lib/tint-recipes.ts"
 import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 
 // Alert is an inline-size container so AlertAction can move under the text when

@@ -6,10 +6,10 @@ import { Input } from '@vendure-io/ui/components/atoms/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@vendure-io/ui/components/atoms/popover';
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { formatDateLabel, parseInstant } from '@vendure-io/ui/lib/date-value';
-import { fieldButton } from '@vendure-io/ui/lib/field-surface';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarClockIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
+import { fieldButton } from '../../lib/field-surface.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
@@ -18,8 +18,14 @@ type CalendarProps = Omit<
 
 interface DateTimePickerProps
   extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
-  /** ISO 8601 instant. Calendar and time controls edit it in the user's local zone. */
+  /**
+   * ISO 8601 instant. Calendar and time controls edit it in the user's local
+   * zone. Pass `value` to control the picker. Leave the prop out and it keeps
+   * its own state.
+   */
   value?: string;
+  /** Initial instant when `value` is not passed. */
+  defaultValue?: string;
   onValueChange?: (value: string | undefined) => void;
   placeholder?: React.ReactNode;
   clearable?: boolean;
@@ -30,20 +36,30 @@ interface DateTimePickerProps
   calendarProps?: CalendarProps;
 }
 
-function DateTimePicker({
-  value,
-  onValueChange,
-  placeholder = 'Pick a date and time',
-  clearable = true,
-  disabled,
-  invalid,
-  name,
-  id,
-  calendarProps,
-  className,
-  ...props
-}: DateTimePickerProps) {
+function DateTimePicker(allProps: DateTimePickerProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    placeholder = 'Pick a date and time',
+    clearable = true,
+    disabled,
+    invalid,
+    name,
+    id,
+    calendarProps,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
   const [open, setOpen] = React.useState(false);
+  const [own, setOwn] = React.useState(defaultValue);
+  const value = controlled ? valueProp : own;
+  function commit(next: string | undefined) {
+    if (!controlled) setOwn(next);
+    onValueChange?.(next);
+  }
   // The calendar popup is a dialog, named by its trigger.
   const generatedId = React.useId();
   const triggerId = id ?? generatedId;
@@ -57,7 +73,7 @@ function DateTimePicker({
     if (!date) return;
     const next = new Date(date);
     next.setHours(selected?.getHours() ?? 0, selected?.getMinutes() ?? 0, 0, 0);
-    onValueChange?.(next.toISOString());
+    commit(next.toISOString());
     setOpen(false);
   }
 
@@ -69,13 +85,14 @@ function DateTimePicker({
     if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return;
     const next = selected ? new Date(selected) : new Date();
     next.setHours(hours, minutes, 0, 0);
-    onValueChange?.(next.toISOString());
+    commit(next.toISOString());
   }
 
   return (
     <div
       data-slot="date-time-picker"
-      className={cn('flex min-w-0 items-center gap-2', className)}
+      // max-w-92 is the calendar (62), the gap and the w-28 time box. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-92 items-center gap-2', className)}
       {...props}
     >
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
@@ -101,9 +118,15 @@ function DateTimePicker({
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
+        <PopoverContent
+          className="w-auto min-w-(--anchor-width) p-0"
+          align="start"
+          aria-labelledby={triggerId}
+        >
           <Calendar
             {...calendarProps}
+            // In a popup wider than the grid, the month sits centred with even padding.
+            className={cn('mx-auto', calendarProps?.className)}
             mode="single"
             selected={selected}
             defaultMonth={selected}
@@ -127,7 +150,7 @@ function DateTimePicker({
           size="icon-sm"
           disabled={disabled}
           aria-label="Clear date and time"
-          onClick={() => onValueChange?.(undefined)}
+          onClick={() => commit(undefined)}
         >
           <XIcon />
         </Button>

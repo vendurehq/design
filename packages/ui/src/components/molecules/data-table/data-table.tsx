@@ -41,10 +41,6 @@ import {
   TableRow,
 } from '@vendure-io/ui/components/atoms/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
-import {
-  DataTableBulkActions,
-  useSelectionCache,
-} from '@vendure-io/ui/components/molecules/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@vendure-io/ui/components/molecules/data-table/data-table-column-header';
 import {
   DataTableAddFilter,
@@ -57,7 +53,6 @@ import type {
   DataTableRowRipple,
   DataTableRowSelectProps,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
-import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
 import {
   ListHeader,
   ListHeaderChips,
@@ -72,6 +67,7 @@ import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { isDevelopment } from '../../../lib/env.ts';
+import { DataTableBulkActions, useSelectionCache } from './data-table-bulk-actions.tsx';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
   buildDisplayColumns,
@@ -84,6 +80,7 @@ import {
 } from './data-table-helpers.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
+import { DataTableViewOptions } from './data-table-view-options.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.

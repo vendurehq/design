@@ -268,7 +268,7 @@ export const InTables: Story = {
 
       <Section
         title="Alignment is the column’s job, not the number’s"
-        intro="A money value is meaningless left-aligned in a wide numeric column: the eye has to hunt for each total. Set text-right on the cell; Money keeps the tabular figures. Do not swap zero for a placeholder: $0.00 is information, an em dash is a guess."
+        intro="A money value is meaningless left-aligned in a wide numeric column: the eye has to hunt for each total. Set text-right on the cell; Money keeps the tabular figures. Do not swap zero for a placeholder: $0.00 is information, an em dash is a guess. While the amount loads, pass value={undefined} for a skeleton the width of an amount; pass null only when there is no amount, which shows the em dash."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example

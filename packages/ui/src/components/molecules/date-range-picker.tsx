@@ -9,11 +9,11 @@ import {
   formatDateRangeLabel,
   parseCalendarDate,
 } from '@vendure-io/ui/lib/date-value';
-import { fieldButton } from '@vendure-io/ui/lib/field-surface';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarRangeIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
+import { fieldButton } from '../../lib/field-surface.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
@@ -33,8 +33,13 @@ interface DateRangePreset {
 
 interface DateRangePickerProps
   extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
-  /** Local calendar-date boundaries (`YYYY-MM-DD`), inclusive. */
+  /**
+   * Local calendar-date boundaries (`YYYY-MM-DD`), inclusive. Pass `value` to
+   * control the picker. Leave the prop out and it keeps its own state.
+   */
   value?: DateRangeValue;
+  /** Initial range when `value` is not passed. */
+  defaultValue?: DateRangeValue;
   onValueChange?: (value: DateRangeValue | undefined) => void;
   placeholder?: React.ReactNode;
   clearable?: boolean;
@@ -48,19 +53,29 @@ function resolvePreset(value: DateRangePreset['value']): DateRangeValue {
   return typeof value === 'function' ? value() : value;
 }
 
-function DateRangePicker({
-  value,
-  onValueChange,
-  placeholder = 'Pick a date range',
-  clearable = true,
-  disabled,
-  invalid,
-  presets = [],
-  calendarProps,
-  className,
-  ...props
-}: DateRangePickerProps) {
+function DateRangePicker(allProps: DateRangePickerProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    placeholder = 'Pick a date range',
+    clearable = true,
+    disabled,
+    invalid,
+    presets = [],
+    calendarProps,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
   const [open, setOpen] = React.useState(false);
+  const [own, setOwn] = React.useState(defaultValue);
+  const value = controlled ? valueProp : own;
+  function commit(next: DateRangeValue | undefined) {
+    if (!controlled) setOwn(next);
+    onValueChange?.(next);
+  }
   // The calendar popup is a dialog, named by its trigger.
   const generatedId = React.useId();
   const triggerId = generatedId;
@@ -73,10 +88,10 @@ function DateRangePicker({
 
   function commitRange(range: DateRange | undefined) {
     if (!range?.from) {
-      onValueChange?.(undefined);
+      commit(undefined);
       return;
     }
-    onValueChange?.({
+    commit({
       from: formatCalendarDate(range.from),
       to: range.to ? formatCalendarDate(range.to) : undefined,
     });
@@ -85,7 +100,8 @@ function DateRangePicker({
   return (
     <div
       data-slot="date-range-picker"
-      className={cn('flex min-w-0 items-center gap-1', className)}
+      // max-w-72 is the calendar (62) plus room for the longest range label. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-72 items-center gap-1', className)}
       {...props}
     >
       <Popover open={open} onOpenChange={setOpen}>
@@ -110,7 +126,11 @@ function DateRangePicker({
             {selected.from ? formatDateRangeLabel(selected.from, selected.to, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
+        <PopoverContent
+          className="w-auto min-w-(--anchor-width) p-0"
+          align="start"
+          aria-labelledby={triggerId}
+        >
           <div className={cn('flex', presets.length > 0 && 'divide-x')}>
             {presets.length > 0 ? (
               <div className="flex w-40 flex-col gap-1 p-2">
@@ -122,7 +142,7 @@ function DateRangePicker({
                     size="sm"
                     className="justify-start font-normal"
                     onClick={() => {
-                      onValueChange?.(resolvePreset(preset.value));
+                      commit(resolvePreset(preset.value));
                       setOpen(false);
                     }}
                   >
@@ -133,6 +153,8 @@ function DateRangePicker({
             ) : null}
             <Calendar
               {...calendarProps}
+              // In a popup wider than the grid, the month sits centred with even padding.
+              className={cn('mx-auto', calendarProps?.className)}
               mode="range"
               selected={selected}
               defaultMonth={selected.from}
@@ -148,7 +170,7 @@ function DateRangePicker({
           size="icon-sm"
           disabled={disabled}
           aria-label="Clear date range"
-          onClick={() => onValueChange?.(undefined)}
+          onClick={() => commit(undefined)}
         >
           <XIcon />
         </Button>

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { formatRelative, formatRelativeDuration } from './relative-time.tsx';
+import { formatRelative, formatRelativeDuration } from './format-relative.ts';
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;

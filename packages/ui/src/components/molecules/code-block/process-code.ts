@@ -1,4 +1,4 @@
-import { supportsNotationComments } from '@vendure-io/ui/lib/highlight';
+import { supportsNotationComments } from '../../../lib/highlight.ts';
 
 /**
  * Process code to extract filename directive and strip Shiki notations for unsupported languages.
