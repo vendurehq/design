@@ -31,7 +31,7 @@ const tonedAlert = alertTint
 // place, 240ms ease-out (@starting-style: nothing runs after it). Reduced motion
 // keeps the fade. Content padding is 12px inline, 10px block.
 const alertVariants = cva(
-  "@container/alert grid grid-cols-[minmax(0,1fr)] rounded-xl border px-3 py-2.5 text-start text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] [&:has(>svg:not([data-slot=alert-icon]))>[data-slot=alert-icon]]:hidden w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
+  "@container/alert grid grid-cols-[minmax(0,1fr)] rounded-xl border px-3 py-2.5 text-start text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
   {
     variants: {
       tone: {
@@ -57,9 +57,8 @@ const spinnerClass = "animate-spin-slow motion-reduce:animate-none"
 /**
  * A toned Alert is a faint tint of its tone and shows the tone's icon, the
  * same shape a StatusBadge of that tone shows (`progress` spins it). Without a
- * tone it sits on the card with no icon. An `icon` prop replaces the tone
- * icon, and so does an svg child (the older way): the tone icon is then
- * hidden. `icon={false}` shows no icon.
+ * tone it sits on the card with no icon. `icon` replaces the tone icon, and
+ * `icon={false}` shows no icon. Pass the icon here, not as a child.
  */
 function Alert({
   className,
