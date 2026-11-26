@@ -308,14 +308,14 @@ export const Chips: Story = {
     const chip = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chip"]') as HTMLElement;
     await expect(getComputedStyle(chip).backgroundColor).not.toBe(style.backgroundColor);
     await expect(getComputedStyle(chip).boxShadow).not.toBe('none');
-    // The Chip size, and corners that are concentric with the field's 6px:
-    // the chip sits 5px in, so its corner is 6 - 5 = 1px; the remove button
+    // The Chip size, and corners that are concentric with the field's 8px:
+    // the chip sits 5px in, so its corner is 8 - 5 = 3px; the remove button
     // sits 4px inside the chip, so its corner is square.
     const chipBox = chip.getBoundingClientRect();
     const fieldBox = chips.getBoundingClientRect();
     await expect(chipBox.height).toBe(24);
     await expect(chipBox.top - fieldBox.top).toBe(5);
-    await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('1px');
+    await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('3px');
     // The label is 8px from the edge: denser than a standalone Chip, so a field holds more chips.
     await expect(getComputedStyle(chip).paddingLeft).toBe('8px');
     const remove = chip.querySelector<HTMLElement>('[data-slot="combobox-chip-remove"]') as HTMLElement;
