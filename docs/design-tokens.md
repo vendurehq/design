@@ -147,11 +147,13 @@ The theme deliberately does not restyle raw `h1`–`h6` elements. Apply the head
 ### Radii
 
 - `--radius` — Base radius value
-- Scaled variants: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, `--radius-2xl`, `--radius-3xl`, `--radius-4xl`
+- Scaled variants: `--radius-sm` (2px), `--radius-md` (4px), `--radius-lg` (6px), `--radius-xl` (8px), `--radius-2xl` (12px), `--radius-3xl` (16px), `--radius-full`. The names are one step smaller than Tailwind's. The theme resets Tailwind's own radius steps, so `rounded-xs` and `rounded-4xl` do not exist
+- Roles: inner `rounded-lg` (menu and field items, chips, tooltips), control `rounded-xl` (buttons, toggles, fields), surface `rounded-2xl` (cards, toasts, dialogs, popups), palette `rounded-3xl` (command palette), pill `rounded-full` (badges). An inner corner is the outer radius minus the gap, derived with `calc()` from a radius token
 
 ### Shadows
 
-- `--shadow-2xs` through `--shadow-2xl` — Tailwind `shadow-*` utilities. The same values in both modes
+The theme resets Tailwind's own shadow steps, so `shadow-2xs` to `shadow-2xl` do not exist. These three are the only shadows:
+
 - `--shadow-overlay` — The themed shadow for floating content (menus, popovers, dialogs): a clear 1px edge and a soft drop. It is the popup's border, so a popup takes no border or ring class. Light and dark have different values. Use `shadow-overlay`
 - `--shadow-control` — The themed shadow for a resting control on a surface (default, brand, destructive, destructive-outline and outline buttons, button groups, cards, the sidebar's sliding pill): a 1px bottom edge. Light and dark have different values. Use `shadow-control`
 - `--shadow-scrolled` — A 1px rule in the `input` colour under a sticky header while content sits scrolled under it. Use `in-data-scrolled:shadow-scrolled` on the header, and `useScrolled` from `@vendure-io/ui/hooks/use-scrolled` on its scroll container

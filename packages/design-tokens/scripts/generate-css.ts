@@ -13,7 +13,7 @@ import {
 } from '../src/tokens/typography.ts';
 import { easing, duration, animation, keyframes } from '../src/tokens/motion.ts';
 import { radii } from '../src/tokens/radii.ts';
-import { darkShadows, lightShadows, shadows } from '../src/tokens/shadows.ts';
+import { darkShadows, lightShadows } from '../src/tokens/shadows.ts';
 
 // Base color ranges — static across light/dark themes
 const colorRanges = { brand, neutral, success, warning, destructive, info, viz };
@@ -206,11 +206,6 @@ const radiusLines = Object.keys(radii).map(
   (key) => `  --radius-${key}: var(--radius-${key});`,
 );
 
-// Shadow lines — override Tailwind defaults with our tokens
-const shadowLines = Object.entries(shadows).map(
-  ([key, value]) => `  --shadow-${key}: ${value};`,
-);
-
 // Themed shadow lines — reference the :root/.dark vars so the utility follows
 // the active theme
 const themedShadowLines = Object.keys(lightShadows).map(
@@ -269,11 +264,16 @@ const animationLines = Object.entries(animation).map(([key, value]) =>
   declaration(`animate-${kebabCase(key)}`, value),
 );
 
+// Namespace resets — drop Tailwind's default radius and shadow steps, so only
+// the tokens below exist: rounded-xs, rounded-4xl and shadow-sm … shadow-2xl
+// do not compile.
+const resetLines = ['  --radius-*: initial;', '  --shadow-*: initial;'];
+
 const themeBlock = [
+  ...resetLines,
   ...baseColorLines,
   ...colorLines,
   ...radiusLines,
-  ...shadowLines,
   ...themedShadowLines,
   ...fontLines,
   ...fontFeatureLines,
