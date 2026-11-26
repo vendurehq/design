@@ -564,7 +564,7 @@ export const R9: Story = {
       <Item
         id="R9"
         title="Nested corners follow outer − gap"
-        why="An item inside a padded parent takes the parent's corner minus the gap (padding + border). Menu, select, context-menu and menubar items: 12 − 5 = 7px. Combobox items: 12 − 4 = 8px. Navigation menu links: 12 − 8 = 4px. Palette items: 16 − 8 = 8px (no change). Tabs triggers: 6 − 3 = 3px."
+        why="An item inside a padded parent takes the parent's corner minus the gap (padding + border). Menu, select, combobox, context-menu and menubar items: 12 − 5 = 7px (the combobox list padding goes 4 → 5px to match). Navigation menu links: 12 − 8 = 4px. Palette items: 16 − 8 = 8px (no change). Tabs triggers: 6 − 3 = 3px."
         options={[
           before(() => (
             <div className="flex flex-col items-start gap-4">
