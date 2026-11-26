@@ -42,7 +42,7 @@ describe('TextLink', () => {
     );
   });
 
-  test('quiet tone: muted text, underline only on hover and focus', () => {
+  test('quiet tone: muted text, underline only on hover', () => {
     const classes = tokens(
       <TextLink href="#" tone="quiet">
         link
@@ -54,22 +54,35 @@ describe('TextLink', () => {
         'decoration-transparent',
         'hover:text-foreground',
         'hover:decoration-current',
-        'focus-visible:decoration-current',
+        'focus-visible:text-foreground',
       ]),
     );
     expect(classes).not.toContain('text-primary');
   });
 
-  test('draws the design-system focus ring 2px outside the link', () => {
+  test('draws the design-system ring at offset 0, so it clears the next word, and hides the underline under it', () => {
     expect(tokens(<TextLink href="#">link</TextLink>)).toEqual(
       expect.arrayContaining([
         'outline-none',
         'focus-visible:outline-solid',
         'focus-visible:outline-2',
-        'focus-visible:outline-offset-2',
+        'focus-visible:outline-offset-0',
         'focus-visible:outline-ring',
+        'focus-visible:decoration-transparent',
       ]),
     );
+    // No tone brings an underline back while the ring shows.
+    for (const tone of ['default', 'quiet'] as const) {
+      const classes = tokens(
+        <TextLink href="#" tone={tone}>
+          link
+        </TextLink>,
+      );
+      expect(classes).not.toContain('focus-visible:outline-offset-2');
+      expect(classes.filter((c) => c.startsWith('focus-visible:decoration-'))).toEqual([
+        'focus-visible:decoration-transparent',
+      ]);
+    }
   });
 
   test('eases only colours, never transition-all', () => {

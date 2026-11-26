@@ -109,7 +109,7 @@ export const ToneAndPlace: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Default in text, quiet beside actions"
-        intro="The default tone is underlined at rest, so it reads as a link inside a sentence. The quiet tone is underlined only on hover and focus: keep it out of sentences."
+        intro="The default tone is underlined at rest, so it reads as a link inside a sentence. The quiet tone is underlined only on hover: keep it out of sentences."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example verdict="do" caption="A default TextLink inside the sentence it belongs to.">

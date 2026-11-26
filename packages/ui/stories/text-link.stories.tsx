@@ -48,7 +48,7 @@ export const InAParagraph: Story = {
 
 /**
  * A small standalone link that must not compete with the actions next to it.
- * Muted at rest, foreground and underlined on hover or keyboard focus. Not for
+ * Muted at rest, foreground and underlined on hover. Not for
  * running text: there it has no underline to mark it as a link.
  */
 export const Quiet: Story = {
@@ -123,8 +123,9 @@ export const AsRouterLink: Story = {
 };
 
 /**
- * Keyboard focus shows the same emphasis as hover, with the focus ring 2px
- * outside the link. The ring follows each line of a wrapped link. The play
+ * Keyboard focus turns the text to the hover colour and draws the focus ring
+ * at offset 0, so it clears the next word. The underline is hidden while the
+ * ring shows. The ring closes on each line of a wrapped link. The play
  * function tabs to the first link.
  */
 export const FocusState: Story = {
@@ -145,5 +146,9 @@ export const FocusState: Story = {
     });
     await userEvent.tab();
     await expect(link).toHaveFocus();
+    const style = getComputedStyle(link);
+    await expect(style.outlineStyle).toBe('solid');
+    await expect(style.outlineWidth).toBe('2px');
+    await expect(style.outlineOffset).toBe('0px');
   },
 };

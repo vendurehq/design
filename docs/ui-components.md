@@ -732,8 +732,9 @@ A card or row that opens the same page drives the link's hover and takes its cli
 
 - It takes the font size, weight and line height of the text around it, and wraps with it.
 - `tone="default"`: link colour, always underlined. Use it in a sentence: the underline marks the link without relying on colour.
-- `tone="quiet"`: muted, underlined on hover and keyboard focus. Use it for a small standalone link next to more important actions, such as "Forgot password?". Not inside a sentence.
+- `tone="quiet"`: muted, underlined on hover. Use it for a small standalone link next to more important actions, such as "Forgot password?". Not inside a sentence.
 - `external`: opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and adds "(opens in a new tab)" for screen readers. Translate the note with `externalLabel`. Your own `target` and `rel` win.
+- Keyboard focus draws the focus ring at offset 0, not 2px: an outset ring would touch the next word. The underline is hidden while the ring shows.
 
 Which link to use:
 

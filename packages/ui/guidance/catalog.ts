@@ -1249,7 +1249,7 @@ export const uiGuidance = [
       },
       {
         title: 'Quiet tone stands alone',
-        body: 'The quiet tone is muted and underlined only on hover and focus. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.',
+        body: 'The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.',
       },
       {
         title: 'Another site is external',

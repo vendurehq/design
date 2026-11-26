@@ -493,7 +493,7 @@ Link inside running text, or a small standalone link that must not compete with 
 
 - **TextLink in text, ArrowLink at the end of a region, Button for an action:** A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.
 - **Default tone in a sentence:** The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.
-- **Quiet tone stands alone:** The quiet tone is muted and underlined only on hover and focus. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.
+- **Quiet tone stands alone:** The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.
 - **Another site is external:** Set `external` on a link to another site. It opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and tells screen readers it opens a new tab. A page of this app never takes `external`.
 - **A router link goes in render:** Pass the router link as `render`. TextLink keeps the link role; never give it `role="button"` or an `onClick` that does not navigate.
 

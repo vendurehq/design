@@ -12,17 +12,24 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // would otherwise stretch, and has no effect inline.
 //
 // The underline sits 4px under the baseline (`underline-offset-4`, as the
-// Button link look) and is 1px. `box-decoration-clone` keeps the rounded
-// focus ring on each line of a wrapped link.
+// Button link look) and is 1px.
+//
+// The focus ring is the design-system ring, 2px solid `ring`, but at offset 0
+// instead of 2px: the space between two words is about 4px, so an outset ring
+// would touch the next word, and the ring of one line would touch the next
+// line. While the ring shows, the underline is hidden: at offset 0 it would
+// run into the ring's lower edge, and the ring already marks the link.
+// `box-decoration-clone` closes the ring on each line of a wrapped link.
 //
 // `default`: `primary` text, always underlined in `brand-indicator`. The text
 // colour alone is too close to body text to mark a link inside a sentence,
-// so the underline is the cue. On hover or keyboard focus the text and the
-// underline turn `brand-text`.
+// so the underline is the cue. On hover the text and the underline turn
+// `brand-text`; on keyboard focus the text turns `brand-text`.
 // `quiet`: `muted-foreground` text with no underline at rest, for a small
 // standalone link that must not compete with the actions next to it
-// ("Forgot password?", "Terms"). On hover or keyboard focus the text reaches
-// `foreground` and the underline appears in the text colour. Without an
+// ("Forgot password?", "Terms"). On hover the text reaches `foreground` and
+// the underline appears in the text colour; on keyboard focus the text
+// reaches `foreground`. Without an
 // underline at rest it is not marked as a link inside a sentence: use
 // `default` there.
 //
@@ -37,14 +44,14 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // up-left.
 
 const textLinkVariants = cva(
-  "group/text-link inline w-fit cursor-pointer rounded-sm underline decoration-1 underline-offset-4 box-decoration-clone transition-colors duration-quick ease-soft outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  "group/text-link inline w-fit cursor-pointer rounded-sm underline decoration-1 underline-offset-4 box-decoration-clone transition-colors duration-quick ease-soft outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring focus-visible:decoration-transparent",
   {
     variants: {
       tone: {
         default:
-          "text-primary decoration-brand-indicator hover:text-brand-text hover:decoration-brand-text focus-visible:text-brand-text focus-visible:decoration-brand-text",
+          "text-primary decoration-brand-indicator hover:text-brand-text hover:decoration-brand-text focus-visible:text-brand-text",
         quiet:
-          "text-muted-foreground decoration-transparent hover:text-foreground hover:decoration-current focus-visible:text-foreground focus-visible:decoration-current",
+          "text-muted-foreground decoration-transparent hover:text-foreground hover:decoration-current focus-visible:text-foreground",
       },
     },
     defaultVariants: {
@@ -56,7 +63,7 @@ const textLinkVariants = cva(
 type TextLinkProps = useRender.ComponentProps<"a"> & {
   /**
    * - `'default'`: link colour, always underlined. Use it inside a sentence.
-   * - `'quiet'`: muted text, underlined on hover or focus. Use it for a small
+   * - `'quiet'`: muted text, underlined on hover. Use it for a small
    *   standalone link next to more important actions.
    */
   tone?: "default" | "quiet"
