@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CircleSlashIcon, GripVerticalIcon, MoreHorizontalIcon, SearchIcon, StoreIcon } from 'lucide-react';
 import { flexRender } from '@tanstack/react-table';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { expect, fireEvent, userEvent, waitFor, within } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -36,6 +36,7 @@ import {
   type RowSelectionState,
   type SortingState,
   type TableInstance,
+  useRememberedListTotal,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
@@ -270,7 +271,7 @@ export const ControlledSorting: Story = {
 export const Loading: Story = {
   render: () => (
     <DataTable<Order>
-      rows={[]}
+      rows={undefined}
       columns={columns}
       getRowId={(order) => order.id}
       isLoading
@@ -307,7 +308,7 @@ export const LoadingMatchesOneLineRows: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={oneLineColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -376,7 +377,7 @@ export const LoadingMatchesRowShape: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={twoLineColumns}
           getRowId={(order) => order.id}
           rowSelection={{}}
@@ -389,6 +390,386 @@ export const LoadingMatchesRowShape: Story = {
     </div>
   ),
   play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
+};
+
+// The first page is loading: the rows and the total are not known yet
+// (`rows` undefined, `totalItems` null). The body draws one full page of
+// skeleton rows, the footer a skeleton where the range goes, and the prev/next
+// buttons are disabled. The footer keeps the height it has with the range text.
+export const LoadingWithPagination: Story = {
+  render: () => (
+    <DataTable<Order>
+      rows={undefined}
+      columns={columns}
+      getRowId={(order) => order.id}
+      isLoading
+      pagination={{
+        page: 1,
+        pageSize: 10,
+        totalItems: null,
+        onPageChange: () => {},
+        onPageSizeChange: () => {},
+      }}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvasElement.querySelectorAll('tbody tr')).toHaveLength(10);
+    await expect(canvas.queryByText(/\bof 0\b/)).toBeNull();
+    await expect(
+      canvasElement.querySelector('[data-slot="table-pagination-range"] [data-slot="skeleton"]'),
+    ).not.toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Go to previous page' })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Go to next page' })).toBeDisabled();
+  },
+};
+
+/** The height of the card footer inside `[data-testid=testId]`. */
+function footerHeight(canvasElement: HTMLElement, testId: string) {
+  const footer = within(canvasElement).getByTestId(testId).querySelector('[data-slot="card-footer"]');
+  return Math.round(footer?.getBoundingClientRect().height ?? 0);
+}
+
+const PAGE_SIZES = [10, 25];
+
+/**
+ * The first load of a paginated table is as tall as the loaded page: one
+ * skeleton row per row the page will have, at the page size, and a footer of
+ * the same height. Each pair: loading, then loaded.
+ */
+export const LoadingHoldsPageHeight: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      {PAGE_SIZES.map((pageSize) => {
+        const pagination = { page: 1, pageSize, onPageChange: () => {}, onPageSizeChange: () => {} };
+        return (
+          <Fragment key={pageSize}>
+            <div data-testid={`loading-${pageSize}`}>
+              <DataTable<Order>
+                rows={undefined}
+                columns={sizedColumns}
+                getRowId={(order) => order.id}
+                isLoading
+                pagination={{ ...pagination, totalItems: null }}
+              />
+            </div>
+            <div data-testid={`loaded-${pageSize}`}>
+              <DataTable<Order>
+                rows={pagedOrders.slice(0, pageSize)}
+                columns={sizedColumns}
+                getRowId={(order) => order.id}
+                pagination={{ ...pagination, totalItems: pagedOrders.length }}
+              />
+            </div>
+          </Fragment>
+        );
+      })}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const pageSize of PAGE_SIZES) {
+      const loading = within(canvasElement).getByTestId(`loading-${pageSize}`);
+      await expect(loading.querySelectorAll('tbody tr')).toHaveLength(pageSize);
+      await expect(bodyHeight(canvasElement, `loading-${pageSize}`)).toBe(
+        bodyHeight(canvasElement, `loaded-${pageSize}`),
+      );
+      await expect(footerHeight(canvasElement, `loading-${pageSize}`)).toBe(
+        footerHeight(canvasElement, `loaded-${pageSize}`),
+      );
+    }
+  },
+};
+
+/** Reads one page of `pagedOrders` after `latency` ms, as a server would. */
+function usePagedOrders(page: number, pageSize: number, latency: number) {
+  const [loaded, setLoaded] = useState({ page, pageSize });
+  const isLoading = loaded.page !== page || loaded.pageSize !== pageSize;
+  useEffect(() => {
+    const timer = setTimeout(() => setLoaded({ page, pageSize }), latency);
+    return () => clearTimeout(timer);
+  }, [page, pageSize]);
+  // Until the read ends the table keeps the rows of the last page it had
+  // (`keepPreviousData` in TanStack Query).
+  const rows = pagedOrders.slice((loaded.page - 1) * loaded.pageSize, loaded.page * loaded.pageSize);
+  return { rows, isLoading };
+}
+
+/**
+ * Paging with the previous rows kept on screen while the next page loads. The
+ * body is `aria-busy`, and after a short delay the rows and the footer range
+ * dim, so a fast read shows nothing. The prev/next buttons ignore presses
+ * until the rows arrive, so a second click does not skip a page.
+ */
+export const PendingPage: Story = {
+  render: () => {
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const { rows, isLoading } = usePagedOrders(page, pageSize, 1200);
+    return (
+      <DataTable<Order>
+        rows={rows}
+        columns={columns}
+        getRowId={(order) => order.id}
+        isLoading={isLoading}
+        pagination={{
+          page,
+          pageSize,
+          totalItems: pagedOrders.length,
+          onPageChange: setPage,
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setPage(1);
+          },
+        }}
+      />
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = () => canvasElement.querySelector('tbody') as HTMLElement;
+    const next = canvas.getByRole('button', { name: 'Go to next page' });
+    await expect(canvas.getByText('ORD-2000')).toBeInTheDocument();
+    await userEvent.click(next);
+    // The old rows stay while the next page loads.
+    await expect(canvas.getByText('ORD-2000')).toBeInTheDocument();
+    await expect(body()).toHaveAttribute('aria-busy', 'true');
+    await expect(next).toHaveAttribute('aria-disabled', 'true');
+    // A second click while the page loads does not skip a page.
+    await userEvent.click(next);
+    await waitFor(() => expect(canvas.getByText('ORD-2010')).toBeInTheDocument(), {
+      timeout: 3000,
+    });
+    await expect(canvas.getByText('11–20 of 43')).toBeInTheDocument();
+    await expect(body()).not.toHaveAttribute('aria-busy');
+    await expect(next).not.toHaveAttribute('aria-disabled');
+  },
+};
+
+// Widths for the columns whose content has a known width. The Customer column
+// has none and takes the rest of the row.
+// Status declares its content inset (an icon StatusBadge), so its header
+// sits where the label will be in every state.
+const columnWidths: Record<string, number> = { code: 112, state: 176, items: 80, total: 112 };
+const sizedColumns: ColumnDef<Order>[] = columns.map((column) => {
+  const key = (column as { accessorKey?: string }).accessorKey ?? '';
+  const width = columnWidths[key];
+  if (width == null) return column;
+  const meta: DataTableColumnMeta = { ...column.meta, width };
+  if (key === 'state') meta.contentInset = 'status-icon';
+  return { ...column, meta };
+});
+
+/** The left edge of each column header's label, where its text starts. */
+function headerLabelLefts(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+    (cell) => {
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      return Math.round(range.getBoundingClientRect().left);
+    },
+  );
+}
+
+/** The left edge of each column header in the DataTable inside `[data-testid=testId]`. */
+function headerLefts(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+    (cell) => Math.round(cell.getBoundingClientRect().left),
+  );
+}
+
+/**
+ * A column's `meta.width` is its width while it loads and once it has data,
+ * so the headers do not move when the rows replace the skeleton.
+ * Loaded (top) and loading (bottom) put every header at the same place.
+ */
+export const LoadingKeepsColumnWidths: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order> rows={orders.slice(0, 3)} columns={sizedColumns} getRowId={(o) => o.id} />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={undefined}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          skeletonRowCount={3}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(headerLefts(canvasElement, 'loading')).toEqual(headerLefts(canvasElement, 'loaded'));
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
+    );
+    await expectSameRowHeights(canvasElement, 3);
+  },
+};
+
+const LIST_TOTAL_PREFIX = 'vendure-ui:list-total:';
+
+/** The height of the table body inside `[data-testid=testId]`. */
+function bodyHeight(canvasElement: HTMLElement, testId: string) {
+  const body = within(canvasElement).getByTestId(testId).querySelector('tbody');
+  return Math.round(body?.getBoundingClientRect().height ?? 0);
+}
+
+// An empty state much taller than the built-in "No results" row, like the
+// Dashboard's: illustration, title, description and an action.
+const tallEmptyState = (
+  <EmptyState title="No orders yet" description="Orders appear here after the first checkout.">
+    <Button>Create order</Button>
+  </EmptyState>
+);
+
+/** A loaded table that remembers its total with `useRememberedListTotal`. */
+function RememberedLoadedTable() {
+  const rows = orders.slice(0, 3);
+  useRememberedListTotal('story:loaded', rows.length);
+  return <DataTable<Order> rows={rows} columns={sizedColumns} getRowId={(o) => o.id} />;
+}
+
+/**
+ * With `expectedTotal`, a first load draws as many skeleton rows as the
+ * expected total of the list, so the body keeps its height when the rows
+ * arrive. An expected total of 0 renders the empty state hidden and inert, so
+ * the body has its exact height. From the top: 3 loaded rows (their total
+ * stored by `useRememberedListTotal`), a load that expects 3, "No results", a
+ * load that expects 0, then the same pair with a tall custom `emptyState`.
+ */
+export const LoadingWithExpectedTotal: Story = {
+  beforeEach: () => () => localStorage.removeItem(`${LIST_TOTAL_PREFIX}story:loaded`),
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <RememberedLoadedTable />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={undefined}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          expectedTotal={3}
+        />
+      </div>
+      <div data-testid="empty">
+        <DataTable<Order> rows={[]} columns={sizedColumns} getRowId={(o) => o.id} />
+      </div>
+      <div data-testid="loading-empty">
+        <DataTable<Order>
+          rows={undefined}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          expectedTotal={0}
+        />
+      </div>
+      <div data-testid="empty-custom">
+        <DataTable<Order>
+          rows={[]}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          emptyState={tallEmptyState}
+        />
+      </div>
+      <div data-testid="loading-empty-custom">
+        <DataTable<Order>
+          rows={undefined}
+          columns={sizedColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          expectedTotal={0}
+          emptyState={tallEmptyState}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Expected 3: three skeleton rows instead of the default ten, as tall
+    // as the three loaded rows.
+    await expectSameRowHeights(canvasElement, 3);
+    await expect(bodyHeight(canvasElement, 'loading')).toBe(bodyHeight(canvasElement, 'loaded'));
+    // Expected 0: the empty state, hidden, so the body is exactly as tall
+    // as the loaded empty result, also for a tall custom `emptyState`.
+    await expect(bodyHeight(canvasElement, 'loading-empty')).toBe(
+      bodyHeight(canvasElement, 'empty'),
+    );
+    await expect(bodyHeight(canvasElement, 'empty-custom')).toBeGreaterThan(
+      bodyHeight(canvasElement, 'empty'),
+    );
+    await expect(bodyHeight(canvasElement, 'loading-empty-custom')).toBe(
+      bodyHeight(canvasElement, 'empty-custom'),
+    );
+    // The hidden copy is invisible, out of the accessibility tree and inert:
+    // its button cannot be reached or found.
+    const held = within(canvasElement)
+      .getByTestId('loading-empty-custom')
+      .querySelector<HTMLElement>('[data-slot="data-table-empty-placeholder"]');
+    await expect(held).toHaveAttribute('aria-hidden', 'true');
+    await expect(held).toHaveAttribute('inert');
+    await expect(held && getComputedStyle(held).visibility).toBe('hidden');
+    await expect(
+      within(canvasElement).getAllByRole('button', { name: 'Create order' }),
+    ).toHaveLength(1);
+    // The hook stores the loaded total for the next visit.
+    await expect(localStorage.getItem(`${LIST_TOTAL_PREFIX}story:loaded`)).toBe('3');
+  },
+};
+
+// The sized columns, with a readable floor on Customer, the column without a
+// width.
+const flooredColumns: ColumnDef<Order>[] = sizedColumns.map((column) =>
+  (column as { accessorKey?: string }).accessorKey === 'customer'
+    ? { ...column, meta: { ...column.meta, minWidth: 160 } satisfies DataTableColumnMeta }
+    : column,
+);
+
+/**
+ * In a table narrower than its columns, `meta.width` and `meta.minWidth` are
+ * floors: the table scrolls sideways instead of squeezing the columns, so the
+ * headers stay put when the rows replace the skeleton. A 390px card, loaded
+ * (top) and loading (bottom).
+ */
+export const NarrowKeepsColumnWidths: Story = {
+  render: () => (
+    <div className="flex w-[390px] flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Order>
+          rows={orders.slice(0, 3)}
+          columns={flooredColumns}
+          getRowId={(o) => o.id}
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Order>
+          rows={undefined}
+          columns={flooredColumns}
+          getRowId={(o) => o.id}
+          isLoading
+          skeletonRowCount={3}
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const widths = (testId: string) =>
+      Array.from(
+        within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+        (cell) => Math.round(cell.getBoundingClientRect().width),
+      );
+    await expect(widths('loading')).toEqual(widths('loaded'));
+    await expect(headerLefts(canvasElement, 'loading')).toEqual(headerLefts(canvasElement, 'loaded'));
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
+    );
+    // The floors hold: Customer is 160px, the sized columns their width.
+    await expect(widths('loaded')).toEqual([112, 160, 176, 80, 112]);
+  },
 };
 
 // Empty — no rows, not loading: a custom empty slot replaces the default cell.
@@ -1568,6 +1949,93 @@ async function clickCopyChip(chip: Element) {
 function clearHash() {
   history.replaceState(null, '', `${location.pathname}${location.search}`);
 }
+
+/** Each column header's left edge and width in the DataTable inside `[data-testid=testId]`. */
+function headerRects(canvasElement: HTMLElement, testId: string) {
+  return Array.from(
+    within(canvasElement).getByTestId(testId).querySelectorAll('thead th'),
+    (cell) => {
+      const box = cell.getBoundingClientRect();
+      return [Math.round(box.left), Math.round(box.width)];
+    },
+  );
+}
+
+// The variant columns with widths, as a list page sets them. The actions
+// column after them takes the rest of the row.
+const variantWidths: Record<string, number> = {
+  name: 320,
+  sku: 176,
+  enabled: 144,
+  price: 128,
+  product: 192,
+};
+const variantActions = () => (
+  <Button variant="ghost" size="icon" className="size-8" aria-label="More actions">
+    <MoreHorizontalIcon />
+  </Button>
+);
+const sizedVariantColumns: ColumnDef<Variant>[] = variantColumns.map((column) => {
+  const key = (column as { accessorKey?: string }).accessorKey ?? column.id ?? '';
+  const width = variantWidths[key];
+  if (width == null) return column;
+  const meta: DataTableColumnMeta = { ...column.meta, width };
+  // Status is a StatusBadge chip with an icon: its header sits where the
+  // label will be in every state.
+  if (key === 'enabled') meta.contentInset = 'status-badge';
+  return { ...column, meta };
+});
+
+/** The end padding of the last header cell: it holds the row chevron's slot. */
+function chevronSlot(canvasElement: HTMLElement, testId: string) {
+  const last = within(canvasElement).getByTestId(testId).querySelector('thead th:last-child');
+  return last ? getComputedStyle(last).paddingInlineEnd : '';
+}
+
+/**
+ * With `rowLinks`, the table keeps the row chevron's slot after the last
+ * column while it loads, so the columns do not move when the linked rows
+ * arrive. Loaded (top) and loading (bottom) have the same header cells.
+ */
+export const LoadingKeepsRowLinkSlot: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <div data-testid="loaded">
+        <DataTable<Variant>
+          rows={variants.slice(0, 3)}
+          columns={sizedVariantColumns}
+          getRowId={(variant) => variant.id}
+          rowActions={variantActions}
+          rowLinks
+        />
+      </div>
+      <div data-testid="loading">
+        <DataTable<Variant>
+          rows={undefined}
+          columns={sizedVariantColumns}
+          getRowId={(variant) => variant.id}
+          isLoading
+          skeletonRowCount={3}
+          rowActions={variantActions}
+          rowLinks
+        />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // The skeleton has no row link, and still keeps the slot.
+    await expect(
+      within(canvasElement).getByTestId('loading').querySelector('[data-slot=data-table-row-link]'),
+    ).toBeNull();
+    await expect(chevronSlot(canvasElement, 'loading')).toBe(chevronSlot(canvasElement, 'loaded'));
+    await expect(headerRects(canvasElement, 'loading')).toEqual(
+      headerRects(canvasElement, 'loaded'),
+    );
+    await expect(headerLabelLefts(canvasElement, 'loading')).toEqual(
+      headerLabelLefts(canvasElement, 'loaded'),
+    );
+  },
+};
 
 /**
  * The whole row opens the item. Render a `DataTableRowLink` around the name:
