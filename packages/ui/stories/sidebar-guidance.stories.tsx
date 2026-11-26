@@ -85,7 +85,7 @@ export const OneIconForTheCurrentPage: Story = {
               </SidebarMenuButton>
               <SidebarMenuSub>
                 <SidebarMenuSubItem>
-                  <SidebarMenuSubButton render={<a href="#" />} isActive>
+                  <SidebarMenuSubButton render={<a href="#" />} active>
                     <TagIcon />
                     <span>Products</span>
                   </SidebarMenuSubButton>
@@ -109,7 +109,7 @@ export const OneIconForTheCurrentPage: Story = {
               </SidebarMenuButton>
               <SidebarMenuSub>
                 <SidebarMenuSubItem>
-                  <SidebarMenuSubButton render={<a href="#" />} isActive>
+                  <SidebarMenuSubButton render={<a href="#" />} active>
                     <span>Orders</span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
@@ -128,7 +128,7 @@ export const OneIconForTheCurrentPage: Story = {
         />
         <Example
           verdict="dont"
-          caption="Do not set isActive and hasActiveChild on one button. isActive is for the item that is itself the current page. It also gets the fill and the bar."
+          caption="Do not set active and hasActiveChild on one button. active is for the item that is itself the current page. It also gets the fill and the bar."
         />
       </div>
     </Section>

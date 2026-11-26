@@ -106,7 +106,7 @@ export const Bordered: Story = {
 };
 
 /**
- * `size="compact"` for a small panel or side column: no illustration, tighter
+ * `size="sm"` for a small panel or side column: no illustration, tighter
  * spacing, title, description and at most one action. It sits flush inside the
  * card.
  */
@@ -118,7 +118,7 @@ export const CompactInPanel: Story = {
       </CardHeader>
       <CardContent>
         <ErrorState
-          size="compact"
+          size="sm"
           title="Couldn't load usage"
           description="This is on us. Try again in a moment."
           onRetry={() => {}}

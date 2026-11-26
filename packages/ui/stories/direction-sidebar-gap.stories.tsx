@@ -39,7 +39,7 @@ function GapLayout({ dir, side, variant }: { dir: Dir; side: Side; variant: 'sid
               <SidebarGroup>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+                    <SidebarMenuButton active>Orders</SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton>Products</SidebarMenuButton>
