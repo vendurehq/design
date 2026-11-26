@@ -6,7 +6,14 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
-import { TimeSkeleton, TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
+import {
+  sampleText,
+  TimeSkeleton,
+  TimeSpan,
+  TimeTooltip,
+  toTime,
+  useReadersClock,
+} from './time-tooltip.tsx';
 
 interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   /**
@@ -115,14 +122,22 @@ function RelativeTime({
     // A typical text: "12 minutes ago", or "13 days" for a duration.
     const sample =
       display === 'duration'
-        ? new Intl.NumberFormat(resolvedLocale, {
-            style: 'unit',
-            unit: 'day',
-            unitDisplay: unitStyle ?? 'long',
-          }).format(13)
-        : new Intl.RelativeTimeFormat(resolvedLocale, { numeric, style: unitStyle }).format(
-            -12,
-            'minute',
+        ? sampleText(
+            () =>
+              new Intl.NumberFormat(resolvedLocale, {
+                style: 'unit',
+                unit: 'day',
+                unitDisplay: unitStyle ?? 'long',
+              }).format(13),
+            '13 days',
+          )
+        : sampleText(
+            () =>
+              new Intl.RelativeTimeFormat(resolvedLocale, { numeric, style: unitStyle }).format(
+                -12,
+                'minute',
+              ),
+            '12 minutes ago',
           );
     return (
       <TimeSkeleton slot="relative-time" sample={sample} loadingLabel={t.loading} {...props} />

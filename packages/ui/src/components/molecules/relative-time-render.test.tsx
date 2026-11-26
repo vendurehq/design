@@ -139,6 +139,16 @@ describe('RelativeTime while the time is not known', () => {
     ).toBe(7);
   });
 
+  test('an invalid locale still renders the skeleton, with a default width', () => {
+    for (const display of ['relative', 'duration'] as const) {
+      const markup = render(
+        <RelativeTime value={undefined} locale="not a locale!" display={display} />,
+      );
+      expect(markup).toContain('aria-busy="true"');
+      expect(markup).toMatch(/width:\d+ch/);
+    }
+  });
+
   test('null and an invalid date render the fallback', () => {
     expect(render(<RelativeTime value={null} />)).toBe('—');
     expect(render(<RelativeTime value="not a date" fallback="n/a" />)).toBe('n/a');

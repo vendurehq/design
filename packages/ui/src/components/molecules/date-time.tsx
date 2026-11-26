@@ -5,7 +5,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import type { ComponentProps, ReactNode } from 'react';
 import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
-import { TimeSkeleton } from './time-tooltip.tsx';
+import { sampleText, TimeSkeleton } from './time-tooltip.tsx';
 
 function toDate(value: string | number | Date | null | undefined): Date | null {
   if (value === null || value === undefined) return null;
@@ -72,13 +72,13 @@ function DateTime({
   };
 
   if (value === undefined) {
-    let sample = 'Dec 28, 2026';
-    try {
-      sample = new Intl.DateTimeFormat(locale ?? settings.locale, {
-        ...options,
-        timeZone: 'UTC',
-      }).format(SAMPLE_DATE);
-    } catch {}
+    const sample = sampleText(
+      () =>
+        new Intl.DateTimeFormat(locale ?? settings.locale, { ...options, timeZone: 'UTC' }).format(
+          SAMPLE_DATE,
+        ),
+      'Dec 28, 2026',
+    );
     return (
       <TimeSkeleton
         slot="date-time"

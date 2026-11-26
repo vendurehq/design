@@ -74,6 +74,10 @@ describe('DateTime', () => {
     ).not.toContain('<div');
   });
 
+  test('an invalid locale still renders the skeleton, with a default width', () => {
+    expect(html(<DateTime value={undefined} locale="not a locale!" />)).toContain('width:12ch');
+  });
+
   test('null and an invalid date render the fallback', () => {
     expect(html(<DateTime value={null} />)).toBe('—');
     expect(html(<DateTime value="not a date" fallback="n/a" />)).toBe('n/a');

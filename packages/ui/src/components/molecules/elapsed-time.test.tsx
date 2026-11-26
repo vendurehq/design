@@ -80,6 +80,26 @@ describe('ElapsedTime while the start is not known', () => {
     expect(markup).toContain('width:6ch');
   });
 
+  test('an invalid locale or a throwing format still renders the skeleton', () => {
+    const fails = () => {
+      throw new Error('format failed');
+    };
+    for (const node of [
+      <ElapsedTime key="locale" from={undefined} locale="not a locale!" />,
+      <ElapsedTime key="format" from={undefined} format={fails} />,
+    ]) {
+      expect(renderToStaticMarkup(node)).toContain('width:6ch');
+    }
+  });
+
+  test('to={null} and to={undefined} mean a live count, not loading', () => {
+    for (const to of [null, undefined]) {
+      const markup = renderToStaticMarkup(<ElapsedTime from={START} to={to} />);
+      expect(markup).not.toContain('aria-busy');
+      expect(markup).toMatch(/^<time data-slot="elapsed-time"/);
+    }
+  });
+
   test('null renders the fallback', () => {
     expect(renderToStaticMarkup(<ElapsedTime from={null} />)).toContain('>—</time>');
   });

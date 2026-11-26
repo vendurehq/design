@@ -15,7 +15,14 @@ import {
 } from 'react';
 import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
-import { TimeSkeleton, TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
+import {
+  sampleText,
+  TimeSkeleton,
+  TimeSpan,
+  TimeTooltip,
+  toTime,
+  useReadersClock,
+} from './time-tooltip.tsx';
 
 // One shared clock for every timer on the page: one interval, whole seconds.
 // It runs only while at least one visible timer listens.
@@ -97,8 +104,11 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
    */
   from: string | number | Date | null | undefined;
   /**
-   * When the count stopped. Leave it out for a live count, which ticks every
-   * second. With `to`, the text is fixed.
+   * When the count stopped. With `to`, the text is fixed. Omitted,
+   * `undefined` or `null` means it has not stopped: a live count that ticks
+   * every second. `to` never shows a skeleton; only `from={undefined}` does.
+   * When the end loads separately from the start, keep `from` `undefined`
+   * until both are known, or the count runs live until `to` arrives.
    */
   to?: string | number | Date | null;
   /** Screen-reader text while `from` is `undefined`. @default `messages.elapsedTime.loading`, "Loading duration" */
@@ -195,7 +205,10 @@ function ElapsedTime({
       <TimeSkeleton
         slot="elapsed-time"
         // A typical count: "1m 15s" in English.
-        sample={format ? format(75_000) : formatElapsed(75_000, { locale: resolvedLocale })}
+        sample={sampleText(
+          () => (format ? format(75_000) : formatElapsed(75_000, { locale: resolvedLocale })),
+          '1m 15s',
+        )}
         loadingLabel={t.loading}
         className={className}
         {...props}

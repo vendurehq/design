@@ -258,6 +258,14 @@ export const LoadingAndMissing: Story = {
             Building for <ElapsedTime from={undefined} locale="en-US" />.
           </p>
         </div>
+        <div data-baseline="loaded" className="flex items-baseline gap-2">
+          <span className="text-lg">Deployed</span>
+          <RelativeTime value={Date.now() - 12 * 60_000} locale="en-US" className="text-xs" />
+        </div>
+        <div data-baseline="loading" className="flex items-baseline gap-2">
+          <span className="text-lg">Deployed</span>
+          <RelativeTime value={undefined} locale="en-US" className="text-xs" />
+        </div>
         <p data-state="missing">
           Updated <RelativeTime value={null} />, built in <ElapsedTime from={null} />.
         </p>
@@ -266,8 +274,12 @@ export const LoadingAndMissing: Story = {
   },
   play: async ({ canvasElement }) => {
     await expectStableTimeLines(canvasElement);
+    // In a baseline-aligned row the skeleton does not make the row taller.
+    const baselineRow = (state: string) =>
+      canvasElement.querySelector(`[data-baseline="${state}"]`)?.getBoundingClientRect().height;
+    await expect(baselineRow('loading')).toBe(baselineRow('loaded'));
     const busy = [...canvasElement.querySelectorAll('[data-state="loading"] [aria-busy="true"]')];
-    await expect(busy.map((element) => element.textContent)).toEqual([
+    await expect(busy.map((element) => element.querySelector('.sr-only')?.textContent)).toEqual([
       'Loading time',
       'Loading duration',
     ]);

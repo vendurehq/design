@@ -96,7 +96,7 @@ export const LoadingAndMissing: Story = {
   play: async ({ canvasElement }) => {
     await expectStableLines(canvasElement);
     const busy = canvasElement.querySelector('[data-state="loading"] [aria-busy="true"]');
-    await expect(busy?.textContent).toBe('Loading date');
+    await expect(busy?.querySelector('.sr-only')?.textContent).toBe('Loading date');
     await expect(canvasElement.querySelector('[data-state="missing"]')?.textContent).toContain('—');
   },
 };
