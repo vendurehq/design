@@ -273,9 +273,14 @@ export const FirstLoad: Story = {
     await expect(trigger).toHaveAttribute('aria-busy', 'true');
     const triggerHeight = trigger.offsetHeight;
     await userEvent.click(trigger);
+    // The list can be in the DOM before it is open (data-closed, 0px tall), so
+    // wait until it is open and has finished its open transition.
     const loadingRow = await waitFor(() => {
       const row = document.querySelector<HTMLElement>('[data-slot=multi-select-loading]');
       if (!row) throw new Error('no loading row yet');
+      const popup = row.closest('[data-slot=select-content]');
+      expect(popup).toHaveAttribute('data-open');
+      expect(popup).not.toHaveAttribute('data-starting-style');
       return row;
     });
     const loadingRowHeight = loadingRow.offsetHeight;
