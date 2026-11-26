@@ -35,7 +35,6 @@ const internal = [
   'lib/clipboard',
   'lib/content-inset',
   'lib/control-name',
-  'lib/dialog-padding',
   'lib/env',
   'lib/field-surface',
   'lib/format-elapsed',
