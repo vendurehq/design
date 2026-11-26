@@ -59,7 +59,7 @@ function Item({ id, title, why, options }: { id: string; title: string; why: str
               <div className="bg-background text-foreground flex h-full flex-col gap-4 rounded-2xl border p-5">
                 <p className="flex items-center gap-2 text-xs font-medium">
                   <span>{option.label}</span>
-                  {option.recommended && <Badge variant="secondary">Recommended</Badge>}
+                  {option.recommended && <Badge variant="outline">Recommended</Badge>}
                   <span className="text-muted-foreground ms-auto">{theme === 'dark' ? 'Dark' : 'Light'}</span>
                 </p>
                 <div className="flex flex-1 flex-col items-start justify-center gap-3">{option.render(theme)}</div>
@@ -408,7 +408,7 @@ export const R4: Story = {
         before(() => (
           <div className="flex gap-2">
             <Badge className="rounded-[1.5rem]">Paid</Badge>
-            <Badge variant="secondary" className="rounded-[1.5rem]">
+            <Badge variant="outline" className="rounded-[1.5rem]">
               Draft
             </Badge>
           </div>
@@ -416,7 +416,7 @@ export const R4: Story = {
         after(() => (
           <div className="flex gap-2">
             <Badge>Paid</Badge>
-            <Badge variant="secondary">Draft</Badge>
+            <Badge variant="outline">Draft</Badge>
           </div>
         )),
       ]}
@@ -624,25 +624,25 @@ export const T3: Story = {
 
 // Order of the review page. A function per item, so `AllItems` can render it.
 const items: [string, () => ReactNode][] = [
-  ['D1', () => D1.render?.({}, {} as never)],
-  ['D2', () => D2.render?.({}, {} as never)],
-  ['D3', () => D3.render?.({}, {} as never)],
-  ['S1', () => S1.render?.({}, {} as never)],
-  ['S2', () => S2.render?.({}, {} as never)],
-  ['S3', () => S3.render?.({}, {} as never)],
-  ['S4', () => S4.render?.({}, {} as never)],
-  ['S5', () => S5.render?.({}, {} as never)],
-  ['S6', () => S6.render?.({}, {} as never)],
-  ['R1', () => R1.render?.({}, {} as never)],
-  ['R2', () => R2.render?.({}, {} as never)],
-  ['R3', () => R3.render?.({}, {} as never)],
-  ['R4', () => R4.render?.({}, {} as never)],
-  ['R5', () => R5.render?.({}, {} as never)],
-  ['R6', () => R6.render?.({}, {} as never)],
-  ['B1', () => B1.render?.({}, {} as never)],
-  ['B2', () => B2.render?.({}, {} as never)],
-  ['B3', () => B3.render?.({}, {} as never)],
-  ['T1', () => T1.render?.({}, {} as never)],
-  ['T2', () => T2.render?.({}, {} as never)],
-  ['T3', () => T3.render?.({}, {} as never)],
+  ['D1', () => D1.render?.({} as never, {} as never)],
+  ['D2', () => D2.render?.({} as never, {} as never)],
+  ['D3', () => D3.render?.({} as never, {} as never)],
+  ['S1', () => S1.render?.({} as never, {} as never)],
+  ['S2', () => S2.render?.({} as never, {} as never)],
+  ['S3', () => S3.render?.({} as never, {} as never)],
+  ['S4', () => S4.render?.({} as never, {} as never)],
+  ['S5', () => S5.render?.({} as never, {} as never)],
+  ['S6', () => S6.render?.({} as never, {} as never)],
+  ['R1', () => R1.render?.({} as never, {} as never)],
+  ['R2', () => R2.render?.({} as never, {} as never)],
+  ['R3', () => R3.render?.({} as never, {} as never)],
+  ['R4', () => R4.render?.({} as never, {} as never)],
+  ['R5', () => R5.render?.({} as never, {} as never)],
+  ['R6', () => R6.render?.({} as never, {} as never)],
+  ['B1', () => B1.render?.({} as never, {} as never)],
+  ['B2', () => B2.render?.({} as never, {} as never)],
+  ['B3', () => B3.render?.({} as never, {} as never)],
+  ['T1', () => T1.render?.({} as never, {} as never)],
+  ['T2', () => T2.render?.({} as never, {} as never)],
+  ['T3', () => T3.render?.({} as never, {} as never)],
 ];
