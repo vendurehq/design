@@ -200,8 +200,8 @@ function CapabilityCards() {
 
 /**
  * A card that opens a dialog, not a page: CardLink without `render` is a
- * button. The play function clicks the card's description and checks that
- * the dialog opens with the card's title.
+ * button. The play function opens it with Enter, then with a click on the
+ * card's description, and checks the dialog's title.
  */
 export const OpensDialog: Story = {
   render: () => <CapabilityCards />,
@@ -209,6 +209,17 @@ export const OpensDialog: Story = {
     const canvas = within(canvasElement);
     const button = canvas.getByRole('button', { name: 'Search' });
     await expect(button).toHaveAttribute('type', 'button');
+
+    // The keyboard opens it: Tab to the card, then Enter.
+    await userEvent.click(canvasElement.ownerDocument.body);
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await within(canvasElement.ownerDocument.body).findByRole('dialog');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(within(canvasElement.ownerDocument.body).queryByRole('dialog')).toBeNull());
+
+    // A click on the description opens it too.
     const target = hitTarget(canvas.getByText('Full-text product search with typo tolerance.'));
     await expect(target).toBe(button);
     await userEvent.click(target as Element);
