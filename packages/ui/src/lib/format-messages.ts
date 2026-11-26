@@ -17,6 +17,10 @@ const defaultMessages = {
     /** Added to the accessible name in brackets: "Search (command palette)". */
     commandPalette: 'command palette',
   },
+  anonymizedToken: {
+    /** Screen-reader text while the token loads (`value={undefined}`). */
+    loading: 'Loading token',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { AnonymizedToken } from './anonymized-token.tsx';
+import { FormatProvider } from './format-provider.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -54,5 +55,55 @@ describe('AnonymizedToken', () => {
     const markup = html(<AnonymizedToken value={null} fallback="No token" />);
 
     expect(markup).toContain('No token');
+  });
+});
+
+describe('AnonymizedToken while the token is not known', () => {
+  test('undefined renders a chip-sized skeleton, not the fallback', () => {
+    const markup = html(<AnonymizedToken value={undefined} />);
+
+    expect(markup).toContain('data-slot="skeleton"');
+    expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('<span class="sr-only">Loading token</span>');
+    expect(markup).not.toContain('—');
+    expect(markup).not.toContain('data-slot="copy-button"');
+  });
+
+  test('the loading text can be translated', () => {
+    expect(html(<AnonymizedToken value={undefined} loadingLabel="Token lädt" />)).toContain(
+      '<span class="sr-only">Token lädt</span>',
+    );
+  });
+
+  test('the loading text comes from FormatProvider messages, and the prop wins', () => {
+    const inProvider = (node: React.ReactElement) =>
+      html(
+        <FormatProvider messages={{ anonymizedToken: { loading: 'Lädt' } }}>{node}</FormatProvider>,
+      );
+
+    expect(inProvider(<AnonymizedToken value={undefined} />)).toContain(
+      '<span class="sr-only">Lädt</span>',
+    );
+    expect(inProvider(<AnonymizedToken value={undefined} loadingLabel="Token" />)).toContain(
+      '<span class="sr-only">Token</span>',
+    );
+  });
+
+  test('the skeleton is valid inside a paragraph', () => {
+    expect(
+      html(
+        <p>
+          Key <AnonymizedToken value={undefined} />
+        </p>,
+      ),
+    ).not.toContain('<div');
+  });
+
+  test('null and an empty string render the fallback, an em dash by default', () => {
+    for (const value of [null, '']) {
+      const markup = html(<AnonymizedToken value={value} />);
+      expect(markup).toContain('>—</span>');
+      expect(markup).not.toContain('aria-busy');
+    }
   });
 });
