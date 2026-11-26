@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { Skeleton } from '../../atoms/skeleton.tsx';
 import {
   SkeletonCard,
   SkeletonFact,
@@ -148,5 +149,33 @@ describe('skeleton parts', () => {
 
     expect(markup).not.toMatch(/<(header|h1|h2|label|dl)\b/);
     expect(markup).not.toContain('role="group"');
+  });
+
+  test('a skeleton is phrasing content, so it can stand in for a value inside a paragraph', () => {
+    const markup = html(
+      <p>
+        Total <SkeletonLine className="inline-flex w-16" /> and <Skeleton className="h-4 w-8" />
+      </p>,
+    );
+
+    // A <div> inside a <p> closes the paragraph when the HTML is parsed, and
+    // React warns about it on the client.
+    expect(markup).not.toContain('<div');
+    expect(markup).toMatch(/^<p>Total <span [^>]*data-skeleton="line"/);
+  });
+
+  test('a skeleton bar is a block box, so its width and height apply outside a flex parent', () => {
+    expect(html(<Skeleton className="h-4 w-8" />)).toMatch(/^<span [^>]*class="(?:[^"]*\s)?block[\s"]/);
+    // A caller's display class still wins.
+    expect(html(<Skeleton className="inline-block" />)).not.toMatch(/class="(?:[^"]*\s)?block[\s"]/);
+  });
+
+  test('a skeleton takes span props and a span ref', () => {
+    const spanRef = (_element: HTMLSpanElement | null) => {};
+    const divRef = (_element: HTMLDivElement | null) => {};
+    void (<Skeleton ref={spanRef} />);
+    void (<SkeletonLine ref={spanRef} />);
+    // @ts-expect-error a skeleton is a <span> since 3.0, so a <div> ref no longer fits
+    void (<Skeleton ref={divRef} />);
   });
 });

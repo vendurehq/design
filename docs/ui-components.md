@@ -840,7 +840,7 @@ Pass skeleton parts as children, laid out like the loaded page. Each part is as 
 | `SkeletonListRow` (`leading="icon" \| "avatar" \| "none"`, `meta`, `action`) | `ListRow` |
 | `SkeletonField` | `Field` with an `Input` |
 | `SkeletonFact` | `DescriptionListItem` |
-| `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width |
+| `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width. It is a `<span>`, so it can stand in for a value inside a paragraph with `inline-flex` |
 
 ```tsx
 import { LoadingState } from "@vendure-io/ui/components/molecules/state-views/loading-state";
@@ -1015,6 +1015,7 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+1. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props and ref are `<span>` props: change a ref typed `HTMLDivElement` to `HTMLSpanElement`. The look does not change.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 
