@@ -111,7 +111,7 @@ const RULES: { title: string; body: string }[] = [
   },
   {
     title: 'removeLabel is mandatory with onRemove',
-    body: 'The × button has no text of its own. Name it for screen readers (removeLabel="Remove Wholesale"), or the component warns in development.',
+    body: 'The × button has no text of its own. Name it for screen readers (removeLabel="Remove Wholesale"). The type requires it: a Chip with onRemove and no removeLabel does not compile.',
   },
   {
     title: 'Secondary text is composition, not a prop',
