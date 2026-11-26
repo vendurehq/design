@@ -4,7 +4,7 @@ import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
+import { outlineEdge, outlineEdgeHover } from "../../lib/outline-edge.ts"
 
 const toggleVariants = cva(
   // Pressed is the accent tint with foreground text, as in the v3 look. Hover

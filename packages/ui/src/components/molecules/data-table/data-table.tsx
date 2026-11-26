@@ -41,10 +41,6 @@ import {
   TableRow,
 } from '@vendure-io/ui/components/atoms/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
-import {
-  DataTableBulkActions,
-  useSelectionCache,
-} from '@vendure-io/ui/components/molecules/data-table/data-table-bulk-actions';
 import { DataTableColumnHeader } from '@vendure-io/ui/components/molecules/data-table/data-table-column-header';
 import {
   DataTableAddFilter,
@@ -72,6 +68,7 @@ import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { isDevelopment } from '../../../lib/env.ts';
+import { DataTableBulkActions, useSelectionCache } from './data-table-bulk-actions.tsx';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
   buildDisplayColumns,

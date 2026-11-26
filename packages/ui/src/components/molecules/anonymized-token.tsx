@@ -6,16 +6,12 @@ import {
   type CopyButtonProps,
   useCopyAction,
 } from '@vendure-io/ui/components/molecules/copyable-text';
-import {
-  ChipCopyTooltip,
-  chipChromeClass,
-  chipCopyButtonProps,
-} from '@vendure-io/ui/components/molecules/id-chip';
-import { contentInsetPull } from '@vendure-io/ui/lib/content-inset';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useState } from 'react';
+import { contentInsetPull } from '../../lib/content-inset.ts';
 import { useMessages } from '../../lib/format-messages.ts';
+import { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps } from './id-chip-chrome.tsx';
 
 function clampLength(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;

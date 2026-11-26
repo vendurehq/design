@@ -1,7 +1,6 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
-import { formatElapsed, isoDuration } from '@vendure-io/ui/lib/format-elapsed';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
   type ComponentProps,
@@ -13,6 +12,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { formatElapsed, isoDuration } from '../../lib/format-elapsed.ts';
 import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
 import {
