@@ -83,6 +83,8 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Toggle.** A disabled toggle that must say why takes `aria-disabled` in place of `disabled`, with a Tooltip that gives the reason. It keeps its tab stop and the pointer, so the tooltip opens. It looks like a disabled toggle, pressed or not: half opacity, a not-allowed cursor, no hover change. Base UI's Toggle has no `focusableWhenDisabled`, so blocking the press is your job: `onPressedChange={(_, details) => details.cancel()}`. That also stops a ToggleGroup from changing its value. Use plain `disabled` when the page already shows why.
 
+> **Switch motion.** The thumb slides and the track fades only when the user toggles the switch (pointer or keyboard). A controlled `checked` that changes from code, such as data that loads after render, a form reset or another control, shows at once with no motion. An uncontrolled switch only changes by the user, so it always moves. Do not add your own wrapper to switch the transition off.
+
 > **Labelling Checkbox, RadioGroup and Switch:** Base UI puts the `id` on a hidden input, not on the visible control. Because of this, `<Label htmlFor>` does not give the control an accessible name. Set `aria-label` on the control, or `aria-labelledby` with the `id` of the visible label. This note stays until a component fix lands.
 
 ### Feedback
