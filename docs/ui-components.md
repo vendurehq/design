@@ -104,7 +104,7 @@ behavior you need instead of rebuilding it from atoms.
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
-> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
+> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app. While the options load, pass `options={undefined}`: the open menu shows a loading row one item tall. `[]` means there are none. `BreadcrumbSearchMenu` takes the same `options`, plus `retryLabel` for its Retry row; both take `loadingLabel`.
 
 ### Data Display
 `avatar`, `calendar`, `carousel`, `chart`, `kbd`, `table`
@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -1034,6 +1034,7 @@ These packages are optional — install them only if you use the features that n
 2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
 4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
+5. BreadcrumbSearchMenu `loading` is removed. Pass `options={undefined}` while the options load, on BreadcrumbSearchMenu and BreadcrumbMenu; `[]` means there are none. The `options` prop is required. Their texts read `messages.breadcrumb` (`loading`, `retry`), or the new `loadingLabel` and `retryLabel` props.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 
