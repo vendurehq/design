@@ -5,23 +5,12 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import type { VariantProps } from 'class-variance-authority';
 import { XIcon } from 'lucide-react';
 import type * as React from 'react';
-import { isDevelopment } from '../../lib/env.ts';
 
-interface ChipProps extends React.ComponentProps<'span'> {
+interface ChipBaseProps extends React.ComponentProps<'span'> {
   /** Badge variants a tag can take. `link` and `ghost` are not tag treatments. */
   variant?: Exclude<VariantProps<typeof badgeVariants>['variant'], 'link' | 'ghost'>;
   /** Leading icon slot. */
   icon?: React.ReactNode;
-  /**
-   * Presence of this handler renders the remove (×) button; the caller closes
-   * over its own id (`onRemove={() => remove(item.id)}`). Absent → static chip.
-   */
-  onRemove?: () => void;
-  /**
-   * Accessible label for the remove button (e.g. `Remove ${name}`). Required
-   * whenever `onRemove` is set — the × has no text otherwise.
-   */
-  removeLabel?: string;
   /**
    * Presence of this handler makes the label a button that runs it, e.g. to
    * open an editor for the chip's value. The remove button stays a separate
@@ -38,6 +27,26 @@ interface ChipProps extends React.ComponentProps<'span'> {
   /** Dims the chip and disables removal (e.g. a pending un-assign mutation). */
   disabled?: boolean;
 }
+
+type ChipRemoveProps =
+  | {
+      /**
+       * Presence of this handler renders the remove (×) button; the caller closes
+       * over its own id (`onRemove={() => remove(item.id)}`). Absent → static chip.
+       */
+      onRemove: () => void;
+      /**
+       * Accessible label for the remove button (e.g. `Remove ${name}`). Required
+       * with `onRemove`: the × has no text of its own.
+       */
+      removeLabel: string;
+    }
+  | {
+      onRemove?: undefined;
+      removeLabel?: undefined;
+    };
+
+type ChipProps = ChipBaseProps & ChipRemoveProps;
 
 /**
  * A compact, optionally removable tag built on the `Badge` atom. Generalizes the
@@ -63,12 +72,6 @@ function Chip({
   children,
   ...props
 }: ChipProps) {
-  if (isDevelopment && onRemove && !removeLabel) {
-    console.warn(
-      'Chip: `removeLabel` is required when `onRemove` is set — the remove button has no accessible name otherwise. Pass e.g. removeLabel="Remove <name>".',
-    );
-  }
-
   return (
     <Badge
       data-slot="chip"
