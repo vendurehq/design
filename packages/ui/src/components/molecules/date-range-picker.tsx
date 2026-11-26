@@ -33,8 +33,13 @@ interface DateRangePreset {
 
 interface DateRangePickerProps
   extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
-  /** Local calendar-date boundaries (`YYYY-MM-DD`), inclusive. */
+  /**
+   * Local calendar-date boundaries (`YYYY-MM-DD`), inclusive. Pass `value` to
+   * control the picker. Leave the prop out and it keeps its own state.
+   */
   value?: DateRangeValue;
+  /** Initial range when `value` is not passed. */
+  defaultValue?: DateRangeValue;
   onValueChange?: (value: DateRangeValue | undefined) => void;
   placeholder?: React.ReactNode;
   clearable?: boolean;
@@ -48,19 +53,29 @@ function resolvePreset(value: DateRangePreset['value']): DateRangeValue {
   return typeof value === 'function' ? value() : value;
 }
 
-function DateRangePicker({
-  value,
-  onValueChange,
-  placeholder = 'Pick a date range',
-  clearable = true,
-  disabled,
-  invalid,
-  presets = [],
-  calendarProps,
-  className,
-  ...props
-}: DateRangePickerProps) {
+function DateRangePicker(allProps: DateRangePickerProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    placeholder = 'Pick a date range',
+    clearable = true,
+    disabled,
+    invalid,
+    presets = [],
+    calendarProps,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
   const [open, setOpen] = React.useState(false);
+  const [own, setOwn] = React.useState(defaultValue);
+  const value = controlled ? valueProp : own;
+  function commit(next: DateRangeValue | undefined) {
+    if (!controlled) setOwn(next);
+    onValueChange?.(next);
+  }
   // The calendar popup is a dialog, named by its trigger.
   const generatedId = React.useId();
   const triggerId = generatedId;
@@ -73,10 +88,10 @@ function DateRangePicker({
 
   function commitRange(range: DateRange | undefined) {
     if (!range?.from) {
-      onValueChange?.(undefined);
+      commit(undefined);
       return;
     }
-    onValueChange?.({
+    commit({
       from: formatCalendarDate(range.from),
       to: range.to ? formatCalendarDate(range.to) : undefined,
     });
@@ -122,7 +137,7 @@ function DateRangePicker({
                     size="sm"
                     className="justify-start font-normal"
                     onClick={() => {
-                      onValueChange?.(resolvePreset(preset.value));
+                      commit(resolvePreset(preset.value));
                       setOpen(false);
                     }}
                   >
@@ -148,7 +163,7 @@ function DateRangePicker({
           size="icon-sm"
           disabled={disabled}
           aria-label="Clear date range"
-          onClick={() => onValueChange?.(undefined)}
+          onClick={() => commit(undefined)}
         >
           <XIcon />
         </Button>

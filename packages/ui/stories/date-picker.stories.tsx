@@ -162,3 +162,73 @@ export const FrenchRange: Story = {
   },
   play: ({ canvasElement }) => expectFrenchCalendar(canvasElement, 'mars 2026'),
 };
+
+/** Without `value`, the picker keeps the pick itself. `defaultValue` sets the first one. */
+export const UncontrolledDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DatePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date');
+    await userEvent.click(trigger);
+    await userEvent.click(await within(document.body).findByRole('button', { name: /\b15th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/15/));
+    await expect(within(canvasElement).getByRole('button', { name: 'Clear date' })).toBeVisible();
+  },
+};
+
+export const UncontrolledDateOnlyWithDefault: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DatePicker defaultValue="2026-03-10" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent(/10/);
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Clear date' }));
+    await waitFor(() => expect(trigger).toHaveTextContent('Pick a date'));
+  },
+};
+
+export const UncontrolledDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[460px]">
+      <DateTimePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date and time');
+    await expect(canvas.getByLabelText('Time')).toBeDisabled();
+    await userEvent.click(trigger);
+    await userEvent.click(await within(document.body).findByRole('button', { name: /\b15th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/15/));
+    await expect(canvas.getByLabelText('Time')).toBeEnabled();
+  },
+};
+
+export const UncontrolledRange: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DateRangePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date range');
+    await userEvent.click(trigger);
+    const body = within(document.body);
+    await userEvent.click(await body.findByRole('button', { name: /\b10th\b/ }));
+    await userEvent.click(await body.findByRole('button', { name: /\b12th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/10.*12/));
+  },
+};

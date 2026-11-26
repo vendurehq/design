@@ -18,8 +18,14 @@ type CalendarProps = Omit<
 
 interface DateTimePickerProps
   extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
-  /** ISO 8601 instant. Calendar and time controls edit it in the user's local zone. */
+  /**
+   * ISO 8601 instant. Calendar and time controls edit it in the user's local
+   * zone. Pass `value` to control the picker. Leave the prop out and it keeps
+   * its own state.
+   */
   value?: string;
+  /** Initial instant when `value` is not passed. */
+  defaultValue?: string;
   onValueChange?: (value: string | undefined) => void;
   placeholder?: React.ReactNode;
   clearable?: boolean;
@@ -30,20 +36,30 @@ interface DateTimePickerProps
   calendarProps?: CalendarProps;
 }
 
-function DateTimePicker({
-  value,
-  onValueChange,
-  placeholder = 'Pick a date and time',
-  clearable = true,
-  disabled,
-  invalid,
-  name,
-  id,
-  calendarProps,
-  className,
-  ...props
-}: DateTimePickerProps) {
+function DateTimePicker(allProps: DateTimePickerProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    placeholder = 'Pick a date and time',
+    clearable = true,
+    disabled,
+    invalid,
+    name,
+    id,
+    calendarProps,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
   const [open, setOpen] = React.useState(false);
+  const [own, setOwn] = React.useState(defaultValue);
+  const value = controlled ? valueProp : own;
+  function commit(next: string | undefined) {
+    if (!controlled) setOwn(next);
+    onValueChange?.(next);
+  }
   // The calendar popup is a dialog, named by its trigger.
   const generatedId = React.useId();
   const triggerId = id ?? generatedId;
@@ -57,7 +73,7 @@ function DateTimePicker({
     if (!date) return;
     const next = new Date(date);
     next.setHours(selected?.getHours() ?? 0, selected?.getMinutes() ?? 0, 0, 0);
-    onValueChange?.(next.toISOString());
+    commit(next.toISOString());
     setOpen(false);
   }
 
@@ -69,7 +85,7 @@ function DateTimePicker({
     if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return;
     const next = selected ? new Date(selected) : new Date();
     next.setHours(hours, minutes, 0, 0);
-    onValueChange?.(next.toISOString());
+    commit(next.toISOString());
   }
 
   return (
@@ -127,7 +143,7 @@ function DateTimePicker({
           size="icon-sm"
           disabled={disabled}
           aria-label="Clear date and time"
-          onClick={() => onValueChange?.(undefined)}
+          onClick={() => commit(undefined)}
         >
           <XIcon />
         </Button>
