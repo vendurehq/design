@@ -192,14 +192,20 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
         />
         {isLoading || firstLoad ? (
           <InputGroupAddon align="inline-end">
-            <Spinner aria-label={t.loading} />
+            {/* Decorative: the status below announces the load. */}
+            <Spinner role={undefined} aria-label={undefined} aria-hidden />
           </InputGroupAddon>
         ) : null}
       </InputGroup>
+      {/* Stays mounted, so screen readers announce the change: a status
+          that mounts with its text is not reliably read. */}
+      <Autocomplete.Status data-slot="combobox-free-text-status" className="sr-only">
+        {isLoading || firstLoad ? t.loading : null}
+      </Autocomplete.Status>
       <ComboboxContent anchor={fieldRef}>
-        <ComboboxList>
+        <ComboboxList aria-busy={isLoading || firstLoad || undefined}>
           {firstLoad ? (
-            // Decorative: the field's spinner announces the load. One
+            // Decorative: the status announces the load. One
             // suggestion row tall (the ComboboxItem height), so a single
             // one-line suggestion takes its place without a jump.
             <div

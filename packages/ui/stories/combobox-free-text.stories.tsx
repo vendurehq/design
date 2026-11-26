@@ -193,7 +193,7 @@ export const FirstLoad: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = canvas.getByRole('combobox', { name: 'Size' });
-    await expect(canvas.getByRole('status')).toHaveAccessibleName('Loading…');
+    await expect(canvas.getByRole('status')).toHaveTextContent('Loading…');
     await userEvent.click(input);
     const body = within(canvasElement.ownerDocument.body);
     const loadingRow = await waitFor(() => {
@@ -202,11 +202,14 @@ export const FirstLoad: Story = {
       return row as HTMLElement;
     });
     const list = loadingRow.closest('[data-slot=combobox-list]') as HTMLElement;
+    await expect(list).toHaveAttribute('aria-busy', 'true');
     const loadingHeight = list.offsetHeight;
     const loadingWidth = list.offsetWidth;
     const option = await body.findByRole('option', { name: 'Medium' }, { timeout: 3000 });
     await expect(option).toBeVisible();
-    await expect(canvas.queryByRole('status', { hidden: true })).toBeNull();
+    // The status stays mounted and empties, so the next load is announced.
+    await expect(canvas.getByRole('status', { hidden: true })).toHaveTextContent('');
+    await expect(list).not.toHaveAttribute('aria-busy');
     // The loading row and the one loaded suggestion are the same height, and
     // the list keeps its width when the field's spinner goes away.
     await expect(list.offsetHeight).toBe(loadingHeight);
@@ -229,7 +232,7 @@ export const FirstLoadHeld: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.getByRole('status')).toHaveAccessibleName('Loading…');
+    await expect(canvas.getByRole('status')).toHaveTextContent('Loading…');
     await userEvent.click(canvas.getByRole('combobox', { name: 'Size' }));
     await waitFor(() =>
       expect(
