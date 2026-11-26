@@ -1,7 +1,7 @@
 import type { Tone } from '@vendure-io/ui/lib/state-dictionary';
-import { statusToneText } from '@vendure-io/ui/lib/tint-recipes';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
+import { statusToneText } from '../../lib/tint-recipes.ts';
 
 // The dot fill of each tone, as in StatusBadge: a dot is a filled shape, so
 // warning takes `warning-indicator`; in `warning-text` the dot reads brown.

@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTokens } from '../../test/slot-tokens.ts';
-import { chipIconButtonClass, IdChip } from './id-chip.tsx';
+import { IdChip } from './id-chip.tsx';
+import { chipIconButtonClass } from './id-chip-chrome.tsx';
 import { SecretValue } from './secret-value.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);

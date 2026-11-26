@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
+import { fieldSurface } from "../../lib/field-surface.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon } from "lucide-react"
 

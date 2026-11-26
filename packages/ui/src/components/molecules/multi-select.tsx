@@ -8,9 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@vendure-io/ui/components/atoms/select';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
 import { cn } from '@vendure-io/ui/lib/utils';
+import { Loader2Icon } from 'lucide-react';
 import * as React from 'react';
 import { isDevelopment } from '../../lib/env.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 type ItemValue = string | number;
 
@@ -26,8 +29,18 @@ function resolveAccessor<T, R>(item: T, accessor: Accessor<T, R>): R {
 }
 
 export interface MultiSelectProps<T> {
-  /** The list of options to choose from. */
-  items: readonly T[];
+  /**
+   * The list of options to choose from. `undefined` means the options are
+   * still loading: a selected value shows as a skeleton in the trigger (its
+   * label is not known yet), and the open list shows a loading row, one
+   * option tall. `[]` means there are no options.
+   */
+  items: readonly T[] | undefined;
+  /**
+   * Announced while `items` is `undefined`.
+   * @default `messages.multiSelect.loading`, "Loading…"
+   */
+  loadingLabel?: string;
   /**
    * How to render each option's label. Pass a property key for the common case
    * (`itemToLabel="name"`), or a function for full control
@@ -75,6 +88,7 @@ export interface MultiSelectProps<T> {
 
 function MultiSelect<T>({
   items,
+  loadingLabel,
   itemToLabel = String as unknown as Accessor<T, React.ReactNode>,
   itemToValue,
   value,
@@ -101,9 +115,12 @@ function MultiSelect<T>({
     [itemToLabel],
   );
 
+  const t = useMessages('multiSelect', { loading: loadingLabel });
+  const isLoading = items === undefined;
+
   const itemByValue = React.useMemo(() => {
     const map = new Map<ItemValue, T>();
-    for (const item of items) {
+    for (const item of items ?? []) {
       const itemValue = getValue(item);
       if (isDevelopment) {
         if (typeof itemValue !== 'string' && typeof itemValue !== 'number') {
@@ -141,9 +158,22 @@ function MultiSelect<T>({
         size={size}
         className={cn('w-full', className)}
         aria-invalid={invalid || undefined}
+        aria-busy={isLoading || undefined}
       >
         <SelectValue placeholder={placeholder}>
           {(selected: ItemValue[]) => {
+            // The labels of the selected values come with the options. Until
+            // then a skeleton holds their place: the raw values are ids, not
+            // text a person reads. With nothing selected, the placeholder is
+            // already right.
+            if (isLoading && selected.length > 0) {
+              return (
+                <>
+                  <SkeletonLine data-slot="multi-select-value-skeleton" className="w-24" />
+                  <span className="sr-only">{t.loading}</span>
+                </>
+              );
+            }
             const selectedItems = selected
               .map((v) => itemByValue.get(v))
               .filter((item): item is T => item !== undefined);
@@ -158,17 +188,29 @@ function MultiSelect<T>({
           }}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className={contentClassName}>
-        <SelectGroup>
-          {items.map((item) => {
-            const itemValue = getValue(item);
-            return (
-              <SelectItem key={itemValue} value={itemValue}>
-                {getLabel(item)}
-              </SelectItem>
-            );
-          })}
-        </SelectGroup>
+      <SelectContent className={contentClassName} aria-busy={isLoading || undefined}>
+        {isLoading ? (
+          // Decorative: a listbox holds only options and groups, and the
+          // trigger is already busy. One option tall (the SelectItem height).
+          <div
+            data-slot="multi-select-loading"
+            aria-hidden="true"
+            className="text-muted-foreground flex min-h-8.5 items-center justify-center"
+          >
+            <Loader2Icon className="size-4 motion-safe:animate-spin" />
+          </div>
+        ) : (
+          <SelectGroup>
+            {items.map((item) => {
+              const itemValue = getValue(item);
+              return (
+                <SelectItem key={itemValue} value={itemValue}>
+                  {getLabel(item)}
+                </SelectItem>
+              );
+            })}
+          </SelectGroup>
+        )}
       </SelectContent>
     </Select>
   );
