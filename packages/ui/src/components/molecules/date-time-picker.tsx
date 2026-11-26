@@ -117,9 +117,15 @@ function DateTimePicker(allProps: DateTimePickerProps) {
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
+        <PopoverContent
+          className="w-auto min-w-(--anchor-width) p-0"
+          align="start"
+          aria-labelledby={triggerId}
+        >
           <Calendar
             {...calendarProps}
+            // In a popup wider than the grid, the month sits centred with even padding.
+            className={cn('mx-auto', calendarProps?.className)}
             mode="single"
             selected={selected}
             defaultMonth={selected}

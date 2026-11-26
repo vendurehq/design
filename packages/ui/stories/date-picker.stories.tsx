@@ -88,6 +88,15 @@ export const Open: Story = {
   },
 };
 
+export const OpenDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: DateAndTime.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getAllByRole('button')[0] as HTMLElement);
+    await waitFor(() => expect(within(document.body).getByRole('dialog')).toBeVisible());
+  },
+};
+
 /**
  * Opens the picker and checks the calendar follows the `FormatProvider` language:
  * a French caption and a week that starts on Monday.
@@ -231,4 +240,72 @@ export const UncontrolledRange: Story = {
     await userEvent.click(await body.findByRole('button', { name: /\b12th\b/ }));
     await waitFor(() => expect(trigger).toHaveTextContent(/10.*12/));
   },
+};
+
+/**
+ * A popup is at least as wide as the field that opens it. In a field wider than
+ * the calendar, the month sits centred in the popup.
+ */
+async function expectPopupAtLeastTriggerWidth(canvasElement: HTMLElement) {
+  const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+  await userEvent.click(trigger);
+  const popup = await within(document.body).findByRole('dialog');
+  // offsetWidth ignores the scale of the opening animation.
+  await expect(popup.offsetWidth).toBeGreaterThanOrEqual(trigger.offsetWidth);
+}
+
+export const WideDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[480px]">
+      <DatePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+};
+
+/** A field narrower than the calendar keeps the calendar's own width. */
+export const NarrowDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-48">
+      <DatePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+};
+
+export const WideDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[640px]">
+      <DateTimePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+};
+
+export const WideRange: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[480px]">
+      <DateRangePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+};
+
+export const WideRangeWithPresets: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[640px]">
+      <DateRangePicker
+        presets={[
+          { id: 'today', label: 'Today', value: { from: '2026-11-26', to: '2026-11-26' } },
+          { id: 'week', label: 'Last 7 days', value: { from: '2026-11-20', to: '2026-11-26' } },
+        ]}
+      />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
 };

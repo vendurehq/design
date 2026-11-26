@@ -125,7 +125,11 @@ function DateRangePicker(allProps: DateRangePickerProps) {
             {selected.from ? formatDateRangeLabel(selected.from, selected.to, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
+        <PopoverContent
+          className="w-auto min-w-(--anchor-width) p-0"
+          align="start"
+          aria-labelledby={triggerId}
+        >
           <div className={cn('flex', presets.length > 0 && 'divide-x')}>
             {presets.length > 0 ? (
               <div className="flex w-40 flex-col gap-1 p-2">
@@ -148,6 +152,8 @@ function DateRangePicker(allProps: DateRangePickerProps) {
             ) : null}
             <Calendar
               {...calendarProps}
+              // In a popup wider than the grid, the month sits centred with even padding.
+              className={cn('mx-auto', calendarProps?.className)}
               mode="range"
               selected={selected}
               defaultMonth={selected.from}
