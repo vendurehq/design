@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { HomeIcon, PackageIcon, TruckIcon, ZapIcon } from 'lucide-react';
-import { MotionConfig } from 'motion/react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ChoiceCard,
@@ -255,16 +254,16 @@ export const Keyboard: Story = {
   },
 };
 
-// Before and after for the moving selected edge. "Before" renders the same
-// group with motion turned off (as today: the edge switches in place); "After"
-// glides it to the picked card.
-const ROW = [
+// In a single-choice group the selected edge moves to the picked card: along a
+// row, and across rows between cards of different heights. Arrow keys move it
+// at once; with reduced motion it fades in place.
+const TIERS = [
   { value: 'starter', title: 'Starter', description: 'One shop', price: '€29' },
   { value: 'growth', title: 'Growth', description: 'Three shops', price: '€99' },
   { value: 'scale', title: 'Scale', description: 'Unlimited shops', price: '€299' },
 ];
 
-const GRID = [
+const CARRIERS = [
   { value: 'dhl', title: 'DHL Express', description: 'Next working day' },
   { value: 'postnl', title: 'PostNL', description: 'Two to three working days, signed for on delivery, with tracking' },
   { value: 'ups', title: 'UPS Standard', description: 'Three to five working days' },
@@ -273,70 +272,42 @@ const GRID = [
   { value: 'bike', title: 'Bike courier', description: 'Same day, Amsterdam only' },
 ];
 
-function Column({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-3">
-      <p className="text-sm font-medium text-foreground-secondary">{label}</p>
-      {children}
-    </div>
-  );
-}
-
-function Pair({ render }: { render: (side: 'before' | 'after') => ReactNode }) {
-  return (
-    <div className="flex flex-col gap-8 lg:flex-row">
-      <Column label="Before: the edge switches in place">
-        <MotionConfig reducedMotion="always">{render('before')}</MotionConfig>
-      </Column>
-      <Column label="After: the edge glides to the picked card">{render('after')}</Column>
-    </div>
-  );
-}
-
 export const MovingSelection: Story = {
   name: 'Moving selection',
   args: { value: 'starter' },
   render: () => (
-    <div className="flex max-w-6xl flex-col gap-12">
-      <Pair
-        render={(side) => (
-          <ChoiceCardGroup aria-label={`Plan, ${side}`} defaultValue="starter" className="grid-cols-3" data-testid={`row-${side}`}>
-            {ROW.map((plan) => (
-              <ChoiceCard key={plan.value} value={plan.value} className="flex-col">
-                <ChoiceCardContent>
-                  <ChoiceCardTitle>{plan.title}</ChoiceCardTitle>
-                  <ChoiceCardDescription>{plan.description}</ChoiceCardDescription>
-                </ChoiceCardContent>
-                <ChoiceCardMeta className="ms-0 text-start">{plan.price}</ChoiceCardMeta>
-              </ChoiceCard>
-            ))}
-          </ChoiceCardGroup>
-        )}
-      />
-      <Pair
-        render={(side) => (
-          <ChoiceCardGroup aria-label={`Shipping, ${side}`} defaultValue="dhl" className="grid-cols-2 items-start" data-testid={`grid-${side}`}>
-            {GRID.map((option) => (
-              <ChoiceCard key={option.value} value={option.value} size="sm">
-                <ChoiceCardContent>
-                  <ChoiceCardTitle>{option.title}</ChoiceCardTitle>
-                  <ChoiceCardDescription>{option.description}</ChoiceCardDescription>
-                </ChoiceCardContent>
-              </ChoiceCard>
-            ))}
-          </ChoiceCardGroup>
-        )}
-      />
+    <div className="flex max-w-xl flex-col gap-8">
+      <ChoiceCardGroup aria-label="Plan" defaultValue="starter" className="grid-cols-3" data-testid="row">
+        {TIERS.map((plan) => (
+          <ChoiceCard key={plan.value} value={plan.value} className="flex-col">
+            <ChoiceCardContent>
+              <ChoiceCardTitle>{plan.title}</ChoiceCardTitle>
+              <ChoiceCardDescription>{plan.description}</ChoiceCardDescription>
+            </ChoiceCardContent>
+            <ChoiceCardMeta className="ms-0 text-start">{plan.price}</ChoiceCardMeta>
+          </ChoiceCard>
+        ))}
+      </ChoiceCardGroup>
+      <ChoiceCardGroup aria-label="Carrier" defaultValue="dhl" className="grid-cols-2 items-start" data-testid="grid">
+        {CARRIERS.map((option) => (
+          <ChoiceCard key={option.value} value={option.value} size="sm">
+            <ChoiceCardContent>
+              <ChoiceCardTitle>{option.title}</ChoiceCardTitle>
+              <ChoiceCardDescription>{option.description}</ChoiceCardDescription>
+            </ChoiceCardContent>
+          </ChoiceCard>
+        ))}
+      </ChoiceCardGroup>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const row = within(canvas.getByTestId('row-after'));
-    await userEvent.click(row.getByRole('radio', { name: 'Scale' }));
-    await expect(row.getByRole('radio', { name: 'Scale' })).toBeChecked();
+    const row = canvasElement.querySelector<HTMLElement>('[data-testid=row]');
+    if (!row) throw new Error('row group missing');
+    const scale = within(row).getByRole('radio', { name: 'Scale' });
+    await userEvent.click(scale);
+    await expect(scale).toBeChecked();
     // One edge per group, in the picked card, once the glide has settled.
-    await waitFor(() =>
-      expect(canvas.getByTestId('row-after').querySelectorAll('[data-slot=choice-card-edge]')).toHaveLength(1),
-    );
+    await waitFor(() => expect(row.querySelectorAll('[data-slot=choice-card-edge]')).toHaveLength(1));
+    await waitFor(() => expect(scale.querySelector('[data-slot=choice-card-edge]')).not.toBeNull());
   },
 };
