@@ -698,7 +698,7 @@ export const LoadingRowShape: Story = {
               getRowId={(p) => p.id}
             />
             <DataTable
-              rows={[]}
+              rows={undefined}
               columns={twoLineProductColumns}
               getRowId={(p) => p.id}
               isLoading
@@ -723,7 +723,7 @@ export const LoadingRowShape: Story = {
               getRowId={(p) => p.id}
             />
             <DataTable
-              rows={[]}
+              rows={undefined}
               columns={twoLineProductColumns}
               getRowId={(p) => p.id}
               isLoading

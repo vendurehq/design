@@ -10,6 +10,7 @@ import {
   type ColumnDef,
   DataTable,
   type DataTableFilterEditorContext,
+  type DataTablePagination,
   DataTableRowLink,
   DataTableSkeletonLine,
   type TableInstance as Table,
@@ -18,6 +19,9 @@ import {
 import {
   buildDisplayColumns,
   columnAlign,
+  columnContentIndent,
+  columnMinWidth,
+  columnWidth,
   getHideableLeafColumns,
   getSelectedOriginals,
   getSelectedRowIds,
@@ -25,8 +29,15 @@ import {
   measureColumnIndents,
   resolveClearFilters,
   resolveSlot,
+  STATUS_BADGE_CONTENT_INSETS,
   sameIndents,
 } from './data-table-helpers.tsx';
+import {
+  readRowCount,
+  skeletonRowCountFor,
+  useRememberedListTotal,
+  writeRowCount,
+} from './data-table-row-count-storage.tsx';
 import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
@@ -272,15 +283,19 @@ describe('DataTableRowLink', () => {
 });
 
 describe('DataTable loading state', () => {
-  test('empty + isLoading renders skeletonRowCount rows (× column count)', () => {
-    const markup = html(<DataTable rows={[]} columns={columns} isLoading skeletonRowCount={3} />);
+  test('before the first load renders skeletonRowCount rows (× column count)', () => {
+    const markup = html(
+      <DataTable rows={undefined} columns={columns} isLoading skeletonRowCount={3} />,
+    );
     // 3 skeleton rows × 2 columns.
     expect(count(markup, /data-slot="skeleton"/g)).toBe(6);
     expect(markup).not.toContain('No results');
   });
 
   test('default loading cell is one line box tall', () => {
-    const markup = html(<DataTable rows={[]} columns={columns} isLoading skeletonRowCount={1} />);
+    const markup = html(
+      <DataTable rows={undefined} columns={columns} isLoading skeletonRowCount={1} />,
+    );
     expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(2);
     // Each line is the shared SkeletonLine (one `1lh` box, hidden from assistive
     // tech) with the DataTable's own marker, not a DataTable-only copy.
@@ -296,7 +311,7 @@ describe('DataTable loading state', () => {
   test('skeletonCells replaces the default line for the keyed column only', () => {
     const markup = html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={columns}
         isLoading
         skeletonRowCount={2}
@@ -311,7 +326,7 @@ describe('DataTable loading state', () => {
   test('null renders an empty cell; undefined keeps the default line', () => {
     const markup = html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={columns}
         isLoading
         skeletonRowCount={1}
@@ -325,7 +340,7 @@ describe('DataTable loading state', () => {
   test('skeleton cells carry the loaded cell layout: empty select, indented leading, sized actions', () => {
     const markup = html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={columns}
         isLoading
         skeletonRowCount={2}
@@ -348,7 +363,7 @@ describe('DataTable loading state', () => {
   test('skeletonCells can override the generated actions cell', () => {
     const markup = html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={columns}
         isLoading
         skeletonRowCount={1}
@@ -363,7 +378,7 @@ describe('DataTable loading state', () => {
   test('skeletonCells respects hidden columns', () => {
     const markup = html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={columns}
         isLoading
         skeletonRowCount={1}
@@ -382,7 +397,7 @@ describe('DataTable loading state', () => {
     ];
     html(
       <DataTable
-        rows={[]}
+        rows={undefined}
         columns={nested}
         isLoading
         skeletonCells={{ 'customer.name': null, customer_name: null }}
@@ -395,14 +410,214 @@ describe('DataTable loading state', () => {
   });
 
   test('no columns still renders one cell per skeleton row', () => {
-    const markup = html(<DataTable rows={[]} columns={[]} isLoading skeletonRowCount={2} />);
+    const markup = html(<DataTable rows={undefined} columns={[]} isLoading skeletonRowCount={2} />);
     expect(count(markup, /data-slot="table-cell"/g)).toBe(2);
+  });
+
+  test('an empty list that loads again keeps its empty state, pending (no skeleton swap)', () => {
+    const markup = html(<DataTable rows={[]} columns={columns} isLoading />);
+    expect(markup).not.toContain('data-slot="skeleton"');
+    expect(markup).toContain('No results');
+    expect(markup).not.toContain('data-table-empty-placeholder');
+    expect(markup).toContain('data-pending=""');
+  });
+
+  test('a paginated first load draws one full page, not skeletonRowCount', () => {
+    const markup = html(
+      <DataTable
+        rows={undefined}
+        columns={columns}
+        skeletonRowCount={3}
+        pagination={{ page: 1, pageSize: 25, totalItems: null, onPageChange: () => {} }}
+      />,
+    );
+    expect(count(markup, /data-slot="data-table-skeleton-line"/g)).toBe(25 * columns.length);
   });
 
   test('populated + isLoading keeps the real rows (no skeleton swap)', () => {
     const markup = html(<DataTable rows={rows} columns={columns} isLoading />);
     expect(markup).not.toContain('data-slot="skeleton"');
     expect(markup).toContain('Aland Islands');
+  });
+});
+
+describe('DataTable loading pagination and pending rows', () => {
+  const pagination = { page: 2, pageSize: 1, totalItems: 2, onPageChange: () => {} };
+  const tbody = (markup: string) => markup.match(/<tbody[^>]*>/)?.[0] ?? '';
+
+  test('an unknown total (null) shows a skeleton range, not "0 of 0"', () => {
+    const markup = html(
+      <DataTable
+        rows={undefined}
+        columns={columns}
+        isLoading
+        pagination={{ ...pagination, page: 1, totalItems: null }}
+      />,
+    );
+    expect(markup).not.toContain('0 of 0');
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*>.*data-slot="skeleton"/);
+    const next = markup.match(/<button[^>]*data-slot="table-pagination-next"[^>]*>/)?.[0] ?? '';
+    expect(next).toContain('disabled=""');
+  });
+
+  test('a total known before the rows (a cached count) shows its range', () => {
+    const markup = html(
+      <DataTable
+        rows={undefined}
+        columns={columns}
+        isLoading
+        pagination={{ ...pagination, page: 1, pageSize: 10, totalItems: 132 }}
+      />,
+    );
+    expect(markup).toContain('1–10 of 132');
+  });
+
+  test('the first load marks the body busy, not pending, with or without isLoading', () => {
+    const quiet = html(<DataTable rows={undefined} columns={columns} />);
+    expect(tbody(quiet)).toContain('aria-busy="true"');
+    expect(quiet).toContain('data-slot="skeleton"');
+    const markup = html(<DataTable rows={undefined} columns={columns} isLoading />);
+    expect(tbody(markup)).toContain('aria-busy="true"');
+    expect(tbody(markup)).not.toContain('data-pending=""');
+  });
+
+  test('loading with rows on screen keeps the rows and marks the body busy and pending', () => {
+    const markup = html(
+      <DataTable rows={[brazil]} columns={columns} isLoading pagination={pagination} />,
+    );
+    expect(markup).toContain('Brazil');
+    expect(markup).not.toContain('data-slot="skeleton"');
+    expect(tbody(markup)).toContain('aria-busy="true"');
+    expect(tbody(markup)).toContain('data-pending=""');
+  });
+
+  test('loading with rows on screen keeps the range and makes prev/next ignore presses', () => {
+    const markup = html(
+      <DataTable rows={[brazil]} columns={columns} isLoading pagination={pagination} />,
+    );
+    expect(markup).toContain('2–2 of 2');
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*data-pending=""/);
+    const previous = markup.match(/<button[^>]*data-slot="table-pagination-previous"[^>]*>/)?.[0];
+    expect(previous).toContain('aria-disabled="true"');
+  });
+
+  test('not loading: the body is neither busy nor pending', () => {
+    const markup = html(<DataTable rows={rows} columns={columns} pagination={pagination} />);
+    expect(tbody(markup)).not.toContain('aria-busy');
+    expect(tbody(markup)).not.toContain('data-pending=""');
+  });
+});
+
+describe('DataTable column widths', () => {
+  const headerTag = (markup: string, id: string) =>
+    markup.match(new RegExp(`<th[^>]*data-column-id="${id}"[^>]*>`))?.[0] ?? '';
+  const widthColumns: ColumnDef<Country>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'code', header: 'Code', meta: { width: 96 } },
+  ];
+
+  test('meta.width sets the header cell width, while loading and with rows', () => {
+    for (const markup of [
+      html(<DataTable rows={undefined} columns={widthColumns} isLoading />),
+      html(<DataTable rows={rows} columns={widthColumns} />),
+    ]) {
+      expect(headerTag(markup, 'code')).toContain('width:96px');
+      expect(headerTag(markup, 'name')).not.toContain('width');
+    }
+  });
+
+  test("a column without meta.width gets no width, not TanStack's default size", () => {
+    const markup = html(<DataTable rows={rows} columns={columns} />);
+    expect(markup).not.toMatch(/<th[^>]*width/);
+  });
+
+  test('columnWidth reads a number or a CSS length and ignores anything else', () => {
+    expect(columnWidth({ width: 96 })).toBe(96);
+    expect(columnWidth({ width: '8rem' })).toBe('8rem');
+    expect(columnWidth({ width: null })).toBeUndefined();
+    expect(columnWidth(undefined)).toBeUndefined();
+  });
+
+  test('meta.width is also the minimum width, and meta.minWidth sets a floor alone', () => {
+    const floorColumns: ColumnDef<Country>[] = [
+      { accessorKey: 'name', header: 'Name', meta: { minWidth: '12rem' } },
+      { accessorKey: 'code', header: 'Code', meta: { width: 96 } },
+    ];
+    for (const markup of [
+      html(<DataTable rows={undefined} columns={floorColumns} isLoading />),
+      html(<DataTable rows={rows} columns={floorColumns} />),
+    ]) {
+      expect(headerTag(markup, 'code')).toContain('width:96px;min-width:96px');
+      expect(headerTag(markup, 'name')).toContain('min-width:12rem');
+      expect(headerTag(markup, 'name')).not.toMatch(/[;"]width:/);
+    }
+    expect(columnMinWidth({ width: 96 })).toBe(96);
+    expect(columnMinWidth({ width: 96, minWidth: 64 })).toBe(64);
+    expect(columnMinWidth({})).toBeUndefined();
+  });
+});
+
+describe('DataTable declared content inset', () => {
+  const insetColumns: ColumnDef<Country>[] = [
+    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'code', header: 'Code', meta: { contentInset: 'status-badge' } },
+  ];
+  const indent = 'max(0px, calc(calc(var(--spacing)*6.75) - var(--spacing)*2))';
+
+  test('meta.contentInset indents the header and cells the same while loading, empty and with rows', () => {
+    for (const markup of [
+      html(<DataTable rows={undefined} columns={insetColumns} isLoading skeletonRowCount={2} />),
+      html(<DataTable rows={[]} columns={insetColumns} />),
+      html(<DataTable rows={rows} columns={insetColumns} />),
+    ]) {
+      const th = markup.match(/<th[^>]*data-column-id="code"[^>]*>/)?.[0] ?? '';
+      expect(th).toContain(`--column-indent:${indent}`);
+      for (const td of markup.match(/<td[^>]*data-column-id="code"[^>]*>/g) ?? []) {
+        expect(td).toContain(`--column-indent:${indent}`);
+      }
+      expect(markup.match(/<th[^>]*data-column-id="name"[^>]*>/)?.[0]).not.toContain('style=');
+    }
+  });
+
+  test('columnContentIndent reads a keyword, px or a CSS length', () => {
+    expect(columnContentIndent({ contentInset: 'status-icon' })).toBe(
+      'max(0px, calc(calc(var(--spacing)*6) - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({ contentInset: 20 })).toBe(
+      'max(0px, calc(20px - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({ contentInset: '1.5rem' })).toBe(
+      'max(0px, calc(1.5rem - var(--spacing)*2))',
+    );
+    expect(columnContentIndent({})).toBeUndefined();
+  });
+
+  test('the StatusBadge keywords match the insets status-badge.tsx sets', async () => {
+    const source = await Bun.file(new URL('../status-badge.tsx', import.meta.url)).text();
+    const {
+      'status-badge': icon,
+      'status-badge-dot': dot,
+      'status-icon': appearance,
+    } = STATUS_BADGE_CONTENT_INSETS;
+    expect(source).toContain(
+      `has-data-[marker=icon]:[--content-inset:${icon}] has-data-[marker=dot]:[--content-inset:${dot}]`,
+    );
+    expect(source).toContain(`'[--content-inset:${appearance}]'`);
+  });
+});
+
+describe('DataTable rowLinks', () => {
+  const tableTag = (markup: string) => markup.match(/<table[^>]*>/)?.[0] ?? '';
+
+  test('rowLinks marks the table in every state, so the chevron slot does not wait for a link', () => {
+    for (const props of [{ rows }, { rows: undefined, isLoading: true }, { rows: [] }]) {
+      expect(tableTag(html(<DataTable {...props} columns={columns} rowLinks />))).toContain(
+        'data-row-links=""',
+      );
+      expect(tableTag(html(<DataTable {...props} columns={columns} />))).not.toContain(
+        ' data-row-links=',
+      );
+    }
   });
 });
 
@@ -777,7 +992,7 @@ describe('DataTable clear filters', () => {
   });
 
   test('a chip while the first page loads: the button stays', () => {
-    const markup = table({ clearFilters: true, rows: [], isLoading: true });
+    const markup = table({ clearFilters: true, rows: undefined, isLoading: true });
     expect(count(markup, clearButton)).toBe(1);
   });
 
@@ -1198,6 +1413,112 @@ describe('DataTable selection storage', () => {
   });
 });
 
+describe('DataTable row count storage', () => {
+  const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const stubStorage = (store: Record<string, string>) =>
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => {
+          store[key] = value;
+        },
+      },
+    });
+  afterEach(() => {
+    if (real) Object.defineProperty(globalThis, 'localStorage', real);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  });
+
+  test('a write stores the count under the prefixed key, and a read gives it back', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeRowCount('orders', 3);
+    expect(store).toEqual({ 'vendure-ui:list-total:orders': '3' });
+    expect(readRowCount('orders')).toBe(3);
+    writeRowCount('orders', 0);
+    expect(readRowCount('orders')).toBe(0);
+    expect(readRowCount('customers')).toBeNull();
+  });
+
+  test('malformed, negative or fractional counts read as nothing remembered', () => {
+    stubStorage({
+      'vendure-ui:list-total:a': 'abc',
+      'vendure-ui:list-total:b': '-1',
+      'vendure-ui:list-total:c': '2.5',
+      'vendure-ui:list-total:d': '',
+    });
+    for (const key of ['a', 'b', 'c', 'd']) expect(readRowCount(key)).toBeNull();
+  });
+
+  test('blocked storage, or none at all, is ignored', () => {
+    const blocked = () => {
+      throw new DOMException('blocked', 'SecurityError');
+    };
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: { getItem: blocked, setItem: blocked },
+    });
+    expect(readRowCount('orders')).toBeNull();
+    expect(() => writeRowCount('orders', 3)).not.toThrow();
+    Reflect.deleteProperty(globalThis, 'localStorage');
+    expect(readRowCount('orders')).toBeNull();
+    expect(() => writeRowCount('orders', 3)).not.toThrow();
+  });
+
+  test('the skeleton count is the rows the current page will have', () => {
+    const page = (n: number, pageSize = 10) => ({ page: n, pageSize });
+    // Nothing remembered: one full page, or the fallback without pagination.
+    expect(skeletonRowCountFor(null, page(1, 25), 10)).toBe(25);
+    expect(skeletonRowCountFor(null, undefined, 10)).toBe(10);
+    // A remembered total of 132 at 10 per page: full pages, then 2 on page 14.
+    expect(skeletonRowCountFor(132, page(1), 10)).toBe(10);
+    expect(skeletonRowCountFor(132, page(14), 10)).toBe(2);
+    expect(skeletonRowCountFor(132, page(15), 10)).toBe(0);
+    // A short list, and an empty one.
+    expect(skeletonRowCountFor(3, page(1), 10)).toBe(3);
+    expect(skeletonRowCountFor(0, page(1), 10)).toBe(0);
+    // Without pagination the total is the row count.
+    expect(skeletonRowCountFor(3, undefined, 10)).toBe(3);
+  });
+
+  test('expectedTotal sets the skeleton rows of the first load', () => {
+    const skeletonRows = (markup: string) =>
+      count(markup, /data-slot="data-table-skeleton-line"/g) / columns.length;
+    expect(
+      skeletonRows(html(<DataTable rows={undefined} columns={columns} expectedTotal={3} />)),
+    ).toBe(3);
+    const lastPage = html(
+      <DataTable
+        rows={undefined}
+        columns={columns}
+        expectedTotal={132}
+        pagination={{ page: 14, pageSize: 10, totalItems: null, onPageChange: () => {} }}
+      />,
+    );
+    expect(skeletonRows(lastPage)).toBe(2);
+    const empty = html(<DataTable rows={undefined} columns={columns} expectedTotal={0} />);
+    expect(skeletonRows(empty)).toBe(0);
+    expect(empty).toContain('data-table-empty-placeholder');
+  });
+
+  test('a server render of the hook reads nothing, so the table draws the default', () => {
+    stubStorage({ 'vendure-ui:list-total:countries': '3' });
+    function Remembered() {
+      const expectedTotal = useRememberedListTotal('countries', null);
+      return (
+        <DataTable
+          rows={undefined}
+          columns={columns}
+          skeletonRowCount={6}
+          expectedTotal={expectedTotal}
+        />
+      );
+    }
+    expect(html(<Remembered />).match(/<tr[^>]*>/g)?.length).toBe(1 + 6);
+  });
+});
+
 describe('DataTable onTableReady', () => {
   test('does not fire during render/SSR — an effect-only "ready" capture', () => {
     const onTableReady = mock(() => {});
@@ -1576,7 +1897,9 @@ describe('DataTable card frame', () => {
     const empty = html(<DataTable rows={[]} columns={columns} footerRows={footer} />);
     expect(empty).not.toContain('data-slot="footer-row"');
 
-    const loading = html(<DataTable rows={[]} columns={columns} isLoading footerRows={footer} />);
+    const loading = html(
+      <DataTable rows={undefined} columns={columns} isLoading footerRows={footer} />,
+    );
     expect(loading).not.toContain('data-slot="footer-row"');
   });
 });
@@ -1653,7 +1976,7 @@ describe('DataTable bulk action context', () => {
   test('a restored selection before its rows load still reports every id', () => {
     expect(
       contextOf({
-        rows: [],
+        rows: undefined,
         isLoading: true,
         rowSelection: { value: { '1': true, '2': true, '9': true }, onChange: () => {} },
       }),
@@ -1854,5 +2177,17 @@ describe('measureColumnIndents', () => {
     expect(sameIndents({ a: 1 }, { a: 1 })).toBe(true);
     expect(sameIndents({ a: 1 }, { a: 2 })).toBe(false);
     expect(sameIndents({ a: 1 }, {})).toBe(false);
+  });
+});
+
+describe('DataTable pagination types', () => {
+  test('server pagination requires totalItems; client pagination takes none', () => {
+    const base = { page: 1, pageSize: 10, onPageChange: () => {} };
+    // @ts-expect-error: server mode without totalItems.
+    const missing: DataTablePagination = { ...base };
+    const unknown: DataTablePagination = { ...base, totalItems: null };
+    // @ts-expect-error: client mode pages `rows` itself.
+    const clientTotal: DataTablePagination = { ...base, mode: 'client', totalItems: 3 };
+    expect([missing, unknown, clientTotal]).toHaveLength(3);
   });
 });
