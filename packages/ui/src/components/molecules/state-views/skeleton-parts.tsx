@@ -35,18 +35,20 @@ import * as React from 'react';
  * One text line of placeholder: a box exactly one line box tall (`1lh` of the
  * inherited text style) with a bar centred in it. Size it with a text utility
  * (`text-xs`, `text-style-page-title`) and its width with `w-*`. The building
- * block of every other part; stack several for a paragraph.
+ * block of every other part; stack several for a paragraph. It is a <span>, so
+ * it can also stand in for a value inside a paragraph: give it `inline-flex`
+ * and a width there.
  */
-function SkeletonLine({ className, ...props }: React.ComponentProps<'div'>) {
+function SkeletonLine({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <div
+    <span
       data-skeleton="line"
       aria-hidden="true"
       className={cn('flex h-lh w-full items-center', className)}
       {...props}
     >
       <Skeleton className="h-[0.8lh] w-full" />
-    </div>
+    </span>
   );
 }
 
