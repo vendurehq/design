@@ -56,3 +56,65 @@ describe('Money precision', () => {
     }
   });
 });
+
+describe('Money while the amount is not known', () => {
+  test('undefined renders a one-line skeleton, not $0.00', () => {
+    const markup = renderToStaticMarkup(<Money value={undefined} currency="USD" locale="en-US" />);
+
+    expect(markup).toContain('data-skeleton="line"');
+    expect(markup).toContain('aria-busy="true"');
+    expect(markup).not.toContain('$');
+    expect(text(<Money value={undefined} currency="USD" locale="en-US" />)).toBe('Loading amount');
+  });
+
+  test('the loading text is visually hidden and can be translated', () => {
+    const markup = renderToStaticMarkup(
+      <Money value={undefined} currency="EUR" loadingLabel="Betrag wird geladen" />,
+    );
+
+    expect(markup).toMatch(/<span class="sr-only">Betrag wird geladen<\/span>/);
+  });
+
+  test('the loading text comes from FormatProvider messages, and the prop wins', () => {
+    const inProvider = (node: React.ReactElement) =>
+      renderToStaticMarkup(
+        <FormatProvider currency="EUR" messages={{ money: { loading: 'Lädt' } }}>
+          {node}
+        </FormatProvider>,
+      );
+
+    expect(inProvider(<Money value={undefined} />)).toContain('<span class="sr-only">Lädt</span>');
+    expect(inProvider(<Money value={undefined} loadingLabel="Betrag" />)).toContain(
+      '<span class="sr-only">Betrag</span>',
+    );
+  });
+
+  test('the skeleton is phrasing content, so it is valid inside a paragraph', () => {
+    const markup = renderToStaticMarkup(
+      <p>
+        Total <Money value={undefined} currency="USD" />
+      </p>,
+    );
+
+    expect(markup).not.toContain('<div');
+  });
+
+  test('the skeleton keeps the caller class and props on the money element', () => {
+    const markup = renderToStaticMarkup(
+      <Money value={undefined} currency="USD" className="font-semibold" id="total" />,
+    );
+
+    expect(markup).toMatch(/^<span data-slot="money"[^>]*class="[^"]*font-semibold/);
+    expect(markup).toContain('id="total"');
+  });
+
+  test('null renders the fallback, an em dash by default', () => {
+    expect(text(<Money value={null} currency="USD" locale="en-US" />)).toBe('—');
+    expect(text(<Money value={null} currency="USD" fallback="n/a" />)).toBe('n/a');
+    expect(renderToStaticMarkup(<Money value={null} currency="USD" />)).not.toContain('aria-busy');
+  });
+
+  test('zero is a real amount', () => {
+    expect(text(<Money value={0} currency="USD" locale="en-US" />)).toBe('$0.00');
+  });
+});
