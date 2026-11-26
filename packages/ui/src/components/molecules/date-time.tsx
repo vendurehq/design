@@ -3,6 +3,9 @@
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type { ComponentProps, ReactNode } from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
+// Relative: `time-tooltip` is internal.
+import { sampleText, TimeSkeleton } from './time-tooltip.tsx';
 
 function toDate(value: string | number | Date | null | undefined): Date | null {
   if (value === null || value === undefined) return null;
@@ -10,7 +13,15 @@ function toDate(value: string | number | Date | null | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+// A late date with two-digit fields, so the sample is as long as the longest
+// dates: "Dec 28, 2026, 10:58 PM" in en-US.
+const SAMPLE_DATE = Date.UTC(2026, 11, 28, 22, 58, 58);
+
 interface DateTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
+  /**
+   * `undefined` means not loaded yet and renders a one-line skeleton as wide
+   * as the formatted date. `null` and an invalid date render `fallback`.
+   */
   value: string | number | Date | null | undefined;
   locale?: string;
   /** `Intl` date preset. Default `'medium'`. */
@@ -20,8 +31,10 @@ interface DateTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   timeZone?: string;
   /** Escape hatch — full control, ignores `dateStyle`/`timeStyle`. */
   formatOptions?: Intl.DateTimeFormatOptions;
-  /** Rendered for nullish/invalid input. Default `'—'`. */
+  /** Rendered for `null` and invalid input. Default `'—'`. */
   fallback?: ReactNode;
+  /** Screen-reader text while `value` is `undefined`. @default `messages.dateTime.loading`, "Loading date" */
+  loadingLabel?: string;
 }
 
 /**
@@ -40,12 +53,12 @@ function DateTime({
   timeZone,
   formatOptions,
   fallback = '—',
+  loadingLabel,
   className,
   ...props
 }: DateTimeProps) {
   const settings = useFormatSettings();
-  const date = toDate(value);
-  if (!date) return <>{fallback}</>;
+  const t = useMessages('dateTime', { loading: loadingLabel });
 
   // Explicit wins over context: an escape-hatch `formatOptions.timeZone` must
   // not be clobbered by the provider's zone.
@@ -57,6 +70,28 @@ function DateTime({
     }),
     ...(resolvedTimeZone ? { timeZone: resolvedTimeZone } : {}),
   };
+
+  if (value === undefined) {
+    const sample = sampleText(
+      () =>
+        new Intl.DateTimeFormat(locale ?? settings.locale, { ...options, timeZone: 'UTC' }).format(
+          SAMPLE_DATE,
+        ),
+      'Dec 28, 2026',
+    );
+    return (
+      <TimeSkeleton
+        slot="date-time"
+        sample={sample}
+        loadingLabel={t.loading}
+        className={className}
+        {...props}
+      />
+    );
+  }
+
+  const date = toDate(value);
+  if (!date) return <>{fallback}</>;
 
   let formatted: string;
   try {

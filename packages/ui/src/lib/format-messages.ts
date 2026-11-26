@@ -20,6 +20,10 @@ const defaultMessages = {
     /** Screen-reader text of the loading region. */
     loading: 'Loading…',
   },
+  multiSelect: {
+    /** Stands in for the selected values while the options load. */
+    loading: 'Loading…',
+  },
   passwordInput: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -33,6 +37,14 @@ const defaultMessages = {
     /** Added to the accessible name in brackets: "Search (command palette)". */
     commandPalette: 'command palette',
   },
+  statCard: {
+    /** Read before the delta when it rose; the arrow is visual-only. */
+    up: 'up',
+    /** Read before the delta when it fell. */
+    down: 'down',
+    /** Screen-reader text while the value loads (`value={undefined}`). */
+    loading: 'Loading value',
+  },
   money: {
     /** Screen-reader text while the amount loads (`value={undefined}`). */
     loading: 'Loading amount',
@@ -40,6 +52,18 @@ const defaultMessages = {
   anonymizedToken: {
     /** Screen-reader text while the token loads (`value={undefined}`). */
     loading: 'Loading token',
+  },
+  dateTime: {
+    /** Screen-reader text while the date loads (`value={undefined}`). */
+    loading: 'Loading date',
+  },
+  relativeTime: {
+    /** Screen-reader text while the time loads (`value={undefined}`). */
+    loading: 'Loading time',
+  },
+  elapsedTime: {
+    /** Screen-reader text while the start loads (`from={undefined}`). */
+    loading: 'Loading duration',
   },
 };
 

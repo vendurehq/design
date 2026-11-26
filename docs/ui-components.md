@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -514,13 +514,13 @@ already says the same: the indicator is then hidden from assistive technology.
 one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime from={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
 <StatusBadge
   appearance="icon"
   tone="success"
-  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+  detail={<RelativeTime value={deployment.finishedAt} from={deployment.startedAt} />}
 >
   Ready
 </StatusBadge>;
@@ -537,7 +537,7 @@ one time that matters for the state. In a `DataTable` the row stays 48px, the sa
 off screen or the tab is hidden. It writes the count in the locale of the
 `FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
 smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
-count started. `RelativeTime` with `start` shows the range and how long it
+count started. `RelativeTime` with `from` shows the range and how long it
 took; with `display="duration"` it says how long a state has lasted
 (`13 days`), in the reader's locale and with the same unit steps as
 `2 minutes ago`. The words around it (`for`) are yours, so they are translated
@@ -798,6 +798,23 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
   </CardHeader>
 </Card>
 ```
+
+### StatCard
+
+`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives, and screen readers hear "Loading value" (`messages.statCard.loading` or `loadingLabel`). `null` means there is no value and shows `fallback` ("—" by default). `0` and `''` are real values. `delta.value` may be `undefined` too: the delta draws a skeleton.
+
+```tsx
+import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
+
+<StatCard
+  label="Revenue"
+  value={data ? <Money value={data.revenue} /> : undefined}
+  delta={{ value: data?.revenueChange }}
+  description="vs. previous period"
+/>
+```
+
+`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, with one decimal, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"). The arrow and its color carry the direction, and `goodWhen` says which direction is good. A change that rounds to 0.0 has no arrow and a neutral color. `NaN` and `±Infinity` (a change from zero) show "—". For another unit, pass `delta.unit` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
 
 ### ArrowLink
 
