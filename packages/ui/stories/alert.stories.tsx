@@ -81,9 +81,9 @@ export const Default: Story = {
   ),
 };
 
-export const Destructive: Story = {
+export const Critical: Story = {
   render: () => (
-    <Alert variant="destructive">
+    <Alert tone="critical">
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>
         Your session has expired. Please log in again.
@@ -94,7 +94,8 @@ export const Destructive: Story = {
         </Button>
       </AlertAction>
     </Alert>
-  ),  play: async ({ canvasElement }) => {
+  ),
+  play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert');
     expectActionBesideText(alert);
     expectActionInsideAlert(alert);
@@ -105,7 +106,7 @@ export const Destructive: Story = {
 
 export const Warning: Story = {
   render: () => (
-    <Alert variant="warning">
+    <Alert tone="warning">
       <AlertTitle>Sending limit almost reached</AlertTitle>
       <AlertDescription>
         92 of 100 emails sent today. Upgrade the plan to keep sending.
@@ -116,13 +117,59 @@ export const Warning: Story = {
 
 export const Info: Story = {
   render: () => (
-    <Alert variant="info">
+    <Alert tone="info">
       <AlertTitle>Scheduled maintenance</AlertTitle>
       <AlertDescription>
         The region is updated on Sunday between 02:00 and 03:00 UTC.
       </AlertDescription>
     </Alert>
   ),
+};
+
+/** Success confirms that something the user started has finished. */
+export const Success: Story = {
+  render: () => (
+    <Alert tone="success">
+      <AlertTitle>Domain verified</AlertTitle>
+      <AlertDescription>shop.example.com now serves the storefront.</AlertDescription>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    expect(alert.dataset.tone).toBe('success');
+    expect(slot(alert, 'alert-icon').getAttribute('class')).toContain('lucide-circle-check');
+  },
+};
+
+/** Neutral is a toned notice with no urgency: a faint grey tint and the dashed circle. */
+export const Neutral: Story = {
+  render: () => (
+    <Alert tone="neutral">
+      <AlertTitle>Archived project</AlertTitle>
+      <AlertDescription>The project is read-only. Restore it to deploy again.</AlertDescription>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    expect(slot(alert, 'alert-icon').getAttribute('class')).toContain('lucide-circle-dashed');
+  },
+};
+
+/** Progress is the info tint with a slow spinner, for work that is still running. */
+export const Progress: Story = {
+  render: () => (
+    <Alert tone="progress">
+      <AlertTitle>Deploying</AlertTitle>
+      <AlertDescription>The build started 2 minutes ago.</AlertDescription>
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert');
+    const icon = slot(alert, 'alert-icon');
+    expect(icon.getAttribute('class')).toContain('lucide-loader');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    expect(getComputedStyle(icon).animationName).toBe(reduced ? 'none' : 'spin-slow');
+  },
 };
 
 export const WithIcon: Story = {
@@ -143,7 +190,7 @@ export const WithIcon: Story = {
  */
 export const OneLineWithWideAction: Story = {
   render: () => (
-    <Alert variant="info">
+    <Alert tone="info">
       <AlertDescription>The deployment list is out of date.</AlertDescription>
       <AlertAction>
         <Button variant="ghost" size="sm">
@@ -171,7 +218,7 @@ export const OneLineWithWideAction: Story = {
  */
 export const LongSentenceWithAction: Story = {
   render: () => (
-    <Alert variant="warning" className="max-w-xl">
+    <Alert tone="warning" className="max-w-xl">
       <AlertDescription>
         The repository has commits that are not deployed yet. Sync the project to fetch the latest
         branches, then start a new deployment from the commit you want to ship.
@@ -197,7 +244,7 @@ export const LongSentenceWithAction: Story = {
  */
 export const TitleDescriptionAction: Story = {
   render: () => (
-    <Alert variant="destructive">
+    <Alert tone="critical">
       <AlertTitle>Deployment failed</AlertTitle>
       <AlertDescription>The build stopped at the install step. Open the build log for details.</AlertDescription>
       <AlertAction>
@@ -228,7 +275,7 @@ export const TitleDescriptionAction: Story = {
  */
 export const TallWithAction: Story = {
   render: () => (
-    <Alert variant="destructive">
+    <Alert tone="critical">
       <AlertDescription>
         <p>
           <strong className="text-foreground">The database migration failed.</strong> The previous deployment
@@ -257,7 +304,7 @@ export const TallWithAction: Story = {
 /** AlertAction lays out several buttons in a row. */
 export const TwoActions: Story = {
   render: () => (
-    <Alert variant="warning">
+    <Alert tone="warning">
       <AlertDescription>The custom domain is not verified. Add the DNS record, then check again.</AlertDescription>
       <AlertAction>
         <Button variant="ghost" size="sm">
@@ -284,7 +331,7 @@ export const TwoActions: Story = {
  */
 export const Narrow: Story = {
   render: () => (
-    <Alert variant="info" className="max-w-xs">
+    <Alert tone="info" className="max-w-xs">
       <AlertDescription>
         Backup bk_01JDQ8ZK4W7Y3N2M5P6R8T9V0X is ready for the project vendure-demo-storefront.
       </AlertDescription>
@@ -310,20 +357,15 @@ export const Narrow: Story = {
   },
 };
 
-/** Every variant with an action: the default variant without an icon, the toned ones with their tone icon. */
-export const ActionVariants: Story = {
+const tones = ['neutral', 'info', 'success', 'warning', 'critical', 'progress'] as const;
+
+/** Every tone with an action: no tone without an icon, the toned ones with their tone icon. */
+export const ActionTones: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      {(
-        [
-          'default',
-          'info',
-          'warning',
-          'destructive',
-        ] as const
-      ).map((variant) => (
-        <Alert key={variant} variant={variant}>
-          <AlertDescription>The {variant} alert keeps a wide action on its sentence line.</AlertDescription>
+      {([undefined, ...tones] as const).map((tone) => (
+        <Alert key={tone ?? 'none'} tone={tone}>
+          <AlertDescription>The {tone ?? 'untoned'} alert keeps a wide action on its sentence line.</AlertDescription>
           <AlertAction>
             <Button variant="ghost" size="sm">
               <RefreshCwIcon data-icon="inline-start" />
@@ -336,7 +378,7 @@ export const ActionVariants: Story = {
   ),
   play: async ({ canvasElement }) => {
     const alerts = within(canvasElement).getAllByRole('alert');
-    expect(alerts).toHaveLength(4);
+    expect(alerts).toHaveLength(tones.length + 1);
     for (const alert of alerts) {
       expectActionBesideText(alert);
       expectActionInsideAlert(alert);
@@ -364,16 +406,16 @@ function LightAndDark({ children }: { children: (theme: Theme) => ReactNode }) {
 }
 
 /**
- * A destructive alert is a faint tint of the destructive tone. The title
+ * A critical alert is a faint tint of the destructive tone. The title
  * stays foreground and the description foreground-secondary; only the icon takes
  * the tone. Pinned to the light page theme.
  */
-export const DestructiveLightAndDark: Story = {
+export const CriticalLightAndDark: Story = {
   globals: { theme: 'light' },
   render: () => (
     <LightAndDark>
       {() => (
-        <Alert variant="destructive">
+        <Alert tone="critical">
           <AlertTitle>Payment failed</AlertTitle>
           <AlertDescription>The card was declined. Ask the customer for another card.</AlertDescription>
         </Alert>
@@ -383,11 +425,11 @@ export const DestructiveLightAndDark: Story = {
 };
 
 /**
- * All four variants side by side. The toned variants are a faint tint of the
- * tone in fill and border, with the icon in the tone's text slot. The default variant
+ * Every tone side by side. A toned alert is a faint tint of the tone in fill
+ * and border, with the icon in the tone's text slot. An alert without a tone
  * stays on the card surface.
  */
-export const VariantsLightAndDark: Story = {
+export const TonesLightAndDark: Story = {
   globals: { theme: 'light' },
   render: () => (
     <LightAndDark>
@@ -395,20 +437,32 @@ export const VariantsLightAndDark: Story = {
         <>
           <Alert>
             <TerminalIcon />
-            <AlertTitle>Default</AlertTitle>
+            <AlertTitle>No tone</AlertTitle>
             <AlertDescription>The CLI can deploy this project too.</AlertDescription>
           </Alert>
-          <Alert variant="info">
+          <Alert tone="neutral">
+            <AlertTitle>Neutral</AlertTitle>
+            <AlertDescription>The project is archived and read-only.</AlertDescription>
+          </Alert>
+          <Alert tone="info">
             <AlertTitle>Info</AlertTitle>
             <AlertDescription>The region is updated on Sunday at 02:00 UTC.</AlertDescription>
           </Alert>
-          <Alert variant="warning">
+          <Alert tone="success">
+            <AlertTitle>Success</AlertTitle>
+            <AlertDescription>The domain is verified.</AlertDescription>
+          </Alert>
+          <Alert tone="warning">
             <AlertTitle>Warning</AlertTitle>
             <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
           </Alert>
-          <Alert variant="destructive">
-            <AlertTitle>Destructive</AlertTitle>
+          <Alert tone="critical">
+            <AlertTitle>Critical</AlertTitle>
             <AlertDescription>The deployment failed. Open the build log.</AlertDescription>
+          </Alert>
+          <Alert tone="progress">
+            <AlertTitle>Progress</AlertTitle>
+            <AlertDescription>The build started 2 minutes ago.</AlertDescription>
           </Alert>
         </>
       )}
@@ -416,12 +470,14 @@ export const VariantsLightAndDark: Story = {
   ),
 };
 
-const toneOfVariant = { info: 'info', warning: 'warning', destructive: 'critical' } as const;
+/** The lucide class that names an icon's shape, such as `lucide-circle-check`. */
+const shapeOf = (svg: Element | null) =>
+  svg?.getAttribute('class')?.split(/\s+/).find((name) => name.startsWith('lucide-'));
 
 /**
  * A toned Alert shows the icon of its tone, the same shape as the StatusBadge
- * of that tone. Pass no icon for these tones. The default variant has no tone
- * and shows no icon unless you pass one.
+ * of that tone. Pass no icon for these tones. An alert without a tone shows no
+ * icon unless you pass one.
  */
 export const ToneIcons: Story = {
   globals: { theme: 'light' },
@@ -429,14 +485,14 @@ export const ToneIcons: Story = {
     <LightAndDark>
       {() => (
         <>
-          {(['info', 'warning', 'destructive'] as const).map((variant) => (
-            <div key={variant} className="flex items-start gap-4">
-              <Alert variant={variant} className="flex-1">
-                <AlertTitle className="capitalize">{variant}</AlertTitle>
-                <AlertDescription>The icon comes from the variant.</AlertDescription>
+          {tones.map((tone) => (
+            <div key={tone} className="flex items-start gap-4">
+              <Alert tone={tone} className="flex-1">
+                <AlertTitle className="capitalize">{tone}</AlertTitle>
+                <AlertDescription>The icon comes from the tone.</AlertDescription>
               </Alert>
-              <StatusBadge tone={toneOfVariant[variant]} className="shrink-0">
-                {toneOfVariant[variant]}
+              <StatusBadge tone={tone} className="shrink-0">
+                {tone}
               </StatusBadge>
             </div>
           ))}
@@ -446,13 +502,14 @@ export const ToneIcons: Story = {
   ),
   play: async ({ canvasElement }) => {
     const rows = canvasElement.querySelectorAll<HTMLElement>('[data-slot=alert]');
-    expect(rows.length).toBeGreaterThan(0);
+    expect(rows).toHaveLength(tones.length * 2);
     for (const alert of rows) {
-      const badge = alert.parentElement!.querySelector('[data-slot=status-badge-marker] svg');
+      // The badge beside the alert. A progress badge puts its spinner after the word.
+      const badge = alert.nextElementSibling!.querySelector('svg');
       const icon = alert.querySelector('[data-slot=alert-icon]');
       expect(icon).not.toBeNull();
-      // The same lucide shape: the class names the icon.
-      expect(icon!.getAttribute('class')).toBe(badge!.getAttribute('class'));
+      expect(shapeOf(icon)).toBeDefined();
+      expect(shapeOf(icon)).toBe(shapeOf(badge));
     }
   },
 };
@@ -464,16 +521,16 @@ export const ToneIcons: Story = {
 export const PassedIconAndNoIcon: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      <Alert variant="info" icon={<RocketIcon />}>
+      <Alert tone="info" icon={<RocketIcon />}>
         <AlertTitle>The icon prop</AlertTitle>
         <AlertDescription>A rocket replaces the info icon.</AlertDescription>
       </Alert>
-      <Alert variant="info">
+      <Alert tone="info">
         <TerminalIcon />
         <AlertTitle>An svg child</AlertTitle>
         <AlertDescription>The terminal icon replaces the info icon.</AlertDescription>
       </Alert>
-      <Alert variant="info" icon={false}>
+      <Alert tone="info" icon={false}>
         <AlertTitle>No icon</AlertTitle>
         <AlertDescription>The text starts at the padding.</AlertDescription>
       </Alert>

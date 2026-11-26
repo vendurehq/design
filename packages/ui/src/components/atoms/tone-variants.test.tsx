@@ -8,18 +8,28 @@ import { slotTokens } from '../../test/slot-tokens.ts';
 // tone colour) with its icon in the tone's text slot; title and description
 // keep the neutral text slots.
 
-describe('Alert tone variants', () => {
-  const slots = { destructive: 'destructive', warning: 'warning', info: 'info' } as const;
+describe('Alert tones', () => {
+  const slots = {
+    neutral: 'neutral',
+    info: 'info',
+    success: 'success',
+    warning: 'warning',
+    critical: 'destructive',
+    progress: 'info',
+  } as const;
   const tints = {
-    destructive: 'destructive-text',
-    warning: 'warning-indicator',
+    neutral: 'neutral-text',
     info: 'info-text',
+    success: 'success-text',
+    warning: 'warning-indicator',
+    critical: 'destructive-text',
+    progress: 'info-text',
   } as const;
   for (const [tone, slot] of Object.entries(slots)) {
     test(`${tone} is a faint ${tints[tone as keyof typeof tints]} tint with a ${slot}-text icon`, () => {
       const tokens = slotTokens(
         renderToStaticMarkup(
-          <Alert variant={tone as keyof typeof slots}>
+          <Alert tone={tone as keyof typeof slots}>
             <AlertTitle>Title</AlertTitle>
             <AlertDescription>Description</AlertDescription>
           </Alert>,
@@ -46,16 +56,16 @@ describe('Alert tone variants', () => {
     });
   }
 
-  test('default stays on the card pair', () => {
+  test('no tone stays on the card pair', () => {
     const tokens = slotTokens(renderToStaticMarkup(<Alert>Notice</Alert>), 'alert');
     expect(tokens).toContain('bg-card');
     expect(tokens).toContain('text-card-foreground');
   });
 
-  test('the description uses foreground-secondary in every variant', () => {
-    for (const variant of ['default', 'destructive', 'warning', 'info'] as const) {
+  test('the description uses foreground-secondary in every tone', () => {
+    for (const tone of [undefined, ...Object.keys(slots)] as (keyof typeof slots | undefined)[]) {
       const html = renderToStaticMarkup(
-        <Alert variant={variant}>
+        <Alert tone={tone}>
           <AlertDescription>Description</AlertDescription>
         </Alert>,
       );

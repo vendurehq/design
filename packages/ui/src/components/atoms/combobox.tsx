@@ -19,6 +19,7 @@ import { ChevronDownIcon, Loader2Icon, XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
+import { useMessages } from "../../lib/format-messages.ts"
 
 /**
  * The controls of the nearest Combobox. Base UI names the trigger and the
@@ -39,7 +40,7 @@ type ComboboxPagingProps = {
   /**
    * Asks for the next page of a server-searched list. Called once when the
    * list scrolls near its end, or the arrow keys reach its last option, while
-   * `hasMore` is set and `loading` is not. It is called again once the
+   * `hasMore` is set and `isLoading` is not. It is called again once the
    * options change, the search changes, the list reopens, or the list
    * scrolls away from its end and back: a failed fetch is retried by
    * scrolling, never in a loop.
@@ -52,8 +53,11 @@ type ComboboxPagingProps = {
    * assistive technology and announces `loadingLabel`. With no options yet,
    * the loading row takes the place of ComboboxEmpty.
    */
-  loading?: boolean
-  /** Announced to screen readers while `loading` is set. */
+  isLoading?: boolean
+  /**
+   * Announced to screen readers while `isLoading` is set.
+   * @default `messages.combobox.loading`, "Loading…"
+   */
   loadingLabel?: string
 }
 
@@ -62,7 +66,7 @@ type ComboboxPagingProps = {
  * Null when the Combobox takes none of the paging props.
  */
 type ComboboxPaging = {
-  loading: boolean
+  isLoading: boolean
   loadingLabel: string
   canLoadMore: boolean
   list: HTMLElement | null
@@ -78,8 +82,8 @@ const ComboboxPagingContext = React.createContext<ComboboxPaging | null>(null)
 function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({
   onLoadMore,
   hasMore = false,
-  loading,
-  loadingLabel = "Loading…",
+  isLoading,
+  loadingLabel,
   onItemHighlighted,
   onInputValueChange,
   ...props
@@ -91,16 +95,16 @@ function Combobox<Value, Multiple extends boolean | undefined = false, Item = Va
 
   // Read at call time, so an observer set up on an earlier render sees the
   // current flags.
-  const latest = React.useRef({ onLoadMore, hasMore, loading })
+  const latest = React.useRef({ onLoadMore, hasMore, isLoading })
   React.useLayoutEffect(() => {
-    latest.current = { onLoadMore, hasMore, loading }
+    latest.current = { onLoadMore, hasMore, isLoading }
   })
   // Set once a page is asked for. Scrolling fires many events before the
-  // consumer's `loading` flag turns on; the latch keeps that to one call.
+  // consumer's `isLoading` flag turns on; the latch keeps that to one call.
   const latched = React.useRef(false)
   const requestMore = React.useCallback(() => {
     const current = latest.current
-    if (!current.onLoadMore || !current.hasMore || current.loading || latched.current) return
+    if (!current.onLoadMore || !current.hasMore || current.isLoading || latched.current) return
     latched.current = true
     current.onLoadMore()
   }, [])
@@ -109,13 +113,14 @@ function Combobox<Value, Multiple extends boolean | undefined = false, Item = Va
   }, [])
 
   const canLoadMore = onLoadMore !== undefined
-  const enabled = canLoadMore || loading !== undefined
+  const enabled = canLoadMore || isLoading !== undefined
+  const t = useMessages("combobox", { loading: loadingLabel })
   const paging = React.useMemo(
     () =>
       enabled
         ? {
-            loading: !!loading,
-            loadingLabel,
+            isLoading: !!isLoading,
+            loadingLabel: t.loading,
             canLoadMore,
             list,
             setList,
@@ -123,7 +128,7 @@ function Combobox<Value, Multiple extends boolean | undefined = false, Item = Va
             rearm,
           }
         : null,
-    [enabled, loading, loadingLabel, canLoadMore, list, requestMore, rearm]
+    [enabled, isLoading, t.loading, canLoadMore, list, requestMore, rearm]
   )
 
   return (
@@ -418,7 +423,7 @@ function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.
         {...(hasName(props) ? {} : name)}
         ref={listRef}
         data-slot="combobox-list"
-        aria-busy={paging?.loading || undefined}
+        aria-busy={paging?.isLoading || undefined}
         className={cn(
           "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
           className
@@ -431,7 +436,7 @@ function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.
             {/* Decorative: a listbox holds only options and groups, so the
                 row is hidden from assistive technology. The list is busy
                 and the status below announces the load. */}
-            {paging.loading && (
+            {paging.isLoading && (
               <div
                 data-slot="combobox-loading"
                 aria-hidden="true"
@@ -450,7 +455,7 @@ function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.
           listbox, which may hold only options and groups. */}
       {paging && (
         <ComboboxPrimitive.Status data-slot="combobox-status" className="sr-only">
-          {paging.loading ? paging.loadingLabel : null}
+          {paging.isLoading ? paging.loadingLabel : null}
         </ComboboxPrimitive.Status>
       )}
     </>
@@ -518,13 +523,13 @@ function ComboboxCollection({ ...props }: ComboboxPrimitive.Collection.Props) {
 // While a page loads, the list's loading row stands in for the empty state:
 // a new search has no options yet, but it is not empty.
 function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
-  const loading = !!React.useContext(ComboboxPagingContext)?.loading
+  const isLoading = !!React.useContext(ComboboxPagingContext)?.isLoading
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
       className={cn(
         "text-muted-foreground hidden w-full justify-center py-2 text-center text-sm group-data-empty/combobox-content:flex",
-        loading && "group-data-empty/combobox-content:hidden",
+        isLoading && "group-data-empty/combobox-content:hidden",
         className
       )}
       {...props}

@@ -5,9 +5,9 @@ import { Alert, AlertDescription, AlertTitle } from '../src/components/atoms/ale
 import { uiGuidanceById } from '../guidance/catalog.ts';
 
 /**
- * Guidance, not props. Which Alert variant a notice gets: tone follows the
+ * Guidance, not props. Which Alert tone a notice gets: tone follows the
  * consequence for the viewer, as in the state dictionary (see StatusBadge /
- * Guidance). For the variants themselves, see the Alert stories.
+ * Guidance). For the tones themselves, see the Alert stories.
  */
 const meta = {
   title: 'Atoms/Feedback/Alert/Guidance',
@@ -62,7 +62,7 @@ function Example({
     </div>
   );
 }
-// ── 1 · choosing the variant ─────────────────────────────────────────────────
+// ── 1 · choosing the tone ────────────────────────────────────────────────────
 
 export const ChoosingTheVariant: Story = {
   name: '1 · Tone follows consequence',
@@ -86,9 +86,9 @@ export const ChoosingTheVariant: Story = {
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
             verdict="do"
-            caption="Warning names the risk and the action. The variant tints the fill and border and colours the icon; the title and description stay neutral."
+            caption="Warning names the risk and the action. The tone tints the fill and border and colours the icon; the title and description stay neutral."
           >
-            <Alert variant="warning">
+            <Alert tone="warning">
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
@@ -97,7 +97,7 @@ export const ChoosingTheVariant: Story = {
             verdict="do"
             caption="Info for a fact worth noticing. Nothing is wrong and nothing is required."
           >
-            <Alert variant="info">
+            <Alert tone="info">
               <AlertTitle>Scheduled maintenance</AlertTitle>
               <AlertDescription>The region is updated on Sunday at 02:00 UTC.</AlertDescription>
             </Alert>
@@ -114,14 +114,14 @@ export const ChoosingTheVariant: Story = {
             verdict="dont"
             caption="A saved-changes notice has no consequence. Warning here makes the real warnings easier to ignore."
           >
-            <Alert variant="warning">
+            <Alert tone="warning">
               <AlertTitle>Changes saved</AlertTitle>
               <AlertDescription>Your settings were updated.</AlertDescription>
             </Alert>
           </Example>
           <Example
             verdict="dont"
-            caption="A default Alert with a hand-colored icon. Use the variant: it tints the fill and border and colours the icon, and the title and description stay neutral."
+            caption="A default Alert with a hand-colored icon. Use the tone: it tints the fill and border and colours the icon, and the title and description stay neutral."
           >
             <Alert>
               <CircleAlertIcon className="text-warning" />
@@ -137,8 +137,8 @@ export const ChoosingTheVariant: Story = {
         intro="The tint is faint, so the icon is the cue that names the tone. The warning tint is never the only cue. A toned Alert shows its tone icon by itself: the same shape as the StatusBadge of that tone. Pass no icon for these tones. Pass one only for a notice that needs another shape, such as a spinner for work in progress."
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          <Example verdict="do" caption="No icon passed: the variant shows its tone icon, first, in the tone's colour.">
-            <Alert variant="warning">
+          <Example verdict="do" caption="No icon passed: the tone shows its icon, first, in the tone's colour.">
+            <Alert tone="warning">
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
@@ -147,7 +147,7 @@ export const ChoosingTheVariant: Story = {
             verdict="dont"
             caption="icon={false}: the faint tint alone does not say that this is a warning."
           >
-            <Alert variant="warning" icon={false}>
+            <Alert tone="warning" icon={false}>
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today. Upgrade to keep sending.</AlertDescription>
             </Alert>
