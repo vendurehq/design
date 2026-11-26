@@ -33,6 +33,10 @@ const defaultMessages = {
     /** Screen-reader text while the amount loads (`value={undefined}`). */
     loading: 'Loading amount',
   },
+  anonymizedToken: {
+    /** Screen-reader text while the token loads (`value={undefined}`). */
+    loading: 'Loading token',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;

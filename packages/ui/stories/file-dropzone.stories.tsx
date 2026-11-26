@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from 'storybook/test';
 import { useState } from 'react';
 import { FileDropzone } from '../src/components/molecules/file-dropzone.tsx';
 
@@ -49,5 +50,25 @@ export const MultipleDocuments: Story = {
         />
       </div>
     );
+  },
+};
+
+/** Without `value`, the dropzone lists the files it receives. */
+export const Uncontrolled: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="max-w-xl">
+      <FileDropzone multiple label="Product documents" accept="application/pdf,.pdf" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!input) throw new Error('The file input is missing.');
+    await expect(canvas.queryByText('spec-sheet.pdf')).toBeNull();
+    await userEvent.upload(input, new File(['pdf'], 'spec-sheet.pdf', { type: 'application/pdf' }));
+    await expect(await canvas.findByText('spec-sheet.pdf')).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove spec-sheet.pdf' }));
+    await expect(canvas.queryByText('spec-sheet.pdf')).toBeNull();
   },
 };
