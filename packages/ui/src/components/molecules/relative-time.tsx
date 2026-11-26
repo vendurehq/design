@@ -1,17 +1,19 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
-import {
-  type FormatRelativeOptions,
-  formatRelative,
-  formatRelativeDuration,
-} from '@vendure-io/ui/lib/format-relative';
+import { formatRelative, formatRelativeDuration } from '@vendure-io/ui/lib/format-relative';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
-import { TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
+import { TimeSkeleton, TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
 
 interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
+  /**
+   * The time the text describes, and the end of the range with `from`.
+   * `undefined` means not loaded yet and renders a one-line skeleton. `null`
+   * and an invalid date render `fallback`.
+   */
   value: string | number | Date | null | undefined;
   locale?: string;
   numeric?: 'auto' | 'always';
@@ -23,11 +25,13 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
    */
   updateInterval?: number | false;
   /**
-   * Rendered for nullish/invalid input, and on the server and the first client
-   * render of a server-rendered page (the server has no reader's clock).
-   * Default `'—'`.
+   * Rendered for `null` and invalid input, and on the server and the first
+   * client render of a server-rendered page (the server has no reader's
+   * clock). Default `'—'`.
    */
   fallback?: ReactNode;
+  /** Screen-reader text while `value` is `undefined`. @default `messages.relativeTime.loading`, "Loading time" */
+  loadingLabel?: string;
   /**
    * What the text says.
    * - `relative` (default): how long ago or how far ahead: `2 minutes ago`.
@@ -39,13 +43,13 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
   display?: 'relative' | 'duration';
   /**
    * When the thing that ended at `value` started. The default tooltip then
-   * shows the range from `start` to `value` and how long it took:
+   * shows the range from `from` to `value` and how long it took:
    * `11/11/2026, 10:14:47 – 10:15:29 AM` over `42s`.
    */
-  start?: string | number | Date | null;
+  from?: string | number | Date | null;
   /**
    * The tooltip on hover and focus. Default `true`: the absolute time (or the
-   * range, with `start`). Pass content to show that instead, or `false` where
+   * range, with `from`). Pass content to show that instead, or `false` where
    * the time sits inside another tooltip trigger, so the outer tooltip keeps
    * its content. The tooltip content stays the accessible description either
    * way.
@@ -81,14 +85,16 @@ function RelativeTime({
   unitStyle,
   updateInterval = 60_000,
   fallback = '—',
+  loadingLabel,
   display = 'relative',
-  start,
+  from,
   tooltip = true,
   focusable,
   ...props
 }: RelativeTimeProps) {
   const descriptionId = useId();
   const settings = useFormatSettings();
+  const t = useMessages('relativeTime', { loading: loadingLabel });
   // A bare counter to force a re-format on each tick; the value itself is unused.
   const [, tick] = useState(0);
 
@@ -103,10 +109,29 @@ function RelativeTime({
     return () => clearInterval(id);
   }, [updateInterval, hasDate]);
 
+  const resolvedLocale = locale ?? settings.locale;
+
+  if (value === undefined) {
+    // A typical text: "12 minutes ago", or "13 days" for a duration.
+    const sample =
+      display === 'duration'
+        ? new Intl.NumberFormat(resolvedLocale, {
+            style: 'unit',
+            unit: 'day',
+            unitDisplay: unitStyle ?? 'long',
+          }).format(13)
+        : new Intl.RelativeTimeFormat(resolvedLocale, { numeric, style: unitStyle }).format(
+            -12,
+            'minute',
+          );
+    return (
+      <TimeSkeleton slot="relative-time" sample={sample} loadingLabel={t.loading} {...props} />
+    );
+  }
+
   if (!date) return <>{fallback}</>;
 
-  const resolvedLocale = locale ?? settings.locale;
-  const startTime = toTime(start);
+  const startTime = toTime(from);
   const absolute =
     startTime === null ? (
       date.toLocaleString(resolvedLocale, { timeZone: settings.timeZone })
@@ -154,12 +179,5 @@ function RelativeTime({
   );
 }
 
-// Re-exported so the spike's import surface (molecules/relative-time) keeps
-// working; the implementation lives in lib/ per the JSX-or-lib rule.
-export {
-  RelativeTime,
-  formatRelative,
-  formatRelativeDuration,
-  type RelativeTimeProps,
-  type FormatRelativeOptions,
-};
+// The format helpers are `@vendure-io/ui/lib/format-relative`.
+export { RelativeTime, type RelativeTimeProps };

@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`. `dateTime`, `relativeTime` and `elapsedTime` (`loading`): the hidden text while the time loads.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -514,13 +514,13 @@ already says the same: the indicator is then hidden from assistive technology.
 one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime from={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
 <StatusBadge
   appearance="icon"
   tone="success"
-  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+  detail={<RelativeTime value={deployment.finishedAt} from={deployment.startedAt} />}
 >
   Ready
 </StatusBadge>;
@@ -537,7 +537,7 @@ one time that matters for the state. In a `DataTable` the row stays 48px, the sa
 off screen or the tab is hidden. It writes the count in the locale of the
 `FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
 smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
-count started. `RelativeTime` with `start` shows the range and how long it
+count started. `RelativeTime` with `from` shows the range and how long it
 took; with `display="duration"` it says how long a state has lasted
 (`13 days`), in the reader's locale and with the same unit steps as
 `2 minutes ago`. The words around it (`for`) are yours, so they are translated
@@ -1033,6 +1033,9 @@ These packages are optional — install them only if you use the features that n
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
 2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
+4. DateTime, RelativeTime and ElapsedTime: an `undefined` time renders a one-line skeleton, not `fallback`. `null` and an invalid date still render `fallback`. Pass `null` for "no date".
+5. ElapsedTime `since` and `until` are `from` and `to`. RelativeTime `start` is `from`; its `value` stays. The names match DateRangePicker's `{ from, to }`.
+6. `formatRelative`, `formatRelativeDuration` and `FormatRelativeOptions` are no longer exported from `components/molecules/relative-time`. Import them from `@vendure-io/ui/lib/format-relative`.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

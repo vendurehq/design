@@ -12,6 +12,7 @@ import { formatElapsed } from '../../lib/format-elapsed.ts';
 import { cn } from '../../lib/utils.ts';
 // Relative: this module is internal (mapped to null in the package exports).
 import { Tooltip, TooltipContent, TooltipTrigger } from '../atoms/tooltip.tsx';
+import { SkeletonLine } from './state-views/skeleton-parts.tsx';
 
 /**
  * True inside the second line of a StatusBadge (`detail`). A time there is a
@@ -137,4 +138,43 @@ function useReadersClock(): boolean {
   );
 }
 
-export { InStatusDetail, TimeSpan, TimeTooltip, toTime, useReadersClock };
+interface TimeSkeletonProps extends Omit<React.ComponentProps<'span'>, 'children'> {
+  /** A typical rendered text; the skeleton is as many `ch` wide as it is long. */
+  sample: string;
+  /** Visually hidden text for screen readers. */
+  loadingLabel: string;
+  /** The `data-slot` of the component it stands in for. */
+  slot: string;
+}
+
+/**
+ * The loading state of DateTime, RelativeTime and ElapsedTime: one text line
+ * of skeleton, as wide as a typical value, so the line does not move when the
+ * time arrives. `align-top` keeps it inside the line box instead of sitting
+ * on the baseline and pushing the line taller. It needs no clock, so the
+ * server and the browser render the same markup. The width follows the
+ * locale: pin it with FormatProvider in SSR, as the text needs anyway.
+ */
+function TimeSkeleton({
+  sample,
+  loadingLabel,
+  slot,
+  className,
+  style,
+  ...props
+}: TimeSkeletonProps) {
+  return (
+    <span
+      data-slot={slot}
+      aria-busy="true"
+      className={cn('inline-flex max-w-full align-top tabular-nums', className)}
+      style={{ width: `${Math.max(sample.length, 4)}ch`, ...style }}
+      {...props}
+    >
+      <SkeletonLine />
+      <span className="sr-only">{loadingLabel}</span>
+    </span>
+  );
+}
+
+export { InStatusDetail, TimeSkeleton, TimeSpan, TimeTooltip, toTime, useReadersClock };

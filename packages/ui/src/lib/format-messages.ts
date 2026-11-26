@@ -17,6 +17,18 @@ const defaultMessages = {
     /** Added to the accessible name in brackets: "Search (command palette)". */
     commandPalette: 'command palette',
   },
+  dateTime: {
+    /** Screen-reader text while the date loads (`value={undefined}`). */
+    loading: 'Loading date',
+  },
+  relativeTime: {
+    /** Screen-reader text while the time loads (`value={undefined}`). */
+    loading: 'Loading time',
+  },
+  elapsedTime: {
+    /** Screen-reader text while the start loads (`from={undefined}`). */
+    loading: 'Loading duration',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;
