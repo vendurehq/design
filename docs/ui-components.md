@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -546,13 +546,13 @@ already says the same: the indicator is then hidden from assistive technology.
 one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime from={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
 <StatusBadge
   appearance="icon"
   tone="success"
-  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+  detail={<RelativeTime value={deployment.finishedAt} from={deployment.startedAt} />}
 >
   Ready
 </StatusBadge>;
@@ -569,7 +569,7 @@ one time that matters for the state. In a `DataTable` the row stays 48px, the sa
 off screen or the tab is hidden. It writes the count in the locale of the
 `FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
 smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
-count started. `RelativeTime` with `start` shows the range and how long it
+count started. `RelativeTime` with `from` shows the range and how long it
 took; with `display="duration"` it says how long a state has lasted
 (`13 days`), in the reader's locale and with the same unit steps as
 `2 minutes ago`. The words around it (`for`) are yours, so they are translated

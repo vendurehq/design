@@ -12,6 +12,7 @@ import { formatElapsed } from '../../lib/format-elapsed.ts';
 import { cn } from '../../lib/utils.ts';
 // Relative: this module is internal (mapped to null in the package exports).
 import { Tooltip, TooltipContent, TooltipTrigger } from '../atoms/tooltip.tsx';
+import { SkeletonLine } from './state-views/skeleton-parts.tsx';
 
 /**
  * True inside the second line of a StatusBadge (`detail`). A time there is a
@@ -137,4 +138,57 @@ function useReadersClock(): boolean {
   );
 }
 
-export { InStatusDetail, TimeSpan, TimeTooltip, toTime, useReadersClock };
+/**
+ * A typical text for the skeleton width. Formatting can throw (an invalid
+ * locale, a throwing `format`); the skeleton then uses `fallback`.
+ */
+function sampleText(format: () => string, fallback: string): string {
+  try {
+    return format();
+  } catch {
+    return fallback;
+  }
+}
+
+interface TimeSkeletonProps extends Omit<React.ComponentProps<'span'>, 'children'> {
+  /** A typical rendered text; the skeleton is as many `ch` wide as it is long. */
+  sample: string;
+  /** Visually hidden text for screen readers. */
+  loadingLabel: string;
+  /** The `data-slot` of the component it stands in for. */
+  slot: string;
+}
+
+/**
+ * The loading state of DateTime, RelativeTime and ElapsedTime: one text line
+ * of skeleton, as wide as a typical value, so the line does not move when the
+ * time arrives. It needs no clock, so the
+ * server and the browser render the same markup. The width follows the
+ * locale: pin it with FormatProvider in SSR, as the text needs anyway.
+ */
+function TimeSkeleton({
+  sample,
+  loadingLabel,
+  slot,
+  className,
+  style,
+  ...props
+}: TimeSkeletonProps) {
+  return (
+    <span
+      data-slot={slot}
+      aria-busy="true"
+      className={cn('inline-flex max-w-full tabular-nums', className)}
+      style={{ width: `${Math.max(sample.length, 4)}ch`, ...style }}
+      {...props}
+    >
+      {/* A zero-width space gives the skeleton a text baseline, so it sits on
+          the line like the text and a baseline-aligned row does not grow. */}
+      <span aria-hidden="true">{'\u200b'}</span>
+      <SkeletonLine />
+      <span className="sr-only">{loadingLabel}</span>
+    </span>
+  );
+}
+
+export { InStatusDetail, sampleText, TimeSkeleton, TimeSpan, TimeTooltip, toTime, useReadersClock };

@@ -33,6 +33,18 @@ const defaultMessages = {
     /** Screen-reader text while the token loads (`value={undefined}`). */
     loading: 'Loading token',
   },
+  dateTime: {
+    /** Screen-reader text while the date loads (`value={undefined}`). */
+    loading: 'Loading date',
+  },
+  relativeTime: {
+    /** Screen-reader text while the time loads (`value={undefined}`). */
+    loading: 'Loading time',
+  },
+  elapsedTime: {
+    /** Screen-reader text while the start loads (`from={undefined}`). */
+    loading: 'Loading duration',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;
