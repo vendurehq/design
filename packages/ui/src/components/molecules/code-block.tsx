@@ -24,6 +24,11 @@ import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useStat
 import { useMessages } from '../../lib/format-messages.ts';
 import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
+import {
+  getStoredPackageManager,
+  STORAGE_EVENT,
+  setStoredPackageManager,
+} from './code-block/package-manager-storage.ts';
 import { processCode } from './code-block/process-code.ts';
 import {
   isPackageManagerCommand,
@@ -97,41 +102,8 @@ interface CodeBlockActionProps {
   disabled?: boolean;
 }
 
-const STORAGE_KEY = 'vendure-ui:code-block:package-manager';
-const STORAGE_EVENT = 'vendure-ui-package-manager-change';
-
 const COLLAPSE_THRESHOLD = 40; // Lines needed to trigger collapse
 const COLLAPSED_HEIGHT = 300; // px height when collapsed (roughly 15-20 lines)
-
-/**
- * Get the stored package manager preference from localStorage
- */
-function getStoredPackageManager(): PackageManager {
-  if (typeof window === 'undefined') return 'npm';
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && PACKAGE_MANAGERS.includes(stored as PackageManager)) {
-      return stored as PackageManager;
-    }
-  } catch {
-    // localStorage might not be available
-  }
-  return 'npm';
-}
-
-/**
- * Store the package manager preference in localStorage
- */
-function setStoredPackageManager(pm: PackageManager): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, pm);
-    // Dispatch a custom event so other CodeBlock instances can update
-    window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: pm }));
-  } catch {
-    // localStorage might not be available
-  }
-}
 
 /**
  * Custom hook to manage package manager state with localStorage persistence
