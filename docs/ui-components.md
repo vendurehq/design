@@ -975,7 +975,7 @@ import {
 
 ```tsx
 <DataTable
-  rowSelection={{ value: selection, onChange: setSelection }}
+  rowSelection={{ value: selection, onValueChange: setSelection }}
   bulkActions={({ selectedCount, selectedRowIds, missingRowIds, selection, clearSelection }) => (
     <>
       <span>{selectedCount} selected</span>
@@ -999,11 +999,11 @@ import {
   columns={columns}
   getRowId={(row) => row.id}
   selectionStorageKey={`${route}:${channelId}`}
-  rowSelection={{ value: selection, onChange: setSelection }}
+  rowSelection={{ value: selection, onValueChange: setSelection }}
 />
 ```
 
-- On its first load the table restores the stored ids and reports them through `rowSelection.onChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
+- On its first load the table restores the stored ids and reports them through `rowSelection.onValueChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
 - Every change is stored, with the ids of rows on other pages: a selection can span pages. An empty selection removes the entry.
 - A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
 - No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
