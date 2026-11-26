@@ -63,7 +63,7 @@ function PopoverContent({
           ref={popupRef}
           data-slot="popover-content"
           className={cn(
-            "bg-popover text-popover-foreground shadow-overlay z-50 flex w-72 flex-col gap-4 rounded-2xl p-4 text-sm outline-hidden",
+            "bg-popover text-popover-foreground shadow-overlay z-50 flex w-72 flex-col gap-4 rounded-xl p-4 text-sm outline-hidden",
             popupMotion,
             className
           )}

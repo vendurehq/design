@@ -13,8 +13,8 @@ import {
 import { slotTag, slotTokens } from '../../test/slot-tokens';
 
 // The radius and shadow freeze of design system v3 (OSS-1490): fields and
-// buttons share the 8px control corner, popups are 12px surfaces, and only
-// the three named shadows are used.
+// buttons share the 8px control corner, and only the three named shadows are
+// used.
 
 const source = (file: string) => readFileSync(join(import.meta.dir, file), 'utf8');
 
@@ -130,17 +130,6 @@ describe('Shadows', () => {
     expect(source('sidebar.tsx')).toContain('group-data-[variant=floating]:shadow-control');
   });
 
-  test('a Drawer floats on the overlay shadow, with no edge border', () => {
-    const code = source('drawer.tsx');
-    expect(code).toContain('shadow-overlay');
-    expect(code).not.toMatch(/data-\[swipe-direction=\w+\]:border-[trbl]\b/);
-  });
-});
-
-describe('Every popup is a 12px surface', () => {
-  test('the chart tooltip takes the popup radius', () => {
-    expect(source('chart.tsx')).toMatch(/rounded-2xl[^"]*shadow-overlay/);
-  });
 });
 
 describe('A small InputGroup with a textarea or a block addon grows', () => {

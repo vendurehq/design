@@ -162,7 +162,7 @@ export const PopoverLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Dimensions' }));
     const popover = await findSlot('popover-content');
-    await expectOverlaySurface(popover, '12px');
+    await expectOverlaySurface(popover, '8px');
     await expectPopupMotion(popover);
   },
 };
@@ -188,7 +188,7 @@ export const DropdownMenuLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Actions' }));
     const menu = await findSlot('dropdown-menu-content');
-    await expectOverlaySurface(menu, '12px');
+    await expectOverlaySurface(menu, '8px');
     await expectPopupMotion(menu);
     await expect(getComputedStyle(menu).paddingTop).toBe('5px');
     // offsetWidth ignores the entrance scale. Short items still get a 240px menu.
@@ -240,7 +240,7 @@ export const SelectLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Currency' }));
     const popup = await findSlot('select-content');
-    await expectOverlaySurface(popup, '12px');
+    await expectOverlaySurface(popup, '8px');
     await expectPopupMotion(popup);
     const option = await body().findByRole('option', { name: 'US dollar' });
     await expect(option.offsetHeight).toBe(34);
@@ -412,7 +412,7 @@ export const ComboboxLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('combobox', { name: 'Country' }));
     const popup = await findSlot('combobox-content');
-    await expectOverlaySurface(popup, '12px');
+    await expectOverlaySurface(popup, '8px');
     await expectPopupMotion(popup);
     // The overlay shadow alone, with no ring on top.
     const probe = document.createElement('div');
@@ -436,7 +436,7 @@ export const HoverCardLook: Story = {
   ),
   play: async () => {
     const card = await findSlot('hover-card-content');
-    await expectOverlaySurface(card, '12px');
+    await expectOverlaySurface(card, '8px');
     await expectPopupMotion(card);
   },
 };
@@ -458,7 +458,7 @@ export const ContextMenuLook: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.pointer({ keys: '[MouseRight]', target: within(canvasElement).getByText('Order #1042') });
     const menu = await findSlot('context-menu-content');
-    await expectOverlaySurface(menu, '12px');
+    await expectOverlaySurface(menu, '8px');
     await expectPopupMotion(menu);
   },
 };
@@ -491,7 +491,7 @@ export const NavigationMenuLook: Story = {
     let popup = content.parentElement;
     while (popup && !popup.className.includes('shadow-overlay')) popup = popup.parentElement;
     await expect(popup).not.toBeNull();
-    await expectOverlaySurface(popup as HTMLElement, '12px');
+    await expectOverlaySurface(popup as HTMLElement, '8px');
     await expectPopupMotion(popup as HTMLElement);
   },
 };

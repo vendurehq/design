@@ -90,7 +90,7 @@ function HoverCardContent({
           ref={popupRef}
           data-slot="hover-card-content"
           className={cn(
-            "bg-popover text-popover-foreground shadow-overlay z-50 w-64 rounded-2xl p-4 text-sm outline-hidden",
+            "bg-popover text-popover-foreground shadow-overlay z-50 w-64 rounded-xl p-4 text-sm outline-hidden",
             popupMotion,
             className
           )}
