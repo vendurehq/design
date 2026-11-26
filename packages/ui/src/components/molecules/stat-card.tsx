@@ -1,8 +1,11 @@
 import { Card, CardAction, CardContent, CardHeader } from '@vendure-io/ui/components/atoms/card';
-import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
+import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
+import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 
 // Delta color follows the outcome, not the direction: `goodWhen` says which
 // way is good for this metric (revenue up vs. refund-rate down), and the token
@@ -23,32 +26,107 @@ const statCardDeltaVariants = cva('inline-flex items-center gap-0.5 text-xs font
 });
 
 interface StatCardDelta {
-  /** Raw percentage change, e.g. `-3.2`. Sign drives the arrow and color. */
-  value: number;
-  /** Suffix after the number. Default `'%'`. */
-  label?: string;
-  /** Which direction is a good outcome for this metric. Default `'up'`. */
+  /**
+   * Percentage change, e.g. `-3.2` for −3.2 %. The sign drives the arrow and
+   * the color; a change that rounds to `0.0` has neither. `undefined` means
+   * not known yet: the delta draws a skeleton. `NaN` and `±Infinity` (a change
+   * from zero) show "—".
+   */
+  value: number | undefined;
+  /**
+   * A unit for a change that is not a percentage, e.g. `' pp'` for percentage
+   * points. The number is then a plain decimal in the `FormatProvider` locale,
+   * followed by this unit. `undefined` → a percent in that locale ("12.4%",
+   * "12,4 %").
+   */
+  unit?: string;
+  /** Which direction is a good outcome for this metric. @default "up" */
   goodWhen?: 'up' | 'down';
 }
 
 interface StatCardProps extends ComponentProps<typeof Card> {
   label: ReactNode;
-  /** Pre-formatted display value — pass `<Money>`, `<AnimatedNumber>`, a string. */
-  value: ReactNode;
+  /**
+   * Pre-formatted display value: `<Money>`, `<AnimatedNumber>`, a string.
+   * `undefined` means not known yet: a skeleton of the value's height draws
+   * under the real label, so nothing moves when the value arrives. `null`
+   * means there is no value and renders `fallback`. `0` and `''` are real
+   * values.
+   */
+  value?: ReactNode;
+  /** Rendered when `value` is `null`. @default "—" */
+  fallback?: ReactNode;
   /** Secondary line, e.g. "vs. previous period". */
   description?: ReactNode;
   icon?: ReactNode;
   delta?: StatCardDelta;
   /** Optional sparkline/chart slot. */
   chart?: ReactNode;
-  isLoading?: boolean;
   /** Header-right slot, e.g. a menu or timeframe select. */
   action?: ReactNode;
+  /** Screen-reader text while the value loads. @default `messages.statCard.loading`, "Loading value" */
+  loadingLabel?: string;
+  /** Screen-reader word before a rising delta. @default `messages.statCard.up`, "up" */
+  deltaUpLabel?: string;
+  /** Screen-reader word before a falling delta. @default `messages.statCard.down`, "down" */
+  deltaDownLabel?: string;
 }
 
-function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDelta) {
-  const direction = value > 0 ? 'up' : value < 0 ? 'down' : 'flat';
+// One line of the surrounding text size, so the loaded text takes exactly its
+// place. The value and the delta sit in a baseline-aligned row: the
+// zero-width space gives the skeleton a text baseline, so the row keeps its
+// height whether one, both or neither of them is loading.
+function StatCardSkeleton({ className }: { className: string }) {
+  return (
+    <span aria-hidden="true" className={cn('inline-flex max-w-full', className)}>
+      <span>{'\u200b'}</span>
+      <SkeletonLine />
+    </span>
+  );
+}
+
+interface StatCardDeltaBadgeProps extends StatCardDelta {
+  upWord: string;
+  downWord: string;
+}
+
+function StatCardDeltaBadge({
+  value,
+  unit,
+  goodWhen = 'up',
+  upWord,
+  downWord,
+}: StatCardDeltaBadgeProps) {
+  const { locale } = useFormatSettings();
+
+  if (value === undefined) {
+    return (
+      <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome: 'flat' })}>
+        <StatCardSkeleton className="w-10" />
+      </span>
+    );
+  }
+
+  // A change from zero is ±Infinity: there is no percentage to show.
+  if (!Number.isFinite(value)) {
+    return (
+      <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome: 'flat' })}>
+        —
+      </span>
+    );
+  }
+
+  // One fraction digit in the locale ("12.4%", "12,4 %"), or the decimal and
+  // the caller's unit. The direction follows the shown number, so a change
+  // that rounds to 0.0 has no arrow and a neutral tone.
+  const digits = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
+  const shown = Math.round(Math.abs(value) * 10) / 10;
+  const direction = shown === 0 ? 'flat' : value > 0 ? 'up' : 'down';
   const outcome = direction === 'flat' ? 'flat' : direction === goodWhen ? 'good' : 'bad';
+  const formatted =
+    unit === undefined
+      ? new Intl.NumberFormat(locale, { style: 'unit', unit: 'percent', ...digits }).format(shown)
+      : new Intl.NumberFormat(locale, digits).format(shown);
 
   return (
     <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome })}>
@@ -57,13 +135,13 @@ function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDel
       ) : direction === 'down' ? (
         <ArrowDown aria-hidden="true" className="size-3" />
       ) : null}
-      {/* Math.abs strips the sign and the arrow is visual-only, so screen
+      {/* The number has no sign and the arrow is visual-only, so screen
           readers need the direction spelled out. */}
       {direction !== 'flat' ? (
-        <span className="sr-only">{direction === 'up' ? 'up' : 'down'} </span>
+        <span className="sr-only">{direction === 'up' ? upWord : downWord} </span>
       ) : null}
-      {Math.abs(value).toFixed(1)}
-      {label}
+      {formatted}
+      {unit}
     </span>
   );
 }
@@ -71,31 +149,32 @@ function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDel
 function StatCard({
   label,
   value,
+  fallback = '—',
   description,
   icon,
   delta,
   chart,
-  isLoading = false,
   action,
+  loadingLabel,
+  deltaUpLabel,
+  deltaDownLabel,
   className,
   ...props
 }: StatCardProps) {
-  if (isLoading) {
-    return (
-      <Card data-slot="stat-card" className={className} {...props}>
-        <CardHeader>
-          <Skeleton className="h-4 w-24" />
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-40" />
-        </CardContent>
-      </Card>
-    );
-  }
+  const t = useMessages('statCard', {
+    loading: loadingLabel,
+    up: deltaUpLabel,
+    down: deltaDownLabel,
+  });
+  const isBusy = value === undefined || (delta !== undefined && delta.value === undefined);
 
   return (
-    <Card data-slot="stat-card" className={className} {...props}>
+    <Card
+      data-slot="stat-card"
+      aria-busy={isBusy ? true : undefined}
+      className={className}
+      {...props}
+    >
       <CardHeader>
         <div
           data-slot="stat-card-label"
@@ -113,9 +192,18 @@ function StatCard({
       <CardContent className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2">
           <span data-slot="stat-card-value" className="text-2xl font-semibold tabular-nums">
-            {value}
+            {value === undefined ? (
+              <>
+                <StatCardSkeleton className="w-24" />
+                <span className="sr-only">{t.loading}</span>
+              </>
+            ) : value === null ? (
+              fallback
+            ) : (
+              value
+            )}
           </span>
-          {delta ? <StatCardDeltaBadge {...delta} /> : null}
+          {delta ? <StatCardDeltaBadge {...delta} upWord={t.up} downWord={t.down} /> : null}
         </div>
         {description ? (
           <p data-slot="stat-card-description" className="text-muted-foreground text-sm">

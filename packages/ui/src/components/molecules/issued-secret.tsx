@@ -206,7 +206,7 @@ function IssuedSecret({
         </Field>
       ) : null}
       {guard.warned ? (
-        <Alert data-slot="issued-secret-warning" variant="warning">
+        <Alert data-slot="issued-secret-warning" tone="warning">
           <AlertTitle>{warningTitle}</AlertTitle>
           <AlertDescription>{warningDescription}</AlertDescription>
         </Alert>

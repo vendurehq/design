@@ -91,7 +91,7 @@ describe('RelativeTime display, start and tooltip content on the server', () => 
   test('the server renders the fallback for every display', () => {
     for (const html of [
       render(<RelativeTime value={WHEN} display="duration" />),
-      render(<RelativeTime value={WHEN} start={WHEN.getTime() - 42_000} />),
+      render(<RelativeTime value={WHEN} from={WHEN.getTime() - 42_000} />),
       render(<RelativeTime value={WHEN} tooltip="Deployed by Ana" />),
       render(<RelativeTime value={WHEN} fallback="soon" />),
     ]) {
@@ -116,4 +116,48 @@ describe('RelativeTime display, start and tooltip content on the server', () => 
     expect(inDetail(<RelativeTime value={WHEN} focusable={false} />)).not.toContain('tabindex');
     expect(inDetail(<RelativeTime value={WHEN} tooltip={false} />)).not.toContain('tabindex');
   });
+});
+
+describe('RelativeTime while the time is not known', () => {
+  const render = (node: React.ReactElement) => renderToStaticMarkup(node);
+
+  test('undefined renders a one-line skeleton, also on the server', () => {
+    const markup = render(<RelativeTime value={undefined} locale="en-US" />);
+
+    expect(markup).toMatch(/^<span data-slot="relative-time" aria-busy="true"/);
+    expect(markup).toContain('data-skeleton="line"');
+    expect(markup).toContain('<span class="sr-only">Loading time</span>');
+    expect(markup).not.toContain('—');
+  });
+
+  test('the skeleton is as wide as a typical relative time', () => {
+    const width = (markup: string) => Number(markup.match(/width:(\d+)ch/)?.[1]);
+    // "12 minutes ago" and "13 days".
+    expect(width(render(<RelativeTime value={undefined} locale="en-US" />))).toBe(14);
+    expect(
+      width(render(<RelativeTime value={undefined} locale="en-US" display="duration" />)),
+    ).toBe(7);
+  });
+
+  test('an invalid locale still renders the skeleton, with a default width', () => {
+    for (const display of ['relative', 'duration'] as const) {
+      const markup = render(
+        <RelativeTime value={undefined} locale="not a locale!" display={display} />,
+      );
+      expect(markup).toContain('aria-busy="true"');
+      expect(markup).toMatch(/width:\d+ch/);
+    }
+  });
+
+  test('null and an invalid date render the fallback', () => {
+    expect(render(<RelativeTime value={null} />)).toBe('—');
+    expect(render(<RelativeTime value="not a date" fallback="n/a" />)).toBe('n/a');
+  });
+});
+
+test('RelativeTime: the old start name is gone, and the format helpers live in lib', async () => {
+  // @ts-expect-error `start` is `from` since 3.0
+  void (<RelativeTime value={WHEN} start={WHEN} />);
+  const module: Record<string, unknown> = await import('./relative-time.tsx');
+  expect(Object.keys(module)).toEqual(['RelativeTime']);
 });
