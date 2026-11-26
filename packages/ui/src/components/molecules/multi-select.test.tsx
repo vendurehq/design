@@ -9,7 +9,8 @@ const fruits = ['Apple', 'Banana'];
 function render(props: Partial<MultiSelectProps<string>>) {
   return renderToStaticMarkup(<MultiSelect<string> items={fruits} {...props} />);
 }
-const trigger = (html: string) => html.match(/<button[^>]*data-slot="select-trigger"[^>]*>[\s\S]*?<\/button>/)?.[0] ?? '';
+const trigger = (html: string) =>
+  html.match(/<button[^>]*data-slot="select-trigger"[^>]*>[\s\S]*?<\/button>/)?.[0] ?? '';
 
 describe('MultiSelect while the options load', () => {
   test('a selected value shows a skeleton and "Loading…", not a blank or a raw value', () => {
@@ -48,7 +49,11 @@ describe('MultiSelect while the options load', () => {
     expect(fromMessages).toContain('<span class="sr-only">Wird geladen…</span>');
     const fromProp = renderToStaticMarkup(
       <FormatProvider messages={messages}>
-        <MultiSelect<string> items={undefined} defaultValue={['Apple']} loadingLabel="Chargement…" />
+        <MultiSelect<string>
+          items={undefined}
+          defaultValue={['Apple']}
+          loadingLabel="Chargement…"
+        />
       </FormatProvider>,
     );
     expect(fromProp).toContain('<span class="sr-only">Chargement…</span>');
