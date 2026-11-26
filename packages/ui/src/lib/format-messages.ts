@@ -86,6 +86,41 @@ const defaultMessages = {
     /** Screen-reader text while the start loads (`from={undefined}`). */
     loading: 'Loading duration',
   },
+  datePicker: {
+    /** Accessible name of the button that clears the date. */
+    clear: 'Clear date',
+  },
+  dateTimePicker: {
+    /** Accessible name of the button that clears the date and time. */
+    clear: 'Clear date and time',
+    /** Accessible name of the time field. */
+    time: 'Time',
+  },
+  dateRangePicker: {
+    /** Accessible name of the button that clears the range. */
+    clear: 'Clear date range',
+  },
+  fileDropzone: {
+    typeNotAccepted: 'This file type is not accepted.',
+    /** `{size}` is the largest allowed size, in the `byte`, `kilobyte` or `megabyte` unit. */
+    fileTooLarge: 'File size must be {size} or smaller.',
+    /** `{max}` is the file limit. Used when it is more than one. */
+    tooManyFiles: 'You can select up to {max} files.',
+    /** `{max}` is the file limit. Used when it is one. */
+    tooManyFilesOne: 'You can select up to {max} file.',
+    /** Shown when `validateFile` throws. */
+    validationFailed: 'This file could not be validated.',
+    /** Replaces the drop prompt while `validateFile` runs. */
+    checking: 'Checking files…',
+    /** Placed before the `accept` list. */
+    accepted: 'Accepted:',
+    /** Accessible name of a file's remove button. `{name}` is the file name. */
+    remove: 'Remove {name}',
+    /** File size units. The number follows `FormatProvider`'s `locale`. */
+    byte: 'B',
+    kilobyte: 'KB',
+    megabyte: 'MB',
+  },
   dataTable: {
     /** Placeholder and accessible name of the filter editor's default value input. */
     filterValue: 'Value',
