@@ -18,7 +18,7 @@ describe('transition properties', () => {
     ['navigation-menu.tsx', 'transition-[color,background-color]'],
     ['switch.tsx', '[transition:background-color_var(--transition-duration-fast)_var(--ease-soft),border-color_var(--transition-duration-fast)_var(--ease-soft)'],
     ['badge.tsx', 'transition-[color,background-color,border-color]'],
-    ['sidebar.tsx', 'transition-[left,right,translate,background-color] ease-drawer'],
+    ['sidebar.tsx', 'transition-[inset-inline-start,inset-inline-end,translate,background-color] ease-drawer'],
   ])('%s lists %s', (file, classes) => {
     expect(sources.find(([name]) => name === file)?.[1]).toContain(classes);
   });
