@@ -3402,11 +3402,11 @@ function DeploymentTime({
 }) {
   switch (timing.kind) {
     case 'live':
-      return <ElapsedTime since={timing.started} tooltip />;
+      return <ElapsedTime from={timing.started} tooltip />;
     case 'waiting':
-      return words.waiting(<ElapsedTime since={timing.queued} tooltip />);
+      return words.waiting(<ElapsedTime from={timing.queued} tooltip />);
     case 'finished':
-      return <RelativeTime value={timing.finished} start={timing.started} />;
+      return <RelativeTime value={timing.finished} from={timing.started} />;
     case 'since':
       return words.lasting(<RelativeTime value={timing.since} display="duration" />);
   }
