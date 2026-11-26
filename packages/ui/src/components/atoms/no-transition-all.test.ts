@@ -16,7 +16,7 @@ describe('transition properties', () => {
     ['tabs.tsx', 'transition-[color,opacity]'],
     ['navigation-menu.tsx', 'transition-[background-color,opacity]'],
     ['navigation-menu.tsx', 'transition-[color,background-color]'],
-    ['switch.tsx', 'transition-[background-color,border-color,box-shadow,opacity]'],
+    ['switch.tsx', '[transition:background-color_var(--transition-duration-fast)_var(--ease-soft),border-color_var(--transition-duration-fast)_var(--ease-soft)'],
     ['badge.tsx', 'transition-[color,background-color,border-color]'],
     ['sidebar.tsx', 'transition-[left,right,translate,background-color] ease-drawer'],
   ])('%s lists %s', (file, classes) => {

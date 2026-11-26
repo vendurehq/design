@@ -20,8 +20,13 @@ type Story = StoryObj<typeof meta>;
 
 // ── shared primitives ───────────────────────────────────────────────────────
 
-function Chip({ tone, children }: { tone: Tone; children: ReactNode }) {
-  return <StatusBadge tone={tone}>{children}</StatusBadge>;
+// `icon={false}` on `progress` is pending: blue, no spinner.
+function Chip({ tone, icon, children }: { tone: Tone; icon?: false; children: ReactNode }) {
+  return (
+    <StatusBadge tone={tone} icon={icon}>
+      {children}
+    </StatusBadge>
+  );
 }
 
 function Section({
@@ -103,8 +108,8 @@ const TONES: { tone: Tone; sample: string; def: string; examples: string }[] = [
   {
     tone: 'progress',
     sample: 'Deploying',
-    def: 'The system is working right now. Transient; resolves itself.',
-    examples: 'Running (a job), building, deploying, validating. Always shows a spinner.',
+    def: 'The system is working, or waiting on the system or another person. Transient; resolves without the viewer acting.',
+    examples: 'Running (a job), building, deploying, validating: shows a spinner. Pending: blue with no icon.',
   },
 ];
 
@@ -121,8 +126,8 @@ const PRINCIPLES: { n: number; title: string; body: string }[] = [
   },
   {
     n: 3,
-    title: 'Pending splits by who resolves it',
-    body: 'Waits on a human decision: warning. Waits on the system or on time: neutral. Actively executing right now: progress. The word gets no single color; the situation does.',
+    title: 'Pending splits by who acts next',
+    body: 'Waits for the viewer\'s own action: warning, declared by that domain. Waits on the system or another person: progress, blue with no icon. Only work that runs right now spins. The word gets no single color; the situation does.',
   },
   {
     n: 4,
@@ -139,13 +144,13 @@ const RULINGS: { conflict: string; ruling: Tone[]; note: string }[] = [
   },
   {
     conflict: 'Pending',
-    ruling: ['warning', 'neutral'],
-    note: 'Split by resolver (principle 3): human-blocking is warning; system or time is neutral.',
+    ruling: ['progress', 'warning'],
+    note: 'Split by who acts next (principle 3): the system or another person is progress, blue with no icon; the viewer is warning.',
   },
   {
     conflict: 'In progress',
     ruling: ['progress'],
-    note: 'Info-colored chip plus an always-on spinner, as its own tone.',
+    note: 'Info-colored chip plus a spinner for work that runs now, as its own tone. Pending is the same blue with no icon.',
   },
   {
     conflict: 'Active / Completed',
@@ -174,7 +179,7 @@ const RULINGS: { conflict: string; ruling: Tone[]; note: string }[] = [
   },
 ];
 
-type Row = { states: string; tone: Tone; note?: string };
+type Row = { states: string; tone: Tone; icon?: false; note?: string };
 type Domain = { domain: string; rows: Row[] };
 
 const REFERENCE: Domain[] = [
@@ -219,10 +224,12 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Fulfillment',
     rows: [
+      { states: 'Created', tone: 'neutral' },
       {
-        states: 'Created · Pending',
-        tone: 'neutral',
-        note: 'Pending is system-resolved, not human-blocked (ruling 2)',
+        states: 'Pending',
+        tone: 'progress',
+        icon: false,
+        note: 'Pending is system-resolved, not waiting on the viewer (ruling 2)',
       },
       { states: 'Shipped', tone: 'neutral', note: 'On its way: a still truck icon' },
       { states: 'Delivered', tone: 'success' },
@@ -240,7 +247,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Job queue',
     rows: [
-      { states: 'PENDING', tone: 'neutral', note: 'Queued, system-resolved' },
+      { states: 'PENDING', tone: 'progress', icon: false, note: 'Queued, system-resolved' },
       { states: 'RUNNING', tone: 'progress', note: 'The badge brings its own spinner' },
       { states: 'RETRYING', tone: 'warning', note: 'Something went wrong; recovering' },
       { states: 'COMPLETED', tone: 'success' },
@@ -270,7 +277,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Workflows',
     rows: [
-      { states: 'PENDING / pending', tone: 'neutral' },
+      { states: 'PENDING / pending', tone: 'progress', icon: false },
       { states: 'RUNNING / running', tone: 'progress' },
       {
         states: 'COMPLETED / completed',
@@ -343,7 +350,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Store credit',
     rows: [
-      { states: 'Pending', tone: 'neutral', note: 'Settles asynchronously; system-resolved' },
+      { states: 'Pending', tone: 'progress', icon: false, note: 'Settles asynchronously; system-resolved' },
       { states: 'Settled', tone: 'success' },
       { states: 'Cancelled', tone: 'neutral' },
     ],
@@ -388,7 +395,7 @@ const REFERENCE: Domain[] = [
   {
     domain: 'Deployment',
     rows: [
-      { states: 'PENDING', tone: 'neutral' },
+      { states: 'PENDING', tone: 'progress', icon: false },
       {
         states: 'QUEUED · BUILDING · BUILT · DEPLOYING',
         tone: 'progress',
@@ -491,7 +498,11 @@ export const Principles: Story = {
                   <td className="p-3">
                     <div className="mb-1 flex flex-wrap gap-1">
                       {ruling.map((tone) => (
-                        <Chip key={tone} tone={tone}>
+                        <Chip
+                          key={tone}
+                          tone={tone}
+                          icon={conflict === 'Pending' && tone === 'progress' ? false : undefined}
+                        >
                           {tone}
                         </Chip>
                       ))}
@@ -540,7 +551,9 @@ export const ReferenceTable: Story = {
                     >
                       <td className="p-3 font-mono text-xs">{row.states}</td>
                       <td className="p-3">
-                        <Chip tone={row.tone}>{row.tone}</Chip>
+                        <Chip tone={row.tone} icon={row.icon}>
+                          {row.tone}
+                        </Chip>
                       </td>
                       <td className="text-muted-foreground p-3 text-xs">{row.note ?? ''}</td>
                     </tr>

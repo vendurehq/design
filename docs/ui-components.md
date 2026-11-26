@@ -76,12 +76,16 @@ behavior you need instead of rebuilding it from atoms.
 ### Layout & Structure
 `accordion`, `aspect-ratio`, `card`, `collapsible`, `resizable`, `scroll-area`, `separator`, `sidebar`, `tabs`
 
+> **Collapsible.** `CollapsibleContent` eases its height open and shut on the height curve (`--ease-height`, the slow duration), so a second click mid-way reverses from where the panel is. Nothing animates on first render: a Collapsible with `defaultOpen` just shows. The panel clips its content only while the height runs, so a focus ring or a popover inside is not cut off once it is open. Under reduced motion the height snaps and only a short fade remains. Pick by the content: `Collapsible` is a bare disclosure you lay out yourself, such as a "show more" or an advanced block in a form. `CollapsibleSection` is one secondary list of rows on its own card, with a count. `Accordion` is a set of peer panels where the user compares or reads one at a time. Do not use a Collapsible for a keyboard-driven toggle the user repeats many times a day: the motion is for occasional disclosure.
+
 ### Forms & Inputs
 `button`, `button-group`, `checkbox`, `combobox`, `field`, `input`, `input-group`, `input-otp`, `label`, `native-select`, `radio-group`, `select`, `slider`, `switch`, `textarea`, `toggle`, `toggle-group`
 
 > **Toggle surface.** An outline Toggle, and an outline ToggleGroup with no spacing, sit on the outline Button surface: the card fill and `shadow-control`. A segmented switch beside a ButtonGroup in a toolbar then reads as one control family. The pressed item is the accent tint on that surface.
 
 > **Toggle.** A disabled toggle that must say why takes `aria-disabled` in place of `disabled`, with a Tooltip that gives the reason. It keeps its tab stop and the pointer, so the tooltip opens. It looks like a disabled toggle, pressed or not: half opacity, a not-allowed cursor, no hover change. Base UI's Toggle has no `focusableWhenDisabled`, so blocking the press is your job: `onPressedChange={(_, details) => details.cancel()}`. That also stops a ToggleGroup from changing its value. Use plain `disabled` when the page already shows why.
+
+> **Switch motion.** The thumb slides and the track fades only when the user toggles the switch (pointer or keyboard). A controlled `checked` that changes from code, such as data that loads after render, a form reset or another control, shows at once with no motion. An uncontrolled switch only changes by the user, so it always moves. Do not add your own wrapper to switch the transition off.
 
 > **Labelling Checkbox, RadioGroup and Switch:** Base UI puts the `id` on a hidden input, not on the visible control. Because of this, `<Label htmlFor>` does not give the control an accessible name. Set `aria-label` on the control, or `aria-labelledby` with the `id` of the visible label. This note stays until a component fix lands.
 
@@ -98,7 +102,7 @@ behavior you need instead of rebuilding it from atoms.
 > **Triggers and `data-slot`.** A trigger (`TooltipTrigger`, `PopoverTrigger`, `HoverCardTrigger`, `DropdownMenuTrigger`, `DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `DrawerTrigger`, `CollapsibleTrigger`, `ContextMenuTrigger`) always marks its element with `data-<slot>`, for example `data-tooltip-trigger`. It sets `data-slot="<slot>"` only when it renders a plain element: no `render`, a render function, or an HTML element such as `<span>`. A component passed as `render` keeps its own slot: `<TooltipTrigger render={<Button />}>` renders `data-slot="button"` and `data-tooltip-trigger`. Select a trigger by `[data-tooltip-trigger]`, not by `[data-slot=tooltip-trigger]`.
 
 ### Navigation
-`breadcrumb`, `navigation-menu`, `pagination`
+`breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
 > **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
 
@@ -187,9 +191,38 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/*`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
-> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
+> **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
+> **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
+>
+> ```tsx
+> <Checklist title="Set up your project" onDismiss={hide}>
+>   {steps.map((step) => (
+>     <ChecklistStep key={step.key} id={step.key} done={step.done}>
+>       <ChecklistStepLabel>{step.title}</ChecklistStepLabel>
+>       <ChecklistStepDescription>{step.description}</ChecklistStepDescription>
+>       <ChecklistStepGuide href={step.guide.href}>{step.guide.label}</ChecklistStepGuide>
+>       <ChecklistStepAction>
+>         <Button size="sm" variant="secondary" render={<Link to={step.to} />} nativeButton={false}>
+>           {step.actionLabel}
+>         </Button>
+>       </ChecklistStepAction>
+>     </ChecklistStep>
+>   ))}
+> </Checklist>
+> ```
+>
+> - The title row shows a count ("2 of 6") that rolls when it changes, and a thin bar. A screen reader hears the count politely when it changes.
+> - Open steps come first. A done step strikes through and moves into a "Completed" group that opens and closes (`completedOpen`, `defaultCompletedOpen`).
+> - `mode="system"` (default): the app sets `done` from its data, each step shows a tick, and a step that turns done moves at once. `mode="manual"`: the user checks a step off with its checkbox (`onStepCheckedChange`, or `defaultDone` to let the Checklist keep the state). A checked step stays in place while the pointer is on its row and moves when the pointer leaves it (focus, for the keyboard; 700ms after the tap, on touch). Unchecking in Completed works the same way back.
+> - `ChecklistStepAction` (one Button or link) and `ChecklistStepBody` (more content across the row, such as commands) show on open steps only. `ChecklistStepDetail` is a short fact on the label's line, at the row's end, so details line up on every row; the action sits under it. `ChecklistStepGuide` is an external `ArrowLink` to the guide that opens a new tab. On a row narrower than 448px the action goes under the text.
+> - `onDismiss` adds a dismiss button once every step is done; remove the Checklist in it.
+> - Steps must be direct children (fragments, arrays and conditionals are fine). Every built-in text is a prop (`completedLabel`, `dismissLabel`, `stepDoneLabel`, `stepOpenLabel`, `formatCount`, `formatAnnouncement` on Checklist; `newTabLabel` on ChecklistStepGuide).
+> - A step that turns done in system mode flies into Completed and plays its tick and strike as it lands. Reduced motion: nothing moves or sweeps; rows and ticks fade.
+n takes `enter="new"`.
+
+> **StepIndicator.** Where an ordered flow stands, as an `<ol>` of steps: `<StepIndicator aria-label="Signup steps"><StepIndicatorStep state="done"><StepIndicatorTitle>Account</StepIndicatorTitle></StepIndicatorStep><StepIndicatorStep state="current"><StepIndicatorTitle>Plan</StepIndicatorTitle></StepIndicatorStep></StepIndicator>`. `orientation="horizontal"` (default) is a progress track, one bar per step; `"vertical"` is a guide on a rail, with StepIndicatorContent for actions or a command under a step. `marker="number"` (default) or `"icon"`. States: `upcoming`, `current` (blue, no spinner: it waits), `running` (the only one that spins), `done`, `failed`. The current and running step get `aria-current="step"`, and each title ends with its state in words for screen readers (`stateLabels` translates them). Nothing moves on the first render. A StepIndicator is for an ordered flow; tasks the user ticks off in any order are a Checklist.
 
 ## Utilities
 
@@ -309,6 +342,8 @@ Destructive actions come in two weights. On the page, use the quiet `variant="de
 
 A disabled button that must say why takes `disabled` with `focusableWhenDisabled` and a Tooltip that gives the reason. Base UI then renders `aria-disabled="true"` instead of the native attribute: the button keeps its tab stop and the pointer, so the tooltip opens, and it ignores the click and every key but Tab. It looks like a native disabled button in every variant: half opacity, no shadow, a not-allowed cursor, no hover or press change. A raw `aria-disabled="true"` gets the same look; ignoring the click is then up to you. Use plain `disabled` when the page already shows why.
 
+A Button that goes to a page is a link, not a button. Render it with the element you navigate with: `<Button render={<a href="/billing" />}>` or `<Button render={<Link to="/billing" />}>`. It keeps the link role, so a screen reader says "link", and it takes the whole button look. Button finds the link from the element you pass (an `<a>`, or an element with `href` or `to`); there is no extra prop. A render function hides the link from Button: pass the element. A disabled link (`disabled`) has `role="link"` and `aria-disabled="true"`, follows nothing and leaves the tab order; add `focusableWhenDisabled` to keep the tab stop for a Tooltip that says why. Do not call `buttonVariants()` on your own `<a>` or `<Link>`: it paints the look but none of the disabled handling, and `buttonVariants()` stays exported only for the parts that style something else as a button (a calendar cell, a toast action).
+
 The small icon sizes `icon-xs` (24px) and `icon-sm` (28px) have a 40 × 40px click area around the icon. It is an invisible `::before`, so the button keeps its visible size. Next to another control the area keeps the button's own width, so neighbours never share a point. Inside an InputGroup and in the copy chips it is off. Do not give these buttons a `::before` of your own. Keep a positioned scroll container at least 8px from such a button, or the area adds to the scroll width.
 
 ### Badge
@@ -405,7 +440,7 @@ const orderStates = defineStateEntries<OrderState>({
 ```
 
 `StatusBadge` renders as a chip by default, with the tone's own icon in front
-of the label (`progress` spins). A status that every row of a table shows uses
+of the label (`progress` spins while work runs). A status that every row of a table shows uses
 `appearance="icon"`: the tone icon with no box and a neutral label. Use
 `appearance="dot"` only where no word fits (the label stays as screen-reader
 text). `size="lg"` is the 28px chip for a page header.
@@ -428,6 +463,16 @@ as a shipped order, gets a still icon and a neutral tone:
 <StatusBadge appearance="icon" tone="neutral" icon={<TruckIcon />}>
   Shipped
 </StatusBadge>
+```
+
+Pending, waiting on the system or another person, is `progress` with no icon:
+blue, and nothing spins. Running is blue with the spinner.
+`commonStates.pending` declares `icon: false`, so
+`icon={commonStates.iconFor(state)}` is all a consumer passes:
+
+```tsx
+<StatusBadge tone="progress" icon={commonStates.iconFor("pending")}>Pending</StatusBadge>; // blue, no icon
+<StatusBadge tone="progress">Running</StatusBadge>; // blue, spinner
 ```
 
 `LiveIndicator` is the mark for a state that stays on: a live log stream, a
@@ -490,7 +535,10 @@ its own row, so the label, the time and the rows above and below stay readable.
 - `dot` shows a dot in place of the icon, for a group of chips that is not a
   column.
 - `icon={false}` or `icon={null}` shows no icon, for an inline chip whose label
-  already names the tone. `progress` keeps its spinner and `dot` keeps the dot.
+  already names the tone, and for pending: `progress` with `icon={false}` is
+  blue with no spinner. `dot` keeps the dot, and `appearance="icon"` always
+  shows a marker (the tone icon, or a still dot for pending). A `bare` pending
+  badge shows the same dot in the icon's slot.
 - To explain a state on hover, render the badge as the tooltip trigger:
   `<TooltipTrigger render={<StatusBadge tone="warning">Degraded</StatusBadge>} />`.
   The badge becomes a tab stop with the focus ring, and a chip takes the hover
@@ -751,6 +799,31 @@ A card or row that opens the same page drives the link's hover and takes its cli
 - The link's `::after` covers the parent, so a click anywhere on it follows the link. Pointing anywhere on it brightens the link and moves its chevron.
 - Keep the link itself unpositioned: a `relative` link becomes the containing block of its `::after`, which then shrinks to the link.
 - Keyboard focus shows the same emphasis as hover, with the focus ring 2px outside the link.
+
+### TextLink
+
+`TextLink` is a link inside running text, or a small standalone link. It renders an `<a>`; pass `render` with a router link. It keeps the link role.
+
+```tsx
+<p className="text-sm">
+  To capture payments at checkout, change the capture setting of your{' '}
+  <TextLink render={<Link to="/payment-handlers" />}>payment handlers</TextLink>.
+</p>
+```
+
+- It takes the font size, weight and line height of the text around it, and wraps with it.
+- `tone="default"`: link colour, always underlined. Use it in a sentence: the underline marks the link without relying on colour.
+- `tone="quiet"`: muted, underlined on hover. Use it for a small standalone link next to more important actions, such as "Forgot password?". Not inside a sentence.
+- `external`: opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and adds "(opens in a new tab)" for screen readers. Translate the note with `externalLabel`. Your own `target` and `rel` win.
+- Keyboard focus draws the focus ring at offset 0, not 2px: an outset ring would touch the next word. The underline is hidden while the ring shows.
+
+Which link to use:
+
+| Part | Use for |
+| --- | --- |
+| `TextLink` | A link inside a sentence, a description or a form hint; a small standalone link. |
+| `ArrowLink` | More of the same subject, at the end of a panel head, card or notice. |
+| `Button` | An action: it changes data or opens a dialog. Do not force `variant="link"` to `h-auto p-0` to draw a link in text. |
 
 ### Loading skeletons
 

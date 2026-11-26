@@ -138,15 +138,46 @@ describe('ChoiceCard look', () => {
     expect(look).not.toContain('transition-all');
   });
 
-  test('selected is a primary border and an inset line, never an outline', () => {
+  test('selected is one 2px primary stroke on the border box, never an outline', () => {
     const tag = cardTag(renderToStaticMarkup(plans()), 'Starter');
     expect(tag).toContain('data-checked:border-primary');
-    expect(tag).toContain('data-checked:after:shadow-[inset_0_0_0_1px_var(--primary)]');
+    // On the border box with the card's radius, so the stroke and the border
+    // share one curve: on the padding box (inset-0) the corners leave a gap.
+    expect(tag).toContain('after:-inset-px');
+    expect(tag).toContain('after:rounded-[inherit]');
+    expect(tag).not.toMatch(/(^|\s)after:inset-0(\s|")/);
+    expect(tag).toContain('data-checked:after:shadow-[inset_0_0_0_2px_var(--primary)]');
+    expect(tag).not.toContain('inset_0_0_0_1px');
     expect(tag).not.toMatch(/data-checked:outline/);
   });
 
   test('the press scale stays still with reduced motion', () => {
-    expect(interactiveCardVariants()).toContain('motion-reduce:active:scale-100');
+    expect(interactiveCardVariants()).toContain('motion-reduce:active:not-focus-visible:scale-100');
+  });
+
+  test('only a pointer press scales: every press class skips keyboard focus', () => {
+    const press = interactiveCardVariants()
+      .split(' ')
+      .filter((token) => token.includes('active:'));
+    expect(press.length).toBeGreaterThan(0);
+    for (const token of press)
+      expect({ token, pointerOnly: token.includes('active:not-focus-visible:') }).toEqual({
+        token,
+        pointerOnly: true,
+      });
+  });
+
+  test('the media card does not clip, so the selected stroke stays whole', () => {
+    const html = renderToStaticMarkup(
+      <ChoiceCardGroup multiple aria-label="Assets">
+        <ChoiceCard value="a" variant="media" aria-label="Blue shirt">
+          <img src="/a.jpg" alt="" />
+        </ChoiceCard>
+      </ChoiceCardGroup>,
+    );
+    const tag = cardTag(html, '<img');
+    expect(tag).not.toMatch(/(^|\s|")overflow-hidden(\s|")/);
+    expect(tag).toContain('[&amp;_img]:rounded-[calc(var(--radius-2xl)-1px)]');
   });
 
   test('the radio dot grows from half size, never from 0, and only fades with reduced motion', () => {
