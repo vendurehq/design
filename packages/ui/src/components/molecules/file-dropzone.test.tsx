@@ -3,6 +3,22 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { FileDropzone, fileMatchesAccept, formatFileSize } from './file-dropzone.tsx';
 
 describe('FileDropzone', () => {
+  test('lists its defaultValue when value is not passed', () => {
+    const file = new File(['a'], 'spec-sheet.pdf', { type: 'application/pdf' });
+    const html = renderToStaticMarkup(<FileDropzone defaultValue={[file]} />);
+    expect(html).toContain('spec-sheet.pdf');
+  });
+
+  test('value wins over defaultValue, and an explicit empty value stays controlled', () => {
+    const file = new File(['a'], 'spec-sheet.pdf', { type: 'application/pdf' });
+    expect(renderToStaticMarkup(<FileDropzone value={[]} defaultValue={[file]} />)).not.toContain(
+      'spec-sheet.pdf',
+    );
+    expect(
+      renderToStaticMarkup(<FileDropzone value={undefined} defaultValue={[file]} />),
+    ).not.toContain('spec-sheet.pdf');
+  });
+
   test('matches MIME families, exact MIME types, and extensions', () => {
     const png = new File(['image'], 'store-logo.PNG', { type: 'image/png' });
     expect(fileMatchesAccept(png, 'image/*')).toBe(true);
