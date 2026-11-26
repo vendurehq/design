@@ -17,7 +17,7 @@ export const uiGuidance = [
       },
       {
         title: 'A page notice is one Alert',
-        body: 'Use the Alert variant for the tone. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
+        body: 'Set the tone with the Alert `tone` prop. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.',
       },
       {
         title: 'A toned Alert carries its tone icon',
