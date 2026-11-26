@@ -93,7 +93,11 @@ export const tokenGuidance = [
       },
       {
         title: 'Radius roles',
-        body: "Each corner comes from one of five roles. Inner, rounded-lg (6px): items and chips inside a menu or a field, tooltips and xs buttons. Control, rounded-xl (8px): buttons, toggles and every field, so a field and a button in one row match. Surface, rounded-2xl (12px): cards, toasts, dialogs and every popup (menu, select, combobox, popover, hover card, chart tooltip). Palette, rounded-3xl (16px): the command palette only. Pill, rounded-full: badges, avatars and switches. An element inside another rounded element takes the outer radius minus the gap between them: a popup with 6px items and about 6px of padding is 12px. Our names are one step smaller than Tailwind's: rounded-md is 4px. rounded-xs and rounded-4xl do not exist. Never write an arbitrary radius in px; derive an inner radius from a radius token with calc().",
+        body: "A shape that stands on its own takes a role radius. Control, rounded-xl (8px): buttons, toggles and fields, so a field and a button in one row match. Surface, rounded-2xl (12px): cards, toasts and dialogs. Palette, rounded-3xl (16px): the command palette. Pill, rounded-full: badges, avatars and switches. Popups (menus, select, combobox, popover, hover card) are rounded-xl (8px). Our names are one step smaller than Tailwind's: rounded-md is 4px. rounded-xs and rounded-4xl do not exist. Never write a radius in px.",
+      },
+      {
+        title: 'Nested corners follow outer minus gap',
+        body: "A shape inside another rounded shape, with a small gap between them, derives its corner: inner radius = outer radius - gap, where the gap is the parent's padding plus its border width. Write it from the outer token: rounded-[calc(var(--radius-xl)-5px)] for a chip 5px inside an 8px field. A flush shape (gap 0) takes the outer radius. When the gap is as big as the outer radius or bigger, such as the padded content of a dialog or a card, the inner shape keeps its own role radius instead.",
       },
       {
         title: 'Neutral intensity has an order',
