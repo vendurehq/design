@@ -77,7 +77,7 @@ describe('Linked card look', () => {
   test('hover darkens the border; press and focus follow the link, not an inner control', () => {
     const look = interactiveCardVariants({ target: 'link' });
     expect(look).toContain('has-data-[slot=card-link]:hover:border-foreground/25');
-    expect(look).toContain('has-[[data-slot=card-link]:active]:scale-[0.995]');
+    expect(look).toContain('has-[[data-slot=card-link]:active:not(:focus-visible)]:scale-[0.995]');
     expect(look).not.toMatch(/(^| )active:/);
   });
 
@@ -91,8 +91,15 @@ describe('Linked card look', () => {
 
   test('the press scale stays still with reduced motion', () => {
     expect(interactiveCardVariants({ target: 'link' })).toContain(
-      'motion-reduce:has-[[data-slot=card-link]:active]:scale-100',
+      'motion-reduce:has-[[data-slot=card-link]:active:not(:focus-visible)]:scale-100',
     );
+  });
+
+  test('a key press on the focused link does not scale the card, and only the border and scale transition', () => {
+    const look = interactiveCardVariants({ target: 'link' });
+    const press = look.split(' ').filter((token) => token.includes('scale-['));
+    for (const token of press) expect(token).toContain(':active:not(:focus-visible)]');
+    expect(look).not.toContain('box-shadow_var');
   });
 
   test('ChoiceCard keeps the self target', () => {

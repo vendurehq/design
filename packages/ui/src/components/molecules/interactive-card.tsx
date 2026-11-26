@@ -21,14 +21,17 @@ import { cva } from 'class-variance-authority';
 //   `has-data-[slot=card-link]`, so a Card without a link stays static. Hover
 //   is the card's (the link covers it). Press and focus read the link's
 //   :active and :focus-visible, so pressing a menu inside the card does not
-//   press the card.
+//   press the card. Only a pointer press scales it: a key press (Space or
+//   Enter on the focused link) leaves the card still, as keyboard actions do
+//   not animate. The link target only transitions what changes: the border
+//   and the scale.
 const SURFACE = 'rounded-2xl border border-border bg-card text-card-foreground shadow-control';
 
 const SELF_STATES =
   'relative outline-none cursor-pointer select-none [transition:border-color_var(--transition-duration-fast)_var(--ease-soft),background-color_var(--transition-duration-fast)_var(--ease-soft),box-shadow_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-press)] hover:border-foreground/25 active:scale-[0.995] motion-reduce:active:scale-100 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-disabled:cursor-not-allowed data-disabled:opacity-50 data-disabled:hover:border-border data-disabled:active:scale-100 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:hover:border-border aria-disabled:active:scale-100';
 
 const LINK_STATES =
-  'has-data-[slot=card-link]:relative has-data-[slot=card-link]:cursor-pointer has-data-[slot=card-link]:[transition:border-color_var(--transition-duration-fast)_var(--ease-soft),box-shadow_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-press)] has-data-[slot=card-link]:hover:border-foreground/25 has-[[data-slot=card-link]:active]:scale-[0.995] motion-reduce:has-[[data-slot=card-link]:active]:scale-100 has-[[data-slot=card-link]:focus-visible]:outline-solid has-[[data-slot=card-link]:focus-visible]:outline-2 has-[[data-slot=card-link]:focus-visible]:outline-offset-2 has-[[data-slot=card-link]:focus-visible]:outline-ring';
+  'has-data-[slot=card-link]:relative has-data-[slot=card-link]:cursor-pointer has-data-[slot=card-link]:[transition:border-color_var(--transition-duration-fast)_var(--ease-soft),scale_var(--transition-duration-fast)_var(--ease-press)] has-data-[slot=card-link]:hover:border-foreground/25 has-[[data-slot=card-link]:active:not(:focus-visible)]:scale-[0.995] motion-reduce:has-[[data-slot=card-link]:active:not(:focus-visible)]:scale-100 has-[[data-slot=card-link]:focus-visible]:outline-solid has-[[data-slot=card-link]:focus-visible]:outline-2 has-[[data-slot=card-link]:focus-visible]:outline-offset-2 has-[[data-slot=card-link]:focus-visible]:outline-ring';
 
 const interactiveCardVariants = cva(SURFACE, {
   variants: {
