@@ -507,7 +507,9 @@ function BreadcrumbMenu({
             <MenuPrimitive.Item
               disabled
               data-slot="breadcrumb-menu-loading"
-              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-2 text-sm outline-none"
+              // The shared item look: the arrow keys stop on it, so it
+              // keeps the focus ring.
+              className={cn(menuItem, "text-muted-foreground")}
             >
               <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
               {t.loading}
@@ -654,9 +656,14 @@ function BreadcrumbSearchMenu({
           {/* Outside the list: a listbox takes only options and groups. As
               tall as one option row with its group's padding, so one
               option takes its place without a jump. */}
+          {/* Stays mounted, so screen readers announce the change: a status
+              that mounts with its text is not reliably read. */}
+          <div role="status" data-slot="breadcrumb-search-menu-status" className="sr-only">
+            {loading ? t.loading : null}
+          </div>
           {loading && (
             <div
-              role="status"
+              aria-hidden
               data-slot="breadcrumb-search-menu-loading"
               className="text-muted-foreground flex min-h-10 items-center gap-2.5 px-4 pt-2 text-sm"
             >
@@ -664,7 +671,7 @@ function BreadcrumbSearchMenu({
               {t.loading}
             </div>
           )}
-          <CommandList>
+          <CommandList aria-busy={loading || undefined}>
             {!loading && !failed && <CommandEmpty>{emptyText}</CommandEmpty>}
             {failed && (
               <CommandGroup forceMount heading={error}>

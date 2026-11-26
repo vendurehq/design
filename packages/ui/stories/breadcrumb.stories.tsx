@@ -608,7 +608,8 @@ function ProjectCrumbs({
   const read = readControlled ?? ownRead;
   const [value, setValue] = React.useState(projectId);
   const [open, setOpen] = React.useState(false);
-  const projects = read === 'loaded' ? allProjects : read === 'loading' ? undefined : [];
+  // A failed first read has no options either: the error wins over loading.
+  const projects = read === 'loaded' ? allProjects : read === 'empty' ? [] : undefined;
   return (
     <Breadcrumb>
       <BreadcrumbList className="flex-nowrap">
@@ -776,6 +777,42 @@ export const SearchMenuLoadingHeight: Story = {
   },
 };
 
+/**
+ * Opened from the keyboard while the projects load: when they arrive, the
+ * first one is the active row and the arrow keys move through them.
+ */
+export const SearchMenuLoadingKeyboard: Story = {
+  tags: ['!autodocs'],
+  render: () => <ArrivingProjects />,
+  play: async ({ canvasElement }) => {
+    within(canvasElement).getByRole('button', { name: 'Projects: Project' }).focus();
+    await userEvent.keyboard('{Enter}');
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    await expect(within(popup).getByRole('status')).toHaveTextContent('Loading…');
+    await expect(within(popup).getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+    const first = await within(popup).findByRole('option', { name: /Acme Storefront/ }, { timeout: 3000 });
+    await expect(within(popup).getByRole('status')).toHaveTextContent('');
+    await expect(within(popup).getByRole('listbox')).not.toHaveAttribute('aria-busy');
+    // The first project is the active row, so Enter picks it, and the arrow
+    // keys move on from there.
+    await waitFor(() => expect(first).toHaveAttribute('aria-selected', 'true'));
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(within(popup).getByRole('option', { name: /Acme Wholesale/ })).toHaveAttribute('aria-selected', 'true'),
+    );
+  },
+};
+
+/** The projects arrive a moment after the first render. */
+function ArrivingProjects() {
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    const id = setTimeout(() => setLoaded(true), 1000);
+    return () => clearTimeout(id);
+  }, []);
+  return <ProjectCrumbs readControlled={loaded ? 'loaded' : 'loading'} />;
+}
+
 function LoadingProjects() {
   const [loaded, setLoaded] = React.useState(false);
   return (
@@ -802,6 +839,9 @@ export const SearchMenuError: Story = {
     await waitFor(() => expect(within(popup).getByText('Projects could not be loaded')).toBeVisible());
     await expect(within(popup).getByRole('group', { name: 'Projects could not be loaded' })).toBeInTheDocument();
     await expect(within(popup).queryByText('No project found.')).not.toBeInTheDocument();
+    // `options={undefined}` with an error: the error shows, not the loading row.
+    await expect(popup.querySelector('[data-slot="breadcrumb-search-menu-loading"]')).toBeNull();
+    await expect(within(popup).getByRole('status')).toHaveTextContent('');
     await expect(within(popup).getByRole('option', { name: 'Retry' })).toBeInTheDocument();
   },
 };
