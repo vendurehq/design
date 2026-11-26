@@ -88,13 +88,14 @@ export const RejectionTexts: Story = {
   tags: ['!autodocs'],
   render: () => (
     <div className="max-w-xl">
-      <FileDropzone multiple maxFiles={2} maxSize={2048} accept="application/pdf,.pdf" />
+      <FileDropzone multiple maxFiles={3} maxSize={2048} accept="application/pdf,.pdf" />
     </div>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = fileInput(canvasElement);
-    await userEvent.upload(input, [
+    // `applyAccept: false` keeps user-event from dropping notes.txt before the component sees it.
+    await userEvent.setup({ applyAccept: false }).upload(input, [
       new File(['a'], 'notes.txt', { type: 'text/plain' }),
       pdf('big.pdf', 4096),
       pdf('one.pdf'),
@@ -103,7 +104,10 @@ export const RejectionTexts: Story = {
     const alert = await canvas.findByRole('alert');
     await expect(alert).toHaveTextContent('notes.txt: This file type is not accepted.');
     await expect(alert).toHaveTextContent('big.pdf: File size must be 2 KB or smaller.');
-    await expect(alert).toHaveTextContent('two.pdf: You can select up to 2 files.');
+    await expect(alert).toHaveTextContent('two.pdf: You can select up to 3 files.');
+    // Removing a file clears the rejections, so the a11y scan sees the settled field.
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove one.pdf' }));
+    await expect(canvas.queryByRole('alert')).toBeNull();
   },
 };
 
@@ -143,6 +147,8 @@ export const FrenchTexts: Story = {
     await expect(await canvas.findByRole('alert')).toHaveTextContent(
       'lourd.pdf: La taille doit être de 1,5 Mo ou moins.',
     );
+    await userEvent.click(canvas.getByRole('button', { name: 'Retirer fiche.pdf' }));
+    await expect(canvas.queryByRole('alert')).toBeNull();
   },
 };
 
@@ -153,6 +159,8 @@ export const LabelsProp: Story = {
     <FormatProvider messages={{ fileDropzone: { checking: 'Prüfe Dateien…' } }}>
       <div className="max-w-xl">
         <FileDropzone
+          multiple
+          maxFiles={1}
           labels={{
             checking: 'Verifying…',
             remove: (name) => `Drop ${name}`,
@@ -169,5 +177,8 @@ export const LabelsProp: Story = {
     await userEvent.upload(fileInput(canvasElement), [pdf('a.pdf'), pdf('b.pdf')]);
     await expect(await canvas.findByText('Verifying…')).toBeVisible();
     await expect(await canvas.findByRole('alert')).toHaveTextContent('b.pdf: At most 1.');
+    await expect(canvas.getByRole('button', { name: 'Drop a.pdf' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Drop a.pdf' }));
+    await expect(canvas.queryByRole('alert')).toBeNull();
   },
 };
