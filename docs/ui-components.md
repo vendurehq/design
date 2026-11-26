@@ -582,14 +582,14 @@ import { NoInvoicesIllustration } from "@vendure-io/ui/components/molecules/illu
 Every illustration takes `className` and `size` (width in px, default 160; the
 height keeps the 4:3 ratio). Use one illustration for the whole empty or error
 region: a whole page or a whole list. Inside a card, a secondary panel or a
-side column, use the compact size with an icon instead. It shows a faint 28px
+side column, use the `sm` size with an icon instead. It shows a faint 28px
 icon above the title and no illustration:
 
 ```tsx
 import { KeyRoundIcon } from "lucide-react";
 
 <EmptyState
-  size="compact"
+  size="sm"
   icon={<KeyRoundIcon />}
   title="No emergency boot token was issued for this project."
 />;
@@ -1031,6 +1031,7 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

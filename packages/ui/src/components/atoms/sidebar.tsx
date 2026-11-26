@@ -638,7 +638,7 @@ const sidebarMenuButtonVariants = cva(
 
 function SidebarMenuButton({
   render,
-  isActive = false,
+  active = false,
   hasActiveChild = false,
   variant = "default",
   size = "default",
@@ -647,7 +647,7 @@ function SidebarMenuButton({
   ...props
 }: useRender.ComponentProps<"button"> &
   React.ComponentProps<"button"> & {
-    isActive?: boolean
+    active?: boolean
     /**
      * Set it on the button of every group that holds the current page, whether
      * or not the current item has an icon. For the current page exactly one
@@ -674,7 +674,7 @@ function SidebarMenuButton({
       slot: "sidebar-menu-button",
       sidebar: "menu-button",
       size,
-      active: isActive,
+      active,
       "has-active-child": hasActiveChild,
     },
   })
@@ -890,21 +890,21 @@ function SidebarMenuSubItem({
 
 function SidebarMenuSubButton({
   render,
-  size = "md",
-  isActive = false,
+  size = "default",
+  active = false,
   className,
   ...props
 }: useRender.ComponentProps<"a"> &
   React.ComponentProps<"a"> & {
-    size?: "sm" | "md"
-    isActive?: boolean
+    size?: "sm" | "default"
+    active?: boolean
   }) {
   return useRender({
     defaultTagName: "a",
     props: mergeProps<"a">(
       {
         className: cn(
-          "relative text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground h-7 gap-2 rounded-md px-2 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:opacity-55 [&>svg]:transition-opacity [&>svg]:duration-normal hover:[&>svg]:opacity-85 data-active:[&>svg]:opacity-100 data-active:[&>svg]:text-brand-indicator data-[size=md]:text-sm data-[size=sm]:text-xs [&>svg]:size-4 flex min-w-0 -translate-x-px rtl:translate-x-px items-center overflow-hidden outline-hidden group-data-[collapsible=icon]:hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:shrink-0",
+          "relative text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground h-7 gap-2 rounded-md px-2 focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sidebar-ring [&>svg]:opacity-55 [&>svg]:transition-opacity [&>svg]:duration-normal hover:[&>svg]:opacity-85 data-active:[&>svg]:opacity-100 data-active:[&>svg]:text-brand-indicator data-[size=default]:text-sm data-[size=sm]:text-xs [&>svg]:size-4 flex min-w-0 -translate-x-px rtl:translate-x-px items-center overflow-hidden outline-hidden group-data-[collapsible=icon]:hidden disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:shrink-0",
           className
         ),
       },
@@ -915,7 +915,7 @@ function SidebarMenuSubButton({
       slot: "sidebar-menu-sub-button",
       sidebar: "menu-sub-button",
       size,
-      active: isActive,
+      active,
     },
   })
 }
