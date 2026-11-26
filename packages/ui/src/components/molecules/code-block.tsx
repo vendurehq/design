@@ -5,6 +5,7 @@ import { DirectionProvider } from '@vendure-io/ui/components/atoms/direction';
 import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
+import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
@@ -18,9 +19,10 @@ import {
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
-import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 // Relative imports: `code-block/*` is closed in the package exports, so a
 // `@vendure-io/ui/...` self-reference to these modules fails in consumers.
+import { useMessages } from '../../lib/format-messages.ts';
+import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import { processCode } from './code-block/process-code.ts';
 import {
@@ -29,6 +31,31 @@ import {
   type PackageManager,
   transformCommand,
 } from './code-block/transform-command.tsx';
+
+/**
+ * The texts of a CodeBlock. Each one falls back to `FormatProvider`'s
+ * `messages.codeBlock`, then to English.
+ */
+interface CodeBlockLabels {
+  /** Label of the copy button. @default `messages.codeBlock.copyCode`, "Copy code" */
+  copyCode?: string;
+  /** Label of the copy button after a copy. @default `messages.codeBlock.copied`, "Copied!" */
+  copied?: string;
+  /** Header of a shell block with no filename and no package-manager tabs. @default `messages.codeBlock.terminal`, "Terminal" */
+  terminal?: string;
+  /** Header of a block with no filename and no language. @default `messages.codeBlock.code`, "Code" */
+  code?: string;
+  /** Label of the button that collapses a long block. @default `messages.codeBlock.showLess`, "Show less" */
+  showLess?: string;
+  /**
+   * Label of the button that expands a long block. `{count}` is replaced by the
+   * number of hidden lines, formatted with `FormatProvider`'s `locale`.
+   * @default `messages.codeBlock.showMore`, "Show {count} more lines"
+   */
+  showMore?: string;
+}
+
+type CodeBlockTexts = Required<CodeBlockLabels>;
 
 type CodeBlockProps = Omit<ComponentProps<'div'>, 'children'> & {
   /**
@@ -59,6 +86,8 @@ type CodeBlockProps = Omit<ComponentProps<'div'>, 'children'> & {
   onCopied?: () => void;
   /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
+  /** Translate the texts of the header, the copy button and the expander. Each text also reads `FormatProvider`'s `messages.codeBlock`. */
+  labels?: CodeBlockLabels;
 };
 
 interface CodeBlockActionProps {
@@ -216,9 +245,10 @@ interface CodeBlockToolbarProps {
   onCopy: () => void;
   isCopied: boolean;
   actions?: ReactNode;
+  texts: CodeBlockTexts;
 }
 
-function CodeBlockToolbar({ onCopy, isCopied, actions }: CodeBlockToolbarProps) {
+function CodeBlockToolbar({ onCopy, isCopied, actions, texts }: CodeBlockToolbarProps) {
   return (
     <div className="flex items-center gap-0.5">
       {actions}
@@ -226,7 +256,7 @@ function CodeBlockToolbar({ onCopy, isCopied, actions }: CodeBlockToolbarProps) 
         icon={
           isCopied ? <CheckIcon className="size-4 text-success" /> : <CopyIcon className="size-4" />
         }
-        label={isCopied ? 'Copied!' : 'Copy code'}
+        label={isCopied ? texts.copied : texts.copyCode}
         onClick={onCopy}
       />
     </div>
@@ -295,6 +325,7 @@ interface CodeBlockHeaderProps {
   onSelectManager?: (pm: PackageManager) => void;
   toolbar: ReactNode;
   id: string;
+  texts: CodeBlockTexts;
 }
 
 function CodeBlockHeader({
@@ -306,6 +337,7 @@ function CodeBlockHeader({
   onSelectManager,
   toolbar,
   id,
+  texts,
 }: CodeBlockHeaderProps) {
   const getLabel = () => {
     if (filename) {
@@ -328,7 +360,7 @@ function CodeBlockHeader({
       return (
         <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
           <TerminalIcon className="size-3.5" />
-          <span>Terminal</span>
+          <span>{texts.terminal}</span>
         </div>
       );
     }
@@ -336,7 +368,7 @@ function CodeBlockHeader({
     return (
       <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
         <CodeIcon className="size-3.5" />
-        <span>{language ? language.charAt(0).toUpperCase() + language.slice(1) : 'Code'}</span>
+        <span>{language ? language.charAt(0).toUpperCase() + language.slice(1) : texts.code}</span>
       </div>
     );
   };
@@ -369,9 +401,11 @@ interface ExpandButtonProps {
   isExpanded: boolean;
   hiddenLineCount: number;
   onToggle: () => void;
+  texts: CodeBlockTexts;
 }
 
-function ExpandButton({ isExpanded, hiddenLineCount, onToggle }: ExpandButtonProps) {
+function ExpandButton({ isExpanded, hiddenLineCount, onToggle, texts }: ExpandButtonProps) {
+  const { locale } = useFormatSettings();
   return (
     <div className="border-border bg-muted/30 flex items-center justify-center border-t py-2">
       <Button
@@ -383,12 +417,15 @@ function ExpandButton({ isExpanded, hiddenLineCount, onToggle }: ExpandButtonPro
         {isExpanded ? (
           <>
             <ChevronUpIcon className="size-3.5" />
-            Show less
+            {texts.showLess}
           </>
         ) : (
           <>
             <ChevronDownIcon className="size-3.5" />
-            Show {hiddenLineCount} more lines
+            {texts.showMore.replace(
+              '{count}',
+              new Intl.NumberFormat(locale).format(hiddenLineCount),
+            )}
           </>
         )}
       </Button>
@@ -469,8 +506,10 @@ export function CodeBlock({
   actions,
   onCopied,
   onCopyError,
+  labels,
   ...props
 }: CodeBlockProps) {
+  const texts = useMessages('codeBlock', labels);
   const { copied, copy } = useCopy();
   const copyFeedback = useCopyFeedback();
   const [activePackageManager, setActivePackageManager] = usePackageManager();
@@ -512,7 +551,9 @@ export function CodeBlock({
     else (onCopyError ?? copyFeedback.onCopyError)?.(new Error('Failed to copy to the clipboard'));
   };
 
-  const toolbar = <CodeBlockToolbar onCopy={handleCopy} isCopied={copied} actions={actions} />;
+  const toolbar = (
+    <CodeBlockToolbar onCopy={handleCopy} isCopied={copied} actions={actions} texts={texts} />
+  );
 
   const showCollapsed = isCollapsible && !isExpanded;
 
@@ -535,6 +576,7 @@ export function CodeBlock({
           onSelectManager={setActivePackageManager}
           toolbar={toolbar}
           id={instanceId}
+          texts={texts}
         />
       )}
 
@@ -587,6 +629,7 @@ export function CodeBlock({
           isExpanded={isExpanded}
           hiddenLineCount={hiddenLineCount}
           onToggle={() => setIsExpanded(!isExpanded)}
+          texts={texts}
         />
       )}
     </div>
@@ -594,4 +637,4 @@ export function CodeBlock({
 }
 
 export { CodeBlockAction };
-export type { CodeBlockProps, CodeBlockActionProps, PackageManager };
+export type { CodeBlockProps, CodeBlockActionProps, CodeBlockLabels, PackageManager };

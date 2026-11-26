@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SparklesIcon } from 'lucide-react';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { expectPx } from './pixel.ts';
 import { CodeBlock, CodeBlockAction } from '../src/components/molecules/code-block.tsx';
 
@@ -277,5 +278,99 @@ export const RightToLeft: Story = {
     const copy = within(block).getByRole('button', { name: /copy/i });
     const name = within(block).getByText('vendure-config.ts');
     await expect(name.getBoundingClientRect().left).toBeGreaterThan(copy.getBoundingClientRect().right);
+  },
+};
+
+const LONG_SNIPPET = Array.from({ length: 60 }, (_, i) => `const line${i} = ${i};`).join('\n');
+
+/** Replaces `navigator.clipboard` for one story; the cleanup puts it back. */
+function allowClipboard() {
+  const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async () => {} },
+  });
+  return () => {
+    if (original) Object.defineProperty(navigator, 'clipboard', original);
+    else Reflect.deleteProperty(navigator, 'clipboard');
+  };
+}
+
+/**
+ * `FormatProvider`'s `messages.codeBlock` translates the header, the copy
+ * button and the expander once for the app. The hidden line count follows the
+ * provider's `locale`.
+ */
+export const TextsFromMessages: Story = {
+  args: { language: undefined, children: LONG_SNIPPET },
+  beforeEach: allowClipboard,
+  render: (args) => (
+    <FormatProvider
+      locale="ar-EG"
+      messages={{
+        codeBlock: {
+          copyCode: 'Code kopieren',
+          copied: 'Kopiert!',
+          code: 'Quelltext',
+          showLess: 'Weniger zeigen',
+          showMore: '{count} weitere Zeilen zeigen',
+        },
+      }}
+    >
+      <CodeBlock {...args} />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Quelltext')).toBeVisible();
+    // 60 lines, 12 visible: 48 hidden, in Arabic-Indic digits.
+    const expand = canvas.getByRole('button', { name: '٤٨ weitere Zeilen zeigen' });
+    await userEvent.click(expand);
+    await expect(canvas.getByRole('button', { name: 'Weniger zeigen' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Code kopieren' }));
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Kopiert!' })).toBeVisible());
+  },
+};
+
+/** The `labels` prop wins over `messages`. */
+export const TextsFromLabels: Story = {
+  args: {
+    language: undefined,
+    children: LONG_SNIPPET,
+    labels: {
+      copyCode: 'Copier le code',
+      copied: 'Copié !',
+      code: 'Texte',
+      showLess: 'Réduire',
+      showMore: 'Afficher {count} lignes de plus',
+    },
+  },
+  beforeEach: allowClipboard,
+  render: (args) => (
+    <FormatProvider messages={{ codeBlock: { copyCode: 'Code kopieren', code: 'Quelltext' } }}>
+      <CodeBlock {...args} />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Texte')).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Afficher 48 lignes de plus' }));
+    await expect(canvas.getByRole('button', { name: 'Réduire' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Copier le code' }));
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Copié !' })).toBeVisible());
+  },
+};
+
+/** Without `messages` or `labels`, the texts stay English. */
+export const TextsDefault: Story = {
+  args: { language: undefined, children: LONG_SNIPPET },
+  beforeEach: allowClipboard,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('Code')).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Show 48 more lines' }));
+    await expect(canvas.getByRole('button', { name: 'Show less' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Copy code' }));
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Copied!' })).toBeVisible());
   },
 };
