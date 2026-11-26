@@ -32,7 +32,7 @@ describe('toned Alert', () => {
     ).split(/\s+/);
 
   test('has no mode-specific bg or border utility', () => {
-    const tokens = classes(renderToStaticMarkup(<Alert variant="warning">Low stock</Alert>));
+    const tokens = classes(renderToStaticMarkup(<Alert tone="warning">Low stock</Alert>));
     expect(tokens).toContain('bg-(color:--alert-fill)');
     expect(tokens).toContain('border-(color:--alert-border)');
     expect(tokens.filter((t) => /^dark:(bg|border)-/.test(t))).toEqual([]);
@@ -41,7 +41,7 @@ describe('toned Alert', () => {
   test("a consumer's bg and border classes replace the tint", () => {
     const tokens = classes(
       renderToStaticMarkup(
-        <Alert variant="destructive" className="bg-card border-border">
+        <Alert tone="critical" className="bg-card border-border">
           Payment failed
         </Alert>,
       ),
@@ -57,7 +57,7 @@ describe('toned Alert', () => {
 // motion-safe, so reduced motion keeps only the fade.
 describe('Alert entrance', () => {
   const tokens = () =>
-    (renderToStaticMarkup(<Alert variant="info">Deploying</Alert>).match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+    (renderToStaticMarkup(<Alert tone="info">Deploying</Alert>).match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
 
   test('pads 12px inline and 10px block', () => {
     expect(tokens()).toContain('px-3');
@@ -80,35 +80,58 @@ describe('Alert icon', () => {
   const svgs = (html: string) => html.match(/<svg[^>]*>/g) ?? [];
   const iconOf = (Icon: (typeof toneIcons)['info']) => svgs(renderToStaticMarkup(<Icon />))[0]?.match(/class="([^"]*)"/)?.[1];
 
-  test.each([
-    ['destructive', 'critical'],
-    ['warning', 'warning'],
-    ['info', 'info'],
-  ] as const)('the %s variant shows the %s tone icon', (variant, tone) => {
-    const [icon] = svgs(renderToStaticMarkup(<Alert variant={variant}>Text</Alert>));
-    expect(icon).toContain('data-slot="alert-icon"');
-    expect(icon).toContain('aria-hidden="true"');
-    expect(icon).toContain(`class="${iconOf(toneIcons[tone])}`);
+  test.each(['neutral', 'info', 'success', 'warning', 'critical', 'progress'] as const)(
+    'the %s tone shows its tone icon',
+    (tone) => {
+      const [icon] = svgs(renderToStaticMarkup(<Alert tone={tone}>Text</Alert>));
+      expect(icon).toContain('data-slot="alert-icon"');
+      expect(icon).toContain('aria-hidden="true"');
+      expect(icon).toContain(`class="${iconOf(toneIcons[tone])}`);
+    },
+  );
+
+  test('the progress icon spins slowly, and stands still with reduced motion', () => {
+    const [icon] = svgs(renderToStaticMarkup(<Alert tone="progress">Deploying</Alert>));
+    expect(icon).toContain('animate-spin-slow');
+    expect(icon).toContain('motion-reduce:animate-none');
+    const [still] = svgs(renderToStaticMarkup(<Alert tone="info">Deploying</Alert>));
+    expect(still).not.toContain('animate-spin');
   });
 
-  test('the default variant shows no icon', () => {
+  test('without a tone it shows no icon', () => {
     expect(svgs(renderToStaticMarkup(<Alert>Text</Alert>))).toHaveLength(0);
   });
 
   test('icon replaces the tone icon, and false shows none', () => {
-    const passed = svgs(renderToStaticMarkup(<Alert variant="info" icon={<TerminalIcon />}>Text</Alert>));
+    const passed = svgs(renderToStaticMarkup(<Alert tone="info" icon={<TerminalIcon />}>Text</Alert>));
     expect(passed).toHaveLength(1);
     expect(passed[0]).toContain('lucide-terminal');
-    expect(svgs(renderToStaticMarkup(<Alert variant="info" icon={false}>Text</Alert>))).toHaveLength(0);
+    expect(svgs(renderToStaticMarkup(<Alert tone="info" icon={false}>Text</Alert>))).toHaveLength(0);
   });
 
   test('an svg child hides the tone icon', () => {
     const html = renderToStaticMarkup(
-      <Alert variant="warning">
+      <Alert tone="warning">
         <TerminalIcon />
         Text
       </Alert>,
     );
     expect(html).toContain('[&amp;:has(&gt;svg:not([data-slot=alert-icon]))&gt;[data-slot=alert-icon]]:hidden');
+  });
+});
+
+// Alert takes the state dictionary's tone, like StatusBadge, CountBadge and
+// Progress. The 2.x variant names are gone.
+describe('Alert tone prop', () => {
+  test('marks the alert with its tone', () => {
+    expect(renderToStaticMarkup(<Alert tone="success">Saved</Alert>)).toContain('data-tone="success"');
+    expect(renderToStaticMarkup(<Alert>Notice</Alert>)).not.toContain('data-tone');
+  });
+
+  test('has no variant prop', () => {
+    // @ts-expect-error variant was replaced by tone
+    renderToStaticMarkup(<Alert variant="warning">Low stock</Alert>);
+    // @ts-expect-error destructive is the critical tone
+    renderToStaticMarkup(<Alert tone="destructive">Payment failed</Alert>);
   });
 });

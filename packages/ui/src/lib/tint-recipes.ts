@@ -57,12 +57,17 @@ export const alertTint =
   'text-foreground [--alert-fill:color-mix(in_oklab,var(--alert-tone)_7%,var(--card))] [--alert-border:color-mix(in_oklab,var(--alert-tone)_14%,var(--border))] dark:[--alert-fill:color-mix(in_oklab,var(--alert-tone)_10%,transparent)] dark:[--alert-border:color-mix(in_oklab,var(--alert-tone)_30%,transparent)] bg-(color:--alert-fill) border-(color:--alert-border)';
 
 /**
- * The tone and icon colour of each toned Alert. Warning tints with the
- * brighter `warning-indicator` (an amber text colour mixes to brown) and
- * takes its icon from `warning-text`.
+ * The tone and icon colour of each Alert tone, keyed by the state dictionary's
+ * tones. The tones match StatusBadge: `critical` tints with `destructive-text`
+ * and `progress` with `info-text`. Warning tints with the brighter
+ * `warning-indicator` (an amber text colour mixes to brown) and takes its icon
+ * from `warning-text`.
  */
 export const alertToneVars = {
-  destructive: '[--alert-tone:var(--destructive-text)] *:[svg]:text-destructive-text',
-  warning: '[--alert-tone:var(--warning-indicator)] *:[svg]:text-warning-text',
+  neutral: '[--alert-tone:var(--neutral-text)] *:[svg]:text-neutral-text',
   info: '[--alert-tone:var(--info-text)] *:[svg]:text-info-text',
+  success: '[--alert-tone:var(--success-text)] *:[svg]:text-success-text',
+  warning: '[--alert-tone:var(--warning-indicator)] *:[svg]:text-warning-text',
+  critical: '[--alert-tone:var(--destructive-text)] *:[svg]:text-destructive-text',
+  progress: '[--alert-tone:var(--info-text)] *:[svg]:text-info-text',
 };
