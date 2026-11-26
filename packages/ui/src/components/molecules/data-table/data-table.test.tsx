@@ -1356,6 +1356,13 @@ describe('DataTable selection storage', () => {
     expect(Object.keys(store)).toHaveLength(0);
   });
 
+  test('a write stores the ids under vendure-ui:data-table:selection:<key>', () => {
+    const store: Record<string, string> = {};
+    stubStorage(store);
+    writeStoredSelection('orders', { p1: true });
+    expect(Object.keys(store)).toEqual(['vendure-ui:data-table:selection:orders']);
+  });
+
   test('a key reads only its own selection', () => {
     stubStorage({});
     writeStoredSelection('orders:1', { p1: true });
@@ -1368,8 +1375,8 @@ describe('DataTable selection storage', () => {
   test('malformed or non-array storage reads as no selection', () => {
     const store: Record<string, string> = {};
     stubStorage(store);
-    store['vendure-ui:data-table-selection:a'] = '{not json';
-    store['vendure-ui:data-table-selection:b'] = '{"p1":true}';
+    store['vendure-ui:data-table:selection:a'] = '{not json';
+    store['vendure-ui:data-table:selection:b'] = '{"p1":true}';
     expect(readStoredSelection('a')).toEqual({});
     expect(readStoredSelection('b')).toEqual({});
   });
@@ -1434,7 +1441,7 @@ describe('DataTable row count storage', () => {
     const store: Record<string, string> = {};
     stubStorage(store);
     writeRowCount('orders', 3);
-    expect(store).toEqual({ 'vendure-ui:list-total:orders': '3' });
+    expect(store).toEqual({ 'vendure-ui:data-table:list-total:orders': '3' });
     expect(readRowCount('orders')).toBe(3);
     writeRowCount('orders', 0);
     expect(readRowCount('orders')).toBe(0);
@@ -1443,10 +1450,10 @@ describe('DataTable row count storage', () => {
 
   test('malformed, negative or fractional counts read as nothing remembered', () => {
     stubStorage({
-      'vendure-ui:list-total:a': 'abc',
-      'vendure-ui:list-total:b': '-1',
-      'vendure-ui:list-total:c': '2.5',
-      'vendure-ui:list-total:d': '',
+      'vendure-ui:data-table:list-total:a': 'abc',
+      'vendure-ui:data-table:list-total:b': '-1',
+      'vendure-ui:data-table:list-total:c': '2.5',
+      'vendure-ui:data-table:list-total:d': '',
     });
     for (const key of ['a', 'b', 'c', 'd']) expect(readRowCount(key)).toBeNull();
   });
@@ -1503,7 +1510,7 @@ describe('DataTable row count storage', () => {
   });
 
   test('a server render of the hook reads nothing, so the table draws the default', () => {
-    stubStorage({ 'vendure-ui:list-total:countries': '3' });
+    stubStorage({ 'vendure-ui:data-table:list-total:countries': '3' });
     function Remembered() {
       const expectedTotal = useRememberedListTotal('countries', null);
       return (

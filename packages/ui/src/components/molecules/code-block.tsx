@@ -97,7 +97,7 @@ interface CodeBlockActionProps {
   disabled?: boolean;
 }
 
-const STORAGE_KEY = 'vendure-ui-package-manager';
+const STORAGE_KEY = 'vendure-ui:code-block:package-manager';
 const STORAGE_EVENT = 'vendure-ui-package-manager-change';
 
 const COLLAPSE_THRESHOLD = 40; // Lines needed to trigger collapse
