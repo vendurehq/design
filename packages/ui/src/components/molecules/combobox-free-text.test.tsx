@@ -38,7 +38,12 @@ describe('ComboboxFreeText loading', () => {
     expect(spinnerLabel(fromMessages)).toBe('Wird geladen…');
     const fromProp = renderToStaticMarkup(
       <FormatProvider messages={messages}>
-        <ComboboxFreeText value="" onValueChange={() => {}} items={undefined} loadingLabel="Chargement…" />
+        <ComboboxFreeText
+          value=""
+          onValueChange={() => {}}
+          items={undefined}
+          loadingLabel="Chargement…"
+        />
       </FormatProvider>,
     );
     expect(spinnerLabel(fromProp)).toBe('Chargement…');
@@ -58,7 +63,11 @@ describe('ComboboxFreeText loading', () => {
 
 describe('ComboboxFreeText input naming', () => {
   test('aria-label, aria-labelledby and name reach the input', () => {
-    const html = render({ 'aria-label': 'Owner email', 'aria-labelledby': 'owner-label', name: 'owner' });
+    const html = render({
+      'aria-label': 'Owner email',
+      'aria-labelledby': 'owner-label',
+      name: 'owner',
+    });
     const input = html.match(/<input[^>]*>/)?.[0] ?? '';
     expect(input).toContain('aria-label="Owner email"');
     expect(input).toContain('aria-labelledby="owner-label"');
