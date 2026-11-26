@@ -133,14 +133,14 @@ export const Loading: Story = {
 };
 
 // The delta follows the FormatProvider locale ("12,4 %"), and its
-// screen-reader words read `messages.statCard`. A `label` on the delta
+// screen-reader words read `messages.statCard`. A `unit` on the delta
 // replaces the percent sign for other units, e.g. percentage points.
 export const Localized: Story = {
   render: () => (
     <FormatProvider locale="de-DE" messages={{ statCard: { up: 'gestiegen', down: 'gesunken' } }}>
       <div className="flex w-80 flex-col gap-4">
         <StatCard label="Umsatz" value="48.120 €" delta={{ value: 12.4 }} />
-        <StatCard label="Marge" value="31 %" delta={{ value: -1.5, label: ' pp' }} />
+        <StatCard label="Marge" value="31 %" delta={{ value: -1.5, unit: ' pp' }} />
       </div>
     </FormatProvider>
   ),

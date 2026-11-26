@@ -799,7 +799,7 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
 
 ### StatCard
 
-`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives. `0` and `''` are real values. The same holds for `delta.value`.
+`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives, and screen readers hear "Loading value" (`messages.statCard.loading` or `loadingLabel`). `null` means there is no value and shows `fallback` ("—" by default). `0` and `''` are real values. `delta.value` may be `undefined` too: the delta draws a skeleton.
 
 ```tsx
 import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
@@ -812,7 +812,7 @@ import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
 />
 ```
 
-`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"); the arrow and its color carry the direction, and `goodWhen` says which direction is good. For another unit, pass `delta.label` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
+`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, with one decimal, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"). The arrow and its color carry the direction, and `goodWhen` says which direction is good. A change that rounds to 0.0 has no arrow and a neutral color. `NaN` and `±Infinity` (a change from zero) show "—". For another unit, pass `delta.unit` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
 
 ### ArrowLink
 
