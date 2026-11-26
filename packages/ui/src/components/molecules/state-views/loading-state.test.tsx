@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { LoadingState } from './loading-state.tsx';
+import { FormatProvider } from '../format-provider.tsx';
+import { LoadingState, type LoadingStateProps } from './loading-state.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -12,18 +13,44 @@ describe('LoadingState', () => {
     expect(markup).toContain('<span class="sr-only">Loading…</span>');
   });
 
-  test('overrides the sr-only label via srLabel for host i18n', () => {
-    const markup = html(<LoadingState srLabel="Wird geladen…" />);
+  test('overrides the sr-only label via loadingLabel', () => {
+    const markup = html(<LoadingState loadingLabel="Wird geladen…" />);
 
     expect(markup).toContain('<span class="sr-only">Wird geladen…</span>');
     expect(markup).not.toContain('Loading…');
   });
 
-  test('srLabel is independent of the visible label', () => {
-    const markup = html(<LoadingState label="Fetching orders" srLabel="Wird geladen…" />);
+  test('loadingLabel is independent of the visible label', () => {
+    const markup = html(<LoadingState label="Fetching orders" loadingLabel="Wird geladen…" />);
 
     expect(markup).toContain('Fetching orders');
     expect(markup).toContain('Wird geladen…');
+  });
+
+  test('reads messages.loadingState.loading, and loadingLabel wins', () => {
+    const messages = { loadingState: { loading: 'Wird geladen…' } };
+    expect(
+      html(
+        <FormatProvider messages={messages}>
+          <LoadingState />
+        </FormatProvider>,
+      ),
+    ).toContain('<span class="sr-only">Wird geladen…</span>');
+    expect(
+      html(
+        <FormatProvider messages={messages}>
+          <LoadingState loadingLabel="Chargement…" />
+        </FormatProvider>,
+      ),
+    ).toContain('<span class="sr-only">Chargement…</span>');
+  });
+
+  test('the 2.x srLabel prop is gone', () => {
+    const props: LoadingStateProps = {
+      // @ts-expect-error `srLabel` was renamed to `loadingLabel`.
+      srLabel: 'x',
+    };
+    expect(props).toBeDefined();
   });
 });
 
