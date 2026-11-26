@@ -464,13 +464,19 @@ async function expectSubMenus(canvasElement: HTMLElement, dir: Dir) {
       expect(found).not.toBeNull();
       return found!;
     });
-    const item = trigger.getBoundingClientRect();
-    const popup = sub.getBoundingClientRect();
-    if (dir === 'rtl') {
-      await expect(popup.right).toBeLessThanOrEqual(item.left + 1);
-    } else {
-      await expect(popup.left).toBeGreaterThanOrEqual(item.right - 1);
-    }
+    // The sub-menu is in the DOM before the positioner has placed it (it sits
+    // at the viewport's top-left corner first). Check the side only once it
+    // is level with its trigger.
+    await waitFor(() => {
+      const item = trigger.getBoundingClientRect();
+      const popup = sub.getBoundingClientRect();
+      expect(Math.abs(popup.top - item.top)).toBeLessThan(item.height * 2);
+      if (dir === 'rtl') {
+        expect(popup.right).toBeLessThanOrEqual(item.left + 1);
+      } else {
+        expect(popup.left).toBeGreaterThanOrEqual(item.right - 1);
+      }
+    });
     // The chevron points the way the sub-menu opens.
     const chevron = trigger.querySelector('svg') as SVGElement;
     await expect(getComputedStyle(chevron).rotate).toBe(dir === 'rtl' ? '180deg' : 'none');

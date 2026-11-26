@@ -100,17 +100,20 @@ export const WithoutTooltip: Story = {
   args: { tooltip: false },
 };
 
-// Fixed instants for the server-and-browser story, taken once at load.
-const NOW = Date.now();
-const STARTED = NOW - 2 * 60_000 - 42_000;
-const FINISHED = NOW - 2 * 60_000;
+// Fixed instants for the server-and-browser story. They are taken when the
+// story renders, not when the file loads: "2 minutes ago" turns into "3
+// minutes ago" once the clock is 30s past them, and a slow runner is that late.
+function instants(now: number) {
+  return { now, started: now - 2 * 60_000 - 42_000, finished: now - 2 * 60_000 };
+}
 
-function Times({ locale }: { locale: string }) {
+function Times({ locale, now }: { locale: string; now: number }) {
+  const { started: STARTED, finished: FINISHED } = instants(now);
   return (
     <FormatProvider locale={locale}>
       <div className="flex flex-col gap-1 tabular-nums">
         <RelativeTime data-testid="relative" value={FINISHED} />
-        <RelativeTime data-testid="duration" value={NOW - 13 * 86_400_000} display="duration" />
+        <RelativeTime data-testid="duration" value={now - 13 * 86_400_000} display="duration" />
         <RelativeTime data-testid="range" value={FINISHED} start={STARTED} />
         <RelativeTime data-testid="custom" value={FINISHED} tooltip="Deployed by Ana" />
         <ElapsedTime data-testid="fixed" since={STARTED} until={FINISHED} />
@@ -148,13 +151,15 @@ function descriptionOf(root: ParentNode, id: string): string {
  * text from its first paint, with no fallback before it.
  */
 export const ServerAndBrowser: Story = {
-  render: () => <Times locale="en-US" />,
+  render: () => <Times locale="en-US" now={Date.now()} />,
   play: async ({ canvasElement, step }) => {
+    const now = Date.now();
+    const { started, finished } = instants(now);
     await step('a browser-only render shows the text in its first commit', async () => {
       const host = document.createElement('div');
       canvasElement.append(host);
       const root = createRoot(host);
-      flushSync(() => root.render(<Times locale="en-US" />));
+      flushSync(() => root.render(<Times locale="en-US" now={now} />));
       // Read in the same task as the commit, before any effect or repaint.
       await expect(textOf(host, 'relative')).toBe('2 minutes ago');
       await expect(textOf(host, 'fixed')).toBe('42s');
@@ -165,7 +170,7 @@ export const ServerAndBrowser: Story = {
     await step('every time renders its text and description in the browser', async () => {
       await expect(textOf(canvasElement, 'duration')).toBe('13 days');
       await expect(descriptionOf(canvasElement, 'relative')).toContain(
-        String(new Date(FINISHED).getFullYear()),
+        String(new Date(finished).getFullYear()),
       );
       await expect(descriptionOf(canvasElement, 'range')).toContain('–');
       await expect(descriptionOf(canvasElement, 'range')).toContain('42s');
@@ -173,7 +178,7 @@ export const ServerAndBrowser: Story = {
       await expect(textOf(canvasElement, 'fixed')).toBe('42s');
       await expect(textOf(canvasElement, 'format')).toBe('5 sec');
       await expect(descriptionOf(canvasElement, 'started')).toContain(
-        String(new Date(STARTED).getFullYear()),
+        String(new Date(started).getFullYear()),
       );
       await expect(descriptionOf(canvasElement, 'elapsed-range')).toContain('–');
       await expect(descriptionOf(canvasElement, 'elapsed-custom')).toBe('Queued by CI');
@@ -185,7 +190,7 @@ export const ServerAndBrowser: Story = {
       // The server: English, three hours earlier.
       const realNow = Date.now;
       Date.now = () => realNow() - 3 * 3_600_000;
-      const html = renderToString(<Times locale="en-US" />);
+      const html = renderToString(<Times locale="en-US" now={now} />);
       Date.now = realNow;
       await expect(html).not.toContain('ago');
 
@@ -200,7 +205,7 @@ export const ServerAndBrowser: Story = {
       };
       try {
         // The browser: German, the real clock.
-        const root = hydrateRoot(host, <Times locale="de-DE" />, {
+        const root = hydrateRoot(host, <Times locale="de-DE" now={now} />, {
           onRecoverableError: (error) => errors.push(String(error)),
         });
         await waitFor(() => expect(textOf(host, 'relative')).toBe('vor 2 Minuten'));
