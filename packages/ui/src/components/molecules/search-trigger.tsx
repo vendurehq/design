@@ -5,6 +5,7 @@ import { useIsApplePlatform } from '@vendure-io/ui/hooks/use-apple-platform';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { SearchIcon } from 'lucide-react';
 import type * as React from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 
 type SearchTriggerCollapse = 'md' | 'never' | 'always';
 
@@ -40,7 +41,7 @@ const collapseClasses: Record<SearchTriggerCollapse, { box: string; hidden: stri
 };
 
 interface SearchTriggerProps extends Omit<React.ComponentProps<'button'>, 'children'> {
-  /** The placeholder word in the field. @default 'Search' */
+  /** The placeholder word in the field. @default `messages.searchTrigger.label`, 'Search' */
   label?: string;
   /**
    * The letter of the shortcut that opens the palette. The trigger shows it
@@ -66,13 +67,14 @@ interface SearchTriggerProps extends Omit<React.ComponentProps<'button'>, 'child
  */
 function SearchTrigger({
   className,
-  label = 'Search',
+  label: labelProp,
   shortcutKey = 'K',
   collapse = 'md',
   'aria-label': ariaLabel,
   ...props
 }: SearchTriggerProps) {
   const apple = useIsApplePlatform();
+  const { label, commandPalette } = useMessages('searchTrigger', { label: labelProp });
   const { box, hidden } = collapseClasses[collapse];
 
   return (
@@ -80,7 +82,7 @@ function SearchTrigger({
       type="button"
       data-slot="search-trigger"
       aria-haspopup="dialog"
-      aria-label={ariaLabel ?? `${label} (command palette)`}
+      aria-label={ariaLabel ?? `${label} (${commandPalette})`}
       aria-keyshortcuts={
         shortcutKey ? `${apple ? 'Meta' : 'Control'}+${shortcutKey.toUpperCase()}` : undefined
       }

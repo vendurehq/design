@@ -1169,7 +1169,7 @@ export const uiGuidance = [
       },
       {
         title: 'Set hasActiveChild on every group that holds the current page',
-        body: "Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `isActive` on the nested SidebarMenuSubButton as well.",
+        body: "Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `active` on the nested SidebarMenuSubButton as well.",
       },
       {
         title: 'A closed group still lights its icon',
@@ -1177,7 +1177,7 @@ export const uiGuidance = [
       },
       {
         title: 'The group gets no fill and no bar',
-        body: '`hasActiveChild` changes the icon only. Use `isActive` for an item that is itself the current page; it also gets the sliding pill (or the fill and the bar in a SidebarMenu with `slidingIndicator={false}`). Never set both on one button.',
+        body: '`hasActiveChild` changes the icon only. Use `active` for an item that is itself the current page; it also gets the sliding pill (or the fill and the bar in a SidebarMenu with `slidingIndicator={false}`). Never set both on one button.',
       },
       {
         title: 'An area with its own navigation is a second level',
@@ -1243,7 +1243,7 @@ export const uiGuidance = [
       },
       {
         title: 'Compact with an icon inside a card',
-        body: 'Inside a card, a secondary panel or a side column, use size="compact" with the icon prop: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps a title, a description and at most one action, and sits flush.',
+        body: 'Inside a card, a secondary panel or a side column, use size="sm" with the icon prop: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps a title, a description and at most one action, and sits flush.',
       },
       {
         title: 'Errors own the failure',

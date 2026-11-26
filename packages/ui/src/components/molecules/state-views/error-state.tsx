@@ -16,7 +16,7 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
   /**
    * Leading icon, drawn bare like EmptyState's: 28px and a light stroke, in
    * the `text-destructive-text` tone. Defaults to an alert triangle. In a
-   * `compact` state only an explicit icon renders. Ignored once
+   * `sm` state only an explicit icon renders. Ignored once
    * `illustration` renders (see below).
    */
   icon?: React.ReactNode;
@@ -43,12 +43,12 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
    */
   bordered?: boolean;
   /**
-   * `compact` drops the illustration and tightens the spacing, for a small
+   * `sm` drops the illustration and tightens the spacing, for a small
    * panel or side column where the full state is too tall. An explicit `icon`
    * sits above a 14px title. Keep it to a title, a
    * description and at most one action. Defaults to `default`.
    */
-  size?: 'default' | 'compact';
+  size?: 'default' | 'sm';
 }
 
 /**
@@ -70,19 +70,19 @@ function ErrorState({
   className,
   ...props
 }: ErrorStateProps) {
-  const compact = size === 'compact';
+  const small = size === 'sm';
   // Precedence: an explicit `illustration` (including `null`, to opt out)
   // always wins; otherwise an explicit `icon` (including `null`) keeps
   // rendering exactly as before. Only when neither is touched does the
   // default illustration replace the default triangle icon.
-  const resolvedIllustration = compact ? null : illustration !== undefined ? (
+  const resolvedIllustration = small ? null : illustration !== undefined ? (
     illustration
   ) : icon === undefined ? (
     <ErrorIllustration />
   ) : null;
-  // A compact state draws only an explicit icon: the default triangle stays
-  // off, so a compact error in a small panel keeps to its text and retry.
-  const resolvedIcon = compact ? icon : icon === undefined ? <TriangleAlertIcon /> : icon;
+  // A small state draws only an explicit icon: the default triangle stays
+  // off, so a small error in a small panel keeps to its text and retry.
+  const resolvedIcon = small ? icon : icon === undefined ? <TriangleAlertIcon /> : icon;
 
   return (
     <Empty
@@ -93,30 +93,30 @@ function ErrorState({
         // Unbordered clears the atom's dashed style, so a border the consumer
         // adds through `className` is solid.
         bordered ? 'border' : 'rounded-none border-solid',
-        compact && 'gap-3 p-6 py-10',
+        small && 'gap-3 p-6 py-10',
         className,
       )}
       {...props}
     >
-      <EmptyHeader className={cn(compact && 'gap-1')}>
+      <EmptyHeader className={cn(small && 'gap-1')}>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
         ) : resolvedIcon ? (
           // 20px from the icon to the title in the default size.
           <EmptyMedia
             variant="bare"
-            className={cn('text-destructive-text opacity-100', !compact && 'mb-3')}
+            className={cn('text-destructive-text opacity-100', !small && 'mb-3')}
           >
             {resolvedIcon}
           </EmptyMedia>
         ) : null}
-        <EmptyTitle className={cn(compact && 'text-style-card-title')}>{title}</EmptyTitle>
+        <EmptyTitle className={cn(small && 'text-style-card-title')}>{title}</EmptyTitle>
         {description ? (
-          <EmptyDescription className={cn(compact && 'text-sm')}>{description}</EmptyDescription>
+          <EmptyDescription className={cn(small && 'text-sm')}>{description}</EmptyDescription>
         ) : null}
       </EmptyHeader>
       {onRetry || children ? (
-        <EmptyContent className={cn(compact && 'gap-2')}>
+        <EmptyContent className={cn(small && 'gap-2')}>
           {onRetry ? (
             <Button variant="outline" size="sm" onClick={onRetry}>
               {retryLabel}

@@ -242,7 +242,7 @@ export const WithSidebarAtom: Story = {
                     {nav.map(({ icon: Icon, label }) => (
                       <SidebarMenuItem key={label}>
                         <SidebarMenuButton
-                          isActive={label === current}
+                          active={label === current}
                           onClick={() => setCurrent(label)}
                           tooltip={label}
                         >
@@ -327,7 +327,7 @@ export const PageEnter: Story = {
                     {nav.map(({ icon: Icon, label }) => (
                       <SidebarMenuItem key={label}>
                         <SidebarMenuButton
-                          isActive={label === current}
+                          active={label === current}
                           onClick={() => setCurrent(label)}
                           tooltip={label}
                         >

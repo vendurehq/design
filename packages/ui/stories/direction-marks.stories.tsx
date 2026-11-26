@@ -80,7 +80,7 @@ function Marks({ dir }: { dir: Dir }) {
               {/* Measures the active bar, so this menu keeps it instead of the pill. */}
               <SidebarMenu slidingIndicator={false}>
                 <SidebarMenuItem>
-                  <SidebarMenuButton isActive data-testid="active-button">
+                  <SidebarMenuButton active data-testid="active-button">
                     <HomeIcon />
                     <span>Home</span>
                   </SidebarMenuButton>
