@@ -11,7 +11,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@vendure-io/ui/components/atoms/input-group';
-import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { Loader2Icon } from 'lucide-react';
 import * as React from 'react';
@@ -193,7 +192,7 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
         {isLoading || firstLoad ? (
           <InputGroupAddon align="inline-end">
             {/* Decorative: the status below announces the load. */}
-            <Spinner role={undefined} aria-label={undefined} aria-hidden />
+            <Loader2Icon aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />
           </InputGroupAddon>
         ) : null}
       </InputGroup>
