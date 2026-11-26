@@ -31,6 +31,10 @@ const defaultMessages = {
     /** Read before the delta when it fell. */
     down: 'down',
   },
+  money: {
+    /** Screen-reader text while the amount loads (`value={undefined}`). */
+    loading: 'Loading amount',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;
