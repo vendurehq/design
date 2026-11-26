@@ -30,6 +30,8 @@ const defaultMessages = {
     up: 'up',
     /** Read before the delta when it fell. */
     down: 'down',
+    /** Screen-reader text while the value loads (`value={undefined}`). */
+    loading: 'Loading value',
   },
   money: {
     /** Screen-reader text while the amount loads (`value={undefined}`). */
