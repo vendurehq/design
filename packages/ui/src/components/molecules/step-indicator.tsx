@@ -107,8 +107,11 @@ function StepIndicator({
         data-ready={ready ? '' : undefined}
         className={cn(
           'group/step-indicator [counter-reset:step]',
+          // A horizontal track gives each step an equal column of at least
+          // 7rem, so the names stay readable; on a narrow screen the steps
+          // wrap to a second row rather than cut every name short.
           orientation === 'horizontal'
-            ? 'grid auto-cols-fr grid-flow-col gap-x-3'
+            ? 'grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-x-3 gap-y-4'
             : 'flex flex-col',
           className,
         )}
