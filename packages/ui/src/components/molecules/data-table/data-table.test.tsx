@@ -7,6 +7,7 @@ import { ListRowChevron } from '../list-row.tsx';
 import { SkeletonLine } from '../state-views/skeleton-parts.tsx';
 
 import {
+  type ColumnDef,
   DataTable,
   type DataTableFilterEditorContext,
   type DataTablePagination,
