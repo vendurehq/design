@@ -128,9 +128,10 @@ describe('v3 overlay look', () => {
     expect(code).toContain('growFromTrigger');
   });
 
-  test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
+  // A popup is a surface: 12px, so its 6px items nest inside the padding.
+  test('menus, popovers, selects and dialogs use the 2xl radius', () => {
     for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx', 'navigation-menu.tsx']) {
-      expect(source(file)).toContain('rounded-xl');
+      expect(source(file)).toContain('rounded-2xl');
     }
     for (const file of ['dialog.tsx', 'alert-dialog.tsx']) {
       expect(source(file)).toContain('rounded-2xl');
@@ -165,10 +166,12 @@ describe('v3 overlay look', () => {
     }
   });
 
-  test('combobox items take the menu item radius', () => {
+  // Nested corners follow outer - gap: a 12px popup with 5px padding gives
+  // 7px items; the combobox list has 4px padding, so 8px items.
+  test('combobox items derive their corner from the popup', () => {
     const code = source('combobox.tsx');
-    expect(code).toMatch(/data-highlighted:bg-muted[^"]*rounded-lg/);
-    expect(code).not.toMatch(/data-highlighted:bg-muted[^"]*rounded-sm/);
+    expect(code).toMatch(/data-highlighted:bg-muted[^"]*rounded-\[calc\(var\(--radius-2xl\)-4px\)\]/);
+    expect(code).toContain('p-1 data-empty:p-0');
   });
 
   // Base UI marks an open submenu trigger with data-popup-open, never data-open.
