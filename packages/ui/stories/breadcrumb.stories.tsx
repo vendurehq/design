@@ -740,20 +740,26 @@ export const SearchMenuLoadingHeight: Story = {
   tags: ['!autodocs'],
   render: () => <LoadingProjects />,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Projects: Project' }));
-    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
-    await Promise.all(popup.getAnimations({ subtree: true }).map((animation) => animation.finished));
-    const footerTop = () => {
+    const canvas = within(canvasElement);
+    // The footer's offset in the open popup, once it has faded and scaled in.
+    const footerTop = async () => {
+      const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+      // The popup's own animations; the spinner never finishes.
+      await Promise.all(popup.getAnimations().map((animation) => animation.finished));
       const footer = popup.querySelector<HTMLElement>('[data-slot="breadcrumb-search-menu-footer"] [cmdk-item]')!;
       return footer.getBoundingClientRect().top - popup.getBoundingClientRect().top;
     };
-    await expect(within(popup).getByRole('status')).toHaveTextContent('Loading…');
-    const loadingTop = footerTop();
-    // A click event only: a press outside would close the popup.
-    fireEvent.click(within(canvasElement).getByRole('button', { name: 'Finish loading', hidden: true }));
-    await userEvent.type(within(popup).getByRole('combobox'), 'glob');
-    await waitFor(() => expect(within(popup).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1));
-    await expectPx(footerTop(), loadingTop);
+    await userEvent.click(canvas.getByRole('button', { name: 'Projects: Project' }));
+    await expect(await within(document.body).findByRole('status')).toHaveTextContent('Loading…');
+    const loadingTop = await footerTop();
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
+    await userEvent.click(await canvas.findByRole('button', { name: 'Projects: Acme Storefront' }));
+    await userEvent.keyboard('glob');
+    await waitFor(() =>
+      expect(within(document.body).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1),
+    );
+    await expectPx(await footerTop(), loadingTop);
   },
 };
 
