@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { FormatProvider } from './format-provider.tsx';
 import * as statCard from './stat-card.tsx';
 
 const { StatCard } = statCard;
@@ -18,4 +19,71 @@ test('the delta color follows the outcome, not the direction', () => {
     <StatCard label="Revenue" value="€12,400" delta={{ value: -3.2 }} />,
   );
   expect(revenueDown).toContain('text-destructive-text');
+});
+
+test('an undefined value draws a value skeleton under the real label', () => {
+  const html = renderToStaticMarkup(<StatCard label="Revenue" />);
+  expect(html).toContain('Revenue');
+  expect(html).toContain('data-skeleton="line"');
+  expect(html).toContain('aria-busy="true"');
+});
+
+test('a real value draws no skeleton and is not busy', () => {
+  const html = renderToStaticMarkup(<StatCard label="Orders" value={0} />);
+  expect(html).not.toContain('data-skeleton');
+  expect(html).not.toContain('aria-busy');
+  expect(html).toContain('>0<');
+});
+
+test('isLoading is gone', () => {
+  const props: statCard.StatCardProps = {
+    label: 'Revenue',
+    // @ts-expect-error `isLoading` is removed: leave `value` undefined instead.
+    isLoading: true,
+  };
+  expect(props.label).toBe('Revenue');
+});
+
+test('an undefined delta value draws a delta skeleton', () => {
+  const html = renderToStaticMarkup(<StatCard label="Revenue" delta={{ value: undefined }} />);
+  expect(html).toMatch(/data-slot="stat-card-delta"[^>]*>.*data-skeleton="line"/);
+});
+
+test('the delta is a percent in the FormatProvider locale', () => {
+  const en = renderToStaticMarkup(<StatCard label="Revenue" value="€1" delta={{ value: 12.4 }} />);
+  expect(en).toContain('12.4%');
+
+  const de = renderToStaticMarkup(
+    <FormatProvider locale="de-DE">
+      <StatCard label="Umsatz" value="1 €" delta={{ value: -3.25 }} />
+    </FormatProvider>,
+  );
+  // The sign is dropped: the arrow and the screen-reader word carry it.
+  expect(de).toContain('</span>3,3\u00a0%</span>');
+});
+
+test('a delta label replaces the percent sign', () => {
+  const html = renderToStaticMarkup(
+    <FormatProvider locale="de-DE">
+      <StatCard label="Margin" value="31%" delta={{ value: 1.5, label: ' pp' }} />
+    </FormatProvider>,
+  );
+  expect(html).toContain('</span>1,5 pp</span>');
+});
+
+test('the direction words read FormatProvider messages, and the props win', () => {
+  const fromMessages = renderToStaticMarkup(
+    <FormatProvider messages={{ statCard: { up: 'hoch', down: 'runter' } }}>
+      <StatCard label="Umsatz" value="1 €" delta={{ value: 2 }} />
+    </FormatProvider>,
+  );
+  expect(fromMessages).toContain('hoch');
+
+  const fromProp = renderToStaticMarkup(
+    <FormatProvider messages={{ statCard: { down: 'runter' } }}>
+      <StatCard label="Umsatz" value="1 €" delta={{ value: -2 }} deltaDownLabel="gesunken" />
+    </FormatProvider>,
+  );
+  expect(fromProp).toContain('gesunken');
+  expect(fromProp).not.toContain('runter');
 });

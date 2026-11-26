@@ -1,5 +1,7 @@
 import { Card, CardAction, CardContent, CardHeader } from '@vendure-io/ui/components/atoms/card';
-import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
+import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
+import { useMessages } from '@vendure-io/ui/lib/format-messages';
 import { cva } from 'class-variance-authority';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
@@ -23,9 +25,16 @@ const statCardDeltaVariants = cva('inline-flex items-center gap-0.5 text-xs font
 });
 
 interface StatCardDelta {
-  /** Raw percentage change, e.g. `-3.2`. Sign drives the arrow and color. */
-  value: number;
-  /** Suffix after the number. Default `'%'`. */
+  /**
+   * Percentage change, e.g. `-3.2` for −3.2 %. The sign drives the arrow and
+   * the color. `undefined` means not known yet: the delta draws a skeleton.
+   */
+  value: number | undefined;
+  /**
+   * A unit for a change that is not a percentage, e.g. `' pp'` for percentage
+   * points. The number is then formatted as a plain decimal and this follows
+   * it. `undefined` → a percent in the `FormatProvider` locale.
+   */
   label?: string;
   /** Which direction is a good outcome for this metric. Default `'up'`. */
   goodWhen?: 'up' | 'down';
@@ -33,22 +42,60 @@ interface StatCardDelta {
 
 interface StatCardProps extends ComponentProps<typeof Card> {
   label: ReactNode;
-  /** Pre-formatted display value — pass `<Money>`, `<AnimatedNumber>`, a string. */
-  value: ReactNode;
+  /**
+   * Pre-formatted display value: `<Money>`, `<AnimatedNumber>`, a string.
+   * `undefined` means not known yet: a skeleton of the value's height draws
+   * under the real label, so nothing moves when the value arrives. `0` and
+   * `''` are real values.
+   */
+  value?: ReactNode;
   /** Secondary line, e.g. "vs. previous period". */
   description?: ReactNode;
   icon?: ReactNode;
   delta?: StatCardDelta;
   /** Optional sparkline/chart slot. */
   chart?: ReactNode;
-  isLoading?: boolean;
   /** Header-right slot, e.g. a menu or timeframe select. */
   action?: ReactNode;
+  /** Screen-reader word before a rising delta. Default: `messages.statCard.up`, then `'up'`. */
+  deltaUpLabel?: string;
+  /** Screen-reader word before a falling delta. Default: `messages.statCard.down`, then `'down'`. */
+  deltaDownLabel?: string;
 }
 
-function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDelta) {
+interface StatCardDeltaBadgeProps extends StatCardDelta {
+  upLabel?: string;
+  downLabel?: string;
+}
+
+function StatCardDeltaBadge({
+  value,
+  label,
+  goodWhen = 'up',
+  upLabel,
+  downLabel,
+}: StatCardDeltaBadgeProps) {
+  const { locale } = useFormatSettings();
+  const t = useMessages('statCard', { up: upLabel, down: downLabel });
+
+  if (value === undefined) {
+    return (
+      <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome: 'flat' })}>
+        <SkeletonLine className="w-10" />
+      </span>
+    );
+  }
+
   const direction = value > 0 ? 'up' : value < 0 ? 'down' : 'flat';
   const outcome = direction === 'flat' ? 'flat' : direction === goodWhen ? 'good' : 'bad';
+  // One fraction digit, as before, but with the locale's decimal mark and
+  // percent sign ("12.4%", "12,4 %"). A caller-given unit keeps the decimal
+  // number and appends the unit instead of the percent sign.
+  const digits = { minimumFractionDigits: 1, maximumFractionDigits: 1 };
+  const formatted =
+    label === undefined
+      ? new Intl.NumberFormat(locale, { style: 'percent', ...digits }).format(Math.abs(value) / 100)
+      : new Intl.NumberFormat(locale, digits).format(Math.abs(value));
 
   return (
     <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome })}>
@@ -57,12 +104,12 @@ function StatCardDeltaBadge({ value, label = '%', goodWhen = 'up' }: StatCardDel
       ) : direction === 'down' ? (
         <ArrowDown aria-hidden="true" className="size-3" />
       ) : null}
-      {/* Math.abs strips the sign and the arrow is visual-only, so screen
+      {/* The number has no sign and the arrow is visual-only, so screen
           readers need the direction spelled out. */}
       {direction !== 'flat' ? (
-        <span className="sr-only">{direction === 'up' ? 'up' : 'down'} </span>
+        <span className="sr-only">{direction === 'up' ? t.up : t.down} </span>
       ) : null}
-      {Math.abs(value).toFixed(1)}
+      {formatted}
       {label}
     </span>
   );
@@ -75,27 +122,21 @@ function StatCard({
   icon,
   delta,
   chart,
-  isLoading = false,
   action,
+  deltaUpLabel,
+  deltaDownLabel,
   className,
   ...props
 }: StatCardProps) {
-  if (isLoading) {
-    return (
-      <Card data-slot="stat-card" className={className} {...props}>
-        <CardHeader>
-          <Skeleton className="h-4 w-24" />
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-40" />
-        </CardContent>
-      </Card>
-    );
-  }
+  const isValueKnown = value !== undefined;
 
   return (
-    <Card data-slot="stat-card" className={className} {...props}>
+    <Card
+      data-slot="stat-card"
+      aria-busy={isValueKnown ? undefined : true}
+      className={className}
+      {...props}
+    >
       <CardHeader>
         <div
           data-slot="stat-card-label"
@@ -113,9 +154,13 @@ function StatCard({
       <CardContent className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2">
           <span data-slot="stat-card-value" className="text-2xl font-semibold tabular-nums">
-            {value}
+            {/* The skeleton is one line of the value's own text size, so
+                the loaded value takes exactly its place. */}
+            {isValueKnown ? value : <SkeletonLine className="w-24" />}
           </span>
-          {delta ? <StatCardDeltaBadge {...delta} /> : null}
+          {delta ? (
+            <StatCardDeltaBadge {...delta} upLabel={deltaUpLabel} downLabel={deltaDownLabel} />
+          ) : null}
         </div>
         {description ? (
           <p data-slot="stat-card-description" className="text-muted-foreground text-sm">
