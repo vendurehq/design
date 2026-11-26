@@ -13,7 +13,9 @@ import {
 } from '@vendure-io/ui/components/atoms/input-group';
 import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
+import { Loader2Icon } from 'lucide-react';
 import * as React from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 
 export interface ComboboxFreeTextItem {
   /**
@@ -49,16 +51,32 @@ export interface ComboboxFreeTextProps<T extends ComboboxFreeTextItem = Combobox
    * debounced against `value` — and they are assumed to be already filtered
    * (the component does no client-side filtering). Items may carry extra fields
    * beyond `value`/`label`/`description`; those flow through to `onSelectItem`.
+   *
+   * `undefined` means the first fetch has not returned yet: the field shows
+   * its spinner and the open list shows a loading row, one suggestion tall.
+   * `[]` means there are no suggestions: the list stays closed.
    */
-  items: readonly T[];
-  /** Async state of the suggestion source. Shows a trailing spinner while true. */
+  items: readonly T[] | undefined;
+  /**
+   * A refetch is running and the current `items` stay on screen. Shows the
+   * trailing spinner. For the first load, pass `items={undefined}` instead.
+   */
   isLoading?: boolean;
-  /** @deprecated Use `isLoading`. Kept as an alias until the next major. */
-  loading?: boolean;
+  /**
+   * Announced by the spinner while the suggestions load.
+   * @default `messages.comboboxFreeText.loading`, "Loading…"
+   */
+  loadingLabel?: string;
   /** Render a suggestion row. Defaults to `label` over `description`. */
   renderItem?: (item: T) => React.ReactNode;
   /** id forwarded to the input. */
   id?: string;
+  /** Form field name of the input. */
+  name?: string;
+  /** Accessible name of the input, when no visible label points at it. */
+  'aria-label'?: string;
+  /** Id of the element that names the input. */
+  'aria-labelledby'?: string;
   placeholder?: string;
   /** Render the error state (sets `aria-invalid` on the input). */
   invalid?: boolean;
@@ -95,9 +113,12 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   onSelectItem,
   items,
   isLoading,
-  loading,
+  loadingLabel,
   renderItem = defaultRenderItem,
   id,
+  name,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
   placeholder,
   invalid,
   disabled,
@@ -107,7 +128,11 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   // is something pickable, so a no-match closes it silently instead of flashing
   // an empty box. `open` tracks the user's intent (typing, Escape, blur,
   // select) and we AND it with "items present" to derive the rendered state.
+  // While the first fetch runs (`items` undefined) the list opens on its
+  // loading row, so the field shows that suggestions are coming.
   const [open, setOpen] = React.useState(false);
+  const t = useMessages('comboboxFreeText', { loading: loadingLabel });
+  const firstLoad = items === undefined;
 
   return (
     <Autocomplete.Root
@@ -123,13 +148,13 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
         // The literal is checked against Base UI's public `reason` union, so a
         // future rename surfaces as a type error rather than silent breakage.
         if (onSelectItem && details.reason === 'item-press') {
-          const picked = items.find((i) => i.value === next);
+          const picked = items?.find((i) => i.value === next);
           if (picked) {
             onSelectItem(picked);
           }
         }
       }}
-      open={open && items.length > 0}
+      open={open && (firstLoad || items.length > 0)}
       onOpenChange={setOpen}
       disabled={disabled}
     >
@@ -137,14 +162,17 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
         <Autocomplete.Input
           render={<InputGroupInput />}
           id={id}
+          name={name}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
           placeholder={placeholder}
           disabled={disabled}
           aria-invalid={invalid || undefined}
           // Base UI only requests open on a keystroke; for pick-or-create
           // fields the suggestions should also show on focus/click so a small
-          // known option set is discoverable without typing. The
-          // `items.length > 0` gate on `open` keeps an empty popup from
-          // flashing when there is nothing to pick.
+          // known option set is discoverable without typing. The gate on
+          // `open` keeps an empty popup from flashing when there is nothing
+          // to pick.
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
           // Enter has a local meaning here — commit the highlighted suggestion
@@ -159,19 +187,32 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
             }
           }}
         />
-        {(isLoading ?? loading) ? (
+        {isLoading || firstLoad ? (
           <InputGroupAddon align="inline-end">
-            <Spinner />
+            <Spinner aria-label={t.loading} />
           </InputGroupAddon>
         ) : null}
       </InputGroup>
       <ComboboxContent>
         <ComboboxList>
-          {items.map((item) => (
-            <ComboboxItem key={item.value} value={item.value}>
-              {renderItem(item)}
-            </ComboboxItem>
-          ))}
+          {firstLoad ? (
+            // Decorative: the field's spinner announces the load. One
+            // suggestion row tall (the ComboboxItem height), so a single
+            // one-line suggestion takes its place without a jump.
+            <div
+              data-slot="combobox-free-text-loading"
+              aria-hidden="true"
+              className="text-muted-foreground flex min-h-8.5 items-center justify-center"
+            >
+              <Loader2Icon className="size-4 motion-safe:animate-spin" />
+            </div>
+          ) : (
+            items.map((item) => (
+              <ComboboxItem key={item.value} value={item.value}>
+                {renderItem(item)}
+              </ComboboxItem>
+            ))
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Autocomplete.Root>
