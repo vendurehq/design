@@ -5,7 +5,7 @@ import * as React from 'react';
 // lets the next first load draw as many skeleton rows as the current page will
 // have, so the body keeps its height when the rows arrive, also after a reload.
 
-const STORAGE_PREFIX = 'vendure-ui:list-total:';
+const STORAGE_PREFIX = 'vendure-ui:data-table:list-total:';
 
 /** The total stored under `key`, or null. Blocked, missing or malformed storage gives null. */
 export function readRowCount(key: string): number | null {

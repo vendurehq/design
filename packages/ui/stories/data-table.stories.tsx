@@ -610,7 +610,7 @@ export const LoadingKeepsColumnWidths: Story = {
   },
 };
 
-const LIST_TOTAL_PREFIX = 'vendure-ui:list-total:';
+const LIST_TOTAL_PREFIX = 'vendure-ui:data-table:list-total:';
 
 /** The height of the table body inside `[data-testid=testId]`. */
 function bodyHeight(canvasElement: HTMLElement, testId: string) {
@@ -1070,11 +1070,11 @@ export const SelectionStorage: Story = {
 };
 
 const storedIds = (key: string) =>
-  JSON.parse(sessionStorage.getItem(`vendure-ui:data-table-selection:${key}`) ?? '[]') as string[];
+  JSON.parse(sessionStorage.getItem(`vendure-ui:data-table:selection:${key}`) ?? '[]') as string[];
 
 const clearStoredSelection = (key: string) => {
   for (const suffix of ['', ':a', ':b']) {
-    sessionStorage.removeItem(`vendure-ui:data-table-selection:${key}${suffix}`);
+    sessionStorage.removeItem(`vendure-ui:data-table:selection:${key}${suffix}`);
   }
 };
 
@@ -1147,7 +1147,7 @@ const playStoredSelection =
       await userEvent.click(row(1));
       await waitFor(() => expect(count()).toHaveTextContent('0 selected'));
       const stored = canvas.queryByRole('button', { name: 'Channel A' }) ? `${key}:a` : key;
-      await expect(sessionStorage.getItem(`vendure-ui:data-table-selection:${stored}`)).toBeNull();
+      await expect(sessionStorage.getItem(`vendure-ui:data-table:selection:${stored}`)).toBeNull();
     });
 
     clearStoredSelection(key);

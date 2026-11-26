@@ -9,7 +9,7 @@ import * as React from 'react';
 // It survives a reload and a visit to another page in the same tab. It is not in
 // the URL: a URL change is a navigation, and each checkbox click would run one.
 
-const STORAGE_PREFIX = 'vendure-ui:data-table-selection:';
+const STORAGE_PREFIX = 'vendure-ui:data-table:selection:';
 
 /** The ids stored under `key`. Blocked, missing or malformed storage gives none. */
 export function readStoredSelection(key: string): RowSelectionState {

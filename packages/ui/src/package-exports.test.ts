@@ -27,6 +27,8 @@ const internal = [
   'components/molecules/code-block/process-code',
   'components/molecules/data-table/data-table-bulk-actions',
   'components/molecules/data-table/data-table-helpers',
+  'components/molecules/data-table/data-table-row-count-storage',
+  'components/molecules/data-table/data-table-selection-storage',
   'components/molecules/data-table/data-table-view-options',
   'components/molecules/id-chip-chrome',
   'components/atoms/label-swap',
