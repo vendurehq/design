@@ -3,6 +3,7 @@
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type { ComponentProps } from 'react';
+import { isDevelopment } from '../../lib/env.ts';
 
 // How many minor-unit digits a currency uses — 2 for USD (cents), 0 for JPY, 3
 // for BHD. Derived from Intl rather than a hardcoded `/100`, which is wrong for
@@ -60,7 +61,7 @@ function Money({
   const resolvedPrecision =
     precision ?? settings.currencyPrecision ?? currencyFractionDigits(resolvedCurrency);
 
-  if (!resolvedCurrency && !warnedMissingCurrency && process.env.NODE_ENV !== 'production') {
+  if (!resolvedCurrency && !warnedMissingCurrency && isDevelopment) {
     warnedMissingCurrency = true;
     console.warn(
       '<Money> was rendered without a `currency` prop or a `FormatProvider` currency; ' +

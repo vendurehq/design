@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isDevelopment } from './env.ts';
 
 /**
  * The state dictionary — the mechanism that makes the same entity state look
@@ -72,8 +73,6 @@ export function stateNameToWords(state: string): string {
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 /**
  * Declare a domain's state→tone map. The `Record<S, StateEntry>` argument is
  * exhaustive over `S`, so typing the call as `defineStateEntries<DeploymentStatus>`
@@ -94,7 +93,7 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
     const entry = index.get(key);
     // Dedup on the lowercased key so casing variants of the same unknown state
     // ("Foo" / "foo") warn once — matching the lookup semantics.
-    if (!entry && isDev && !warned.has(key)) {
+    if (!entry && isDevelopment && !warned.has(key)) {
       warned.add(key);
       console.warn(
         `[state-dictionary] Unmapped state "${state}" — rendering as neutral. ` +
