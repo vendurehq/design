@@ -941,7 +941,7 @@ Every other file in `data-table/` is internal, and an import of it fails to reso
 
 ### DataTable loading rows
 
-Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `expectedTotal` (the list's total from an earlier visit, for example from `useRememberedListTotal`), it draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
+Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null` or `undefined`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `expectedTotal` (the list's total from an earlier visit, for example from `useRememberedListTotal`), it draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
 import {
@@ -1103,7 +1103,7 @@ These packages are optional — install them only if you use the features that n
 9. A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` no longer sets `--dialog-padding`. Set the variable instead: `p-0` becomes `[--dialog-padding:0px]`, `p-8` becomes `[--dialog-padding:--spacing(8)]`.
 10. DataTable marks "not loaded yet" in the data, not with `isLoading`:
     - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
-    - Server pagination requires `totalItems: number | null`. `null` means "not known" and draws a skeleton range. Pass `data?.totalItems ?? null`, not `0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
+    - Server pagination requires `totalItems: number | null | undefined`, the same type as `TablePagination`. `null` and `undefined` both mean "not known" and draw a skeleton range. Pass `data?.totalItems`, not `data?.totalItems ?? 0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
     - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
 
 ### Breaking changes in `@vendure-io/design-tokens`

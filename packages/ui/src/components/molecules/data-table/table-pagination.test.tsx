@@ -319,6 +319,15 @@ describe('TablePagination loading', () => {
     expect(tag(markup, 'table-pagination-next')).toContain('disabled=""');
   });
 
+  test('null is an unknown total too, the same as undefined', () => {
+    const unknown = html(
+      <TablePagination page={1} pageSize={25} totalItems={undefined} onPageChange={noop} />,
+    );
+    expect(
+      html(<TablePagination page={1} pageSize={25} totalItems={null} onPageChange={noop} />),
+    ).toBe(unknown);
+  });
+
   test('an unknown total renders no links in anchor mode', () => {
     const markup = html(
       <TablePagination

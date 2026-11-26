@@ -93,11 +93,11 @@ interface TablePaginationProps extends React.ComponentProps<'div'> {
   pageSize: number;
   /**
    * Total items across all pages, used for the range text and last-page
-   * detection. `undefined` means not known yet (the first page is loading):
-   * the range shows a skeleton of the same height and prev/next are disabled.
-   * Pass `undefined` rather than `0` while loading: `0` renders "0 of 0".
+   * detection. `null` or `undefined` means not known yet (the first page is
+   * loading): the range shows a skeleton of the same height and prev/next are
+   * disabled. Do not pass `0` while loading: `0` renders "0 of 0".
    */
-  totalItems: number | undefined;
+  totalItems: number | null | undefined;
   /**
    * The page, page size, sort or filter just changed and its rows are loading.
    * The range text dims after a short delay (a fast read shows nothing), and

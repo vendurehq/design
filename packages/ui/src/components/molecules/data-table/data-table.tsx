@@ -781,18 +781,20 @@ function DataTable<TData>({
   const pending = Boolean(isLoading) && !firstLoad;
   const serverTotal =
     pagination != null && pagination.mode !== 'client' ? pagination.totalItems : undefined;
+  const serverTotalUnknown =
+    pagination != null && pagination.mode !== 'client' && serverTotal == null;
 
   const warnedUnknownTotal = React.useRef(false);
   if (
     isDevelopment &&
-    serverTotal === null &&
+    serverTotalUnknown &&
     !firstLoad &&
     !isLoading &&
     !warnedUnknownTotal.current
   ) {
     warnedUnknownTotal.current = true;
     console.warn(
-      '[DataTable] The rows have loaded but pagination.totalItems is null. ' +
+      '[DataTable] The rows have loaded but pagination.totalItems is not known (null or undefined). ' +
         'Pass the total with the rows: the footer range stays a skeleton until then.',
     );
   }
@@ -1576,13 +1578,13 @@ function DataTable<TData>({
             className="w-full"
             page={pagination.page}
             pageSize={pagination.pageSize}
-            // Unknown (null, or client rows not loaded): a skeleton, not "0 of 0".
+            // Unknown (null or undefined, or client rows not loaded): a skeleton, not "0 of 0".
             totalItems={
               pagination.mode === 'client'
                 ? firstLoad
                   ? undefined
                   : table.getPrePaginationRowModel().rows.length
-                : (pagination.totalItems ?? undefined)
+                : pagination.totalItems
             }
             isLoading={pending}
             onPageChange={pagination.onPageChange}
