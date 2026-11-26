@@ -51,7 +51,7 @@ Link to a page with more of what the user is looking at, at the end of the regio
 
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
-- **Not inside running text:** A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.
+- **Not inside running text:** A link inside a sentence or a form is a TextLink; a chevron there breaks the sentence.
 - **A diagonal arrow means another site:** A chevron goes to a page of this app; an up-right arrow leaves it. Use `direction="external"` for a link to another site. A hostname fact in a PageHeader is a PageHeaderFactLink. A Button that opens another site takes a 14px `ArrowUpRight` as its last child, which the Button keeps quieter than the label. Never use the arrow for a page of this app.
 
 Related decisions: `button`.
@@ -488,6 +488,22 @@ Use the standalone collection footer only when DataTable is not coordinating pag
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## TextLink
+
+Link inside running text, or a small standalone link that must not compete with the actions next to it.
+
+- **TextLink in text, ArrowLink at the end of a region, Button for an action:** A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.
+- **Default tone in a sentence:** The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.
+- **Quiet tone stands alone:** The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.
+- **Another site is external:** Set `external` on a link to another site. It opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and tells screen readers it opens a new tab. A page of this app never takes `external`.
+- **A router link goes in render:** Pass the router link as `render`. TextLink keeps the link role; never give it `role="button"` or an `onClick` that does not navigate.
+
+**Choose:**
+
+- `default`: A link inside a sentence or a form hint.
+- `quiet`: A small standalone link beside more important actions.
+
+Related decisions: `arrow-link`, `button`.
 ## Timeline
 
 Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.
