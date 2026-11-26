@@ -70,6 +70,14 @@ export const LoadingAndMissing: Story = {
       <p data-state="zero">
         Order total <Money value={0} currency="USD" locale="en-US" />, paid by card.
       </p>
+      <div data-state="loaded" className="flex items-baseline gap-2">
+        <span className="text-xs">Total</span>
+        <Money value={123456} currency="USD" locale="en-US" className="text-lg" />
+      </div>
+      <div data-state="loading" className="flex items-baseline gap-2">
+        <span className="text-xs">Total</span>
+        <Money value={undefined} currency="USD" locale="en-US" className="text-lg" />
+      </div>
       <table className="w-56 text-sm">
         <tbody>
           <tr data-state="loaded">
@@ -98,6 +106,10 @@ export const LoadingAndMissing: Story = {
     await expect(rect('p[data-state="loading"]')?.height).toBe(
       rect('p[data-state="loaded"]')?.height,
     );
+    // In a baseline-aligned flex row the skeleton does not make the row taller.
+    await expect(rect('div[data-state="loading"]')?.height).toBe(
+      rect('div[data-state="loaded"]')?.height,
+    );
     await expect(rect('tr[data-state="loading"]')?.height).toBe(
       rect('tr[data-state="loaded"]')?.height,
     );
@@ -117,7 +129,8 @@ export const LoadingAndMissing: Story = {
 
     const busy = canvasElement.querySelector('p[data-state="loading"] [data-slot="money"]');
     await expect(busy?.getAttribute('aria-busy')).toBe('true');
-    await expect(busy?.textContent).toBe('Loading amount');
+    // The zero-width baseline anchor is aria-hidden; the read text is the label.
+    await expect(busy?.querySelector('.sr-only')?.textContent).toBe('Loading amount');
     await expect(canvasElement.querySelector('p[data-state="missing"]')?.textContent).toContain(
       '—',
     );

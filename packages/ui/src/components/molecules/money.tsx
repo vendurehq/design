@@ -72,16 +72,17 @@ function Money({
 
   // The skeleton is a typical amount wide ("$1,234.56" in tabular digits) and
   // one line box tall, so the line does not move when the amount arrives.
-  // `align-top` keeps an inline skeleton inside the line box instead of
-  // sitting on the baseline and pushing the line taller.
   if (value === undefined) {
     return (
       <span
         data-slot="money"
         aria-busy="true"
-        className={cn('inline-flex w-[9ch] max-w-full align-top tabular-nums', className)}
+        className={cn('inline-flex w-[9ch] max-w-full tabular-nums', className)}
         {...props}
       >
+        {/* A zero-width space gives the skeleton a text baseline, so a
+            baseline-aligned row does not grow when it loads. */}
+        <span aria-hidden="true">{'\u200b'}</span>
         <SkeletonLine />
         <span className="sr-only">{t.loading}</span>
       </span>

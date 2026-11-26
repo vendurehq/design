@@ -64,7 +64,10 @@ describe('Money while the amount is not known', () => {
     expect(markup).toContain('data-skeleton="line"');
     expect(markup).toContain('aria-busy="true"');
     expect(markup).not.toContain('$');
-    expect(text(<Money value={undefined} currency="USD" locale="en-US" />)).toBe('Loading amount');
+    expect(text(<Money value={undefined} currency="USD" locale="en-US" />)).toBe(
+      '\u200bLoading amount',
+    );
+    expect(markup).toContain('<span aria-hidden="true">\u200b</span>');
   });
 
   test('the loading text is visually hidden and can be translated', () => {
