@@ -128,9 +128,10 @@ describe('v3 overlay look', () => {
     expect(code).toContain('growFromTrigger');
   });
 
-  test('menus, popovers and selects use the xl radius; dialogs use 2xl', () => {
+  // A popup is a surface: 12px, so its 6px items nest inside the padding.
+  test('menus, popovers, selects and dialogs use the 2xl radius', () => {
     for (const file of ['popover.tsx', 'hover-card.tsx', 'dropdown-menu.tsx', 'context-menu.tsx', 'select.tsx', 'combobox.tsx', 'navigation-menu.tsx']) {
-      expect(source(file)).toContain('rounded-xl');
+      expect(source(file)).toContain('rounded-2xl');
     }
     for (const file of ['dialog.tsx', 'alert-dialog.tsx']) {
       expect(source(file)).toContain('rounded-2xl');
