@@ -4,6 +4,12 @@ import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-pr
 // that gains a text adds its group here; the `FormatMessages` type follows.
 // List the new texts in the FormatProvider section of `docs/ui-components.md`.
 const defaultMessages = {
+  breadcrumb: {
+    /** The loading row of a crumb menu, and the pending crumb's status. */
+    loading: 'Loading…',
+    /** The row of a BreadcrumbSearchMenu that reads the options again. */
+    retry: 'Retry',
+  },
   combobox: {
     /** Announced while a page of options loads. */
     loading: 'Loading…',
