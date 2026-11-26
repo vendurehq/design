@@ -171,6 +171,22 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
 
+> **Texts.** `FormatProvider`'s `messages` translates the library's texts in one place, so an app does not pass a label prop to every component. It is nested by component (`{ passwordInput: { showPassword } }`), and every group and text is optional: a text you leave out stays English. An unknown group or text is a type error, so your editor completes the keys. A component's own label prop wins over `messages`. Type your table with `FormatMessages` from `components/molecules/format-provider`:
+>
+> ```tsx
+> import { FormatProvider, type FormatMessages } from '@vendure-io/ui/components/molecules/format-provider';
+>
+> const de: FormatMessages = {
+>   copyButton: { copy: 'Kopieren', copied: 'Kopiert' },
+>   passwordInput: { showPassword: 'Passwort anzeigen', hidePassword: 'Passwort verbergen' },
+>   searchTrigger: { label: 'Suchen', commandPalette: 'Befehlspalette' },
+> };
+>
+> <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
+> ```
+>
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
@@ -566,14 +582,14 @@ import { NoInvoicesIllustration } from "@vendure-io/ui/components/molecules/illu
 Every illustration takes `className` and `size` (width in px, default 160; the
 height keeps the 4:3 ratio). Use one illustration for the whole empty or error
 region: a whole page or a whole list. Inside a card, a secondary panel or a
-side column, use the compact size with an icon instead. It shows a faint 28px
+side column, use the `sm` size with an icon instead. It shows a faint 28px
 icon above the title and no illustration:
 
 ```tsx
 import { KeyRoundIcon } from "lucide-react";
 
 <EmptyState
-  size="compact"
+  size="sm"
   icon={<KeyRoundIcon />}
   title="No emergency boot token was issued for this project."
 />;
@@ -1015,6 +1031,7 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

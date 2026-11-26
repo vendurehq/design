@@ -93,7 +93,7 @@ describe('SidebarMenuButton active state', () => {
   test('the active item gets a sidebar-primary bar, not only the hover fill', () => {
     const html = renderToStaticMarkup(
       <SidebarProvider>
-        <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+        <SidebarMenuButton active>Orders</SidebarMenuButton>
       </SidebarProvider>,
     );
     expect(html).toContain('data-active=""');
@@ -122,7 +122,7 @@ describe('SidebarMenuButton active state', () => {
     const tokens = slotTokens(
       renderToStaticMarkup(
         <SidebarProvider>
-          <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
+          <SidebarMenuSubButton active>Products</SidebarMenuSubButton>
         </SidebarProvider>,
       ),
       'sidebar-menu-sub-button',
@@ -195,7 +195,7 @@ describe('SidebarMenu sliding indicator', () => {
       <SidebarProvider>
         <SidebarMenu slidingIndicator={slidingIndicator}>
           <SidebarMenuItem>
-            <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+            <SidebarMenuButton active>Orders</SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarProvider>,
@@ -234,7 +234,7 @@ describe('Sidebar spacing and labels, the v3 look', () => {
           <SidebarGroupLabel>Project</SidebarGroupLabel>
           <SidebarMenu slidingIndicator>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive>Source</SidebarMenuButton>
+              <SidebarMenuButton active>Source</SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -299,7 +299,7 @@ describe('One active icon', () => {
   test('an active nested item lights its own icon', () => {
     const html = renderToStaticMarkup(
       <SidebarProvider>
-        <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
+        <SidebarMenuSubButton active>Products</SidebarMenuSubButton>
       </SidebarProvider>,
     );
 
@@ -390,5 +390,39 @@ describe('SidebarIdentityButton', () => {
   test('leaves the caption out when there is none', () => {
     const html = renderToStaticMarkup(<SidebarIdentityText title="Acme" />);
     expect(html).not.toContain('sidebar-identity-caption');
+  });
+});
+
+describe('SidebarMenuSubButton size', () => {
+  test('the default size is `default` and drives the text size', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuSubButton>Products</SidebarMenuSubButton>
+      </SidebarProvider>,
+    );
+    expect(html).toContain('data-size="default"');
+    expect(slotTokens(html, 'sidebar-menu-sub-button')).toContain('data-[size=default]:text-sm');
+  });
+
+  test('sm is the small size', () => {
+    const html = renderToStaticMarkup(
+      <SidebarProvider>
+        <SidebarMenuSubButton size="sm">Products</SidebarMenuSubButton>
+      </SidebarProvider>,
+    );
+    expect(html).toContain('data-size="sm"');
+  });
+
+  test('the old names are gone', () => {
+    renderToStaticMarkup(
+      <SidebarProvider>
+        {/* @ts-expect-error `md` was renamed to `default` */}
+        <SidebarMenuSubButton size="md">Products</SidebarMenuSubButton>
+        {/* @ts-expect-error `isActive` was renamed to `active` */}
+        <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
+        {/* @ts-expect-error `isActive` was renamed to `active` */}
+        <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+      </SidebarProvider>,
+    );
   });
 });

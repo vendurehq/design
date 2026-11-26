@@ -35,13 +35,13 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
    */
   bordered?: boolean;
   /**
-   * `compact` drops the illustration and tightens the spacing. Use it with an
+   * `sm` drops the illustration and tightens the spacing. Use it with an
    * `icon` inside a card, a secondary panel or a side column: the icon sits
    * above a 14px title. Keep the `default` size with an illustration for a
-   * whole page or a whole list. Keep compact to a title, a description and at
+   * whole page or a whole list. Keep `sm` to a title, a description and at
    * most one action. Defaults to `default`.
    */
-  size?: 'default' | 'compact';
+  size?: 'default' | 'sm';
 }
 
 /**
@@ -64,12 +64,12 @@ function EmptyState({
   className,
   ...props
 }: EmptyStateProps) {
-  const compact = size === 'compact';
+  const small = size === 'sm';
   // Precedence: an explicit `illustration` (including `null`, to opt out)
   // always wins; otherwise an explicit `icon` keeps rendering exactly as
   // before. Only when neither is touched does the default illustration fill
   // the media slot, so existing icon-only consumers see no change.
-  const resolvedIllustration = compact ? null : illustration !== undefined ? (
+  const resolvedIllustration = small ? null : illustration !== undefined ? (
     illustration
   ) : icon === undefined ? (
     <EmptyCollectionIllustration />
@@ -83,28 +83,28 @@ function EmptyState({
         // Unbordered clears the atom's dashed style, so a border the consumer
         // adds through `className` is solid.
         bordered ? 'border' : 'rounded-none border-solid',
-        compact && 'gap-3 p-6 py-10',
+        small && 'gap-3 p-6 py-10',
         className,
       )}
       {...props}
     >
-      <EmptyHeader className={cn(compact && 'gap-1')}>
+      <EmptyHeader className={cn(small && 'gap-1')}>
         {resolvedIllustration ? (
           <EmptyMedia>{resolvedIllustration}</EmptyMedia>
         ) : icon ? (
           // 20px from the icon to the title in the default size.
-          <EmptyMedia variant="bare" className={cn(!compact && 'mb-3')}>
+          <EmptyMedia variant="bare" className={cn(!small && 'mb-3')}>
             {icon}
           </EmptyMedia>
         ) : null}
-        <EmptyTitle className={cn(compact && 'text-style-card-title leading-5.25')}>
+        <EmptyTitle className={cn(small && 'text-style-card-title leading-5.25')}>
           {title}
         </EmptyTitle>
         {description ? (
-          <EmptyDescription className={cn(compact && 'text-sm')}>{description}</EmptyDescription>
+          <EmptyDescription className={cn(small && 'text-sm')}>{description}</EmptyDescription>
         ) : null}
       </EmptyHeader>
-      {children ? <EmptyContent className={cn(compact && 'gap-2')}>{children}</EmptyContent> : null}
+      {children ? <EmptyContent className={cn(small && 'gap-2')}>{children}</EmptyContent> : null}
     </Empty>
   );
 }
