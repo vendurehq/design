@@ -81,7 +81,8 @@ function DatePicker(allProps: DatePickerProps) {
   return (
     <div
       data-slot="date-picker"
-      className={cn('flex min-w-0 items-center gap-1', className)}
+      // max-w-62 is the calendar: 7 cells of 2rem plus p-3. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-62 items-center gap-1', className)}
       {...props}
     >
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}

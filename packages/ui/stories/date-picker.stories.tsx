@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useState } from 'react';
 import { fr } from 'react-day-picker/locale/fr';
+import { Input } from '../src/components/atoms/input.tsx';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 import {
   DateRangePicker,
@@ -243,28 +244,33 @@ export const UncontrolledRange: Story = {
 };
 
 /**
- * A popup is at least as wide as the field that opens it. In a field wider than
- * the calendar, the month sits centred in the popup.
+ * A picker stops at its cap in a wide column, and its popup is at least as wide
+ * as the field. `fitsField` also checks the popup is the calendar's width, which
+ * is not true of the range picker with presets.
  */
-async function expectPopupAtLeastTriggerWidth(canvasElement: HTMLElement) {
+async function expectCappedField(canvasElement: HTMLElement, fitsField = true) {
+  const root = canvasElement.querySelector<HTMLElement>('[data-slot$="picker"]');
+  if (!root?.parentElement) throw new Error('The picker is missing.');
+  await expect(root.offsetWidth).toBeLessThan(root.parentElement.offsetWidth);
   const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
   await userEvent.click(trigger);
   const popup = await within(document.body).findByRole('dialog');
   // offsetWidth ignores the scale of the opening animation.
   await expect(popup.offsetWidth).toBeGreaterThanOrEqual(trigger.offsetWidth);
+  if (fitsField) await expect(popup.offsetWidth).toBeLessThanOrEqual(root.offsetWidth);
 }
 
 export const WideDateOnly: Story = {
   tags: ['!autodocs'],
   render: () => (
-    <div className="w-[480px]">
+    <div className="w-120">
       <DatePicker />
     </div>
   ),
-  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
 };
 
-/** A field narrower than the calendar keeps the calendar's own width. */
+/** A field narrower than the calendar keeps the calendar's width. */
 export const NarrowDateOnly: Story = {
   tags: ['!autodocs'],
   render: () => (
@@ -272,33 +278,38 @@ export const NarrowDateOnly: Story = {
       <DatePicker />
     </div>
   ),
-  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await userEvent.click(trigger);
+    const popup = await within(document.body).findByRole('dialog');
+    await expect(popup.offsetWidth).toBeGreaterThanOrEqual(trigger.offsetWidth);
+  },
 };
 
 export const WideDateAndTime: Story = {
   tags: ['!autodocs'],
   render: () => (
-    <div className="w-[640px]">
+    <div className="w-160">
       <DateTimePicker />
     </div>
   ),
-  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
 };
 
 export const WideRange: Story = {
   tags: ['!autodocs'],
   render: () => (
-    <div className="w-[480px]">
+    <div className="w-120">
       <DateRangePicker />
     </div>
   ),
-  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
 };
 
 export const WideRangeWithPresets: Story = {
   tags: ['!autodocs'],
   render: () => (
-    <div className="w-[640px]">
+    <div className="w-160">
       <DateRangePicker
         presets={[
           { id: 'today', label: 'Today', value: { from: '2026-11-26', to: '2026-11-26' } },
@@ -307,5 +318,44 @@ export const WideRangeWithPresets: Story = {
       />
     </div>
   ),
-  play: ({ canvasElement }) => expectPopupAtLeastTriggerWidth(canvasElement),
+  play: ({ canvasElement }) => expectCappedField(canvasElement, false),
+};
+
+/** The longest realistic range, across two years, fits the field without truncating. */
+export const LongRangeLabel: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-120">
+      <DateRangePicker defaultValue={{ from: '2026-11-01', to: '2027-12-26' }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const label = canvasElement.querySelector<HTMLElement>('[data-slot="date-range-picker"] .truncate');
+    if (!label) throw new Error('The range label is missing.');
+    await expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+  },
+};
+
+/**
+ * Next to an Input, the pickers stop at their cap while the Input fills the
+ * column. Pass `className="max-w-none"` to a picker to fill the column too.
+ */
+export const FullWidthFormColumn: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="flex w-full max-w-120 flex-col gap-3">
+      <Input aria-label="Name" placeholder="Name" />
+      <DatePicker />
+      <Input aria-label="Reference" placeholder="Reference" />
+      <DateTimePicker />
+      <Input aria-label="Notes" placeholder="Notes" />
+      <DateRangePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText('Name');
+    const roots = canvasElement.querySelectorAll<HTMLElement>('[data-slot$="picker"]');
+    await expect(roots).toHaveLength(3);
+    for (const root of roots) await expect(root.offsetWidth).toBeLessThan(input.offsetWidth);
+  },
 };

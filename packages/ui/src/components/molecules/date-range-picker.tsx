@@ -100,7 +100,8 @@ function DateRangePicker(allProps: DateRangePickerProps) {
   return (
     <div
       data-slot="date-range-picker"
-      className={cn('flex min-w-0 items-center gap-1', className)}
+      // max-w-64 is the calendar (62) plus room for the longest range label. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-64 items-center gap-1', className)}
       {...props}
     >
       <Popover open={open} onOpenChange={setOpen}>

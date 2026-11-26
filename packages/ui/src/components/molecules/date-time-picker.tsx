@@ -91,7 +91,8 @@ function DateTimePicker(allProps: DateTimePickerProps) {
   return (
     <div
       data-slot="date-time-picker"
-      className={cn('flex min-w-0 items-center gap-2', className)}
+      // max-w-92 is the calendar (62), the gap and the w-28 time box. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-92 items-center gap-2', className)}
       {...props}
     >
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
