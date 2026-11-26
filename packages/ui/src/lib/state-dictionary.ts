@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isDevelopment } from './env.ts';
 
 /**
  * The state dictionary — the mechanism that makes the same entity state look
@@ -26,7 +27,8 @@ export interface StateEntry {
   /**
    * A shape that says more than the tone's own icon, e.g. `<TruckIcon />` for
    * Shipped. Pass it to StatusBadge's `icon` through `iconFor`. Leave it out
-   * for the tone's own icon.
+   * for the tone's own icon. `false` means no icon: `pending` is the `progress`
+   * tone without its spinner.
    */
   icon?: ReactNode;
 }
@@ -43,7 +45,7 @@ export interface StateMap<S extends string> {
   entries: Record<S, StateEntry>;
   toneFor(state: string): Tone;
   labelFor(state: string): string;
-  /** The entry's own icon, or `undefined` for the tone's icon. */
+  /** The entry's own icon, `false` for no icon, or `undefined` for the tone's icon. */
   iconFor(state: string): ReactNode | undefined;
 }
 
@@ -71,8 +73,6 @@ export function stateNameToWords(state: string): string {
   return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 /**
  * Declare a domain's state→tone map. The `Record<S, StateEntry>` argument is
  * exhaustive over `S`, so typing the call as `defineStateEntries<DeploymentStatus>`
@@ -93,7 +93,7 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
     const entry = index.get(key);
     // Dedup on the lowercased key so casing variants of the same unknown state
     // ("Foo" / "foo") warn once — matching the lookup semantics.
-    if (!entry && isDev && !warned.has(key)) {
+    if (!entry && isDevelopment && !warned.has(key)) {
       warned.add(key);
       console.warn(
         `[state-dictionary] Unmapped state "${state}" — rendering as neutral. ` +
@@ -120,10 +120,11 @@ export function defineStateEntries<S extends string>(entries: Record<S, StateEnt
  *   `critical` is for failures and refusals (`failed`, `error`, `rejected`).
  * - A dormant state is `neutral` (`disabled`, `inactive`); its live
  *   counterpart is `success` (`enabled`, `active`).
- * - `pending` is `progress`: it waits on a step that the system or another
- *   party completes, and it will change without the viewer acting. A domain
- *   where pending means "waiting for this user" declares its own `warning`
- *   entry in its own map.
+ * - `pending` is `progress` without an icon (`icon: false`): it waits on a step
+ *   that the system or another party completes, and it will change without
+ *   the viewer acting. Only work that runs right now spins. A domain where
+ *   pending means "waiting for this user" declares its own `warning` entry in
+ *   its own map.
  *
  * `running` is deliberately absent: it has no single tone (a running job is
  * `progress`, a running service is `success`), so every domain must decide it
@@ -134,7 +135,7 @@ export const commonStates = defineStateEntries({
   disabled: { tone: 'neutral', defaultLabel: 'Disabled' },
   active: { tone: 'success', defaultLabel: 'Active' },
   inactive: { tone: 'neutral', defaultLabel: 'Inactive' },
-  pending: { tone: 'progress', defaultLabel: 'Pending' },
+  pending: { tone: 'progress', defaultLabel: 'Pending', icon: false },
   completed: { tone: 'success', defaultLabel: 'Completed' },
   failed: { tone: 'critical', defaultLabel: 'Failed' },
   cancelled: { tone: 'neutral', defaultLabel: 'Cancelled' },

@@ -29,6 +29,7 @@ const internal = [
   'components/atoms/label-swap',
   'components/molecules/direction-link',
   'components/molecules/time-tooltip',
+  'lib/env',
   'lib/menu-item',
   'lib/popup-align',
   'lib/popup-direction',
@@ -36,6 +37,7 @@ const internal = [
   'lib/trigger-slot',
   'hooks/use-active-label-size',
   'hooks/use-pinned-height',
+  'hooks/use-user-toggle-motion',
 ];
 
 describe('package exports', () => {

@@ -1,10 +1,18 @@
 {
-  // The Vendure Dashboard compiles this source with `lib: ["dom", "es2021.intl"]`:
-  // no `dom.iterable`, so a `for…of` or a spread over a NodeList or an
-  // HTMLCollection fails its type check. Wrap those in `Array.from(…)`.
+  // Type-checks the source the way consumers compile it:
+  // - The Vendure Dashboard compiles it with `lib: ["dom", "es2021.intl"]`:
+  //   no `dom.iterable`, so a `for…of` or a spread over a NodeList or an
+  //   HTMLCollection fails its type check. Wrap those in `Array.from(…)`.
+  // - The Dashboard resolves modules as NodeNext: a relative import needs its
+  //   file extension.
+  // - Neither the Dashboard nor the Console's app-shell package loads Node
+  //   types: read the build mode from `lib/env.ts`, not from `process`.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"]
+    "lib": ["ESNext", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": []
   },
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]
 }

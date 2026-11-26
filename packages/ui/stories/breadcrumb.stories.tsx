@@ -632,8 +632,9 @@ export const SearchMenuEmpty: Story = {
     await userEvent.click(within(canvasElement).getByRole('button', { name: /^Projects:/ }));
     const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
     await userEvent.type(within(popup).getByRole('combobox'), 'zzz');
-    await expect(await within(popup).findByText('No project found.')).toBeVisible();
-    await expect(within(popup).getByRole('option', { name: /Create project/ })).toBeVisible();
+    // The empty row is in the DOM before the popup has finished fading in.
+    await waitFor(() => expect(within(popup).getByText('No project found.')).toBeVisible());
+    await waitFor(() => expect(within(popup).getByRole('option', { name: /Create project/ })).toBeVisible());
   },
 };
 

@@ -5,6 +5,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import type { VariantProps } from 'class-variance-authority';
 import { XIcon } from 'lucide-react';
 import type * as React from 'react';
+import { isDevelopment } from '../../lib/env.ts';
 
 interface ChipProps extends React.ComponentProps<'span'> {
   /** Badge variants a tag can take. `link` and `ghost` are not tag treatments. */
@@ -62,7 +63,7 @@ function Chip({
   children,
   ...props
 }: ChipProps) {
-  if (process.env.NODE_ENV !== 'production' && onRemove && !removeLabel) {
+  if (isDevelopment && onRemove && !removeLabel) {
     console.warn(
       'Chip: `removeLabel` is required when `onRemove` is set — the remove button has no accessible name otherwise. Pass e.g. removeLabel="Remove <name>".',
     );

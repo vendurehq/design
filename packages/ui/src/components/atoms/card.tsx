@@ -1,7 +1,11 @@
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import * as React from "react"
 
 import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { cn } from "@vendure-io/ui/lib/utils"
+
+import { interactiveCardVariants } from "../molecules/interactive-card.tsx"
 
 // The size variant publishes the card's spacing contract as CSS variables
 // (--card-ps: start padding, --card-px: end padding, --card-gap: vertical
@@ -21,6 +25,17 @@ import { cn } from "@vendure-io/ui/lib/utils"
 // brand more weight in the mix), and a 1.5% brand wash fades out by 55% of
 // the height. The bright brand (brand-500) is the same in both modes. Use it on at most one card per
 // view, and show state inside it with a bare StatusBadge, not a chip.
+// A Card with a CardLink inside opens as a whole: the link's ::after covers
+// the card, the card takes the shared interactive look (hover border, press,
+// focus ring), and every other control inside it (a "…" menu, a copy button,
+// a Tooltip trigger, IdChip, CopyableText) is lifted above the stretched
+// area, so it keeps its own click and tab stop. Any other element that must
+// stay hoverable above the link takes `data-card-control`. All of it is gated
+// on the card holding a CardLink, so a static card changes nothing. The class
+// names stay literal so Tailwind can scan them.
+const LINKED_CARD_CONTROLS =
+  "[&:has([data-slot=card-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-card-control]):not([data-slot=card-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:relative [&:has([data-slot=card-link])_:is(a,button,input,select,textarea,[role=button],[tabindex],[data-tooltip-trigger],[data-slot=id-chip],[data-slot=anonymized-token],[data-slot=copyable-text],[data-card-control]):not([data-slot=card-link],[data-slot=id-chip]_*,[data-slot=anonymized-token]_*,[data-slot=copyable-text]_*)]:z-10"
+
 const ACCENT_CARD =
   "data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_30%,var(--border))] dark:data-[variant=accent]:border-[color:color-mix(in_oklab,var(--brand-500)_38%,var(--border))] data-[variant=accent]:bg-[image:linear-gradient(180deg,color-mix(in_oklab,var(--brand-500)_1.5%,transparent),transparent_55%)]"
 
@@ -40,6 +55,8 @@ function Card({
       data-variant={variant}
       className={cn(
         "bg-card text-card-foreground group/card [--card-gap:--spacing(4)] [--card-ps:--spacing(4.5)] [--card-px:--spacing(4)] [--card-head:--spacing(12)] data-[size=sm]:[--card-gap:--spacing(3)] data-[size=sm]:[--card-ps:--spacing(3)] data-[size=sm]:[--card-px:--spacing(3)] data-[size=sm]:[--card-head:--spacing(11)] flex flex-col gap-(--card-gap) overflow-hidden rounded-2xl border border-border shadow-control py-(--card-gap) text-sm has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        interactiveCardVariants({ target: "link" }),
+        LINKED_CARD_CONTROLS,
         ACCENT_CARD,
         className
       )}
@@ -106,6 +123,35 @@ const cardCountTone: Record<CardCountTone, string> = {
   neutral: "text-muted-foreground",
   warning: "text-warning-text",
   critical: "text-destructive-text",
+}
+
+/**
+ * Makes the whole card open one page or one dialog. Place it in CardTitle
+ * around the title text: its ::after stretches over the card, so a click on
+ * any point of the card opens it, while keyboard and screen reader users get
+ * one tab stop named by the title. Renders a `<button>` for an `onClick`
+ * handler (a card that opens a dialog); pass `render={<a href="…" />}` or a
+ * router link element to open a page. Use one per card. Other controls in the
+ * card stay clickable above it.
+ */
+function CardLink({ className, render, ...props }: useRender.ComponentProps<"button">) {
+  return useRender({
+    defaultTagName: "button",
+    render,
+    props: mergeProps<"button">(
+      {
+        // A native button submits its form by default; a rendered anchor or
+        // router link takes no type.
+        type: render ? undefined : "button",
+        className: cn(
+          "cursor-pointer text-start text-inherit outline-none after:absolute after:inset-0",
+          className
+        ),
+      },
+      props
+    ),
+    state: { slot: "card-link" },
+  })
 }
 
 function CardCount({
@@ -241,6 +287,7 @@ export {
   CardHeader,
   CardFooter,
   CardTitle,
+  CardLink,
   CardCount,
   CardAction,
   CardDescription,
