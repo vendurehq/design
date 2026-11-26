@@ -72,8 +72,8 @@ export const Default: Story = {
     await expect(body.queryByText('No framework found.')).toBeNull();
     const option = body.getByRole('option', { name: 'Remix' });
     await userEvent.hover(option);
-    // The popup's 12px minus the list's 4px padding.
-    await expect(getComputedStyle(option).borderTopLeftRadius).toBe('8px');
+    // The popup's 12px minus the list's 5px padding, as in DropdownMenu.
+    await expect(getComputedStyle(option).borderTopLeftRadius).toBe('7px');
     // The icon button is a native <button>, and Base UI is told so.
     await expect(console.error).not.toHaveBeenCalledWith(expect.stringContaining('nativeButton'));
   },

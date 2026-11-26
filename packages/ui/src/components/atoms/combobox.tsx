@@ -425,7 +425,7 @@ function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.
         data-slot="combobox-list"
         aria-busy={paging?.isLoading || undefined}
         className={cn(
-          "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
+          "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1.25 data-empty:p-0",
           className
         )}
         {...props}
@@ -478,7 +478,7 @@ function ComboboxItem({
       className={cn(
         menuItemDisabled,
         menuCheckItem,
-        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground data-disabled:data-highlighted:outline-solid data-disabled:data-highlighted:outline-2 data-disabled:data-highlighted:-outline-offset-2 data-disabled:data-highlighted:outline-ring not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-[calc(var(--radius-2xl)-4px)] py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground data-disabled:data-highlighted:outline-solid data-disabled:data-highlighted:outline-2 data-disabled:data-highlighted:-outline-offset-2 data-disabled:data-highlighted:outline-ring not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-[calc(var(--radius-2xl)-5px)] py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}

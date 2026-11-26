@@ -167,11 +167,11 @@ describe('v3 overlay look', () => {
   });
 
   // Nested corners follow outer - gap: a 12px popup with 5px padding gives
-  // 7px items; the combobox list has 4px padding, so 8px items.
+  // 7px items, the combobox list included.
   test('combobox items derive their corner from the popup', () => {
     const code = source('combobox.tsx');
-    expect(code).toMatch(/data-highlighted:bg-muted[^"]*rounded-\[calc\(var\(--radius-2xl\)-4px\)\]/);
-    expect(code).toContain('p-1 data-empty:p-0');
+    expect(code).toMatch(/data-highlighted:bg-muted[^"]*rounded-\[calc\(var\(--radius-2xl\)-5px\)\]/);
+    expect(code).toContain('p-1.25 data-empty:p-0');
   });
 
   // Base UI marks an open submenu trigger with data-popup-open, never data-open.
