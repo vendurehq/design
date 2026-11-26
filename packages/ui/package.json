@@ -23,6 +23,7 @@
     "./lib/*": "./src/lib/*.ts",
     "./lib/control-name": null,
     "./lib/dialog-padding": null,
+    "./lib/env": null,
     "./lib/menu-item": null,
     "./lib/popup-align": null,
     "./lib/popup-direction": null,

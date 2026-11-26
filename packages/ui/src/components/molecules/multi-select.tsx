@@ -10,6 +10,7 @@ import {
 } from '@vendure-io/ui/components/atoms/select';
 import { cn } from '@vendure-io/ui/lib/utils';
 import * as React from 'react';
+import { isDevelopment } from '../../lib/env.ts';
 
 type ItemValue = string | number;
 
@@ -104,7 +105,7 @@ function MultiSelect<T>({
     const map = new Map<ItemValue, T>();
     for (const item of items) {
       const itemValue = getValue(item);
-      if (process.env.NODE_ENV !== 'production') {
+      if (isDevelopment) {
         if (typeof itemValue !== 'string' && typeof itemValue !== 'number') {
           console.warn(
             'MultiSelect: `itemToValue` must resolve to a string or number. When `items` are ' +

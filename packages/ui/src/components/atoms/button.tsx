@@ -11,6 +11,7 @@ import { LabelSwap } from "./label-swap.tsx"
 import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
+import { isDevelopment } from "../../lib/env.ts"
 
 // The v3 look: 34px default and 28px sm, the xl radius, 14px medium text.
 // Every size keeps its side padding with or without a `data-icon` icon;
@@ -226,7 +227,7 @@ function Button({ className, variant = "default", size = "default", render, nati
   const isLink = rendersLink(render)
   const ref = useUndetectedLinkCheck(
     props.ref,
-    process.env.NODE_ENV !== "production" && Boolean(render) && !isLink
+    isDevelopment && Boolean(render) && !isLink
   )
   if (isLink) {
     return <LinkButton className={className} variant={variant} size={size} render={render} {...props} />

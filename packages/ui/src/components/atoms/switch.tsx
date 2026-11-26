@@ -3,7 +3,7 @@
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { useUserToggleMotion } from "../../hooks/use-user-toggle-motion"
+import { useUserToggleMotion } from "../../hooks/use-user-toggle-motion.ts"
 import {
   useFieldControlProps,
   useFieldLabelCheckedClass,

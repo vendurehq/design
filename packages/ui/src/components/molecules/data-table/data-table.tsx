@@ -71,6 +71,7 @@ import { ChevronRight } from 'lucide-react';
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import * as React from 'react';
 import { createPortal } from 'react-dom';
+import { isDevelopment } from '../../../lib/env.ts';
 // Relative: `data-table-helpers` is closed in the package exports.
 import {
   buildDisplayColumns,
@@ -745,7 +746,7 @@ function DataTable<TData>({
 }: DataTableProps<TData>) {
   const warnedMissingPaginatedSelectionRowId = React.useRef(false);
   if (
-    process.env.NODE_ENV !== 'production' &&
+    isDevelopment &&
     rowSelection != null &&
     pagination != null &&
     pagination.mode !== 'client' &&
@@ -1137,11 +1138,7 @@ function DataTable<TData>({
   };
 
   const warnedUnknownSkeletonCells = React.useRef(false);
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    skeletonCells != null &&
-    !warnedUnknownSkeletonCells.current
-  ) {
+  if (isDevelopment && skeletonCells != null && !warnedUnknownSkeletonCells.current) {
     const knownIds = new Set(
       table
         .getAllLeafColumns()
