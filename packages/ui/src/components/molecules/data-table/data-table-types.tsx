@@ -316,6 +316,11 @@ export interface DataTableLabels {
   columnsTrigger?: string; // 'Columns'
   columnsHeading?: string; // 'Toggle columns'
   addFilter?: string; // 'Add filter'
+  /**
+   * Placeholder and accessible name of the filter editor's default value input.
+   * @default `messages.dataTable.filterValue`, "Value"
+   */
+  filterValue?: string;
   clearFilters?: string; // 'Clear filters'
   removeFilter?: (columnLabel: string) => string; // (l) => `Remove ${l} filter`
   sortLabel?: (columnLabel: string) => string; // (c) => `Sort by ${c}`

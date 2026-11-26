@@ -12,6 +12,7 @@ import type {
 import { cn } from '@vendure-io/ui/lib/utils';
 import { ChevronLeftIcon, ListFilterIcon } from 'lucide-react';
 import * as React from 'react';
+import { useMessages } from '../../../lib/format-messages.ts';
 
 // The two filter surfaces. `DataTableAddFilter` is the core-owned column picker
 // + value editor (rendered only when `filters.columns` is declared).
@@ -25,10 +26,12 @@ function DefaultFilterInput<TData>({
   column,
   value,
   onChange,
+  label,
 }: {
   column: DataTableFilterColumn<TData>;
   value: DataTableFilterValue | undefined;
   onChange: (next: DataTableFilterValue | undefined) => void;
+  label: string;
 }) {
   const operator = column.operators?.[0] ?? 'contains';
   const current = value?.[operator];
@@ -37,7 +40,8 @@ function DefaultFilterInput<TData>({
     <Input
       autoFocus
       value={typeof current === 'string' ? current : ''}
-      placeholder="Value"
+      placeholder={label}
+      aria-label={label}
       onChange={(event) => {
         const next = event.target.value;
         onChange(next ? { [operator]: next } : undefined);
@@ -50,13 +54,20 @@ interface DataTableAddFilterProps<TData> {
   table: Table<TData>;
   columns: DataTableFilterColumn<TData>[];
   label?: string;
+  /**
+   * Placeholder and accessible name of the default value input.
+   * @default `messages.dataTable.filterValue`, "Value"
+   */
+  valueLabel?: string;
 }
 
 function DataTableAddFilter<TData>({
   table,
   columns,
   label = 'Add filter',
+  valueLabel,
 }: DataTableAddFilterProps<TData>) {
+  const t = useMessages('dataTable', { filterValue: valueLabel });
   const [open, setOpen] = React.useState(false);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const active = columns.find((column) => column.id === activeId) ?? null;
@@ -101,6 +112,7 @@ function DataTableAddFilter<TData>({
                 column={active}
                 value={tableColumn?.getFilterValue() as DataTableFilterValue | undefined}
                 onChange={(next) => tableColumn?.setFilterValue(next)}
+                label={t.filterValue}
               />
             )}
           </div>

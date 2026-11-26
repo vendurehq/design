@@ -1338,6 +1338,7 @@ function DataTable<TData>({
                           table={table}
                           columns={filters.columns}
                           label={l.addFilter}
+                          valueLabel={labels?.filterValue}
                         />
                       )}
                       {showViewOptions && (

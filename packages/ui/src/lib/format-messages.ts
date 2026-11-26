@@ -67,6 +67,10 @@ const defaultMessages = {
     /** Screen-reader text while the start loads (`from={undefined}`). */
     loading: 'Loading duration',
   },
+  dataTable: {
+    /** Placeholder and accessible name of the filter editor's default value input. */
+    filterValue: 'Value',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;

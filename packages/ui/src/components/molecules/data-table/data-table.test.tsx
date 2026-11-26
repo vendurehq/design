@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import { type Column, flexRender } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
-
+import { defaultMessages, type FormatMessages } from '../../../lib/format-messages.ts';
 import { TableCell, TableRow } from '../../atoms/table.tsx';
 import { ListRowChevron } from '../list-row.tsx';
 import { SkeletonLine } from '../state-views/skeleton-parts.tsx';
-
 import {
   type ColumnDef,
   DataTable,
@@ -39,6 +38,7 @@ import {
   writeRowCount,
 } from './data-table-row-count-storage.tsx';
 import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
+import type { DataTableLabels } from './data-table-types.tsx';
 
 // Pure-SSR tests, matching the table-pagination.test.tsx convention
 // (renderToStaticMarkup, no jsdom). Capability-absence is asserted from markup;
@@ -2177,6 +2177,17 @@ describe('measureColumnIndents', () => {
     expect(sameIndents({ a: 1 }, { a: 1 })).toBe(true);
     expect(sameIndents({ a: 1 }, { a: 2 })).toBe(false);
     expect(sameIndents({ a: 1 }, {})).toBe(false);
+  });
+});
+
+describe('DataTable filter value label', () => {
+  test('labels.filterValue and messages.dataTable.filterValue are strings', () => {
+    const labels: DataTableLabels = { filterValue: 'Wert' };
+    const messages: FormatMessages = { dataTable: { filterValue: 'Wert' } };
+    // @ts-expect-error: the label is a string, not a function.
+    const wrong: DataTableLabels = { filterValue: () => 'Wert' };
+    expect([labels.filterValue, messages.dataTable?.filterValue, wrong]).toHaveLength(3);
+    expect(defaultMessages.dataTable.filterValue).toBe('Value');
   });
 });
 

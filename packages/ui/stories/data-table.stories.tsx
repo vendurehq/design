@@ -1283,6 +1283,69 @@ export const ToolbarWithFiltersAndColumns: Story = {
   },
 };
 
+function FilterValueTable({ labels }: { labels?: DataTableProps<Order>['labels'] }) {
+  const [filters, setFilters] = useState<ColumnFiltersState>([]);
+  return (
+    <DataTable<Order>
+      rows={orders}
+      columns={columns}
+      getRowId={(order) => order.id}
+      filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+      labels={labels}
+    />
+  );
+}
+
+/** Opens Add filter, picks the Order column and returns the value input named `name`. */
+async function openFilterValueInput(canvasElement: HTMLElement, name: string) {
+  await userEvent.click(within(canvasElement).getByRole('button', { name: 'Add filter' }));
+  const popover = await waitFor(() => {
+    const element = canvasElement.ownerDocument.querySelector<HTMLElement>(
+      '[data-slot="popover-content"]',
+    );
+    if (!element) throw new Error('The filter popover is not open');
+    return element;
+  });
+  await userEvent.click(within(popover).getByRole('button', { name: 'Order' }));
+  return within(popover).findByRole('textbox', { name });
+}
+
+// The default filter editor's value input: "Value" is its placeholder and its
+// accessible name.
+export const FilterValueInput: Story = {
+  render: () => <FilterValueTable />,
+  play: async ({ canvasElement }) => {
+    const input = await openFilterValueInput(canvasElement, 'Value');
+    await expect(input).toHaveAttribute('placeholder', 'Value');
+  },
+};
+
+// `FormatProvider`'s `messages.dataTable.filterValue` names the value input.
+export const FilterValueInputMessages: Story = {
+  render: () => (
+    <FormatProvider messages={{ dataTable: { filterValue: 'Wert' } }}>
+      <FilterValueTable />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = await openFilterValueInput(canvasElement, 'Wert');
+    await expect(input).toHaveAttribute('placeholder', 'Wert');
+  },
+};
+
+// `labels.filterValue` wins over `messages`.
+export const FilterValueInputLabel: Story = {
+  render: () => (
+    <FormatProvider messages={{ dataTable: { filterValue: 'Wert' } }}>
+      <FilterValueTable labels={{ filterValue: 'Contains' }} />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = await openFilterValueInput(canvasElement, 'Contains');
+    await expect(input).toHaveAttribute('placeholder', 'Contains');
+  },
+};
+
 // Filters with applied chips — a controlled `ColumnFiltersState` seeded with one
 // filter, the core add-filter menu (from `filters.columns`), and the chip row.
 // An applied filter is a `Chip` with `onRemove`, by decision — not a FilterChip.
