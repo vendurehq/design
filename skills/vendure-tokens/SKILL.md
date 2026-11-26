@@ -40,7 +40,7 @@ Open [token-decisions.md](references/token-decisions.md) and read the sections r
 
 - `Semantic color` for any color or state work.
 - `Surfaces and intensity` for layout hierarchy, borders, overlays, or neutral emphasis.
-- `Typography` for fonts and type roles.
+- `Typography` for fonts, type roles, and font sizes.
 - `Motion` for duration, easing, or animation.
 - `Theming ownership` for setup, dark mode, overrides, extensions, or external branding.
 
@@ -66,6 +66,7 @@ When asked to review, remain read-only unless changes are also requested. Audit:
 - incorrect state color selection;
 - surface hierarchy and border/shadow misuse;
 - typography roles and font rebinding;
+- font sizes outside the type scale (`text-6xl` and above, arbitrary `text-[…]` sizes, inline or CSS `font-size`);
 - literal motion duration or easing;
 - local semantic slots that should graduate.
 
