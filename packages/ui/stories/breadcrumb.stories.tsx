@@ -173,6 +173,17 @@ export const WithMenuLoading: Story = {
   },
 };
 
+/** The menu while its options load, held open. */
+export const WithMenuLoadingHeld: Story = {
+  tags: ['!autodocs'],
+  render: () => <LoadingEnvironments />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
+    const menu = await within(document.body).findByRole('menu');
+    await expect(within(menu).getByRole('status')).toHaveTextContent('Loading…');
+  },
+};
+
 function LoadingEnvironments() {
   const [loaded, setLoaded] = React.useState(false);
   const [value, setValue] = React.useState('production');
