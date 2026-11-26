@@ -460,6 +460,36 @@ describe('DataTable loading pagination and pending rows', () => {
     expect(next).toContain('disabled=""');
   });
 
+  test('an undefined total is unknown too, the same as null', () => {
+    const table = (totalItems: number | null | undefined) =>
+      html(
+        <DataTable
+          rows={undefined}
+          columns={columns}
+          isLoading
+          pagination={{ ...pagination, page: 1, totalItems }}
+        />,
+      );
+    expect(table(undefined)).toBe(table(null));
+  });
+
+  test('loaded rows with an unknown total warn in development, for null and undefined', () => {
+    for (const totalItems of [null, undefined]) {
+      const warn = spyOn(console, 'warn').mockImplementation(() => {});
+      html(
+        <DataTable
+          rows={rows}
+          columns={columns}
+          getRowId={(row) => row.code}
+          pagination={{ ...pagination, page: 1, totalItems }}
+        />,
+      );
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]?.[0])).toContain('totalItems is not known');
+      warn.mockRestore();
+    }
+  });
+
   test('a total known before the rows (a cached count) shows its range', () => {
     const markup = html(
       <DataTable
@@ -2192,13 +2222,14 @@ describe('DataTable filter value label', () => {
 });
 
 describe('DataTable pagination types', () => {
-  test('server pagination requires totalItems; client pagination takes none', () => {
+  test('server pagination requires totalItems (null or undefined when not known); client pagination takes none', () => {
     const base = { page: 1, pageSize: 10, onPageChange: () => {} };
     // @ts-expect-error: server mode without totalItems.
     const missing: DataTablePagination = { ...base };
     const unknown: DataTablePagination = { ...base, totalItems: null };
+    const notYet: DataTablePagination = { ...base, totalItems: undefined };
     // @ts-expect-error: client mode pages `rows` itself.
     const clientTotal: DataTablePagination = { ...base, mode: 'client', totalItems: 3 };
-    expect([missing, unknown, clientTotal]).toHaveLength(3);
+    expect([missing, unknown, notYet, clientTotal]).toHaveLength(4);
   });
 });

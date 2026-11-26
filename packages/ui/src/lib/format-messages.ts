@@ -10,6 +10,17 @@ const defaultMessages = {
     /** The row of a BreadcrumbSearchMenu that reads the options again. */
     retry: 'Retry',
   },
+  codeBlock: {
+    copyCode: 'Copy code',
+    copied: 'Copied!',
+    /** Header of a shell block with no filename and no package-manager tabs. */
+    terminal: 'Terminal',
+    /** Header of a block with no filename and no language. */
+    code: 'Code',
+    showLess: 'Show less',
+    /** `{count}` is the number of hidden lines, formatted with `FormatProvider`'s `locale`. */
+    showMore: 'Show {count} more lines',
+  },
   combobox: {
     /** Announced while a page of options loads. */
     loading: 'Loading…',

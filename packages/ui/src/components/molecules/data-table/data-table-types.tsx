@@ -114,11 +114,11 @@ interface DataTablePaginationBase {
 export interface DataTableServerPagination extends DataTablePaginationBase {
   mode?: 'server';
   /**
-   * The number of rows on all pages. `null` while it is not known (the first
-   * page has not loaded yet): the footer range is a skeleton until then. Do
-   * not pass 0 for "not known": 0 means the list is empty.
+   * The number of rows on all pages. `null` or `undefined` while it is not
+   * known (the first page has not loaded yet): the footer range is a skeleton
+   * until then. Do not pass 0 for "not known": 0 means the list is empty.
    */
-  totalItems: number | null;
+  totalItems: number | null | undefined;
 }
 
 /** `rows` is the full set. The table pages it. */
