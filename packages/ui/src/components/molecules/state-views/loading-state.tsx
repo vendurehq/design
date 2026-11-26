@@ -3,6 +3,7 @@ import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Children } from 'react';
+import { useMessages } from '../../../lib/format-messages.ts';
 
 const loadingStateVariants = cva('flex w-full min-w-0 flex-col gap-3', {
   variants: {
@@ -25,10 +26,13 @@ export interface LoadingStateProps
   rows?: number;
   /** Classes applied to each skeleton row (e.g. `h-10` for tighter lists). */
   rowClassName?: string;
-  /** Visible label. An sr-only `srLabel` is always rendered for assistive tech. */
+  /** Visible label. An sr-only `loadingLabel` is always rendered for assistive tech. */
   label?: React.ReactNode;
-  /** Sr-only label announced to assistive tech. Override for host i18n. @default "Loading…" */
-  srLabel?: string;
+  /**
+   * Sr-only text announced to assistive tech.
+   * @default `messages.loadingState.loading`, "Loading…"
+   */
+  loadingLabel?: string;
   /**
    * Milliseconds before the placeholder appears. A load that ends sooner never
    * shows it, so fast loads do not flash. `0` shows it at once. @default 150
@@ -51,8 +55,8 @@ const DELAYED_ENTRY =
 
 /**
  * Placeholder shell for in-flight list/detail queries. Renders as an
- * `aria-live` `<output>` with an always-present sr-only `srLabel` (defaults to
- * "Loading…", overridable for host i18n).
+ * `aria-live` `<output>` with an always-present sr-only `loadingLabel` (defaults to
+ * "Loading…", or `FormatProvider`'s `messages.loadingState.loading`).
  * `skeleton` (default) draws N shimmer rows, or the skeleton parts passed as
  * children; `spinner` centers the `Spinner` atom for compact or unknown-height
  * regions. Nothing shows for the first `delay` ms (150 by default).
@@ -62,13 +66,14 @@ function LoadingState({
   rows = 5,
   rowClassName,
   label,
-  srLabel = 'Loading…',
+  loadingLabel,
   delay = 150,
   children,
   className,
   style,
   ...props
 }: LoadingStateProps) {
+  const t = useMessages('loadingState', { loading: loadingLabel });
   return (
     <output
       data-slot="loading-state"
@@ -81,7 +86,7 @@ function LoadingState({
       }
       {...props}
     >
-      <span className="sr-only">{srLabel}</span>
+      <span className="sr-only">{t.loading}</span>
       {variant === 'spinner' ? (
         <>
           {/* aria-hidden overrides the atom's role="status": the <output> is

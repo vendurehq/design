@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Combobox, ComboboxInput, ComboboxTrigger, ComboboxValue } from './combobox.tsx';
+import { Combobox, ComboboxInput, ComboboxList, ComboboxTrigger, ComboboxValue } from './combobox.tsx';
+import { FormatProvider } from '../molecules/format-provider.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
 
 describe('ComboboxTrigger field styling', () => {
@@ -72,5 +73,48 @@ describe('ComboboxInput trigger name', () => {
       </Combobox>,
     );
     expect(html.match(/<button[^>]*>/)?.[0]).toContain('aria-label="Show countries"');
+  });
+});
+
+describe('Combobox isLoading', () => {
+  const list = (props: { isLoading?: boolean; loadingLabel?: string }) => (
+    <Combobox items={['DE']} open onLoadMore={() => {}} {...props}>
+      <ComboboxList>{(item: string) => <div key={item}>{item}</div>}</ComboboxList>
+    </Combobox>
+  );
+  const status = (html: string) => html.match(/data-slot="combobox-status"[^>]*>([^<]*)</)?.[1];
+
+  test('isLoading shows the loading row, marks the list busy and announces "Loading…"', () => {
+    const html = renderToStaticMarkup(list({ isLoading: true }));
+    expect(html).toContain('data-slot="combobox-loading"');
+    expect(html).toContain('aria-busy="true"');
+    expect(status(html)).toBe('Loading…');
+  });
+
+  test('without isLoading there is no loading row and nothing to announce', () => {
+    const html = renderToStaticMarkup(list({}));
+    expect(html).not.toContain('data-slot="combobox-loading"');
+    expect(status(html)).toBe('');
+  });
+
+  test('the announcement reads messages.combobox.loading, and loadingLabel wins', () => {
+    const messages = { combobox: { loading: 'Wird geladen…' } };
+    const fromMessages = renderToStaticMarkup(
+      <FormatProvider messages={messages}>{list({ isLoading: true })}</FormatProvider>,
+    );
+    expect(status(fromMessages)).toBe('Wird geladen…');
+    const fromProp = renderToStaticMarkup(
+      <FormatProvider messages={messages}>{list({ isLoading: true, loadingLabel: 'Chargement…' })}</FormatProvider>,
+    );
+    expect(status(fromProp)).toBe('Chargement…');
+  });
+
+  test('the 2.x loading prop is gone', () => {
+    const props: React.ComponentProps<typeof Combobox<string>> = {
+      items: ['DE'],
+      // @ts-expect-error `loading` was renamed to `isLoading`.
+      loading: true,
+    };
+    expect(props).toBeDefined();
   });
 });
