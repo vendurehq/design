@@ -45,6 +45,8 @@ interface DateRangePickerProps
   clearable?: boolean;
   disabled?: boolean;
   invalid?: boolean;
+  /** `sm` is 28px tall, for dense rows, like `Input size="sm"`. */
+  size?: 'sm' | 'default';
   presets?: readonly DateRangePreset[];
   calendarProps?: CalendarProps;
 }
@@ -62,6 +64,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
     clearable = true,
     disabled,
     invalid,
+    size = 'default',
     presets = [],
     calendarProps,
     className,
@@ -100,6 +103,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
   return (
     <div
       data-slot="date-range-picker"
+      data-size={size}
       // max-w-72 is the calendar (62) plus room for the longest range label. Pass max-w-none to fill the column.
       className={cn('flex min-w-0 max-w-72 items-center gap-1', className)}
       {...props}
@@ -114,7 +118,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
               disabled={disabled}
               aria-invalid={invalid || undefined}
               // Pickers sit in forms next to Inputs, so they take the field look.
-              className={fieldButton}
+              className={cn(fieldButton, size === 'sm' && 'h-7')}
             />
           }
         >
@@ -167,7 +171,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
+          size={size === 'sm' ? 'icon-xs' : 'icon-sm'}
           disabled={disabled}
           aria-label="Clear date range"
           onClick={() => commit(undefined)}
