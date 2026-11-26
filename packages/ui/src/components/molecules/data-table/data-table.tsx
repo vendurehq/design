@@ -53,7 +53,6 @@ import type {
   DataTableRowRipple,
   DataTableRowSelectProps,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
-import { DataTableViewOptions } from '@vendure-io/ui/components/molecules/data-table/data-table-view-options';
 import {
   ListHeader,
   ListHeaderChips,
@@ -81,6 +80,7 @@ import {
 } from './data-table-helpers.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
+import { DataTableViewOptions } from './data-table-view-options.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
