@@ -136,3 +136,22 @@ describe('Shadows', () => {
     expect(code).not.toMatch(/data-\[swipe-direction=\w+\]:border-[trbl]\b/);
   });
 });
+
+describe('Every popup is a 12px surface', () => {
+  test('the chart tooltip takes the popup radius', () => {
+    expect(source('chart.tsx')).toMatch(/rounded-2xl[^"]*shadow-overlay/);
+  });
+});
+
+describe('A small InputGroup with a textarea or a block addon grows', () => {
+  test('size sm does not pin a multi-line group to 28px', () => {
+    const tokens = slotTokens(renderToStaticMarkup(<InputGroup size="sm" />), 'input-group');
+    for (const token of [
+      'data-[size=sm]:has-[>textarea]:h-auto',
+      'data-[size=sm]:has-[>[data-align=block-end]]:h-auto',
+      'data-[size=sm]:has-[>[data-align=block-start]]:h-auto',
+    ]) {
+      expect(tokens).toContain(token);
+    }
+  });
+});
