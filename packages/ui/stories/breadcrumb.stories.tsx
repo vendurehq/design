@@ -161,8 +161,9 @@ export const WithMenuLoading: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
     const menu = await within(document.body).findByRole('menu');
-    const loading = within(menu).getByRole('status');
-    await expect(loading).toHaveTextContent('Loading…');
+    await expect(menu).toHaveAttribute('aria-busy', 'true');
+    const loading = within(menu).getByRole('menuitem', { name: 'Loading…' });
+    await expect(loading).toHaveAttribute('aria-disabled', 'true');
     await expect(within(menu).queryAllByRole('menuitemradio')).toHaveLength(0);
     // offsetHeight: the popup scales in, which a bounding box would include.
     const loadingHeight = loading.offsetHeight;
@@ -180,7 +181,7 @@ export const WithMenuLoadingHeld: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
     const menu = await within(document.body).findByRole('menu');
-    await expect(within(menu).getByRole('status')).toHaveTextContent('Loading…');
+    await expect(within(menu).getByRole('menuitem', { name: 'Loading…' })).toHaveAttribute('aria-disabled', 'true');
   },
 };
 
@@ -755,8 +756,8 @@ export const SearchMenuLoadingHeight: Story = {
     // The footer's offset in the open popup, once it has faded and scaled in.
     const footerTop = async () => {
       const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
-      // The popup's own animations; the spinner never finishes.
-      await Promise.all(popup.getAnimations().map((animation) => animation.finished));
+      // Until the popup has scaled in: a scaled box would move the footer.
+      await waitFor(() => expectPx(popup.getBoundingClientRect().height, popup.offsetHeight));
       const footer = popup.querySelector<HTMLElement>('[data-slot="breadcrumb-search-menu-footer"] [cmdk-item]')!;
       return footer.getBoundingClientRect().top - popup.getBoundingClientRect().top;
     };

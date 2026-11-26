@@ -495,22 +495,23 @@ function BreadcrumbMenu({
       </Tooltip>
       <DropdownMenuContent
         {...popupEventProps}
+        aria-busy={options === undefined || undefined}
         className={cn("w-max min-w-72 max-w-90", contentClassName)}
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel>{label}</DropdownMenuLabel>
           {options === undefined ? (
-            // In the group, not straight in the menu, which takes only items,
-            // groups and separators. One item tall, so the items take its
-            // place without a jump.
-            <div
-              role="status"
+            // A disabled item: a menu takes only items, groups and
+            // separators, so a screen reader reads "Loading…" as a dimmed
+            // item. One item tall, so the items take its place without a jump.
+            <MenuPrimitive.Item
+              disabled
               data-slot="breadcrumb-menu-loading"
-              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-2 text-sm"
+              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-2 text-sm outline-none"
             >
               <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
               {t.loading}
-            </div>
+            </MenuPrimitive.Item>
           ) : (
             <MenuPrimitive.RadioGroup
               value={value}
