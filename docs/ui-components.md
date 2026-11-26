@@ -1015,6 +1015,7 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+1. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 
