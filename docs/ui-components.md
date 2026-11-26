@@ -797,6 +797,23 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
 </Card>
 ```
 
+### StatCard
+
+`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives. `0` and `''` are real values. The same holds for `delta.value`.
+
+```tsx
+import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
+
+<StatCard
+  label="Revenue"
+  value={data ? <Money value={data.revenue} /> : undefined}
+  delta={{ value: data?.revenueChange }}
+  description="vs. previous period"
+/>
+```
+
+`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"); the arrow and its color carry the direction, and `goodWhen` says which direction is good. For another unit, pass `delta.label` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
+
 ### ArrowLink
 
 `ArrowLink` goes to a page with more of what the user is looking at: "View details", "All deployments". It renders an `<a>`; pass `render` with a router link. It is navigation only: an action is a `Button`.
