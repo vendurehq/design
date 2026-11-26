@@ -36,13 +36,13 @@ describe('destructive tone text', () => {
   }
 });
 
-// A destructive Alert keeps its copy in the neutral text slots on its faint
+// A critical Alert keeps its copy in the neutral text slots on its faint
 // destructive tint; only the icon takes the tone, through the text-safe
 // destructive-text.
 test('Alert colors only its icon, with destructive-text', () => {
   const tokens = allTokens(
     renderToStaticMarkup(
-      <Alert variant="destructive">
+      <Alert tone="critical">
         <AlertTitle>Payment failed</AlertTitle>
         <AlertDescription>The card was declined.</AlertDescription>
       </Alert>,
