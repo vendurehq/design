@@ -296,12 +296,12 @@ export const Chips: Story = {
   play: async ({ canvasElement }) => {
     const chips = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chips"]') as HTMLElement;
     const probe = document.createElement('div');
-    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--border)]';
+    probe.className = 'bg-muted inset-ring inset-ring-border';
     canvasElement.append(probe);
     const style = getComputedStyle(chips);
     await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
     await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
-    await expect(style.borderTopLeftRadius).toBe('6px');
+    await expect(style.borderTopLeftRadius).toBe('8px');
     probe.remove();
     // A chip stands out from the field: its own fill and a grey outline, the
     // v3 look's grey chip.

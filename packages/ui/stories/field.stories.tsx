@@ -266,7 +266,7 @@ export const FieldLook: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const probe = document.createElement('div');
-    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--border)]';
+    probe.className = 'bg-muted inset-ring inset-ring-border';
     canvasElement.append(probe);
     const fields = [
       canvas.getByRole('textbox', { name: 'Name' }),
@@ -280,7 +280,7 @@ export const FieldLook: Story = {
       const style = getComputedStyle(field);
       await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
       await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
-      await expect(style.borderTopLeftRadius).toBe('6px');
+      await expect(style.borderTopLeftRadius).toBe('8px');
       // No border: the fill reaches the edge, under the hairline.
       await expect(style.borderTopWidth).toBe('0px');
       if (field.tagName !== 'TEXTAREA') await expect(field.offsetHeight).toBe(34);
@@ -311,7 +311,7 @@ export const FieldLook: Story = {
 
     // An invalid control in an InputGroup turns the group's hairline red and
     // draws no edge of its own, so the field shows one red edge.
-    probe.className = 'shadow-[inset_0_0_0_1px_var(--destructive)]';
+    probe.className = 'inset-ring inset-ring-destructive';
     for (const control of [canvas.getByRole('textbox', { name: 'Coupon' }), canvas.getByRole('textbox', { name: 'Reason' })]) {
       const group = control.closest<HTMLElement>('[data-slot="input-group"]') as HTMLElement;
       await expect(getComputedStyle(group).boxShadow).toBe(getComputedStyle(probe).boxShadow);

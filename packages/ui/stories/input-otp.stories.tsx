@@ -85,12 +85,12 @@ export const Invalid: Story = {
   play: async ({ canvasElement }) => {
     const group = canvasElement.querySelector<HTMLElement>('[data-slot="input-otp-group"]') as HTMLElement;
     const probe = document.createElement('div');
-    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--destructive)] outline-destructive';
+    probe.className = 'bg-muted inset-ring inset-ring-destructive outline-destructive';
     canvasElement.append(probe);
     const style = getComputedStyle(group);
     await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
     await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
-    await expect(style.borderTopLeftRadius).toBe('6px');
+    await expect(style.borderTopLeftRadius).toBe('8px');
     // Slots have no edge of their own: only the hairline between them.
     const [first, second] = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-otp-slot"]');
     await expect(getComputedStyle(first as HTMLElement).borderTopWidth).toBe('0px');
