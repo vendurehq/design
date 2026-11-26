@@ -170,9 +170,11 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/*`, `list-row`, `timeline`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is open takes `enter="new"`.
+
+> **StepIndicator.** Where an ordered flow stands, as an `<ol>` of steps: `<StepIndicator aria-label="Signup steps"><StepIndicatorStep state="done"><StepIndicatorTitle>Account</StepIndicatorTitle></StepIndicatorStep><StepIndicatorStep state="current"><StepIndicatorTitle>Plan</StepIndicatorTitle></StepIndicatorStep></StepIndicator>`. `orientation="horizontal"` (default) is a progress track, one bar per step; `"vertical"` is a guide on a rail, with StepIndicatorContent for actions or a command under a step. `marker="number"` (default) or `"icon"`. States: `upcoming`, `current` (blue, no spinner: it waits), `running` (the only one that spins), `done`, `failed`. The current and running step get `aria-current="step"`, and each title ends with its state in words for screen readers (`stateLabels` translates them). Nothing moves on the first render. A StepIndicator is for an ordered flow; tasks the user ticks off in any order are a Checklist.
 
 ## Utilities
 
