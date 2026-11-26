@@ -138,7 +138,7 @@ export const InTableBody: Story = {
 };
 
 /**
- * `size="compact"` for a small panel or side column: no illustration, tighter
+ * `size="sm"` for a small panel or side column: no illustration, tighter
  * spacing, title, description and at most one action. It sits flush inside
  * the card.
  */
@@ -150,7 +150,7 @@ export const CompactInPanel: Story = {
       </CardHeader>
       <CardContent>
         <EmptyState
-          size="compact"
+          size="sm"
           title="No custom domains"
           description="Point a domain at this environment to serve the storefront."
         >
@@ -178,7 +178,7 @@ export const CompactWithIcon: Story = {
       </CardHeader>
       <CardRows>
         <EmptyState
-          size="compact"
+          size="sm"
           className="border-t border-solid"
           icon={<GlobeIcon />}
           title="No custom domains"
@@ -237,7 +237,7 @@ export const CompactInCardNextToContent: Story = {
         </CardHeader>
         <CardContent>
           <EmptyState
-            size="compact"
+            size="sm"
             icon={<KeyRoundIcon />}
             title="No emergency boot token was issued for this project."
           />
@@ -248,7 +248,7 @@ export const CompactInCardNextToContent: Story = {
   play: async ({ canvasElement }) => {
     const state = canvasElement.querySelector<HTMLElement>('[data-slot=empty-state]');
     await expect(state).not.toBeNull();
-    await expect(state).toHaveAttribute('data-size', 'compact');
+    await expect(state).toHaveAttribute('data-size', 'sm');
     // The icon, not an illustration, fills the media slot.
     const icon = state!.querySelector('svg');
     await expectPx(icon?.getBoundingClientRect().width, 28);
