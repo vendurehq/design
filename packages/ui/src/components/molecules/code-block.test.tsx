@@ -4,6 +4,7 @@ import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import { processCode } from './code-block/process-code.ts';
 import { transformCommand } from './code-block/transform-command.tsx';
 import * as codeBlock from './code-block.tsx';
+import { FormatProvider } from './format-provider.tsx';
 
 describe('transformCommand', () => {
   describe('npx → dlx / bunx', () => {
@@ -301,5 +302,70 @@ describe('CodeBlock', () => {
     const root = html.match(/<div[^>]*data-slot="code-block"[^>]*>/)?.[0] ?? '';
     expect(root).not.toBe('');
     expect(root).not.toMatch(/\bm[trblxy]?-\d/);
+  });
+});
+
+describe('CodeBlock texts', () => {
+  const { CodeBlock } = codeBlock;
+  const html = (node: React.ReactElement) => renderToStaticMarkup(node);
+  const long = Array.from({ length: 60 }, (_, i) => `line ${i}`).join('\n');
+  const de = {
+    codeBlock: {
+      copyCode: 'Code kopieren',
+      code: 'Quelltext',
+      showMore: '{count} weitere Zeilen zeigen',
+    },
+  };
+
+  test('shows the English defaults', () => {
+    const markup = html(<CodeBlock>{long}</CodeBlock>);
+
+    expect(markup).toContain('aria-label="Copy code"');
+    expect(markup).toContain('<span>Code</span>');
+    // 60 lines, 12 of them visible when collapsed.
+    expect(markup).toContain('Show 48 more lines');
+  });
+
+  test('reads the texts from FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={de}>
+        <CodeBlock>{long}</CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Code kopieren"');
+    expect(markup).toContain('<span>Quelltext</span>');
+    expect(markup).toContain('48 weitere Zeilen zeigen');
+  });
+
+  test('the labels prop wins over FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={de}>
+        <CodeBlock
+          labels={{
+            copyCode: 'Copier',
+            code: 'Texte',
+            showMore: 'Afficher {count} lignes de plus',
+          }}
+        >
+          {long}
+        </CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Copier"');
+    expect(markup).toContain('<span>Texte</span>');
+    expect(markup).toContain('Afficher 48 lignes de plus');
+    expect(markup).not.toContain('Code kopieren');
+  });
+
+  test('formats the hidden line count with the FormatProvider locale', () => {
+    const markup = html(
+      <FormatProvider locale="ar-EG">
+        <CodeBlock>{Array.from({ length: 1500 }, (_, i) => `line ${i}`).join('\n')}</CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('Show ١٬٤٨٨ more lines');
   });
 });
