@@ -88,7 +88,7 @@ export const RejectionTexts: Story = {
   tags: ['!autodocs'],
   render: () => (
     <div className="max-w-xl">
-      <FileDropzone multiple maxFiles={3} maxSize={2048} accept="application/pdf,.pdf" />
+      <FileDropzone multiple required maxFiles={3} maxSize={2048} accept="application/pdf,.pdf" />
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -105,9 +105,6 @@ export const RejectionTexts: Story = {
     await expect(alert).toHaveTextContent('notes.txt: This file type is not accepted.');
     await expect(alert).toHaveTextContent('big.pdf: File size must be 2 KB or smaller.');
     await expect(alert).toHaveTextContent('two.pdf: You can select up to 3 files.');
-    // Removing a file clears the rejections, so the a11y scan sees the settled field.
-    await userEvent.click(canvas.getByRole('button', { name: 'Remove one.pdf' }));
-    await expect(canvas.queryByRole('alert')).toBeNull();
   },
 };
 

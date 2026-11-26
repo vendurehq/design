@@ -44,6 +44,12 @@ describe('FileDropzone', () => {
     expect(html).toContain('Accepted: image/*');
   });
 
+  test('the required mark uses the destructive text colour', () => {
+    const html = renderToStaticMarkup(<FileDropzone label="Product image" required />);
+    expect(html).toContain('<span class="text-destructive-text"> *</span>');
+    expect(html).not.toContain('text-destructive"');
+  });
+
   test('two distinct files with identical metadata do not collide on the list key', () => {
     const options = { type: 'image/png', lastModified: 1700000000000 };
     const first = new File(['a'], 'store-logo.png', options);

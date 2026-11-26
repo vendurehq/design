@@ -242,7 +242,7 @@ function FileDropzone(allProps: FileDropzoneProps) {
       <div>
         <label htmlFor={id} className="text-sm font-medium">
           {label}
-          {required ? <span className="text-destructive"> *</span> : null}
+          {required ? <span className="text-destructive-text"> *</span> : null}
         </label>
         {description ? (
           <p id={descriptionId} className="text-muted-foreground mt-1 text-sm">
@@ -347,7 +347,7 @@ function FileDropzone(allProps: FileDropzoneProps) {
       ) : null}
 
       {rejections.length > 0 ? (
-        <div id={errorId} role="alert" className="text-destructive text-sm">
+        <div id={errorId} role="alert" className="text-destructive-text text-sm">
           {rejections.map(({ file, messages }, index) => (
             <p key={`${file.name}-${file.size}-${index}`}>
               <span className="font-medium">{file.name}:</span> {messages.join(' ')}
