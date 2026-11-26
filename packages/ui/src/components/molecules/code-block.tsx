@@ -24,12 +24,12 @@ import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useStat
 import { useMessages } from '../../lib/format-messages.ts';
 import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
-import { processCode } from './code-block/process-code.ts';
 import {
   getStoredPackageManager,
   STORAGE_EVENT,
   setStoredPackageManager,
 } from './code-block/package-manager-storage.ts';
+import { processCode } from './code-block/process-code.ts';
 import {
   isPackageManagerCommand,
   PACKAGE_MANAGERS,

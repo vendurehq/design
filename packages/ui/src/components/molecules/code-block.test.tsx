@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import {
   getStoredPackageManager,
   STORAGE_EVENT,
   STORAGE_KEY,
   setStoredPackageManager,
 } from './code-block/package-manager-storage.ts';
-import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import { processCode } from './code-block/process-code.ts';
 import { transformCommand } from './code-block/transform-command.tsx';
 import * as codeBlock from './code-block.tsx';
