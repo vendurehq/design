@@ -76,6 +76,8 @@ behavior you need instead of rebuilding it from atoms.
 ### Layout & Structure
 `accordion`, `aspect-ratio`, `card`, `collapsible`, `resizable`, `scroll-area`, `separator`, `sidebar`, `tabs`
 
+> **Collapsible.** `CollapsibleContent` eases its height open and shut on the height curve (`--ease-height`, the slow duration), so a second click mid-way reverses from where the panel is. Nothing animates on first render: a Collapsible with `defaultOpen` just shows. The panel clips its content only while the height runs, so a focus ring or a popover inside is not cut off once it is open. Under reduced motion the height snaps and only a short fade remains. Pick by the content: `Collapsible` is a bare disclosure you lay out yourself, such as a "show more" or an advanced block in a form. `CollapsibleSection` is one secondary list of rows on its own card, with a count. `Accordion` is a set of peer panels where the user compares or reads one at a time. Do not use a Collapsible for a keyboard-driven toggle the user repeats many times a day: the motion is for occasional disclosure.
+
 ### Forms & Inputs
 `button`, `button-group`, `checkbox`, `combobox`, `field`, `input`, `input-group`, `input-otp`, `label`, `native-select`, `radio-group`, `select`, `slider`, `switch`, `textarea`, `toggle`, `toggle-group`
 
