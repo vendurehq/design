@@ -101,9 +101,9 @@ function ProjectGrid() {
 /**
  * A grid of project cards. Each card opens its project from any point of the
  * card, and its "…" menu keeps its own click and tab stop. The play function
- * clicks the middle of a card's body (where a real pointer hits the stretched
- * link), opens the menu without opening the project, and tabs from the link
- * to the menu.
+ * tabs from the link to the card's menu, clicks the middle of a card's body
+ * (where a real pointer hits the stretched link), and opens the menu without
+ * opening the project.
  */
 export const ProjectCards: Story = {
   beforeEach: () => {
@@ -119,6 +119,16 @@ export const ProjectCards: Story = {
 
     // One link per card, named by the title only.
     await expect(canvas.getAllByRole('link')).toHaveLength(3);
+    const menu = canvas.getByRole('button', { name: 'More for Storefront' });
+
+    // Tab reaches the link, then the card's menu, then the next card.
+    await userEvent.click(canvasElement.ownerDocument.body);
+    await userEvent.tab();
+    await expect(link).toHaveFocus();
+    await userEvent.tab();
+    await expect(menu).toHaveFocus();
+    await userEvent.tab();
+    await expect(canvas.getByRole('link', { name: 'Wholesale portal' })).toHaveFocus();
 
     // A click on the card's status line lands on the stretched link.
     const status = within(card).getByText('Deployed 2 hours ago');
@@ -129,22 +139,12 @@ export const ProjectCards: Story = {
 
     // The menu sits above the link: it opens and the project does not.
     openProject.mockClear();
-    const menu = canvas.getByRole('button', { name: 'More for Storefront' });
     await expect(hitTarget(menu)).toBe(menu);
     await userEvent.click(menu);
     const rename = await within(canvasElement.ownerDocument.body).findByRole('menuitem', { name: 'Rename' });
     await userEvent.click(rename);
     await expect(renameProject).toHaveBeenCalledWith('storefront');
     await expect(openProject).not.toHaveBeenCalled();
-
-    // Tab reaches the link, then the card's menu, then the next card.
-    await userEvent.click(canvasElement.ownerDocument.body);
-    await userEvent.tab();
-    await expect(link).toHaveFocus();
-    await userEvent.tab();
-    await expect(menu).toHaveFocus();
-    await userEvent.tab();
-    await expect(canvas.getByRole('link', { name: 'Wholesale portal' })).toHaveFocus();
   },
 };
 
@@ -154,7 +154,10 @@ const capabilities = [
 ];
 
 function CapabilityCards() {
-  const [open, setOpen] = useState<string | null>(null);
+  // The name stays set while the dialog closes, so its title does not blank
+  // during the exit animation.
+  const [selected, setSelected] = useState('');
+  const [open, setOpen] = useState(false);
   return (
     <>
       <div className="grid w-[520px] grid-cols-2 gap-3">
@@ -162,7 +165,12 @@ function CapabilityCards() {
           <Card key={capability.name} size="sm">
             <CardHeader>
               <CardTitle>
-                <CardLink onClick={() => setOpen(capability.name)}>{capability.name}</CardLink>
+                <CardLink
+                  onClick={() => {
+                    setSelected(capability.name);
+                    setOpen(true);
+                  }}
+                >{capability.name}</CardLink>
               </CardTitle>
               <CardDescription>{capability.description}</CardDescription>
             </CardHeader>
@@ -172,17 +180,17 @@ function CapabilityCards() {
           </Card>
         ))}
       </div>
-      <Dialog open={open !== null} onOpenChange={(next) => !next && setOpen(null)}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{open}</DialogTitle>
+            <DialogTitle>{selected}</DialogTitle>
             <DialogDescription>Turn the capability on or off for this project.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(null)}>
+            <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setOpen(null)}>Save</Button>
+            <Button onClick={() => setOpen(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -205,7 +213,7 @@ export const OpensDialog: Story = {
     await expect(target).toBe(button);
     await userEvent.click(target as Element);
     const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog');
-    await expect(within(dialog).getByText('Search')).toBeVisible();
+    await waitFor(() => expect(within(dialog).getByRole('heading', { name: 'Search' })).toBeVisible());
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(within(canvasElement.ownerDocument.body).queryByRole('dialog')).toBeNull());
   },
