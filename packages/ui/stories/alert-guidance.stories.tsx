@@ -123,8 +123,7 @@ export const ChoosingTheVariant: Story = {
             verdict="dont"
             caption="A default Alert with a hand-colored icon. Use the tone: it tints the fill and border and colours the icon, and the title and description stay neutral."
           >
-            <Alert>
-              <CircleAlertIcon className="text-warning" />
+            <Alert icon={<CircleAlertIcon className="text-warning" />}>
               <AlertTitle>Sending limit almost reached</AlertTitle>
               <AlertDescription>92 of 100 emails sent today.</AlertDescription>
             </Alert>

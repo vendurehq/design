@@ -174,8 +174,7 @@ export const Progress: Story = {
 
 export const WithIcon: Story = {
   render: () => (
-    <Alert>
-      <TerminalIcon />
+    <Alert icon={<TerminalIcon />}>
       <AlertTitle>Terminal</AlertTitle>
       <AlertDescription>
         You can run commands in the terminal to manage your project.
@@ -435,8 +434,7 @@ export const TonesLightAndDark: Story = {
     <LightAndDark>
       {() => (
         <>
-          <Alert>
-            <TerminalIcon />
+          <Alert icon={<TerminalIcon />}>
             <AlertTitle>No tone</AlertTitle>
             <AlertDescription>The CLI can deploy this project too.</AlertDescription>
           </Alert>
@@ -515,8 +513,8 @@ export const ToneIcons: Story = {
 };
 
 /**
- * An icon you pass wins over the tone icon, as an `icon` prop or as an svg
- * child. `icon={false}` shows no icon.
+ * `icon` replaces the tone icon, and `icon={false}` shows none. Pass the icon
+ * as `icon`, not as a child.
  */
 export const PassedIconAndNoIcon: Story = {
   render: () => (
@@ -525,11 +523,6 @@ export const PassedIconAndNoIcon: Story = {
         <AlertTitle>The icon prop</AlertTitle>
         <AlertDescription>A rocket replaces the info icon.</AlertDescription>
       </Alert>
-      <Alert tone="info">
-        <TerminalIcon />
-        <AlertTitle>An svg child</AlertTitle>
-        <AlertDescription>The terminal icon replaces the info icon.</AlertDescription>
-      </Alert>
       <Alert tone="info" icon={false}>
         <AlertTitle>No icon</AlertTitle>
         <AlertDescription>The text starts at the padding.</AlertDescription>
@@ -537,15 +530,13 @@ export const PassedIconAndNoIcon: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const [prop, child, none] = within(canvasElement).getAllByRole('alert');
+    const [prop, none] = within(canvasElement).getAllByRole('alert');
     const visibleIcons = (alert: HTMLElement) =>
       [...alert.querySelectorAll('svg')].filter((svg) => getComputedStyle(svg).display !== 'none');
     expect(visibleIcons(prop!).map((svg) => svg.getAttribute('class'))).toEqual([expect.stringContaining('lucide-rocket')]);
-    expect(visibleIcons(child!).map((svg) => svg.getAttribute('class'))).toEqual([expect.stringContaining('lucide-terminal')]);
     expect(visibleIcons(none!)).toHaveLength(0);
     // The title lines up with the icon column only when there is an icon.
     const title = (alert: HTMLElement) => slot(alert, 'alert-title').getBoundingClientRect().left;
-    await expectPx(title(prop!), title(child!));
     expect(title(none!)).toBeLessThan(title(prop!));
   },
 };
