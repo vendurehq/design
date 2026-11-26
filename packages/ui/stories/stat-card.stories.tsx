@@ -92,6 +92,21 @@ export const Loading: Story = {
         delta={{ value: undefined }}
       />
       <StatCard
+        data-testid="value-loading"
+        label="Revenue"
+        icon={<DollarSign />}
+        description="vs. previous period"
+        delta={{ value: 12.4 }}
+      />
+      <StatCard
+        data-testid="delta-loading"
+        label="Revenue"
+        value="$48,120"
+        icon={<DollarSign />}
+        description="vs. previous period"
+        delta={{ value: undefined }}
+      />
+      <StatCard
         data-testid="loaded"
         label="Revenue"
         value="$48,120"
@@ -108,9 +123,12 @@ export const Loading: Story = {
     await expect(loading.getAttribute('aria-busy')).toBe('true');
     await expect(loaded.hasAttribute('aria-busy')).toBe(false);
     await expect(loading.textContent).toContain('Revenue');
-    await expect(loading.getBoundingClientRect().height).toBe(
-      loaded.getBoundingClientRect().height,
-    );
+    // Nothing moves when the data arrives, whichever part arrives first.
+    const height = (testId: string) =>
+      canvasElement.querySelector(`[data-testid="${testId}"]`)?.getBoundingClientRect().height;
+    for (const testId of ['loading', 'value-loading', 'delta-loading']) {
+      await expect(height(testId)).toBe(height('loaded'));
+    }
   },
 };
 

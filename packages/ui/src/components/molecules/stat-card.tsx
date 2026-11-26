@@ -2,6 +2,7 @@ import { Card, CardAction, CardContent, CardHeader } from '@vendure-io/ui/compon
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
 import { useMessages } from '@vendure-io/ui/lib/format-messages';
+import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
@@ -63,6 +64,19 @@ interface StatCardProps extends ComponentProps<typeof Card> {
   deltaDownLabel?: string;
 }
 
+// One line of the surrounding text size, so the loaded text takes exactly its
+// place. The value and the delta sit in a baseline-aligned row: the
+// zero-width space gives the skeleton a text baseline, so the row keeps its
+// height whether one, both or neither of them is loading.
+function StatCardSkeleton({ className }: { className: string }) {
+  return (
+    <span aria-hidden="true" className={cn('inline-flex max-w-full', className)}>
+      <span>{'\u200b'}</span>
+      <SkeletonLine />
+    </span>
+  );
+}
+
 interface StatCardDeltaBadgeProps extends StatCardDelta {
   upLabel?: string;
   downLabel?: string;
@@ -81,7 +95,7 @@ function StatCardDeltaBadge({
   if (value === undefined) {
     return (
       <span data-slot="stat-card-delta" className={statCardDeltaVariants({ outcome: 'flat' })}>
-        <SkeletonLine className="w-10" />
+        <StatCardSkeleton className="w-10" />
       </span>
     );
   }
@@ -154,9 +168,7 @@ function StatCard({
       <CardContent className="flex flex-col gap-1">
         <div className="flex items-baseline gap-2">
           <span data-slot="stat-card-value" className="text-2xl font-semibold tabular-nums">
-            {/* The skeleton is one line of the value's own text size, so
-                the loaded value takes exactly its place. */}
-            {isValueKnown ? value : <SkeletonLine className="w-24" />}
+            {isValueKnown ? value : <StatCardSkeleton className="w-24" />}
           </span>
           {delta ? (
             <StatCardDeltaBadge {...delta} upLabel={deltaUpLabel} downLabel={deltaDownLabel} />
