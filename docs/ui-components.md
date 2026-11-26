@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -209,7 +209,7 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/data-table`, `data-table/data-table-types`, `data-table/list-header`, `data-table/table-pagination`, `data-table/data-table-filters`, `data-table/data-table-column-header`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
 > **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
@@ -925,6 +925,17 @@ import {
 ```
 
 Without children, `LoadingState` draws `rows` full-width bars, as before. Use the bars only where no part fits the shape.
+
+### DataTable parts
+
+`DataTable` already draws its header, filters, pagination and column headers. Import these parts only when you build a list page around your own table. Each one is public:
+
+- `data-table/list-header`: `ListHeader` stacks the page header, the control row (`ListHeaderControls`) and the applied-filter chips (`ListHeaderChips`). The three are layout only.
+- `data-table/table-pagination`: `TablePagination` shows the item range, the page size and the previous and next buttons. It takes `page`, `pageSize` and `totalItems`, and `getPageHref` makes the buttons links.
+- `data-table/data-table-filters`: `DataTableAddFilter` (the "Add filter" menu) and `DataTableAppliedFilters` (one chip per applied filter) read and write the column filters of a TanStack `table`.
+- `data-table/data-table-column-header`: `DataTableColumnHeader` is a sortable column title for a TanStack `column`. `align="end"` lines it up with end-aligned cells.
+
+Every other file in `data-table/` is internal, and an import of it fails to resolve.
 
 ### DataTable loading rows
 
