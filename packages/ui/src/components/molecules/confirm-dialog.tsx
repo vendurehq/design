@@ -240,7 +240,9 @@ function ConfirmDialog({
             <span data-slot="confirm-dialog-label" className={cn(pending && 'opacity-0')}>
               {confirmLabel}
             </span>
-            {pending ? <Spinner aria-label={t.loading} className="absolute inset-0 m-auto" /> : null}
+            {pending ? (
+              <Spinner aria-label={t.loading} className="absolute inset-0 m-auto" />
+            ) : null}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
