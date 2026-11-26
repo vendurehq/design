@@ -169,8 +169,6 @@ describe('CollapsibleSection', () => {
     expect(chevron).toContain(
       '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
     );
-    expect(slotTokens(html, 'collapsible-section-panel').join(' ')).toContain(
-      '--ease-height',
-    );
+    expect(slotTokens(html, 'collapsible-section-panel').join(' ')).toContain('--ease-height');
   });
 });
