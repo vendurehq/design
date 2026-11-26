@@ -144,3 +144,49 @@ describe('A small InputGroup with a textarea or a block addon grows', () => {
     }
   });
 });
+
+// Nested corners follow outer - gap (gap = the parent's padding + border).
+// An item inside a tight padded parent derives its corner from the parent's
+// radius token, so it never hard-codes a role radius.
+describe('Nested corners follow outer - gap', () => {
+  const lib = (file: string) => readFileSync(join(import.meta.dir, '../../lib', file), 'utf8');
+  const derived = (outer: string, gap: number) => `rounded-[calc(var(--radius-${outer})-${gap}px)]`;
+
+  test.each([
+    ['the menu item recipe (dropdown, menubar, breadcrumb menus)', () => lib('menu-item.tsx'), derived('2xl', 5)],
+    ['context menu items', () => source('context-menu.tsx'), derived('2xl', 5)],
+    ['menubar items', () => source('menubar.tsx'), derived('2xl', 5)],
+    ['select items', () => source('select.tsx'), derived('2xl', 5)],
+    ['combobox items', () => source('combobox.tsx'), derived('2xl', 4)],
+    ['navigation menu links', () => source('navigation-menu.tsx'), derived('2xl', 8)],
+    ['command palette items', () => source('command.tsx'), `in-data-command-palette:${derived('3xl', 8)}`],
+    ['tabs triggers', () => source('tabs.tsx'), derived('lg', 3)],
+  ] as const)('%s derive their corner', (_, code, token) => {
+    expect(code()).toContain(token);
+  });
+
+  test('no menu item hard-codes a role radius', () => {
+    const items = [lib('menu-item.tsx'), source('context-menu.tsx'), source('menubar.tsx'), source('select.tsx')]
+      .join('\n')
+      .split('\n')
+      .filter((line) => line.includes('not-data-disabled:focus:bg-muted'));
+    expect(items.length).toBeGreaterThan(0);
+    for (const line of items) {
+      expect(line).not.toMatch(/(?<![\w-])rounded-(?:sm|md|lg|xl|2xl)(?![\w-])/);
+    }
+  });
+
+  test('the popups the items sit in have the padding the corners assume', () => {
+    expect(source('dropdown-menu.tsx')).toMatch(/rounded-2xl p-1\.25/);
+    expect(source('context-menu.tsx')).toMatch(/rounded-2xl p-1\.25/);
+    expect(source('select.tsx')).toContain('className="p-1.25"');
+    expect(source('navigation-menu.tsx')).toContain('p-2 pe-2.5');
+    expect(source('tabs.tsx')).toContain('rounded-lg p-[3px]');
+  });
+});
+
+describe('Every popup is a 12px surface', () => {
+  test('the chart tooltip takes the popup radius', () => {
+    expect(source('chart.tsx')).toMatch(/rounded-2xl[^"]*shadow-overlay/);
+  });
+});
