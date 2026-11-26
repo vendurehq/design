@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect } from 'storybook/test';
 import { DollarSign, MoreHorizontal, ShoppingCart, Users } from 'lucide-react';
 import { Button } from '../src/components/atoms/button.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { StatCard } from '../src/components/molecules/stat-card.tsx';
 
 const meta = {
@@ -75,14 +77,60 @@ export const WithIconAndAction: Story = {
   ),
 };
 
-// `value` is ReactNode, so consumers pass any pre-formatted content — the card
-// never formats numbers itself.
+// While the value is not known yet, leave `value` (and `delta.value`)
+// undefined. The label, icon and description are known, so they show; the
+// value and the delta draw a skeleton of their own line height, so the card
+// keeps its height when the data arrives.
 export const Loading: Story = {
   render: () => (
-    <div className="w-80">
-      <StatCard label="Revenue" value="—" isLoading />
+    <div className="flex w-80 flex-col gap-4">
+      <StatCard
+        data-testid="loading"
+        label="Revenue"
+        icon={<DollarSign />}
+        description="vs. previous period"
+        delta={{ value: undefined }}
+      />
+      <StatCard
+        data-testid="loaded"
+        label="Revenue"
+        value="$48,120"
+        icon={<DollarSign />}
+        description="vs. previous period"
+        delta={{ value: 12.4 }}
+      />
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const loading = canvasElement.querySelector<HTMLElement>('[data-testid="loading"]');
+    const loaded = canvasElement.querySelector<HTMLElement>('[data-testid="loaded"]');
+    if (!loading || !loaded) throw new Error('cards not rendered');
+    await expect(loading.getAttribute('aria-busy')).toBe('true');
+    await expect(loaded.hasAttribute('aria-busy')).toBe(false);
+    await expect(loading.textContent).toContain('Revenue');
+    await expect(loading.getBoundingClientRect().height).toBe(
+      loaded.getBoundingClientRect().height,
+    );
+  },
+};
+
+// The delta follows the FormatProvider locale ("12,4 %"), and its
+// screen-reader words read `messages.statCard`. A `label` on the delta
+// replaces the percent sign for other units, e.g. percentage points.
+export const Localized: Story = {
+  render: () => (
+    <FormatProvider locale="de-DE" messages={{ statCard: { up: 'gestiegen', down: 'gesunken' } }}>
+      <div className="flex w-80 flex-col gap-4">
+        <StatCard label="Umsatz" value="48.120 €" delta={{ value: 12.4 }} />
+        <StatCard label="Marge" value="31 %" delta={{ value: -1.5, label: ' pp' }} />
+      </div>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const deltas = canvasElement.querySelectorAll('[data-slot="stat-card-delta"]');
+    await expect(deltas[0]?.textContent).toBe('gestiegen 12,4\u00a0%');
+    await expect(deltas[1]?.textContent).toBe('gesunken 1,5 pp');
+  },
 };
 
 export const Grid: Story = {
