@@ -57,9 +57,9 @@ document.documentElement.setAttribute("dir", "rtl");
 
 Popups (menus, selects, popovers, tooltips, comboboxes, hover cards) render in a portal at the end of the body. Inside a `DirectionProvider` they take the provider's direction, also when the document has another one. Use this provider, not the one from `@base-ui/react`: only this one passes the direction to the portalled popups.
 
-Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet or Drawer keeps the side you give it (`side="right"`, `swipeDirection`): the sides are physical and do not mirror in right-to-left. Pick the side for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
+Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet's `side` is logical (`start` or `end`, plus `top` and `bottom`): in right-to-left `start` is the right edge, and the slide runs the other way. A Drawer keeps the `swipeDirection` you give it: that one is physical and does not mirror. Pick it for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
 
-A Sidebar's `side` is physical too, as for Sheet and Drawer: it does not mirror. Give it `side="right"` in right-to-left, so it sits at the start of the line, and keep `side="left"` in left-to-right. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side. The space the sidebar keeps in the layout follows `side` too, wherever the Sidebar sits in the markup.
+A Sidebar's `side` is logical too, as for Sheet: `start` (the default) is the left edge in left-to-right and the right edge in right-to-left, and `end` is the other edge. The same `side` works in both directions. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side. The space the sidebar keeps in the layout follows `side` too, wherever the Sidebar sits in the markup.
 
 A CodeBlock keeps its code left to right in a right-to-left page: the lines start at the left and scroll from there. Its header mirrors with the page.
 
@@ -104,7 +104,7 @@ behavior you need instead of rebuilding it from atoms.
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
-> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
+> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app. While the options load, pass `options={undefined}`: the open menu shows a loading row one item tall. `[]` means there are none. `BreadcrumbSearchMenu` takes the same `options`, plus `retryLabel` for its Retry row; both take `loadingLabel`.
 
 ### Data Display
 `avatar`, `calendar`, `carousel`, `chart`, `kbd`, `table`
@@ -147,7 +147,7 @@ behavior you need instead of rebuilding it from atoms.
 #### Forms & selection
 `choice-card`, `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
 
-> **ChoiceCard.** A card the user picks from a set: a plan, a shipping method, an address, an asset. The card is the control: in a `ChoiceCardGroup` it is a radio (arrow keys move the choice), and in `<ChoiceCardGroup multiple>` a checkbox (Space toggles, `value` is an array). Base UI sets the role, `aria-checked` and the hidden form input. Slots: `ChoiceCardMedia` (an icon, or `variant="image"`), `ChoiceCardContent` with `ChoiceCardTitle` and `ChoiceCardDescription`, and `ChoiceCardMeta` at the end (a price). The title names the card; the description and the meta describe it. `variant="media"` is an image tile that the image fills, with the indicator in the corner; give it an `aria-label`. `ChoiceCardBadge` on the title line marks the option the customer already has ("Current"); it is separate from the selection. Slots hold text and images only, never a link or a button. Use a ChoiceCard when each option needs more than a label; a few short labels in a form are a `RadioGroup`, and a long list is a `Select`.
+> **ChoiceCard.** A card the user picks from a set: a plan, a shipping method, an address, an asset. The card is the control: in a `ChoiceCardGroup` it is a radio (arrow keys move the choice), and in `<ChoiceCardGroup multiple>` a checkbox (Space toggles, `value` is an array). Base UI sets the role, `aria-checked` and the hidden form input. In a single-choice group the selected edge moves to the picked card (a 0.25s spring); arrow keys move it at once, and with reduced motion it fades. Slots: `ChoiceCardMedia` (an icon, or `variant="image"`), `ChoiceCardContent` with `ChoiceCardTitle` and `ChoiceCardDescription`, and `ChoiceCardMeta` at the end (a price). The title names the card; the description and the meta describe it. `variant="media"` is an image tile that the image fills, with the indicator in the corner; give it an `aria-label`. `ChoiceCardBadge` on the title line marks the option the customer already has ("Current"); it is separate from the selection. Slots hold text and images only, never a link or a button. Use a ChoiceCard when each option needs more than a label; a few short labels in a form are a `RadioGroup`, and a long list is a `Select`.
 >
 > ```tsx
 > <ChoiceCardGroup aria-label="Shipping method" value={method} onValueChange={setMethod}>
@@ -171,6 +171,22 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
 
+> **Texts.** `FormatProvider`'s `messages` translates the library's texts in one place, so an app does not pass a label prop to every component. It is nested by component (`{ passwordInput: { showPassword } }`), and every group and text is optional: a text you leave out stays English. An unknown group or text is a type error, so your editor completes the keys. A component's own label prop wins over `messages`. Type your table with `FormatMessages` from `components/molecules/format-provider`:
+>
+> ```tsx
+> import { FormatProvider, type FormatMessages } from '@vendure-io/ui/components/molecules/format-provider';
+>
+> const de: FormatMessages = {
+>   copyButton: { copy: 'Kopieren', copied: 'Kopiert' },
+>   passwordInput: { showPassword: 'Passwort anzeigen', hidePassword: 'Passwort verbergen' },
+>   searchTrigger: { label: 'Suchen', commandPalette: 'Befehlspalette' },
+> };
+>
+> <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
+> ```
+>
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
@@ -193,7 +209,7 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/data-table`, `data-table/data-table-types`, `data-table/list-header`, `data-table/table-pagination`, `data-table/data-table-filters`, `data-table/data-table-column-header`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
 > **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
@@ -228,6 +244,8 @@ n takes `enter="new"`.
 
 ## Utilities
 
+`@vendure-io/ui/lib/*` exports only the modules in this section: `utils`, `state-dictionary`, `tone-icons`, `date-value` and `base-ui`. Every other file in `src/lib` is internal, and an import of it fails to resolve.
+
 ### `cn()` — Class Merging
 
 Combines `clsx` and `tailwind-merge` for conflict-free class composition:
@@ -243,6 +261,26 @@ function MyComponent({ className }: { className?: string }) {
 ### `state-dictionary` — state to tone mapping
 
 `@vendure-io/ui/lib/state-dictionary` exports the `Tone` type, `defineStateEntries()` to declare a typed map from your domain states to tones and labels, `commonStates` for states every app shares, and `maxTone()` to roll several tones up to the most severe. See [StatusBadge and domain states](#statusbadge-and-domain-states) for an example.
+
+### `tone-icons` — the icon of each tone
+
+`@vendure-io/ui/lib/tone-icons` exports `toneIcons`, a map from each `Tone` to its Lucide icon. `StatusBadge`, `Alert` and the toasts use the same map. Use it when you draw a tone outside those components, so a tone has the same shape everywhere. `progress` maps to a loader icon that you spin.
+
+```tsx
+import { toneIcons } from "@vendure-io/ui/lib/tone-icons";
+
+const Icon = toneIcons[tone];
+<Icon aria-hidden className="size-4" />;
+```
+
+### `date-value` — calendar dates
+
+`@vendure-io/ui/lib/date-value` converts between `Date` and the `YYYY-MM-DD` strings that the date pickers use:
+
+- `parseCalendarDate(value)` reads `YYYY-MM-DD` as a local date, with no UTC shift.
+- `formatCalendarDate(date)` writes a local date as `YYYY-MM-DD`.
+- `parseInstant(value)` reads an ISO timestamp. It returns `undefined` for an empty or invalid value.
+- `formatDateLabel(date, locale?)` and `formatDateRangeLabel(from, to, locale?)` give the medium date label that the pickers show.
 
 ### `base-ui` — Base UI primitives
 
@@ -300,6 +338,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </CopyFeedbackProvider>
   );
 }
+```
+
+### `useIsApplePlatform()`
+
+Returns `true` on macOS and iOS, so a shortcut label can show ⌘ there and Ctrl elsewhere. It returns `false` on the server and in the first hydration render, then the client value.
+
+```tsx
+import { useIsApplePlatform } from "@vendure-io/ui/hooks/use-apple-platform";
+
+const mod = useIsApplePlatform() ? "⌘" : "Ctrl";
 ```
 
 ### `useIsMobile()`
@@ -498,13 +546,13 @@ already says the same: the indicator is then hidden from assistive technology.
 one time that matters for the state. In a `DataTable` the row stays 48px, the same as a one-line row.
 
 ```tsx
-<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime since={deployment.startedAt} tooltip />}>
+<StatusBadge appearance="icon" tone="progress" detail={<ElapsedTime from={deployment.startedAt} tooltip />}>
   Building
 </StatusBadge>;
 <StatusBadge
   appearance="icon"
   tone="success"
-  detail={<RelativeTime value={deployment.finishedAt} start={deployment.startedAt} />}
+  detail={<RelativeTime value={deployment.finishedAt} from={deployment.startedAt} />}
 >
   Ready
 </StatusBadge>;
@@ -521,7 +569,7 @@ one time that matters for the state. In a `DataTable` the row stays 48px, the sa
 off screen or the tab is hidden. It writes the count in the locale of the
 `FormatProvider` (`1m 15s` in English, `1 Min., 15 Sek.` in German), with the
 smaller unit zero-padded so the width holds while it counts. With `tooltip`, its tooltip shows when the
-count started. `RelativeTime` with `start` shows the range and how long it
+count started. `RelativeTime` with `from` shows the range and how long it
 took; with `display="duration"` it says how long a state has lasted
 (`13 days`), in the reader's locale and with the same unit steps as
 `2 minutes ago`. The words around it (`for`) are yours, so they are translated
@@ -566,14 +614,14 @@ import { NoInvoicesIllustration } from "@vendure-io/ui/components/molecules/illu
 Every illustration takes `className` and `size` (width in px, default 160; the
 height keeps the 4:3 ratio). Use one illustration for the whole empty or error
 region: a whole page or a whole list. Inside a card, a secondary panel or a
-side column, use the compact size with an icon instead. It shows a faint 28px
+side column, use the `sm` size with an icon instead. It shows a faint 28px
 icon above the title and no illustration:
 
 ```tsx
 import { KeyRoundIcon } from "lucide-react";
 
 <EmptyState
-  size="compact"
+  size="sm"
   icon={<KeyRoundIcon />}
   title="No emergency boot token was issued for this project."
 />;
@@ -781,6 +829,23 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
 </Card>
 ```
 
+### StatCard
+
+`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives, and screen readers hear "Loading value" (`messages.statCard.loading` or `loadingLabel`). `null` means there is no value and shows `fallback` ("—" by default). `0` and `''` are real values. `delta.value` may be `undefined` too: the delta draws a skeleton.
+
+```tsx
+import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
+
+<StatCard
+  label="Revenue"
+  value={data ? <Money value={data.revenue} /> : undefined}
+  delta={{ value: data?.revenueChange }}
+  description="vs. previous period"
+/>
+```
+
+`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, with one decimal, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"). The arrow and its color carry the direction, and `goodWhen` says which direction is good. A change that rounds to 0.0 has no arrow and a neutral color. `NaN` and `±Infinity` (a change from zero) show "—". For another unit, pass `delta.unit` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
+
 ### ArrowLink
 
 `ArrowLink` goes to a page with more of what the user is looking at: "View details", "All deployments". It renders an `<a>`; pass `render` with a router link. It is navigation only: an action is a `Button`.
@@ -840,7 +905,7 @@ Pass skeleton parts as children, laid out like the loaded page. Each part is as 
 | `SkeletonListRow` (`leading="icon" \| "avatar" \| "none"`, `meta`, `action`) | `ListRow` |
 | `SkeletonField` | `Field` with an `Input` |
 | `SkeletonFact` | `DescriptionListItem` |
-| `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width |
+| `SkeletonLine` | one line of text: size it with the text utility of the text (`text-xs`, `text-style-page-title`) and a width. It is a `<span>`, so it can stand in for a value inside a paragraph with `inline-flex` |
 
 ```tsx
 import { LoadingState } from "@vendure-io/ui/components/molecules/state-views/loading-state";
@@ -860,6 +925,17 @@ import {
 ```
 
 Without children, `LoadingState` draws `rows` full-width bars, as before. Use the bars only where no part fits the shape.
+
+### DataTable parts
+
+`DataTable` already draws its header, filters, pagination and column headers. Import these parts only when you build a list page around your own table. Each one is public:
+
+- `data-table/list-header`: `ListHeader` stacks the page header, the control row (`ListHeaderControls`) and the applied-filter chips (`ListHeaderChips`). The three are layout only.
+- `data-table/table-pagination`: `TablePagination` shows the item range, the page size and the previous and next buttons. It takes `page`, `pageSize` and `totalItems`, and `getPageHref` makes the buttons links.
+- `data-table/data-table-filters`: `DataTableAddFilter` (the "Add filter" menu) and `DataTableAppliedFilters` (one chip per applied filter) read and write the column filters of a TanStack `table`.
+- `data-table/data-table-column-header`: `DataTableColumnHeader` is a sortable column title for a TanStack `column`. `align="end"` lines it up with end-aligned cells.
+
+Every other file in `data-table/` is internal, and an import of it fails to resolve.
 
 ### DataTable loading rows
 
@@ -1015,7 +1091,12 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
-2. DataTable marks "not loaded yet" in the data, not with `isLoading`:
+2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
+3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
+4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
+5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
+6. `side` on Sidebar is `'start' | 'end'` (default `start`), and on SheetContent it is `'top' | 'bottom' | 'start' | 'end'` (default `end`). `left` and `right` are removed. Nothing moves in left-to-right: the old defaults were `left` for Sidebar and `right` for Sheet. In right-to-left `start` is the right edge, so remove the `dir === 'rtl' ? 'right' : 'left'` branch. The `data-side` attribute on both follows the new values.
+7. DataTable marks "not loaded yet" in the data, not with `isLoading`:
    - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
    - Server pagination requires `totalItems: number | null`. `null` means "not known" and draws a skeleton range. Pass `data?.totalItems ?? null`, not `0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
    - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
@@ -1038,7 +1119,7 @@ These packages are optional — install them only if you use the features that n
 6. `@vendure-io/design-tokens` is a peer dependency. Install it next to `@vendure-io/ui`.
 7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported. StatCard no longer exports `statCardDeltaVariants`.
 8. The data-table module exports the TanStack table type as `TableInstance`, not `Table`.
-9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. CodeBlock has no outer margin: add your own.
+9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. Chip `removeLabel` is required with `onRemove` and not allowed without it (type only). CodeBlock has no outer margin: add your own.
 10. Drawer is built on Base UI, and `vaul` is gone. Replace `asChild` with the `render` prop, and `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`). See the Drawer note under [Atoms](#atoms).
 11. `@vendure-io/ui` requires `@base-ui/react` `^1.8.0` (1.x required `^1.2.0`).
 

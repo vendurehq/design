@@ -3,10 +3,11 @@
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
-import type { ClipboardSource } from '@vendure-io/ui/lib/clipboard';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import type * as React from 'react';
+import type { ClipboardSource } from '../../lib/clipboard.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 interface UseCopyActionOptions {
   /** How long `copied` stays true after a successful copy, in ms. @default 2000 */
@@ -88,9 +89,9 @@ interface CopyButtonProps extends Omit<React.ComponentProps<typeof Button>, 'val
    * Falls back to `CopyFeedbackProvider` when omitted.
    */
   onCopyError?: (error: Error) => void;
-  /** Accessible label before copying. @default "Copy" */
+  /** Accessible label before copying. @default `messages.copyButton.copy`, "Copy" */
   copyLabel?: string;
-  /** Accessible label shown while the copied state is active. @default "Copied" */
+  /** Accessible label shown while the copied state is active. @default `messages.copyButton.copied`, "Copied" */
   copiedLabel?: string;
   /**
    * A shared copy state from `useCopyAction`. When set, the button uses it
@@ -109,8 +110,8 @@ function CopyButton({
   timeout,
   onCopied,
   onCopyError,
-  copyLabel = 'Copy',
-  copiedLabel = 'Copied',
+  copyLabel,
+  copiedLabel,
   variant = 'ghost',
   size = 'icon-xs',
   className,
@@ -120,6 +121,7 @@ function CopyButton({
 }: CopyButtonProps) {
   const ownAction = useCopyAction({ timeout, onCopied, onCopyError });
   const { copied, copy } = copyAction ?? ownAction;
+  const t = useMessages('copyButton', { copy: copyLabel, copied: copiedLabel });
 
   return (
     <Button
@@ -127,7 +129,7 @@ function CopyButton({
       data-slot="copy-button"
       variant={variant}
       size={size}
-      aria-label={copied ? copiedLabel : copyLabel}
+      aria-label={copied ? t.copied : t.copy}
       className={cn('text-muted-foreground hover:text-foreground', className)}
       onClick={async (event) => {
         onClick?.(event);
@@ -153,9 +155,9 @@ interface CopyableTextProps {
   onCopied?: () => void;
   /** Called when the clipboard write fails. Falls back to `CopyFeedbackProvider`. */
   onCopyError?: (error: Error) => void;
-  /** Accessible label before copying, forwarded to the inner `CopyButton`. @default "Copy" */
+  /** Accessible label before copying, forwarded to the inner `CopyButton`. @default `messages.copyButton.copy`, "Copy" */
   copyLabel?: string;
-  /** Accessible label shown while the copied state is active, forwarded to the inner `CopyButton`. @default "Copied" */
+  /** Accessible label shown while the copied state is active, forwarded to the inner `CopyButton`. @default `messages.copyButton.copied`, "Copied" */
   copiedLabel?: string;
 }
 

@@ -91,3 +91,14 @@ Conventions (match the existing pages, e.g. `stories/status-badge-guidance.stori
 - Stories use numbered display names (`name: '1 · …'`), render live DS components in realistic commerce scenarios, and cross-reference sibling guidance pages in prose.
 - One page can cover a family when the decision is shared (StateViews covers Empty/Error/Loading; DateTime covers RelativeTime).
 - State words only on StatusBadge; color follows accent rationing; terminology follows `CONTEXT.md`.
+
+## How a component reads a text
+
+Every English text a component shows or announces (visible copy, `aria-label`, screen-reader text) comes from `useMessages` in `src/lib/format-messages.ts`. Never hard-code it and never put the English text in a prop default.
+
+1. Add the component's group to `defaultMessages`, keyed by component in camelCase, with the English texts: `dialog: { close: 'Close' }`. The `FormatMessages` type follows.
+2. Keep or add a `…Label` prop for each text, without a default value. Its JSDoc reads ``@default `messages.<group>.<key>`, "<English>"``.
+3. In the component: `const t = useMessages('dialog', { close: closeLabel });`, then render `t.close`. The order is: the label prop, then `FormatProvider`'s `messages`, then English. Without a provider it returns English, so SSR and tests need no setup.
+4. Import the hook by its relative path (`../../lib/format-messages.ts`): it is internal.
+5. Test the default, a `FormatProvider` `messages` text and a label prop that wins over it (SSR markup with `renderToStaticMarkup`).
+6. List the new group and texts in the FormatProvider "Texts" note in `docs/ui-components.md`.

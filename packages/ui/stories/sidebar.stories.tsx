@@ -153,7 +153,7 @@ export const ActiveItem: Story = {
             <SidebarMenu slidingIndicator={false}>
               {menuItems.slice(0, 3).map((item, index) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton isActive={index === 0}>
+                  <SidebarMenuButton active={index === 0}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -219,7 +219,7 @@ export const NestedItemActive: Story = {
           <div className="bg-sidebar text-sidebar-foreground w-56 rounded-lg border p-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive>
+                <SidebarMenuButton active>
                   <ChartLineIcon />
                   <span>Insights</span>
                 </SidebarMenuButton>
@@ -241,7 +241,7 @@ export const NestedItemActive: Story = {
                       <SidebarMenuSub>
                         {group.items.map((item) => (
                           <SidebarMenuSubItem key={item}>
-                            <SidebarMenuSubButton render={<a href="#" />} isActive={item === group.activeChild}>
+                            <SidebarMenuSubButton render={<a href="#" />} active={item === group.activeChild}>
                               <span>{item}</span>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -285,7 +285,7 @@ export const NestedItemActiveIconRail: Story = {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton isActive tooltip="Insights">
+                  <SidebarMenuButton active tooltip="Insights">
                     <ChartLineIcon />
                     <span>Insights</span>
                   </SidebarMenuButton>
@@ -391,7 +391,7 @@ function ActiveIconMenu({ rule, mode, testId }: { rule: RuleCase; mode: 'expande
             <SidebarMenuSub>
               {group.items.map((item) => (
                 <SidebarMenuSubItem key={item.title}>
-                  <SidebarMenuSubButton render={<a href="#" />} isActive={item.active}>
+                  <SidebarMenuSubButton render={<a href="#" />} active={item.active}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                   </SidebarMenuSubButton>
@@ -478,7 +478,7 @@ function SlidingMenu({ tooltips = false }: { tooltips?: boolean }) {
       {menuItems.map((item, index) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
-            isActive={index === active}
+            active={index === active}
             onClick={() => setActive(index)}
             tooltip={tooltips ? item.title : undefined}
           >
@@ -587,7 +587,7 @@ export const IconRailWithGroups: Story = {
                     {group.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
-                          isActive={item.title === current}
+                          active={item.title === current}
                           onClick={() => setCurrent(item.title)}
                           tooltip={item.title}
                         >
@@ -671,7 +671,7 @@ function DashboardMenu({
                   <SidebarMenuSubItem key={item}>
                     <SidebarMenuSubButton
                       render={<a href="#" />}
-                      isActive={item === current}
+                      active={item === current}
                       onClick={(event) => {
                         event.preventDefault();
                         go(item);
@@ -688,7 +688,7 @@ function DashboardMenu({
           <SidebarMenuItem key={entry.title}>
             <SidebarMenuButton
               tooltip={entry.title}
-              isActive={entry.title === current}
+              active={entry.title === current}
               onClick={() => go(entry.title)}
             >
               <entry.icon />
@@ -891,7 +891,7 @@ export const IconRailWithAvatarAndWrappedIcon: Story = {
 function IdentitySidebar({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
   return (
     <>
-      <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir}>
+      <Sidebar collapsible="icon" dir={dir}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -1107,7 +1107,7 @@ function PageMenu({
     <SidebarMenu>
       {pages.map((page) => (
         <SidebarMenuItem key={page.title}>
-          <SidebarMenuButton isActive={page.title === current} onClick={() => go(page.title)} tooltip={page.title}>
+          <SidebarMenuButton active={page.title === current} onClick={() => go(page.title)} tooltip={page.title}>
             <page.icon />
             <span>{page.title}</span>
           </SidebarMenuButton>
@@ -1130,7 +1130,7 @@ function TwoLevelSidebar({
     <DirectionProvider direction={dir}>
       <div dir={dir}>
         <SidebarProvider defaultOpen={defaultOpen}>
-          <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir} variant={variant}>
+          <Sidebar collapsible="icon" dir={dir} variant={variant}>
             <SidebarHeader>
               <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
                 <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
@@ -1238,8 +1238,8 @@ export const TwoLevelsRightToLeft: Story = {
 
 /**
  * The inset pane sits 8px from every edge except the sidebar's: there it
- * meets the sidebar with no margin. `side` is physical, so the sidebar on
- * the right drops the right margin.
+ * meets the sidebar with no margin. `side` is logical, so the start sidebar
+ * of a right-to-left page is on the right and drops the right margin.
  */
 async function checkInsetMargins(canvasElement: HTMLElement, side: 'left' | 'right') {
   const inset = canvasElement.querySelector('[data-slot=sidebar-inset]') as HTMLElement;

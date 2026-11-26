@@ -53,7 +53,7 @@ export const Styles: Story = {
 
 // `display="duration"` says how long a state that continues has lasted, with
 // the same unit steps as the relative text. The words around it are the
-// caller's. `start` turns the default tooltip into the range and how long it
+// caller's. `from` turns the default tooltip into the range and how long it
 // took. `tooltip` also takes content of your own.
 export const DurationAndRange: Story = {
   render: () => (
@@ -62,7 +62,7 @@ export const DurationAndRange: Story = {
         Degraded for <RelativeTime value={minutesAgo(60 * 24 * 13)} locale="en-US" display="duration" />
       </span>
       <span>
-        Ready <RelativeTime value={minutesAgo(2)} start={minutesAgo(2.7)} locale="en-US" focusable />
+        Ready <RelativeTime value={minutesAgo(2)} from={minutesAgo(2.7)} locale="en-US" focusable />
       </span>
       <span>
         Paused <RelativeTime value={minutesAgo(40)} locale="en-US" tooltip="Paused by the nightly job" focusable />
@@ -114,19 +114,19 @@ function Times({ locale, now }: { locale: string; now: number }) {
       <div className="flex flex-col gap-1 tabular-nums">
         <RelativeTime data-testid="relative" value={FINISHED} />
         <RelativeTime data-testid="duration" value={now - 13 * 86_400_000} display="duration" />
-        <RelativeTime data-testid="range" value={FINISHED} start={STARTED} />
+        <RelativeTime data-testid="range" value={FINISHED} from={STARTED} />
         <RelativeTime data-testid="custom" value={FINISHED} tooltip="Deployed by Ana" />
-        <ElapsedTime data-testid="fixed" since={STARTED} until={FINISHED} />
+        <ElapsedTime data-testid="fixed" from={STARTED} to={FINISHED} />
         <ElapsedTime
           data-testid="format"
-          since={STARTED}
-          until={STARTED + 5_000}
+          from={STARTED}
+          to={STARTED + 5_000}
           format={(ms) => `${ms / 1000} sec`}
         />
-        <ElapsedTime data-testid="started" since={STARTED} tooltip />
-        <ElapsedTime data-testid="elapsed-range" since={STARTED} until={FINISHED} tooltip />
-        <ElapsedTime data-testid="elapsed-custom" since={STARTED} until={FINISHED} tooltip="Queued by CI" />
-        <ElapsedTime data-testid="arabic" since={STARTED} until={FINISHED} locale="ar-EG" />
+        <ElapsedTime data-testid="started" from={STARTED} tooltip />
+        <ElapsedTime data-testid="elapsed-range" from={STARTED} to={FINISHED} tooltip />
+        <ElapsedTime data-testid="elapsed-custom" from={STARTED} to={FINISHED} tooltip="Queued by CI" />
+        <ElapsedTime data-testid="arabic" from={STARTED} to={FINISHED} locale="ar-EG" />
       </div>
     </FormatProvider>
   );
@@ -216,5 +216,75 @@ export const ServerAndBrowser: Story = {
         host.remove();
       }
     });
+  },
+};
+
+/** Each loading line is as tall as its loaded line, and its skeleton is about as wide as the text. */
+async function expectStableTimeLines(canvasElement: HTMLElement) {
+  const rect = (selector: string) =>
+    canvasElement.querySelector<HTMLElement>(selector)?.getBoundingClientRect();
+  for (const row of canvasElement.querySelectorAll<HTMLElement>('[data-row]')) {
+    const name = row.dataset.row;
+    const loaded = `[data-row="${name}"] [data-state="loaded"]`;
+    const loading = `[data-row="${name}"] [data-state="loading"]`;
+    await expect(rect(loading)?.height).toBe(rect(loaded)?.height);
+    const text = rect(`${loaded} > [data-slot]`)?.width ?? 0;
+    const skeleton = rect(`${loading} > [data-slot]`)?.width ?? 0;
+    await expect(Math.abs(skeleton - text)).toBeLessThan(text * 0.35);
+  }
+}
+
+// `undefined` means the time has not loaded yet: a one-line skeleton about as
+// wide as a typical text. `null` means there is no time: the fallback. The
+// skeleton needs no clock, so the server renders it too.
+export const LoadingAndMissing: Story = {
+  render: () => {
+    const STARTED = Date.now() - 75_000;
+    return (
+      <div className="flex flex-col gap-4 text-sm">
+        <div data-row="relative" className="flex flex-col gap-1">
+          <p data-state="loaded">
+            Updated <RelativeTime value={Date.now() - 12 * 60_000} locale="en-US" />.
+          </p>
+          <p data-state="loading">
+            Updated <RelativeTime value={undefined} locale="en-US" />.
+          </p>
+        </div>
+        <div data-row="elapsed" className="flex flex-col gap-1">
+          <p data-state="loaded">
+            Building for <ElapsedTime from={STARTED} to={STARTED + 75_000} locale="en-US" />.
+          </p>
+          <p data-state="loading">
+            Building for <ElapsedTime from={undefined} locale="en-US" />.
+          </p>
+        </div>
+        <div data-baseline="loaded" className="flex items-baseline gap-2">
+          <span className="text-lg">Deployed</span>
+          <RelativeTime value={Date.now() - 12 * 60_000} locale="en-US" className="text-xs" />
+        </div>
+        <div data-baseline="loading" className="flex items-baseline gap-2">
+          <span className="text-lg">Deployed</span>
+          <RelativeTime value={undefined} locale="en-US" className="text-xs" />
+        </div>
+        <p data-state="missing">
+          Updated <RelativeTime value={null} />, built in <ElapsedTime from={null} />.
+        </p>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    await expectStableTimeLines(canvasElement);
+    // In a baseline-aligned row the skeleton does not make the row taller.
+    const baselineRow = (state: string) =>
+      canvasElement.querySelector(`[data-baseline="${state}"]`)?.getBoundingClientRect().height;
+    await expect(baselineRow('loading')).toBe(baselineRow('loaded'));
+    const busy = [...canvasElement.querySelectorAll('[data-state="loading"] [aria-busy="true"]')];
+    await expect(busy.map((element) => element.querySelector('.sr-only')?.textContent)).toEqual([
+      'Loading time',
+      'Loading duration',
+    ]);
+    await expect(canvasElement.querySelector('[data-state="missing"]')?.textContent).toBe(
+      'Updated —, built in —.',
+    );
   },
 };

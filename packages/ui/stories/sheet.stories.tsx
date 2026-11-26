@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { DirectionProvider } from '../src/components/atoms/direction.tsx';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '../src/components/atoms/sheet.tsx';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
@@ -24,9 +25,9 @@ export const Default: Story = {
   render: () => (
     <Sheet>
       <SheetTrigger render={<Button variant="outline" />}>
-        Open Sheet (Right)
+        Open Sheet (End)
       </SheetTrigger>
-      <SheetContent side="right">
+      <SheetContent side="end">
         <SheetHeader>
           <SheetTitle>Edit Profile</SheetTitle>
           <SheetDescription>
@@ -52,13 +53,13 @@ export const Default: Story = {
   ),
 };
 
-export const Left: Story = {
+export const Start: Story = {
   render: () => (
     <Sheet>
       <SheetTrigger render={<Button variant="outline" />}>
-        Open Sheet (Left)
+        Open Sheet (Start)
       </SheetTrigger>
-      <SheetContent side="left">
+      <SheetContent side="start">
         <SheetHeader>
           <SheetTitle>Navigation</SheetTitle>
           <SheetDescription>Browse the application sections.</SheetDescription>
@@ -121,7 +122,7 @@ export const WideRow: Story = {
   render: () => (
     <Sheet>
       <SheetTrigger render={<Button variant="outline" />}>Filter</SheetTrigger>
-      <SheetContent side="right" className="data-[side=right]:w-80">
+      <SheetContent side="end" className="data-[side=end]:w-80">
         <SheetHeader>
           <SheetTitle>Filter by created date</SheetTitle>
         </SheetHeader>
@@ -152,7 +153,7 @@ export const TallForm: Story = {
   render: () => (
     <Sheet>
       <SheetTrigger render={<Button variant="outline" />}>Edit shipping address</SheetTrigger>
-      <SheetContent side="right">
+      <SheetContent side="end">
         <SheetHeader>
           <SheetTitle>Edit shipping address</SheetTitle>
           <SheetDescription>The carrier label uses this address from the next shipment.</SheetDescription>
@@ -243,7 +244,59 @@ export const Open: Story = {
   tags: ['!autodocs'],
   render: Default.render,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Sheet (Right)' }));
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Sheet (End)' }));
     await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Edit Profile' })).toBeVisible());
   },
 };
+
+/** Sheet content for the side checks: a trigger and a short body. */
+function SideSheet({ side }: { side: 'start' | 'end' }) {
+  return (
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>Open {side}</SheetTrigger>
+      <SheetContent side={side}>
+        <SheetHeader>
+          <SheetTitle>{side} sheet</SheetTitle>
+          <SheetDescription>Slides in from the {side} edge.</SheetDescription>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/**
+ * `side` is logical. The `start` sheet is at the left edge in a left-to-right
+ * page and at the right edge in a right-to-left page. The `end` sheet is the
+ * other edge.
+ */
+function sideStory(dir: 'ltr' | 'rtl', side: 'start' | 'end'): Story {
+  const edge = (side === 'start') === (dir === 'ltr') ? 'left' : 'right';
+  return {
+    render: () => (
+      <DirectionProvider direction={dir}>
+        <div dir={dir}>
+          <SideSheet side={side} />
+        </div>
+      </DirectionProvider>
+    ),
+    play: async ({ canvasElement }) => {
+      await userEvent.click(within(canvasElement).getByRole('button', { name: `Open ${side}` }));
+      const sheet = await within(document.body).findByRole('dialog');
+      const viewport = document.documentElement.clientWidth;
+      // The slide-in ends at the edge: wait for it instead of reading the first frame.
+      await waitFor(() => {
+        const box = sheet.getBoundingClientRect();
+        if (edge === 'left') expect(Math.abs(box.left)).toBeLessThanOrEqual(1);
+        else expect(Math.abs(box.right - viewport)).toBeLessThanOrEqual(1);
+      });
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(within(document.body).queryByRole('dialog')).toBeNull());
+    },
+  };
+}
+
+export const StartLeftToRight: Story = sideStory('ltr', 'start');
+export const EndLeftToRight: Story = sideStory('ltr', 'end');
+/** In right-to-left, `start` is the right edge. */
+export const StartRightToLeft: Story = sideStory('rtl', 'start');
+export const EndRightToLeft: Story = sideStory('rtl', 'end');

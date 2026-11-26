@@ -37,23 +37,21 @@ describe('EmptyState border', () => {
   });
 });
 
-describe('compact state views', () => {
-  test('EmptyState compact drops the illustration and tightens spacing', () => {
+describe('small state views', () => {
+  test('EmptyState sm drops the illustration and tightens spacing', () => {
     const html = renderToStaticMarkup(
-      <EmptyState size="compact" title="No domains" description="Add one." />,
+      <EmptyState size="sm" title="No domains" description="Add one." />,
     );
     expect(html).not.toContain('data-slot="empty-icon"');
-    expect(html).toContain('data-size="compact"');
+    expect(html).toContain('data-size="sm"');
     expect(rootClasses(html)).toContain('py-10');
     expect(rootClasses(html)).not.toContain('p-12');
     expect(html).toContain('No domains');
     expect(html).toContain('Add one.');
   });
 
-  test('EmptyState compact draws an explicit icon bare, without the chip', () => {
-    const html = renderToStaticMarkup(
-      <EmptyState size="compact" icon={<svg />} title="No domains" />,
-    );
+  test('EmptyState sm draws an explicit icon bare, without the chip', () => {
+    const html = renderToStaticMarkup(<EmptyState size="sm" icon={<svg />} title="No domains" />);
     expect(html).toContain('data-variant="bare"');
     expect(html).not.toContain('data-variant="icon"');
     expect(html).toContain('text-style-card-title');
@@ -74,9 +72,9 @@ describe('compact state views', () => {
     expect(html).toContain('data-size="default"');
   });
 
-  test('ErrorState compact drops the illustration and default icon and keeps role=alert and retry', () => {
+  test('ErrorState sm drops the illustration and default icon and keeps role=alert and retry', () => {
     const html = renderToStaticMarkup(
-      <ErrorState size="compact" title="Couldn't load usage" onRetry={() => {}} />,
+      <ErrorState size="sm" title="Couldn't load usage" onRetry={() => {}} />,
     );
     expect(html).not.toContain('data-slot="empty-icon"');
     expect(html).toContain('role="alert"');
@@ -84,9 +82,9 @@ describe('compact state views', () => {
     expect(errorClasses(html)).toContain('py-10');
   });
 
-  test('ErrorState compact draws only an explicit icon, bare in the destructive text tone', () => {
+  test('ErrorState sm draws only an explicit icon, bare in the destructive text tone', () => {
     const html = renderToStaticMarkup(
-      <ErrorState size="compact" icon={<svg />} title="Couldn't load usage" />,
+      <ErrorState size="sm" icon={<svg />} title="Couldn't load usage" />,
     );
     expect(html).toContain('data-variant="bare"');
     expect(html).toContain('text-destructive-text');
@@ -132,3 +130,16 @@ function errorClasses(html: string): string[] {
   const tag = html.match(/<[^>]*data-slot="error-state"[^>]*>/)?.[0] ?? '';
   return (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
 }
+
+describe('state view size names', () => {
+  test('compact is gone: sm is the small size', () => {
+    renderToStaticMarkup(
+      <>
+        {/* @ts-expect-error `compact` was renamed to `sm` */}
+        <EmptyState size="compact" title="No domains" />
+        {/* @ts-expect-error `compact` was renamed to `sm` */}
+        <ErrorState size="compact" title="Couldn't load usage" />
+      </>,
+    );
+  });
+});

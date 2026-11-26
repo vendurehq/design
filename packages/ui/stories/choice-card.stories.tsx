@@ -253,3 +253,61 @@ export const Keyboard: Story = {
     await expect(wrap).not.toBeChecked();
   },
 };
+
+// In a single-choice group the selected edge moves to the picked card: along a
+// row, and across rows between cards of different heights. Arrow keys move it
+// at once; with reduced motion it fades in place.
+const TIERS = [
+  { value: 'starter', title: 'Starter', description: 'One shop', price: '€29' },
+  { value: 'growth', title: 'Growth', description: 'Three shops', price: '€99' },
+  { value: 'scale', title: 'Scale', description: 'Unlimited shops', price: '€299' },
+];
+
+const CARRIERS = [
+  { value: 'dhl', title: 'DHL Express', description: 'Next working day' },
+  { value: 'postnl', title: 'PostNL', description: 'Two to three working days, signed for on delivery, with tracking' },
+  { value: 'ups', title: 'UPS Standard', description: 'Three to five working days' },
+  { value: 'pickup', title: 'Pick up in store', description: 'Ready in two hours at Keizersgracht 12, Amsterdam. Bring your order number.' },
+  { value: 'locker', title: 'Parcel locker', description: 'Pick a locker at checkout' },
+  { value: 'bike', title: 'Bike courier', description: 'Same day, Amsterdam only' },
+];
+
+export const MovingSelection: Story = {
+  name: 'Moving selection',
+  args: { value: 'starter' },
+  render: () => (
+    <div className="flex max-w-xl flex-col gap-8">
+      <ChoiceCardGroup aria-label="Plan" defaultValue="starter" className="grid-cols-3" data-testid="row">
+        {TIERS.map((plan) => (
+          <ChoiceCard key={plan.value} value={plan.value} className="flex-col">
+            <ChoiceCardContent>
+              <ChoiceCardTitle>{plan.title}</ChoiceCardTitle>
+              <ChoiceCardDescription>{plan.description}</ChoiceCardDescription>
+            </ChoiceCardContent>
+            <ChoiceCardMeta className="ms-0 text-start">{plan.price}</ChoiceCardMeta>
+          </ChoiceCard>
+        ))}
+      </ChoiceCardGroup>
+      <ChoiceCardGroup aria-label="Carrier" defaultValue="dhl" className="grid-cols-2 items-start" data-testid="grid">
+        {CARRIERS.map((option) => (
+          <ChoiceCard key={option.value} value={option.value} size="sm">
+            <ChoiceCardContent>
+              <ChoiceCardTitle>{option.title}</ChoiceCardTitle>
+              <ChoiceCardDescription>{option.description}</ChoiceCardDescription>
+            </ChoiceCardContent>
+          </ChoiceCard>
+        ))}
+      </ChoiceCardGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const row = canvasElement.querySelector<HTMLElement>('[data-testid=row]');
+    if (!row) throw new Error('row group missing');
+    const scale = within(row).getByRole('radio', { name: 'Scale' });
+    await userEvent.click(scale);
+    await expect(scale).toBeChecked();
+    // One edge per group, in the picked card, once the glide has settled.
+    await waitFor(() => expect(row.querySelectorAll('[data-slot=choice-card-edge]')).toHaveLength(1));
+    await waitFor(() => expect(scale.querySelector('[data-slot=choice-card-edge]')).not.toBeNull());
+  },
+};

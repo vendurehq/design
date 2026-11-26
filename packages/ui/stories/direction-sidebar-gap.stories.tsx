@@ -10,10 +10,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  SidebarRail,
 } from '../src/components/atoms/sidebar.tsx';
 
 /**
- * A Sidebar's `side` is physical. The placeholder that keeps its width in the
+ * A Sidebar's `side` is logical: `start` is the left edge in a left-to-right page and the right edge in a right-to-left page. The placeholder that keeps its width in the
  * layout (`sidebar-gap`) sits on the same side as the sidebar, whatever the
  * page direction and wherever the Sidebar sits in the markup. The content pane
  * then starts where the sidebar ends.
@@ -26,7 +27,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-type Side = 'left' | 'right';
+type Side = 'start' | 'end';
 type Dir = 'ltr' | 'rtl';
 
 function GapLayout({ dir, side, variant }: { dir: Dir; side: Side; variant: 'sidebar' | 'inset' }) {
@@ -39,7 +40,7 @@ function GapLayout({ dir, side, variant }: { dir: Dir; side: Side; variant: 'sid
               <SidebarGroup>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+                    <SidebarMenuButton active>Orders</SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton>Products</SidebarMenuButton>
@@ -47,6 +48,7 @@ function GapLayout({ dir, side, variant }: { dir: Dir; side: Side; variant: 'sid
                 </SidebarMenu>
               </SidebarGroup>
             </SidebarContent>
+            <SidebarRail />
           </Sidebar>
           <SidebarInset>
             <div className="p-5 text-sm">
@@ -60,7 +62,7 @@ function GapLayout({ dir, side, variant }: { dir: Dir; side: Side; variant: 'sid
 }
 
 /** The gap and the fixed sidebar cover the same columns, and the pane does not overlap them. */
-async function expectGapOnSide(canvasElement: HTMLElement, side: Side) {
+async function expectGapOnSide(canvasElement: HTMLElement, side: Side, dir: Dir) {
   const box = (slot: string) =>
     (canvasElement.querySelector(`[data-slot=${slot}]`) as HTMLElement).getBoundingClientRect();
   const gap = box('sidebar-gap');
@@ -68,20 +70,26 @@ async function expectGapOnSide(canvasElement: HTMLElement, side: Side) {
   const inset = box('sidebar-inset');
   await expect(Math.round(gap.left)).toBe(Math.round(container.left));
   await expect(Math.round(gap.right)).toBe(Math.round(container.right));
-  if (side === 'left') await expect(inset.left).toBeGreaterThanOrEqual(Math.round(container.right));
+  // `start` is the left edge in left-to-right and the right edge in right-to-left.
+  const onLeft = (side === 'start') === (dir === 'ltr');
+  if (onLeft) await expect(inset.left).toBeGreaterThanOrEqual(Math.round(container.right));
   else await expect(inset.right).toBeLessThanOrEqual(Math.round(container.left));
+  // The rail is centred on the edge that faces the content.
+  const rail = box('sidebar-rail');
+  const edge = onLeft ? container.right : container.left;
+  await expect(Math.abs((rail.left + rail.right) / 2 - edge)).toBeLessThanOrEqual(1);
 }
 
 function story(dir: Dir, side: Side, variant: 'sidebar' | 'inset'): Story {
   return {
     render: () => <GapLayout dir={dir} side={side} variant={variant} />,
-    play: async ({ canvasElement }) => expectGapOnSide(canvasElement, side),
+    play: async ({ canvasElement }) => expectGapOnSide(canvasElement, side, dir),
   };
 }
 
-export const RightLeftToRight = story('ltr', 'right', 'sidebar');
-export const RightLeftToRightInset = story('ltr', 'right', 'inset');
-export const LeftRightToLeft = story('rtl', 'left', 'sidebar');
-export const LeftRightToLeftInset = story('rtl', 'left', 'inset');
-export const LeftLeftToRight = story('ltr', 'left', 'sidebar');
-export const RightRightToLeft = story('rtl', 'right', 'inset');
+export const EndLeftToRight = story('ltr', 'end', 'sidebar');
+export const EndLeftToRightInset = story('ltr', 'end', 'inset');
+export const EndRightToLeft = story('rtl', 'end', 'sidebar');
+export const EndRightToLeftInset = story('rtl', 'end', 'inset');
+export const StartLeftToRight = story('ltr', 'start', 'sidebar');
+export const StartRightToLeft = story('rtl', 'start', 'inset');

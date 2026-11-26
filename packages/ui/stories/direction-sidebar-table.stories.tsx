@@ -65,7 +65,7 @@ function SidebarAndTable({ dir }: { dir: Dir }) {
                   </SidebarMenuButton>
                   <SidebarMenuSub data-testid="sub-list">
                     <SidebarMenuSubItem>
-                      <SidebarMenuSubButton href="#" isActive data-testid="sub-button">
+                      <SidebarMenuSubButton href="#" active data-testid="sub-button">
                         <span>Products</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>

@@ -589,7 +589,7 @@ const pagingCaption = (canvasElement: HTMLElement) =>
  * A server-searched list that loads the next page as it scrolls near its
  * end, or as the arrow keys reach its last option. The consumer keeps the
  * fetching: `filter={null}` turns the client filter off, `onLoadMore` asks
- * for the next page, `hasMore` says there is one and `loading` shows the
+ * for the next page, `hasMore` says there is one and `isLoading` shows the
  * loading row and marks the list busy. While a new search loads, the
  * loading row stands in for the empty state.
  */
@@ -605,7 +605,7 @@ export const ServerSearch: Story = {
           onInputValueChange={search.setQuery}
           onLoadMore={search.loadMore}
           hasMore={search.hasMore}
-          loading={search.loading}
+          isLoading={search.loading}
           loadingLabel="Loading values"
         >
           <ComboboxInput aria-label="Facet value" placeholder="Search values" className="w-72" />
@@ -723,7 +723,7 @@ export const ServerSearchChips: Story = {
           onInputValueChange={search.setQuery}
           onLoadMore={search.loadMore}
           hasMore={search.hasMore}
-          loading={search.loading}
+          isLoading={search.loading}
         >
           <ComboboxChips ref={chipsAnchor} className="w-80">
             <ComboboxValue>
@@ -768,7 +768,7 @@ export const ServerSearchChips: Story = {
 function PagingLoadingStory({ items, label }: { items: string[]; label: string }) {
   return (
     <div className="h-80">
-      <Combobox items={items} filter={null} open onLoadMore={() => {}} hasMore loading>
+      <Combobox items={items} filter={null} open onLoadMore={() => {}} hasMore isLoading>
         <ComboboxInput aria-label={label} className="w-60" />
         <ComboboxContent>
           <ComboboxEmpty>No values found.</ComboboxEmpty>

@@ -1,8 +1,9 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import { cva } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { alertTint, alertToneVars } from "@vendure-io/ui/lib/tint-recipes"
+import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
+import { alertTint, alertToneVars } from "../../lib/tint-recipes.ts"
 import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 
 // Alert is an inline-size container so AlertAction can move under the text when
@@ -16,9 +17,11 @@ import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
 // mixed into the cool surface it reads grey. The modes switch the
 // --alert-fill and --alert-border properties, not the utilities, so a
 // consumer's bg-* or border-* class wins in both modes. The icon takes the
-// tone's text slot. Warning tints with the brighter warning-indicator, as an
+// tone's text slot. The tones are the state dictionary's, with the StatusBadge
+// recipe: critical tints with destructive-text, progress with info-text and a
+// spinner. Warning tints with the brighter warning-indicator, as an
 // amber text colour mixes to brown. The title stays foreground and the
-// description foreground-secondary in every variant, because a muted grey on
+// description foreground-secondary in every tone, because a muted grey on
 // a tinted fill falls below text contrast.
 // The recipe lives in lib/tint-recipes.ts, which the contrast test in
 // @vendure-io/design-tokens reads.
@@ -31,57 +34,62 @@ const alertVariants = cva(
   "@container/alert grid grid-cols-[minmax(0,1fr)] rounded-xl border px-3 py-2.5 text-start text-sm has-[>svg]:grid-cols-[auto_minmax(0,1fr)] has-[>[data-slot=alert-action]]:grid-cols-[minmax(0,1fr)_auto] has-[>svg]:has-[>[data-slot=alert-action]]:grid-cols-[auto_minmax(0,1fr)_auto] *:[svg]:row-span-2 *:[svg]:me-3 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4 *:[svg:not([class*='stroke-'])]:stroke-[1.75] [&:has(>svg:not([data-slot=alert-icon]))>[data-slot=alert-icon]]:hidden w-full relative group/alert transition-[opacity,translate] duration-alert-enter ease-out starting:opacity-0 motion-safe:starting:-translate-y-1",
   {
     variants: {
-      variant: {
-        default: "bg-card text-card-foreground *:[svg]:text-current",
-        destructive: [
-          tonedAlert,
-          alertToneVars.destructive,
-        ],
-        warning: [
-          tonedAlert,
-          alertToneVars.warning,
-        ],
+      tone: {
+        none: "bg-card text-card-foreground *:[svg]:text-current",
+        neutral: [tonedAlert, alertToneVars.neutral],
         info: [tonedAlert, alertToneVars.info],
-      },
+        success: [tonedAlert, alertToneVars.success],
+        warning: [tonedAlert, alertToneVars.warning],
+        critical: [tonedAlert, alertToneVars.critical],
+        progress: [tonedAlert, alertToneVars.progress],
+      } satisfies Record<Tone | "none", unknown>,
     },
     defaultVariants: {
-      variant: "default",
+      tone: "none",
     },
   }
 )
 
-// A toned variant shows the icon of its tone, the same shape a StatusBadge of
-// that tone shows. The default variant has no tone and no icon of its own.
-const variantIcons = {
-  destructive: toneIcons.critical,
-  warning: toneIcons.warning,
-  info: toneIcons.info,
-} as const
+// The progress spinner turns once per 1.6s, as in StatusBadge, and stands
+// still under reduced motion; the loader shape still says "in motion".
+const spinnerClass = "animate-spin-slow motion-reduce:animate-none"
 
 /**
- * A toned Alert shows its tone icon unless the caller passes one. An `icon`
- * prop replaces it, and so does an svg child (the older way): the tone icon is
- * then hidden. `icon={false}` shows no icon.
+ * A toned Alert is a faint tint of its tone and shows the tone's icon, the
+ * same shape a StatusBadge of that tone shows (`progress` spins it). Without a
+ * tone it sits on the card with no icon. An `icon` prop replaces the tone
+ * icon, and so does an svg child (the older way): the tone icon is then
+ * hidden. `icon={false}` shows no icon.
  */
 function Alert({
   className,
-  variant,
+  tone,
   icon,
   children,
   ...props
-}: React.ComponentProps<"div"> &
-  VariantProps<typeof alertVariants> & {
-    /** Replaces the tone icon. `false` or `null` shows no icon. */
-    icon?: React.ReactNode
-  }) {
-  const ToneIcon = variant && variant !== "default" ? variantIcons[variant] : undefined
+}: React.ComponentProps<"div"> & {
+  /** The tone from the state dictionary. Leave it out for a plain notice on the card. */
+  tone?: Tone
+  /** Replaces the tone icon. `false` or `null` shows no icon. */
+  icon?: React.ReactNode
+}) {
+  const ToneIcon = tone ? toneIcons[tone] : undefined
   const shownIcon =
-    icon !== undefined ? icon || null : ToneIcon ? <ToneIcon aria-hidden data-slot="alert-icon" /> : null
+    icon !== undefined ? (
+      icon || null
+    ) : ToneIcon ? (
+      <ToneIcon
+        aria-hidden
+        data-slot="alert-icon"
+        className={tone === "progress" ? spinnerClass : undefined}
+      />
+    ) : null
   return (
     <div
       data-slot="alert"
+      data-tone={tone}
       role="alert"
-      className={cn(alertVariants({ variant }), className)}
+      className={cn(alertVariants({ tone: tone ?? "none" }), className)}
       {...props}
     >
       {shownIcon}

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ComboboxFreeText,
   type ComboboxFreeTextItem,
@@ -154,6 +155,89 @@ export const Disabled: Story = {
           disabled
         />
       </div>
+    );
+  },
+};
+
+/**
+ * The first fetch has not returned: `items` is `undefined`. The field shows
+ * its spinner, and the open list shows a loading row one suggestion tall.
+ * Here the suggestions arrive 800 ms after the field is focused; one one-line
+ * suggestion then takes the loading row's place without the list moving.
+ */
+export const FirstLoad: Story = {
+  render: function ComboboxFreeTextFirstLoad() {
+    const [value, setValue] = React.useState('');
+    const [items, setItems] = React.useState<ComboboxFreeTextItem[] | undefined>(undefined);
+    const started = React.useRef(false);
+    return (
+      // Starts the fake fetch on the first focus of the field.
+      <div
+        className="w-[320px]"
+        onFocus={() => {
+          if (started.current) return;
+          started.current = true;
+          setTimeout(() => setItems([{ value: 'Medium', label: 'Medium' }]), 800);
+        }}
+      >
+        <ComboboxFreeText
+          value={value}
+          onValueChange={setValue}
+          items={items}
+          aria-label="Size"
+          placeholder="Pick a size or type a new one…"
+        />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox', { name: 'Size' });
+    await expect(canvas.getByRole('status')).toHaveTextContent('Loading…');
+    await userEvent.click(input);
+    const body = within(canvasElement.ownerDocument.body);
+    const loadingRow = await waitFor(() => {
+      const row = canvasElement.ownerDocument.querySelector('[data-slot=combobox-free-text-loading]');
+      if (!row) throw new Error('no loading row yet');
+      return row as HTMLElement;
+    });
+    const list = loadingRow.closest('[data-slot=combobox-list]') as HTMLElement;
+    await expect(list).toHaveAttribute('aria-busy', 'true');
+    const loadingHeight = list.offsetHeight;
+    const loadingWidth = list.offsetWidth;
+    const option = await body.findByRole('option', { name: 'Medium' }, { timeout: 3000 });
+    await expect(option).toBeVisible();
+    // The status stays mounted and empties, so the next load is announced.
+    await expect(canvas.getByRole('status', { hidden: true })).toHaveTextContent('');
+    await expect(list).not.toHaveAttribute('aria-busy');
+    // The loading row and the one loaded suggestion are the same height, and
+    // the list keeps its width when the field's spinner goes away.
+    await expect(list.offsetHeight).toBe(loadingHeight);
+    await expect(list.offsetWidth).toBe(loadingWidth);
+  },
+};
+
+/** The first load, held open: the field's spinner and the list's loading row. */
+export const FirstLoadHeld: Story = {
+  render: () => (
+    <div className="w-[320px]">
+      <ComboboxFreeText
+        value=""
+        onValueChange={() => {}}
+        items={undefined}
+        aria-label="Size"
+        placeholder="Pick a size or type a new one…"
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('status')).toHaveTextContent('Loading…');
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Size' }));
+    await waitFor(() =>
+      expect(
+        canvasElement.ownerDocument.querySelector('[data-slot=combobox-free-text-loading]'),
+      ).not.toBeNull(),
     );
   },
 };
