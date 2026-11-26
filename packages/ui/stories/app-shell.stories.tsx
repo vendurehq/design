@@ -110,7 +110,7 @@ function TopBarActions() {
 
 function Dashboard({ title = 'Orders' }: { title?: string }) {
   return (
-    <div className="flex flex-1 flex-col gap-5 overflow-auto p-6">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">{title}</h1>
@@ -176,7 +176,9 @@ export const Default: Story = {
             <TopBarActions />
           </AppShellHeader>
           <AppShellMain id="storybook-shell-main">
-            <Dashboard />
+            <AppShellPage>
+              <Dashboard />
+            </AppShellPage>
           </AppShellMain>
         </AppShellContent>
       </AppShell>
@@ -203,7 +205,9 @@ export const Anatomy: Story = {
             <span className="text-muted-foreground text-sm">Marketing / Orders</span>
           </AppShellHeader>
           <AppShellMain>
-            <Dashboard />
+            <AppShellPage>
+              <Dashboard />
+            </AppShellPage>
           </AppShellMain>
         </AppShellContent>
       </AppShell>
@@ -260,7 +264,9 @@ export const WithSidebarAtom: Story = {
               <TopBarActions />
             </AppShellHeader>
             <AppShellMain>
-              <Dashboard />
+              <AppShellPage>
+                <Dashboard />
+              </AppShellPage>
             </AppShellMain>
           </SidebarInset>
         </SidebarProvider>
@@ -284,8 +290,10 @@ export const StickyHeader: Story = {
             <span className="text-muted-foreground text-sm">Marketing / Orders</span>
           </AppShellHeader>
           <AppShellMain scrollOwner="container">
-            <Dashboard />
-            <Dashboard />
+            <AppShellPage className="flex flex-col gap-5">
+              <Dashboard />
+              <Dashboard />
+            </AppShellPage>
           </AppShellMain>
         </AppShellContent>
       </AppShell>

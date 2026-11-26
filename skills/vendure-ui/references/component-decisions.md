@@ -41,6 +41,7 @@ Use the shared application anatomy without moving app-owned routing or context i
 - **The consumer owns application state:** Keep routing, navigation data, authentication, permissions, and context switching in the consumer.
 - **Use one shell per application surface:** Do not nest AppShells to create local layouts; compose local regions inside the existing main content area.
 - **Search opens the palette from the top bar:** Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.
+- **AppShellPage is the page frame:** AppShellPage centres the page in AppShellMain, caps its content at 1180px and puts a 32px gutter (16px below 768px) on every side, the top included; the gutter sits outside the 1180px. The values are the CSS variables --app-shell-page-width and --app-shell-page-gutter. Do not add page padding or a page max width in the app. A narrower column, such as a settings form at max-w-4xl, goes inside the frame and stays left-aligned. A layout with its own page wrapper uses pageFrameClassName.
 - **The routed page enters with AppShellPage:** Wrap the routed page in AppShellPage inside AppShellMain, keyed by the pathname, so a new page fades in and rises 6px while the sidebar and the header stay still. A change of search params keeps the key and does not replay it. A layout without AppShell, such as the Dashboard, puts pageEnterClassName on its own wrapper, keyed the same way. A page that switches its content in place, such as the environment switch, reloads in place instead: see the motion tokens.
 - **A crumb that switches siblings is a BreadcrumbMenu:** When the user switches the current item between its siblings, such as the environment, make that crumb a BreadcrumbMenu: the current value, a menu of the options with a status dot, and extra items such as "Add environment" in its children. Do not add a list page or a picker inside the page for it. A crumb that only goes up a level stays a BreadcrumbLink. The options, the switch and the route stay in your app.
 
@@ -96,6 +97,23 @@ Compose actions as an emphasis ladder with one primary action per view.
 - `link`: Inline navigation that should read as text.
 
 Related decisions: `confirm-dialog`, `page-header`.
+## CardLink
+
+Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.
+
+- **One link, around the title:** Put exactly one CardLink in a card, inside CardTitle around the title text. It stretches over the card, so a click anywhere opens it and the card has one tab stop named by the title. Never wrap the whole card in a link or give the Card an onClick.
+- **A link for a page, a button for a dialog:** Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.
+- **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip and CopyableText inside the card keep their own click and tab stop. Another element that must stay hoverable takes `data-card-control`. Every action in a card menu is also on the page the card opens.
+- **The look comes with the link:** The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.
+
+**Choose:**
+
+- `CardLink`: A few items in a grid that each open a page or a dialog: projects, capabilities, integrations.
+- `ChoiceCard`: The user picks one or more cards from a set as a value in a form. That is a choice, not navigation.
+- `ListRowLink`: A list the user scans, one item per row, each opening a page.
+- `DataTableRowLink`: Rows the user sorts, filters or compares, each opening a page.
+
+Related decisions: `choice-card`, `list-row`, `data-table`.
 ## Chart
 
 Give every shape a chart draws an accessible name, from the config where Chart can.

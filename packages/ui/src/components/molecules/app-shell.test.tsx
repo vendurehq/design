@@ -10,6 +10,7 @@ import {
   AppShellPage,
   AppShellSidebar,
   pageEnterClassName,
+  pageFrameClassName,
 } from './app-shell.tsx';
 import { SkipLink } from './skip-link.tsx';
 
@@ -147,12 +148,12 @@ test('the page is flat: the content is not inset, and the sidebar has a 1px end 
 });
 
 test('AppShellPage enters with the page-enter motion, and only fades with reduced motion', () => {
-  const html = renderToStaticMarkup(<AppShellPage className="p-6">Page</AppShellPage>);
+  const html = renderToStaticMarkup(<AppShellPage className="flex">Page</AppShellPage>);
   const tokens = (html.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
 
   expect(html).toContain('data-slot="app-shell-page"');
   expect(tokens).toEqual(
-    expect.arrayContaining(['animate-page-enter', 'motion-reduce:animate-page-fade', 'p-6']),
+    expect.arrayContaining(['animate-page-enter', 'motion-reduce:animate-page-fade', 'flex']),
   );
   expect(pageEnterClassName).toBe('animate-page-enter motion-reduce:animate-page-fade');
 });
@@ -171,4 +172,24 @@ test('Only the page moves: main, the header and the content region carry no ente
 
   expect(html.match(/animate-page-enter/g)).toHaveLength(1);
   expect(html).toMatch(/<main[^>]*><div data-slot="app-shell-page"/);
+});
+
+test('AppShellPage is the page frame: centred, 1180px of content, the gutter on every side', () => {
+  const html = renderToStaticMarkup(<AppShellPage>Page</AppShellPage>);
+  const tokens = (html.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/);
+
+  expect(tokens).toEqual(expect.arrayContaining(pageFrameClassName.split(' ')));
+  expect(pageFrameClassName.split(' ')).toEqual(
+    expect.arrayContaining([
+      '[--app-shell-page-width:1180px]',
+      '[--app-shell-page-gutter:--spacing(4)]',
+      'md:[--app-shell-page-gutter:--spacing(8)]',
+      'mx-auto',
+      'w-full',
+      // The gutter sits outside the 1180px: the frame adds two gutters to the cap.
+      'max-w-[calc(var(--app-shell-page-width)+2*var(--app-shell-page-gutter))]',
+      // The same gutter on every side, the top included.
+      'p-(--app-shell-page-gutter)',
+    ]),
+  );
 });

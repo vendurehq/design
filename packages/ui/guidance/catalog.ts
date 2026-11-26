@@ -93,6 +93,10 @@ export const uiGuidance = [
         body: 'Put a SearchTrigger at the end of AppShellHeader when the app has a command palette. It is a button that looks like a field and shows the shortcut; the consumer opens the palette in onClick and binds the same shortcut. Below 768px it shrinks to an icon button. Never put a real search input in the top bar for the palette.',
       },
       {
+        title: 'AppShellPage is the page frame',
+        body: 'AppShellPage centres the page in AppShellMain, caps its content at 1180px and puts a 32px gutter (16px below 768px) on every side, the top included; the gutter sits outside the 1180px. The values are the CSS variables --app-shell-page-width and --app-shell-page-gutter. Do not add page padding or a page max width in the app. A narrower column, such as a settings form at max-w-4xl, goes inside the frame and stays left-aligned. A layout with its own page wrapper uses pageFrameClassName.',
+      },
+      {
         title: 'The routed page enters with AppShellPage',
         body: 'Wrap the routed page in AppShellPage inside AppShellMain, keyed by the pathname, so a new page fades in and rises 6px while the sidebar and the header stay still. A change of search params keeps the key and does not replay it. A layout without AppShell, such as the Dashboard, puts pageEnterClassName on its own wrapper, keyed the same way. A page that switches its content in place, such as the environment switch, reloads in place instead: see the motion tokens.',
       },
@@ -215,6 +219,50 @@ export const uiGuidance = [
       { choice: 'link', when: 'Inline navigation that should read as text.' },
     ],
     related: ['confirm-dialog', 'page-header'],
+  },
+  {
+    id: 'card-link',
+    title: 'CardLink',
+    summary:
+      'Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.',
+    sourceStory: 'card-link-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'One link, around the title',
+        body: 'Put exactly one CardLink in a card, inside CardTitle around the title text. It stretches over the card, so a click anywhere opens it and the card has one tab stop named by the title. Never wrap the whole card in a link or give the Card an onClick.',
+      },
+      {
+        title: 'A link for a page, a button for a dialog',
+        body: 'Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.',
+      },
+      {
+        title: 'Controls stay above the link',
+        body: 'Buttons, menus, links, Tooltip triggers, IdChip and CopyableText inside the card keep their own click and tab stop. Another element that must stay hoverable takes `data-card-control`. Every action in a card menu is also on the page the card opens.',
+      },
+      {
+        title: 'The look comes with the link',
+        body: 'The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.',
+      },
+    ],
+    choices: [
+      {
+        choice: 'CardLink',
+        when: 'A few items in a grid that each open a page or a dialog: projects, capabilities, integrations.',
+      },
+      {
+        choice: 'ChoiceCard',
+        when: 'The user picks one or more cards from a set as a value in a form. That is a choice, not navigation.',
+      },
+      {
+        choice: 'ListRowLink',
+        when: 'A list the user scans, one item per row, each opening a page.',
+      },
+      {
+        choice: 'DataTableRowLink',
+        when: 'Rows the user sorts, filters or compares, each opening a page.',
+      },
+    ],
+    related: ['choice-card', 'list-row', 'data-table'],
   },
   {
     id: 'chart',

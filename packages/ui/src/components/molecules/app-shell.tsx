@@ -116,7 +116,21 @@ function AppShellMain({
 // it on the element that wraps the page and changes its `key` with the route.
 const pageEnterClassName = 'animate-page-enter motion-reduce:animate-page-fade';
 
-// AppShellPage wraps the page inside AppShellMain. When it mounts, the page
+// The page frame: one frame for every app on AppShell. The page is centred in
+// AppShellMain, its content is at most 1180px wide, and a gutter of 32px (16px
+// below 768px) sits on every side, the top and bottom included. The gutter is
+// outside the 1180px, so the frame is at most 1180px plus two gutters wide.
+//
+// The values are CSS variables on the frame, `--app-shell-page-width` and
+// `--app-shell-page-gutter`, so a descendant can read them (a full-bleed band
+// pulls out by the gutter). The app sets no page padding or width of its own.
+// A page that wants a narrower column, such as a settings form at `max-w-4xl`,
+// puts it inside the frame; it stays left-aligned there.
+const pageFrameClassName =
+  '[--app-shell-page-width:1180px] [--app-shell-page-gutter:--spacing(4)] md:[--app-shell-page-gutter:--spacing(8)] mx-auto w-full min-w-0 max-w-[calc(var(--app-shell-page-width)+2*var(--app-shell-page-gutter))] p-(--app-shell-page-gutter)';
+
+// AppShellPage wraps the page inside AppShellMain. It is the page frame (see
+// pageFrameClassName), and it is the page enter: when it mounts, the page
 // fades in (220ms) and rises 6px into place (260ms) on the `out` curve; with
 // reduced motion it only fades. The header and the sidebar stay still.
 //
@@ -125,9 +139,16 @@ const pageEnterClassName = 'animate-page-enter motion-reduce:animate-page-fade';
 // it a `key` that changes with the route (the pathname) so a new page mounts a
 // new element. Only opacity and transform move: no layout shift, and the page
 // takes clicks while it settles.
+//
+// A layout that keeps its own wrapper takes the frame from pageFrameClassName
+// and, if it wants the motion, the enter from pageEnterClassName.
 function AppShellPage({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div data-slot="app-shell-page" className={cn(pageEnterClassName, className)} {...props} />
+    <div
+      data-slot="app-shell-page"
+      className={cn(pageFrameClassName, pageEnterClassName, className)}
+      {...props}
+    />
   );
 }
 
@@ -139,5 +160,6 @@ export {
   AppShellMain,
   AppShellPage,
   pageEnterClassName,
+  pageFrameClassName,
   type AppShellMainProps,
 };
