@@ -151,6 +151,69 @@ export const WithMenu: Story = {
   },
 };
 
+/**
+ * Pass `options={undefined}` while the options load. The open menu shows a
+ * loading row one item tall, so the items take its place without a jump.
+ * Never pass `[]` for "not known yet": it means there are none.
+ */
+export const WithMenuLoading: Story = {
+  render: () => <LoadingEnvironments />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
+    const menu = await within(document.body).findByRole('menu');
+    await expect(menu).toHaveAttribute('aria-busy', 'true');
+    const loading = within(menu).getByRole('menuitem', { name: 'Loading…' });
+    await expect(loading).toHaveAttribute('aria-disabled', 'true');
+    await expect(within(menu).queryAllByRole('menuitemradio')).toHaveLength(0);
+    // offsetHeight: the popup scales in, which a bounding box would include.
+    const loadingHeight = loading.offsetHeight;
+    // A click event only: a press outside would close the menu.
+    fireEvent.click(within(canvasElement).getByRole('button', { name: 'Finish loading', hidden: true }));
+    const item = await within(menu).findByRole('menuitemradio', { name: /Production/ });
+    await expectPx(item.offsetHeight, loadingHeight);
+  },
+};
+
+/** The menu while its options load, held open. */
+export const WithMenuLoadingHeld: Story = {
+  tags: ['!autodocs'],
+  render: () => <LoadingEnvironments />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
+    const menu = await within(document.body).findByRole('menu');
+    await expect(within(menu).getByRole('menuitem', { name: 'Loading…' })).toHaveAttribute('aria-disabled', 'true');
+  },
+};
+
+function LoadingEnvironments() {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('production');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbMenu
+              label="Environment"
+              options={loaded ? environments : undefined}
+              placeholder="All environments"
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Overview</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+    </div>
+  );
+}
+
 /** Without a `leading` slot the crumb starts with the label. */
 export const WithMenuNoDot: Story = {
   render: () => (
@@ -545,7 +608,8 @@ function ProjectCrumbs({
   const read = readControlled ?? ownRead;
   const [value, setValue] = React.useState(projectId);
   const [open, setOpen] = React.useState(false);
-  const projects = read === 'loaded' ? allProjects : [];
+  // A failed first read has no options either: the error wins over loading.
+  const projects = read === 'loaded' ? allProjects : read === 'empty' ? [] : undefined;
   return (
     <Breadcrumb>
       <BreadcrumbList className="flex-nowrap">
@@ -555,7 +619,7 @@ function ProjectCrumbs({
             searchPlaceholder="Find project…"
             emptyText="No project found."
             placeholder={read === 'error' ? 'Projects unavailable' : value ? 'Project' : 'All projects'}
-            options={projects.map((project) => ({
+            options={projects?.map((project) => ({
               value: project.id,
               label: project.name,
               keywords: [project.slug],
@@ -565,7 +629,6 @@ function ProjectCrumbs({
             onValueChange={setValue}
             open={open}
             onOpenChange={setOpen}
-            loading={read === 'loading'}
             error={read === 'error' ? 'Projects could not be loaded' : undefined}
             onRetry={() => setRead('loaded')}
           >
@@ -682,6 +745,74 @@ export const SearchMenuLoaded: Story = {
   },
 };
 
+/**
+ * The loading row is as tall as one option row: when one project arrives,
+ * the footer stays where it was.
+ */
+export const SearchMenuLoadingHeight: Story = {
+  tags: ['!autodocs'],
+  render: () => <LoadingProjects />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    // The footer's offset in the open popup, once it has faded and scaled in.
+    const footerTop = async () => {
+      const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+      // Until the popup has scaled in: a scaled box would move the footer.
+      await waitFor(() => expectPx(popup.getBoundingClientRect().height, popup.offsetHeight));
+      const footer = popup.querySelector<HTMLElement>('[data-slot="breadcrumb-search-menu-footer"] [cmdk-item]')!;
+      return footer.getBoundingClientRect().top - popup.getBoundingClientRect().top;
+    };
+    await userEvent.click(canvas.getByRole('button', { name: 'Projects: Project' }));
+    await expect(await within(document.body).findByRole('status')).toHaveTextContent('Loading…');
+    const loadingTop = await footerTop();
+    await userEvent.keyboard('{Escape}');
+    await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
+    await userEvent.click(await canvas.findByRole('button', { name: 'Projects: Acme Storefront' }));
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    const search = within(popup).getByRole('combobox');
+    await waitFor(() => expect(search).toHaveFocus());
+    await userEvent.type(search, 'glob');
+    await waitFor(() => expect(within(popup).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1));
+    await expectPx(await footerTop(), loadingTop);
+  },
+};
+
+/**
+ * Opened from the keyboard while the projects load: when they arrive, the
+ * first one is the active row and the arrow keys move through them.
+ */
+export const SearchMenuLoadingKeyboard: Story = {
+  tags: ['!autodocs'],
+  render: () => <ArrivingProjects />,
+  play: async ({ canvasElement }) => {
+    within(canvasElement).getByRole('button', { name: 'Projects: Project' }).focus();
+    await userEvent.keyboard('{Enter}');
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    await expect(within(popup).getByRole('status')).toHaveTextContent('Loading…');
+    await expect(within(popup).getByRole('listbox')).toHaveAttribute('aria-busy', 'true');
+    const first = await within(popup).findByRole('option', { name: /Acme Storefront/ }, { timeout: 3000 });
+    await expect(within(popup).getByRole('status')).toHaveTextContent('');
+    await expect(within(popup).getByRole('listbox')).not.toHaveAttribute('aria-busy');
+    // The first project is the active row, so Enter picks it, and the arrow
+    // keys move on from there.
+    await waitFor(() => expect(first).toHaveAttribute('aria-selected', 'true'));
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(within(popup).getByRole('option', { name: /Acme Wholesale/ })).toHaveAttribute('aria-selected', 'true'),
+    );
+  },
+};
+
+/** The projects arrive a moment after the first render. */
+function ArrivingProjects() {
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    const id = setTimeout(() => setLoaded(true), 1000);
+    return () => clearTimeout(id);
+  }, []);
+  return <ProjectCrumbs readControlled={loaded ? 'loaded' : 'loading'} />;
+}
+
 function LoadingProjects() {
   const [loaded, setLoaded] = React.useState(false);
   return (
@@ -708,6 +839,9 @@ export const SearchMenuError: Story = {
     await waitFor(() => expect(within(popup).getByText('Projects could not be loaded')).toBeVisible());
     await expect(within(popup).getByRole('group', { name: 'Projects could not be loaded' })).toBeInTheDocument();
     await expect(within(popup).queryByText('No project found.')).not.toBeInTheDocument();
+    // `options={undefined}` with an error: the error shows, not the loading row.
+    await expect(popup.querySelector('[data-slot="breadcrumb-search-menu-loading"]')).toBeNull();
+    await expect(within(popup).getByRole('status')).toHaveTextContent('');
     await expect(within(popup).getByRole('option', { name: 'Retry' })).toBeInTheDocument();
   },
 };
@@ -831,7 +965,7 @@ function PendingEnvironment({ known }: { known?: string }) {
             <BreadcrumbMenu
               label="Environment"
               pending={!loaded}
-              options={loaded ? environments : []}
+              options={loaded ? environments : undefined}
               placeholder={loaded ? undefined : known}
               value={value}
               onValueChange={setValue}
@@ -911,12 +1045,15 @@ function PendingProject({ known }: { known?: string }) {
             <BreadcrumbSearchMenu
               label="Projects"
               pending={!loaded}
-              loading={!loaded}
-              options={(loaded ? allProjects : []).map((project) => ({
-                value: project.id,
-                label: project.name,
-                keywords: [project.slug],
-              }))}
+              options={
+                loaded
+                  ? allProjects.map((project) => ({
+                      value: project.id,
+                      label: project.name,
+                      keywords: [project.slug],
+                    }))
+                  : undefined
+              }
               placeholder={loaded ? undefined : known}
               value={value}
               onValueChange={setValue}
@@ -942,8 +1079,8 @@ const northwind = 'Northwind Outdoor Equipment and Apparel Europe';
 
 /**
  * `BreadcrumbSearchMenu` takes the same `pending`. It is about the crumb;
- * `loading` is about the list in the open popup. On the first load, with no
- * name known, pass both: the crumb shows the skeleton. On a later read, keep
+ * `options={undefined}` is about the list in the open popup. On the first
+ * load, with no name known, pass both: the crumb shows the skeleton. On a later read, keep
  * the last known name, and the crumb shows it.
  */
 export const SearchMenuPending: Story = {

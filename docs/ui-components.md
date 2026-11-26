@@ -104,7 +104,7 @@ behavior you need instead of rebuilding it from atoms.
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
-> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
+> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app. While the options load, pass `options={undefined}`: the open menu shows a loading row one item tall. `[]` means there are none. `BreadcrumbSearchMenu` takes the same `options`, plus `retryLabel` for its Retry row; both take `loadingLabel`.
 
 ### Data Display
 `avatar`, `calendar`, `carousel`, `chart`, `kbd`, `table`
@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -733,11 +733,9 @@ dialog with another padding, set the variable:
 <DialogContent className="[--dialog-padding:--spacing(8)]">…</DialogContent>
 ```
 
-A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` (`p-0`,
-`p-4`, `px-[24px]`) also sets the variable, so code written for 2.x keeps its
-header and footer flush with the dialog's edges. A `px-*` class sets the
-padding on all four sides. `py-*`, `pt-*` and a class behind a breakpoint
-(`sm:p-0`) do not set it: use the variable for those.
+Only the variable sets the padding. A `p-*` class on `DialogContent` or
+`AlertDialogContent` changes the padding but not the variable, so the header
+and footer no longer line up with the dialog's edges.
 `SheetContent` has no padding of its own. Its header and footer bring their
 own 16px; pad the body, not `SheetContent`.
 
@@ -1098,6 +1096,9 @@ These packages are optional — install them only if you use the features that n
 4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
 5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
 6. `side` on Sidebar is `'start' | 'end'` (default `start`), and on SheetContent it is `'top' | 'bottom' | 'start' | 'end'` (default `end`). `left` and `right` are removed. Nothing moves in left-to-right: the old defaults were `left` for Sidebar and `right` for Sheet. In right-to-left `start` is the right edge, so remove the `dir === 'rtl' ? 'right' : 'left'` branch. The `data-side` attribute on both follows the new values.
+7. `PageHeaderBackLink` is gone. Use `PageHeaderBackRow`, with a `PageHeaderBack` in it for the link.
+8. An `<svg>` in the `children` of `StatusBadge` or `Alert` no longer replaces the tone icon, and a StatusBadge no longer colours it. Pass the icon as `icon`.
+9. A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` no longer sets `--dialog-padding`. Set the variable instead: `p-0` becomes `[--dialog-padding:0px]`, `p-8` becomes `[--dialog-padding:--spacing(8)]`.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

@@ -62,31 +62,12 @@ const rowRevealClass = [
 
 const chipLabel = statusChipLabel;
 
-// Code written for 2.x puts its own icon in `children`. Its `<svg>` is then a
-// direct child of the badge, and the tone icon (or spinner) hides, so the
-// badge shows one icon. A dot stays: 2.x had it too.
-const ownIconHidesToneIcon = '[&:has(>svg)>[data-marker=icon]]:hidden';
-
-// That own icon takes the tone colour, as the tone icon does, so two badges
-// of one state look the same. The rule is in `:where()`, so it has no
-// specificity: a colour class on the icon wins. Static per tone for
-// Tailwind's scanner, matching `statusToneText`.
-const ownIconToneText: Record<Tone, string> = {
-  neutral: '[:where(&>svg)]:text-neutral-text',
-  info: '[:where(&>svg)]:text-info-text',
-  success: '[:where(&>svg)]:text-success-text',
-  warning: '[:where(&>svg)]:text-warning-text',
-  critical: '[:where(&>svg)]:text-destructive-text',
-  progress: '[:where(&>svg)]:text-info-text',
-};
-
 const statusBadgeVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-lg font-medium',
     statusChipFill,
     statusChipRing,
     chipLabel,
-    ownIconHidesToneIcon,
     'outline-1 outline-transparent -outline-offset-1',
     contentInsetPull,
   ],
@@ -126,7 +107,6 @@ const bareVariants = cva(
   [
     'inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap font-medium',
     chipLabel,
-    ownIconHidesToneIcon,
     contentInsetPull,
   ],
   {
@@ -245,10 +225,8 @@ interface StatusBadgeProps extends useRender.ComponentProps<'span'> {
    *   shows the dot. `appearance="icon"` always shows a marker: the tone icon,
    *   or for pending a still dot. A `bare` pending badge shows that dot too.
    *
-   * Put the icon here, not in `children`: the chip sizes and colours it. An
-   * `<svg>` in `children` (code written for 2.x) hides the tone icon, so the
-   * chip still shows one icon, in the tone colour unless you give it one,
-   * at the size you gave it.
+   * Put the icon here, not in `children`: the chip sizes and colours it, and
+   * an icon in `children` shows next to the tone icon.
    */
   icon?: React.ReactNode;
   /**
@@ -349,12 +327,10 @@ function StatusBadge({
       </>
     );
   } else {
-    classes = cn(
+    classes =
       appearance === 'bare'
         ? bareVariants({ tone, size, reveal })
-        : statusBadgeVariants({ tone, size, reveal }),
-      ownIconToneText[tone],
-    );
+        : statusBadgeVariants({ tone, size, reveal });
     content = (
       <>
         <StatusBadgeMarker
