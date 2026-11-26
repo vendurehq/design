@@ -6,11 +6,6 @@ import { ScrollArea, ScrollBar } from '@vendure-io/ui/components/atoms/scroll-ar
 import { Tooltip, TooltipContent, TooltipTrigger } from '@vendure-io/ui/components/atoms/tooltip';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
-import {
-  highlightCode,
-  normalizeLanguage,
-  type SupportedLanguage,
-} from '@vendure-io/ui/lib/highlight';
 import { cn } from '@vendure-io/ui/lib/utils';
 import {
   CheckIcon,
@@ -23,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
+import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 // Relative imports: `code-block/*` is closed in the package exports, so a
 // `@vendure-io/ui/...` self-reference to these modules fails in consumers.
 import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
