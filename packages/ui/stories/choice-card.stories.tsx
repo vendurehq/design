@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { HomeIcon, PackageIcon, TruckIcon, ZapIcon } from 'lucide-react';
-import { useState } from 'react';
+import { MotionConfig } from 'motion/react';
+import { type ReactNode, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import {
   ChoiceCard,
@@ -251,5 +252,91 @@ export const Keyboard: Story = {
     await expect(wrap).toBeChecked();
     await userEvent.keyboard(' ');
     await expect(wrap).not.toBeChecked();
+  },
+};
+
+// Before and after for the moving selected edge. "Before" renders the same
+// group with motion turned off (as today: the edge switches in place); "After"
+// glides it to the picked card.
+const ROW = [
+  { value: 'starter', title: 'Starter', description: 'One shop', price: '€29' },
+  { value: 'growth', title: 'Growth', description: 'Three shops', price: '€99' },
+  { value: 'scale', title: 'Scale', description: 'Unlimited shops', price: '€299' },
+];
+
+const GRID = [
+  { value: 'dhl', title: 'DHL Express', description: 'Next working day' },
+  { value: 'postnl', title: 'PostNL', description: 'Two to three working days, signed for on delivery, with tracking' },
+  { value: 'ups', title: 'UPS Standard', description: 'Three to five working days' },
+  { value: 'pickup', title: 'Pick up in store', description: 'Ready in two hours at Keizersgracht 12, Amsterdam. Bring your order number.' },
+  { value: 'locker', title: 'Parcel locker', description: 'Pick a locker at checkout' },
+  { value: 'bike', title: 'Bike courier', description: 'Same day, Amsterdam only' },
+];
+
+function Column({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <p className="text-sm font-medium text-foreground-secondary">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function Pair({ render }: { render: (side: 'before' | 'after') => ReactNode }) {
+  return (
+    <div className="flex flex-col gap-8 lg:flex-row">
+      <Column label="Before: the edge switches in place">
+        <MotionConfig reducedMotion="always">{render('before')}</MotionConfig>
+      </Column>
+      <Column label="After: the edge glides to the picked card">{render('after')}</Column>
+    </div>
+  );
+}
+
+export const MovingSelection: Story = {
+  name: 'Moving selection',
+  args: { value: 'starter' },
+  render: () => (
+    <div className="flex max-w-6xl flex-col gap-12">
+      <Pair
+        render={(side) => (
+          <ChoiceCardGroup aria-label={`Plan, ${side}`} defaultValue="starter" className="grid-cols-3" data-testid={`row-${side}`}>
+            {ROW.map((plan) => (
+              <ChoiceCard key={plan.value} value={plan.value} className="flex-col">
+                <ChoiceCardContent>
+                  <ChoiceCardTitle>{plan.title}</ChoiceCardTitle>
+                  <ChoiceCardDescription>{plan.description}</ChoiceCardDescription>
+                </ChoiceCardContent>
+                <ChoiceCardMeta className="ms-0 text-start">{plan.price}</ChoiceCardMeta>
+              </ChoiceCard>
+            ))}
+          </ChoiceCardGroup>
+        )}
+      />
+      <Pair
+        render={(side) => (
+          <ChoiceCardGroup aria-label={`Shipping, ${side}`} defaultValue="dhl" className="grid-cols-2 items-start" data-testid={`grid-${side}`}>
+            {GRID.map((option) => (
+              <ChoiceCard key={option.value} value={option.value} size="sm">
+                <ChoiceCardContent>
+                  <ChoiceCardTitle>{option.title}</ChoiceCardTitle>
+                  <ChoiceCardDescription>{option.description}</ChoiceCardDescription>
+                </ChoiceCardContent>
+              </ChoiceCard>
+            ))}
+          </ChoiceCardGroup>
+        )}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const row = within(canvas.getByTestId('row-after'));
+    await userEvent.click(row.getByRole('radio', { name: 'Scale' }));
+    await expect(row.getByRole('radio', { name: 'Scale' })).toBeChecked();
+    // One edge per group, in the picked card, once the glide has settled.
+    await waitFor(() =>
+      expect(canvas.getByTestId('row-after').querySelectorAll('[data-slot=choice-card-edge]')).toHaveLength(1),
+    );
   },
 };

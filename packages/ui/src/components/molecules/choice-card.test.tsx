@@ -207,3 +207,52 @@ describe('ChoiceCard look', () => {
     expect(code).not.toMatch(/#[0-9a-f]{3,6}\b|oklch\(|rgb\(/i);
   });
 });
+
+describe('ChoiceCard selected edge', () => {
+  test('a single-choice group draws one edge, in the selected card', () => {
+    const html = renderToStaticMarkup(plans({ value: 'starter' }));
+    expect(html.match(/data-slot="choice-card-edge"/g)).toHaveLength(1);
+    const starterStart = html.indexOf(cardTag(html, 'Starter'));
+    const proStart = html.indexOf(cardTag(html, 'Pro'));
+    const edge = html.indexOf('data-slot="choice-card-edge"');
+    expect(edge).toBeGreaterThan(starterStart);
+    expect(edge).toBeLessThan(proStart);
+  });
+
+  test('the edge follows an uncontrolled default value', () => {
+    const html = renderToStaticMarkup(
+      <ChoiceCardGroup aria-label="Plan" defaultValue="b">
+        <ChoiceCard value="a">
+          <ChoiceCardTitle>A</ChoiceCardTitle>
+        </ChoiceCard>
+        <ChoiceCard value="b">
+          <ChoiceCardTitle>B</ChoiceCardTitle>
+        </ChoiceCard>
+      </ChoiceCardGroup>,
+    );
+    expect(html.indexOf('data-slot="choice-card-edge"')).toBeGreaterThan(
+      html.indexOf(cardTag(html, '>B<')),
+    );
+  });
+
+  test('no selection draws no edge', () => {
+    expect(renderToStaticMarkup(plans())).not.toContain('data-slot="choice-card-edge"');
+  });
+
+  test('a multiple-choice group draws no moving edge: each card keeps its own', () => {
+    const html = renderToStaticMarkup(
+      <ChoiceCardGroup multiple aria-label="Products" value={['a', 'b']}>
+        <ChoiceCard value="a">
+          <ChoiceCardTitle>A</ChoiceCardTitle>
+        </ChoiceCard>
+        <ChoiceCard value="b">
+          <ChoiceCardTitle>B</ChoiceCardTitle>
+        </ChoiceCard>
+      </ChoiceCardGroup>,
+    );
+    expect(html).not.toContain('data-slot="choice-card-edge"');
+    expect(html).toContain(
+      'data-[mode=multiple]:data-checked:after:shadow-[inset_0_0_0_2px_var(--primary)]',
+    );
+  });
+});

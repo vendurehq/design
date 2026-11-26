@@ -9,6 +9,7 @@ import { useFieldControlProps } from '@vendure-io/ui/components/atoms/field';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import { CheckIcon } from 'lucide-react';
+import { motion, useReducedMotionConfig } from 'motion/react';
 import * as React from 'react';
 
 import { interactiveCardVariants } from './interactive-card.tsx';
@@ -25,13 +26,29 @@ import { interactiveCardVariants } from './interactive-card.tsx';
 // ring is an outline outside it, so both show together. The indicator (a radio
 // dot or a check box) shows the state in shape too, not only in colour.
 //
+// In a single-choice group the selected edge is one element that moves: when
+// the user picks another card, it glides from the old card to the new one
+// (Motion `layoutId`, scoped to the group). See SelectedEdge for the timing.
+//
 // The card's accessible name is its title, and its description is the
 // description plus the meta. Slots hold text and images only: a card is one
 // control, so a link or button inside it is not reachable as its own control.
 
 type ChoiceCardMode = 'single' | 'multiple';
 
-const ChoiceCardGroupContext = React.createContext<ChoiceCardMode>('single');
+type ChoiceCardInput = 'pointer' | 'keyboard' | null;
+
+interface ChoiceCardGroupState {
+  mode: ChoiceCardMode;
+  /** Single choice: the selected value, controlled or not. */
+  selected?: unknown;
+  /** Single choice: the layoutId of the group's selected edge. */
+  edgeId?: string;
+  /** The last input in the group: arrow keys move the edge without a glide. */
+  lastInput?: React.RefObject<ChoiceCardInput>;
+}
+
+const ChoiceCardGroupContext = React.createContext<ChoiceCardGroupState>({ mode: 'single' });
 
 type ChoiceCardGroupProps =
   | ({ multiple?: false } & RadioGroupPrimitive.Props)
@@ -49,7 +66,7 @@ function ChoiceCardGroup(props: ChoiceCardGroupProps) {
   if (fieldProps.multiple) {
     const { multiple: _, className, ...rest } = fieldProps;
     return (
-      <ChoiceCardGroupContext.Provider value="multiple">
+      <ChoiceCardGroupContext.Provider value={MULTIPLE}>
         <CheckboxGroupPrimitive
           data-slot="choice-card-group"
           data-mode="multiple"
@@ -61,18 +78,99 @@ function ChoiceCardGroup(props: ChoiceCardGroupProps) {
       </ChoiceCardGroupContext.Provider>
     );
   }
-  const { multiple: _, className, ...rest } = fieldProps;
+  return <SingleChoiceCardGroup {...fieldProps} />;
+}
+
+const MULTIPLE: ChoiceCardGroupState = { mode: 'multiple' };
+
+function SingleChoiceCardGroup({
+  multiple: _,
+  className,
+  value,
+  defaultValue,
+  onValueChange,
+  onKeyDown,
+  onPointerDown,
+  ...rest
+}: { multiple?: false } & RadioGroupPrimitive.Props) {
+  // The group keeps its own copy of the value so the selected card can host
+  // the moving edge, uncontrolled too.
+  const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
+  const selected = value !== undefined ? value : uncontrolled;
+  const edgeId = React.useId();
+  const lastInput = React.useRef<ChoiceCardInput>(null);
+  const state = React.useMemo<ChoiceCardGroupState>(
+    () => ({ mode: 'single', selected, edgeId, lastInput }),
+    [selected, edgeId],
+  );
   return (
-    <ChoiceCardGroupContext.Provider value="single">
+    <ChoiceCardGroupContext.Provider value={state}>
       <RadioGroupPrimitive
         data-slot="choice-card-group"
         data-mode="single"
-        className={(state) =>
-          cn(groupClassName, typeof className === 'function' ? className(state) : className)
+        className={(groupState) =>
+          cn(groupClassName, typeof className === 'function' ? className(groupState) : className)
         }
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={(next, details) => {
+          setUncontrolled(next);
+          onValueChange?.(next, details);
+        }}
+        onKeyDown={(event) => {
+          lastInput.current = 'keyboard';
+          onKeyDown?.(event);
+        }}
+        onPointerDown={(event) => {
+          lastInput.current = 'pointer';
+          onPointerDown?.(event);
+        }}
         {...rest}
       />
     </ChoiceCardGroupContext.Provider>
+  );
+}
+
+// The selected edge of a single-choice group: one element per group, inside
+// the selected card, on the card's border box. When the selection changes it
+// unmounts in the old card and mounts in the new one under the same layoutId,
+// so Motion glides it between them.
+// - A pointer pick glides on a spring with no bounce (0.25s). A new pick
+//   mid-flight retargets from where the edge is.
+// - Arrow keys repeat, so the edge jumps there and fades in `fast`.
+// - Reduced motion: no glide, the same `fast` fade.
+// - The first render and a remount do not animate.
+// The 2px line is an inset box-shadow, not a border: Motion corrects a shadow
+// and a pixel radius while the edge stretches between cards of different
+// sizes. The radius is read from the card, so it stays the card's token.
+const GLIDE = { type: 'spring', visualDuration: 0.25, bounce: 0 } as const;
+const FADE = { duration: 0.1, ease: [0.25, 0.1, 0.25, 1] } as const;
+
+function SelectedEdge({ edgeId, input }: { edgeId: string; input: ChoiceCardInput }) {
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const [radius, setRadius] = React.useState<number>();
+  React.useLayoutEffect(() => {
+    const card = ref.current?.parentElement;
+    if (card) setRadius(Number.parseFloat(getComputedStyle(card).borderTopLeftRadius));
+  }, []);
+  const reduce = useReducedMotionConfig();
+  // `input` is null on the first render of the group: nothing animates then.
+  const jump = reduce || input === 'keyboard';
+  return (
+    <motion.span
+      ref={ref}
+      layoutId={edgeId}
+      aria-hidden="true"
+      data-slot="choice-card-edge"
+      className="pointer-events-none absolute -inset-px z-10 rounded-[inherit]"
+      style={{
+        boxShadow: 'inset 0 0 0 2px var(--primary)',
+        ...(radius !== undefined ? { borderRadius: radius } : null),
+      }}
+      initial={jump && input !== null ? { opacity: 0 } : false}
+      animate={{ opacity: 1 }}
+      transition={jump ? { layout: { duration: 0 }, opacity: FADE } : { layout: GLIDE }}
+    />
   );
 }
 
@@ -105,13 +203,14 @@ function useChoiceCardPart(part: 'title' | 'description' | 'meta') {
 const choiceCardVariants = cva(
   [
     'group/choice-card flex text-start',
-    // Selected: one 2px inset primary stroke on ::after. The ::after sits on
+    // Selected, multiple choice: one 2px inset primary stroke on ::after (a
+    // single-choice group draws a SelectedEdge instead, which moves). The ::after sits on
     // the border box (-inset-px) with the card's radius, so it covers the
     // border and adds the inner pixel in one curve. On the padding box
     // (inset-0) its corners would take the outer radius and leave a gap
     // between two strokes. So the card never clips its children: the media
     // variant rounds the image itself to the padding box instead.
-    'after:pointer-events-none after:absolute after:-inset-px after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-checked:border-primary data-checked:hover:border-primary data-checked:after:shadow-[inset_0_0_0_2px_var(--primary)]',
+    'after:pointer-events-none after:absolute after:-inset-px after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-[mode=multiple]:data-checked:border-primary data-[mode=multiple]:data-checked:hover:border-primary data-[mode=multiple]:data-checked:after:shadow-[inset_0_0_0_2px_var(--primary)]',
   ],
   {
     variants: {
@@ -208,7 +307,9 @@ function ChoiceCard({
   children,
   ...props
 }: ChoiceCardProps) {
-  const mode = React.useContext(ChoiceCardGroupContext);
+  const group = React.useContext(ChoiceCardGroupContext);
+  const mode = group.mode;
+  const showEdge = mode === 'single' && group.edgeId !== undefined && group.selected === value;
   const id = React.useId();
   const [mounted, setMounted] = React.useState<ReadonlySet<string>>(new Set());
   const register = React.useCallback((part: string) => {
@@ -249,6 +350,7 @@ function ChoiceCard({
     'data-slot': 'choice-card',
     'data-variant': variant,
     'data-size': size,
+    'data-mode': mode,
     className: cn(interactiveCardVariants(), choiceCardVariants({ variant, size }), className),
     render: <div />,
     value,
@@ -258,6 +360,9 @@ function ChoiceCard({
   const content = (
     <ChoiceCardPartsContext.Provider value={parts}>
       <ChoiceCardIndicator mode={mode} />
+      {showEdge && group.edgeId ? (
+        <SelectedEdge edgeId={group.edgeId} input={group.lastInput?.current ?? null} />
+      ) : null}
       {children}
     </ChoiceCardPartsContext.Provider>
   );
