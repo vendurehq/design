@@ -4,9 +4,17 @@ import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-pr
 // that gains a text adds its group here; the `FormatMessages` type follows.
 // List the new texts in the FormatProvider section of `docs/ui-components.md`.
 const defaultMessages = {
+  combobox: {
+    /** Announced while a page of options loads. */
+    loading: 'Loading…',
+  },
   copyButton: {
     copy: 'Copy',
     copied: 'Copied',
+  },
+  loadingState: {
+    /** Screen-reader text of the loading region. */
+    loading: 'Loading…',
   },
   multiSelect: {
     /** Stands in for the selected values while the options load. */
