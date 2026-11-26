@@ -107,17 +107,18 @@ function CollapsibleSection({
           />
         </CollapsibleTrigger>
       </Heading>
-      {/* Height runs on the height curve; under reduced motion it snaps and
-          only the rows fade. */}
+      {/* The panel's height motion comes from CollapsibleContent; the card
+          clips the rows to its corners. */}
       <CollapsibleContent
         data-slot="collapsible-section-panel"
-        className="group/collapsible-section-panel h-(--collapsible-panel-height) overflow-hidden border-t border-border data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-slow motion-safe:ease-height"
+        className="group/collapsible-section-panel border-t border-border"
       >
         {/* Opening, the rows fade in over the second half of the height;
-            closing, they leave at once so the height settles on nothing. */}
+            closing, they leave at once so the height settles on nothing.
+            Under reduced motion the panel's own fade replaces this. */}
         <div
           data-slot="collapsible-section-rows"
-          className="transition-opacity delay-(--transition-duration-moderate) duration-moderate ease-out group-data-ending-style/collapsible-section-panel:opacity-0 group-data-ending-style/collapsible-section-panel:delay-0 group-data-ending-style/collapsible-section-panel:duration-fast group-data-starting-style/collapsible-section-panel:opacity-0"
+          className="motion-safe:transition-opacity motion-safe:delay-(--transition-duration-moderate) motion-safe:duration-moderate motion-safe:ease-out motion-safe:group-data-ending-style/collapsible-section-panel:opacity-0 motion-safe:group-data-ending-style/collapsible-section-panel:delay-0 motion-safe:group-data-ending-style/collapsible-section-panel:duration-fast motion-safe:group-data-starting-style/collapsible-section-panel:opacity-0"
         >
           {children}
         </div>

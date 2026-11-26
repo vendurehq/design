@@ -119,11 +119,20 @@ describe('CollapsibleSection', () => {
     expect(slotTag(html, 'collapsible-section-heading').startsWith('<h3')).toBe(true);
   });
 
-  test('reduced motion keeps the fades and drops the height', () => {
+  test('the panel takes its height motion from CollapsibleContent and adds none', () => {
     const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
-    expect(slotTokens(html, 'collapsible-section-panel')).toContain(
-      'motion-safe:transition-[height]',
-    );
+    const panel = slotTokens(html, 'collapsible-section-panel');
+    expect(panel).toContain('h-(--collapsible-panel-height)');
+    expect(panel).toContain('motion-reduce:transition-opacity');
+    expect(panel).not.toContain('motion-safe:transition-[height]');
+    expect(panel).not.toContain('motion-safe:ease-height');
+  });
+
+  test('the row fades run only with motion; reduced motion uses the panel fade', () => {
+    const html = renderToStaticMarkup(<CollapsibleSection title="Notes" count={1} defaultOpen />);
+    const rows = slotTokens(html, 'collapsible-section-rows');
+    expect(rows).toContain('motion-safe:transition-opacity');
+    expect(rows).not.toContain('transition-opacity');
   });
   test('a disabled header shows no hover fill', () => {
     const html = renderToStaticMarkup(
@@ -160,6 +169,8 @@ describe('CollapsibleSection', () => {
     expect(chevron).toContain(
       '[transition:rotate_var(--transition-duration-slow)_var(--ease-height),color_var(--transition-duration-fast)_var(--ease-default),opacity_var(--transition-duration-fast)_var(--ease-default)]',
     );
-    expect(slotTokens(html, 'collapsible-section-panel')).toContain('motion-safe:ease-height');
+    expect(slotTokens(html, 'collapsible-section-panel').join(' ')).toContain(
+      '--ease-height',
+    );
   });
 });
