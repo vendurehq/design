@@ -8,9 +8,9 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
-import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
+import { contentInsetPull } from "../../lib/content-inset.ts"
 import { cn } from "@vendure-io/ui/lib/utils"
-import { outlineEdge, outlineEdgeHover } from "@vendure-io/ui/lib/outline-edge"
+import { outlineEdge, outlineEdgeHover } from "../../lib/outline-edge.ts"
 import { isDevelopment } from "../../lib/env.ts"
 
 // The v3 look: 34px default and 28px sm, the xl radius, 14px medium text.

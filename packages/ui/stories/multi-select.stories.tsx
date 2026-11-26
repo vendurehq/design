@@ -232,6 +232,83 @@ export const Invalid: Story = {
   },
 };
 
+/**
+ * The options are still loading: `items` is `undefined`. The selected values
+ * show as a skeleton (their labels come with the options), and the open list
+ * shows a loading row, one option tall. Here the options arrive 800 ms after
+ * the trigger is focused. The trigger keeps its height.
+ */
+export const FirstLoad: Story = {
+  render: function MultiSelectFirstLoad() {
+    const [items, setItems] = React.useState<User[] | undefined>(undefined);
+    const started = React.useRef(false);
+    return (
+      <LabelledField label="Reviewers">
+        {(id) => (
+          // Starts the fake fetch on the first focus of the trigger.
+          <div
+            className="w-[280px]"
+            onFocus={() => {
+              if (started.current) return;
+              started.current = true;
+              setTimeout(() => setItems(users), 800);
+            }}
+          >
+            <MultiSelect<User>
+              id={id}
+              items={items}
+              itemToValue="id"
+              itemToLabel="name"
+              defaultValue={[2, 3]}
+            />
+          </div>
+        )}
+      </LabelledField>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('combobox', { name: 'Reviewers' });
+    const skeleton = trigger.querySelector('[data-slot=multi-select-value-skeleton]');
+    await expect(skeleton).not.toBeNull();
+    await expect(trigger).toHaveAttribute('aria-busy', 'true');
+    const triggerHeight = trigger.offsetHeight;
+    await userEvent.click(trigger);
+    const loadingRow = await waitFor(() => {
+      const row = document.querySelector<HTMLElement>('[data-slot=multi-select-loading]');
+      if (!row) throw new Error('no loading row yet');
+      return row;
+    });
+    const loadingRowHeight = loadingRow.offsetHeight;
+    const option = await within(document.body).findByRole('option', { name: 'Alan Turing' }, { timeout: 3000 });
+    // The loading row is one option tall, and the trigger keeps its height
+    // when the labels replace the skeleton.
+    await expect(option.offsetHeight).toBe(loadingRowHeight);
+    await expect(trigger).toHaveTextContent('Alan Turing, Grace Hopper');
+    await expect(trigger).not.toHaveAttribute('aria-busy');
+    await expect(trigger.offsetHeight).toBe(triggerHeight);
+  },
+};
+
+/** The options never arrive, held open: the trigger skeleton and the list's loading row. */
+export const FirstLoadHeld: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <LabelledField label="Reviewers">
+      {(id) => (
+        <div className="w-[280px]">
+          <MultiSelect<User> id={id} items={undefined} itemToValue="id" itemToLabel="name" defaultValue={[2, 3]} />
+        </div>
+      )}
+    </LabelledField>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('combobox', { name: 'Reviewers' });
+    await expect(trigger).toHaveTextContent('Loading…');
+    await userEvent.click(trigger);
+    await waitFor(() => expect(document.querySelector('[data-slot=multi-select-loading]')).not.toBeNull());
+  },
+};
+
 /** Ends with the list open, so the accessibility check scans it. */
 export const Open: Story = {
   tags: ['!autodocs'],

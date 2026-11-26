@@ -2,7 +2,7 @@ import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { contentInsetPull } from "@vendure-io/ui/lib/content-inset"
+import { contentInsetPull } from "../../lib/content-inset.ts"
 import { cn } from "@vendure-io/ui/lib/utils"
 
 // `--content-inset` is the distance from the box to the first letter: the

@@ -4,7 +4,7 @@ import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
+import { fieldSurfaceWithin } from "../../lib/field-surface.ts"
 import { MinusIcon } from "lucide-react"
 
 function InputOTP({

@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -244,6 +244,8 @@ n takes `enter="new"`.
 
 ## Utilities
 
+`@vendure-io/ui/lib/*` exports only the modules in this section: `utils`, `state-dictionary`, `tone-icons`, `date-value` and `base-ui`. Every other file in `src/lib` is internal, and an import of it fails to resolve.
+
 ### `cn()` — Class Merging
 
 Combines `clsx` and `tailwind-merge` for conflict-free class composition:
@@ -259,6 +261,26 @@ function MyComponent({ className }: { className?: string }) {
 ### `state-dictionary` — state to tone mapping
 
 `@vendure-io/ui/lib/state-dictionary` exports the `Tone` type, `defineStateEntries()` to declare a typed map from your domain states to tones and labels, `commonStates` for states every app shares, and `maxTone()` to roll several tones up to the most severe. See [StatusBadge and domain states](#statusbadge-and-domain-states) for an example.
+
+### `tone-icons` — the icon of each tone
+
+`@vendure-io/ui/lib/tone-icons` exports `toneIcons`, a map from each `Tone` to its Lucide icon. `StatusBadge`, `Alert` and the toasts use the same map. Use it when you draw a tone outside those components, so a tone has the same shape everywhere. `progress` maps to a loader icon that you spin.
+
+```tsx
+import { toneIcons } from "@vendure-io/ui/lib/tone-icons";
+
+const Icon = toneIcons[tone];
+<Icon aria-hidden className="size-4" />;
+```
+
+### `date-value` — calendar dates
+
+`@vendure-io/ui/lib/date-value` converts between `Date` and the `YYYY-MM-DD` strings that the date pickers use:
+
+- `parseCalendarDate(value)` reads `YYYY-MM-DD` as a local date, with no UTC shift.
+- `formatCalendarDate(date)` writes a local date as `YYYY-MM-DD`.
+- `parseInstant(value)` reads an ISO timestamp. It returns `undefined` for an empty or invalid value.
+- `formatDateLabel(date, locale?)` and `formatDateRangeLabel(from, to, locale?)` give the medium date label that the pickers show.
 
 ### `base-ui` — Base UI primitives
 
@@ -316,6 +338,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     </CopyFeedbackProvider>
   );
 }
+```
+
+### `useIsApplePlatform()`
+
+Returns `true` on macOS and iOS, so a shortcut label can show ⌘ there and Ctrl elsewhere. It returns `false` on the server and in the first hydration render, then the client value.
+
+```tsx
+import { useIsApplePlatform } from "@vendure-io/ui/hooks/use-apple-platform";
+
+const mod = useIsApplePlatform() ? "⌘" : "Ctrl";
 ```
 
 ### `useIsMobile()`
@@ -796,6 +828,23 @@ For a card whose body is a list, put a `CardCount` in the title and the rows in 
   </CardHeader>
 </Card>
 ```
+
+### StatCard
+
+`value` is pre-formatted content (`<Money>`, a string). Leave it `undefined` while it is not known yet: the label, icon and description show, and the value draws a skeleton of its own height, so the card does not move when the value arrives, and screen readers hear "Loading value" (`messages.statCard.loading` or `loadingLabel`). `null` means there is no value and shows `fallback` ("—" by default). `0` and `''` are real values. `delta.value` may be `undefined` too: the delta draws a skeleton.
+
+```tsx
+import { StatCard } from "@vendure-io/ui/components/molecules/stat-card";
+
+<StatCard
+  label="Revenue"
+  value={data ? <Money value={data.revenue} /> : undefined}
+  delta={{ value: data?.revenueChange }}
+  description="vs. previous period"
+/>
+```
+
+`delta.value` is a percentage change (`-3.2` for −3.2 %). It is shown without its sign, with one decimal, as a percent in the `FormatProvider` locale ("3.2%", "3,2 %"). The arrow and its color carry the direction, and `goodWhen` says which direction is good. A change that rounds to 0.0 has no arrow and a neutral color. `NaN` and `±Infinity` (a change from zero) show "—". For another unit, pass `delta.unit` (`' pp'`): the number is then a plain decimal followed by that unit. Screen readers hear "up" or "down" before the number: set them with `messages.statCard` (`up`, `down`) or the `deltaUpLabel` and `deltaDownLabel` props.
 
 ### ArrowLink
 

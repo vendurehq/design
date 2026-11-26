@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fieldSurface } from '@vendure-io/ui/lib/field-surface';
+import { fieldSurface } from '../../lib/field-surface.ts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combobox, ComboboxChips, ComboboxChipsInput } from '@vendure-io/ui/components/atoms/combobox';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@vendure-io/ui/components/atoms/input-otp';

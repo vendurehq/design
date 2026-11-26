@@ -1,10 +1,10 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
-import { formatRelative, formatRelativeDuration } from '@vendure-io/ui/lib/format-relative';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 import { useMessages } from '../../lib/format-messages.ts';
+import { formatRelative, formatRelativeDuration } from '../../lib/format-relative.ts';
 // Relative: `time-tooltip` is internal.
 import {
   sampleText,
@@ -194,5 +194,5 @@ function RelativeTime({
   );
 }
 
-// The format helpers are `@vendure-io/ui/lib/format-relative`.
+// The format helpers in `lib/format-relative` are internal.
 export { RelativeTime, type RelativeTimeProps };

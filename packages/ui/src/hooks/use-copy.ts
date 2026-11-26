@@ -1,7 +1,7 @@
 'use client';
 
-import { type ClipboardSource, writeToClipboard } from '@vendure-io/ui/lib/clipboard';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ClipboardSource, writeToClipboard } from '../lib/clipboard.ts';
 
 interface UseCopyOptions {
   /** How long `copied` stays true after a successful copy, in ms. */
@@ -53,3 +53,5 @@ export function useCopy({ timeout = 2000 }: UseCopyOptions = {}): UseCopyReturn 
 
   return { copied, copy };
 }
+
+export type { ClipboardSource };

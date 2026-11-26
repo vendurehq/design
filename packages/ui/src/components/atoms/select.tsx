@@ -5,7 +5,7 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { MenuCheck, menuCheckItem, menuItemDisabled } from "../../lib/menu-item.tsx"
-import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
+import { fieldSurface } from "../../lib/field-surface.ts"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"

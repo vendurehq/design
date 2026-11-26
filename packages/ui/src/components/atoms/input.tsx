@@ -4,7 +4,7 @@ import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { fieldSurface } from "@vendure-io/ui/lib/field-surface"
+import { fieldSurface } from "../../lib/field-surface.ts"
 import { useFieldControlProps } from "@vendure-io/ui/components/atoms/field"
 
 type InputProps = Omit<React.ComponentProps<"input">, "size"> & {
