@@ -121,6 +121,10 @@ const defaultMessages = {
     kilobyte: 'KB',
     megabyte: 'MB',
   },
+  dataTable: {
+    /** Placeholder and accessible name of the filter editor's default value input. */
+    filterValue: 'Value',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;
