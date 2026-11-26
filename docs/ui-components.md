@@ -733,6 +733,22 @@ import {
 </Card>
 ```
 
+For a card that opens as a whole (a project in a grid of projects), put a `CardLink` in the `CardTitle` around the title text. Its click area stretches over the card, so a click anywhere opens it, and the card has one tab stop named by the title. With a `CardLink` inside, the card takes the shared interactive look (`interactiveCardVariants({ target: "link" })` from `components/molecules/interactive-card`, the look ChoiceCard uses): the border darkens on hover, the card presses, and keyboard focus draws the 2px ring at a 2px offset around the card. `CardLink` renders a button for an `onClick` (a card that opens a dialog); pass `render={<a href="…" />}` or a router link element to open a page. Other controls in the card, such as a "…" menu in `CardAction`, keep their own click and tab stop; another element that must stay hoverable takes `data-card-control`. A card the user picks as a value is a `ChoiceCard`; a list of items that each open a page is a `ListRow` with a `ListRowLink`.
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>
+      <CardLink render={<Link to="/projects/storefront" />}>Storefront</CardLink>
+    </CardTitle>
+    <CardDescription>Production · eu-west-1</CardDescription>
+    <CardAction>
+      <DropdownMenu>…</DropdownMenu>
+    </CardAction>
+  </CardHeader>
+</Card>
+```
+
 For a card whose body is a list, put a `CardCount` in the title and the rows in `CardRows`. The count is muted; give it `tone="critical"` for failures or `tone="warning"` for rows that wait on the user, and the card stays neutral. Each `CardRow` draws its own top border and runs edge to edge, so the header needs no `border-b`. A `CardFooter` after the rows carries `border-t`.
 
 ```tsx
