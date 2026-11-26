@@ -270,7 +270,7 @@ export const ControlledSorting: Story = {
 export const Loading: Story = {
   render: () => (
     <DataTable<Order>
-      rows={[]}
+      rows={undefined}
       columns={columns}
       getRowId={(order) => order.id}
       isLoading
@@ -307,7 +307,7 @@ export const LoadingMatchesOneLineRows: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={oneLineColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -376,7 +376,7 @@ export const LoadingMatchesRowShape: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={twoLineColumns}
           getRowId={(order) => order.id}
           rowSelection={{}}
@@ -391,21 +391,21 @@ export const LoadingMatchesRowShape: Story = {
   play: ({ canvasElement }) => expectSameRowHeights(canvasElement, 3),
 };
 
-// The first page is loading: the total is not known yet, so the footer shows a
-// skeleton where the range goes and the prev/next buttons are disabled. The
-// footer keeps the height it has with the range text.
+// The first page is loading: the rows and the total are not known yet
+// (`rows` undefined, `totalItems` null). The body draws one full page of
+// skeleton rows, the footer a skeleton where the range goes, and the prev/next
+// buttons are disabled. The footer keeps the height it has with the range text.
 export const LoadingWithPagination: Story = {
   render: () => (
     <DataTable<Order>
-      rows={[]}
+      rows={undefined}
       columns={columns}
       getRowId={(order) => order.id}
       isLoading
-      skeletonRowCount={5}
       pagination={{
         page: 1,
         pageSize: 10,
-        totalItems: 0,
+        totalItems: null,
         onPageChange: () => {},
         onPageSizeChange: () => {},
       }}
@@ -413,12 +413,69 @@ export const LoadingWithPagination: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.queryByText('0 of 0')).toBeNull();
+    await expect(canvasElement.querySelectorAll('tbody tr')).toHaveLength(10);
+    await expect(canvas.queryByText(/\bof 0\b/)).toBeNull();
     await expect(
       canvasElement.querySelector('[data-slot="table-pagination-range"] [data-slot="skeleton"]'),
     ).not.toBeNull();
     await expect(canvas.getByRole('button', { name: 'Go to previous page' })).toBeDisabled();
     await expect(canvas.getByRole('button', { name: 'Go to next page' })).toBeDisabled();
+  },
+};
+
+/** The height of the card footer inside `[data-testid=testId]`. */
+function footerHeight(canvasElement: HTMLElement, testId: string) {
+  const footer = within(canvasElement).getByTestId(testId).querySelector('[data-slot="card-footer"]');
+  return Math.round(footer?.getBoundingClientRect().height ?? 0);
+}
+
+const PAGE_SIZES = [10, 25];
+
+/**
+ * The first load of a paginated table is as tall as the loaded page: one
+ * skeleton row per row the page will have, at the page size, and a footer of
+ * the same height. Each pair: loading, then loaded.
+ */
+export const LoadingHoldsPageHeight: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      {PAGE_SIZES.map((pageSize) => {
+        const pagination = { page: 1, pageSize, onPageChange: () => {}, onPageSizeChange: () => {} };
+        return (
+          <Fragment key={pageSize}>
+            <div data-testid={`loading-${pageSize}`}>
+              <DataTable<Order>
+                rows={undefined}
+                columns={sizedColumns}
+                getRowId={(order) => order.id}
+                isLoading
+                pagination={{ ...pagination, totalItems: null }}
+              />
+            </div>
+            <div data-testid={`loaded-${pageSize}`}>
+              <DataTable<Order>
+                rows={pagedOrders.slice(0, pageSize)}
+                columns={sizedColumns}
+                getRowId={(order) => order.id}
+                pagination={{ ...pagination, totalItems: pagedOrders.length }}
+              />
+            </div>
+          </Fragment>
+        );
+      })}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const pageSize of PAGE_SIZES) {
+      const loading = within(canvasElement).getByTestId(`loading-${pageSize}`);
+      await expect(loading.querySelectorAll('tbody tr')).toHaveLength(pageSize);
+      await expect(bodyHeight(canvasElement, `loading-${pageSize}`)).toBe(
+        bodyHeight(canvasElement, `loaded-${pageSize}`),
+      );
+      await expect(footerHeight(canvasElement, `loading-${pageSize}`)).toBe(
+        footerHeight(canvasElement, `loaded-${pageSize}`),
+      );
+    }
   },
 };
 
@@ -534,7 +591,7 @@ export const LoadingKeepsColumnWidths: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -569,12 +626,12 @@ const tallEmptyState = (
 );
 
 /**
- * With `rowCountKey`, a first load draws as many skeleton rows as the last
- * load showed, so the body keeps its height when the rows arrive. A last load
- * with no rows renders the empty state hidden and inert, so the body has its
- * exact height. From the top: 3 loaded rows (stored under their key), a load
- * that remembers 3, "No results", a load that remembers 0, then the same
- * pair with a tall custom `emptyState`.
+ * With `rowCountKey`, a first load draws as many skeleton rows as the
+ * remembered total of the list, so the body keeps its height when the rows
+ * arrive. A remembered total of 0 renders the empty state hidden and inert, so
+ * the body has its exact height. From the top: 3 loaded rows (their total
+ * stored under their key), a load that remembers 3, "No results", a load that
+ * remembers 0, then the same pair with a tall custom `emptyState`.
  */
 export const LoadingRemembersRowCount: Story = {
   beforeEach: () => {
@@ -599,7 +656,7 @@ export const LoadingRemembersRowCount: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -611,7 +668,7 @@ export const LoadingRemembersRowCount: Story = {
       </div>
       <div data-testid="loading-empty">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -628,7 +685,7 @@ export const LoadingRemembersRowCount: Story = {
       </div>
       <div data-testid="loading-empty-custom">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -697,7 +754,7 @@ export const NarrowKeepsColumnWidths: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Order>
-          rows={[]}
+          rows={undefined}
           columns={flooredColumns}
           getRowId={(o) => o.id}
           isLoading
@@ -1961,7 +2018,7 @@ export const LoadingKeepsRowLinkSlot: Story = {
       </div>
       <div data-testid="loading">
         <DataTable<Variant>
-          rows={[]}
+          rows={undefined}
           columns={sizedVariantColumns}
           getRowId={(variant) => variant.id}
           isLoading

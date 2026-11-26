@@ -87,13 +87,16 @@ import {
   sameIndents,
 } from './data-table-helpers.tsx';
 // Relative: `data-table-row-count-storage` is closed in the package exports.
-import { useRememberedRowCount } from './data-table-row-count-storage.tsx';
+import { skeletonRowCountFor, useRememberedRowCount } from './data-table-row-count-storage.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
 
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
 const ACTIONS_COLUMN_ID = 'actions';
+// The table's data before the first load. One array, so TanStack's row model
+// does not rebuild on every render.
+const NO_ROWS: never[] = [];
 
 // The built-in empty-state cell.
 const EMPTY_CELL_CLASS = 'text-muted-foreground h-24 text-center';
@@ -773,6 +776,30 @@ function DataTable<TData>({
     );
   }
 
+  // Before the first load (`rows` undefined) the body shows skeleton rows. A
+  // load with rows loaded (a page, sort or filter change, or a refetch of an
+  // empty list) is pending instead: the rows or the empty state stay and dim
+  // after a short delay.
+  const firstLoad = rows === undefined;
+  const pending = Boolean(isLoading) && !firstLoad;
+  const serverTotal =
+    pagination != null && pagination.mode !== 'client' ? pagination.totalItems : undefined;
+
+  const warnedUnknownTotal = React.useRef(false);
+  if (
+    isDevelopment &&
+    serverTotal === null &&
+    !firstLoad &&
+    !isLoading &&
+    !warnedUnknownTotal.current
+  ) {
+    warnedUnknownTotal.current = true;
+    console.warn(
+      '[DataTable] The rows have loaded but pagination.totalItems is null. ' +
+        'Pass the total with the rows: the footer range stays a skeleton until then.',
+    );
+  }
+
   // Resolve labels once per `labels` identity.
   const l = React.useMemo(
     () => ({
@@ -964,7 +991,7 @@ function DataTable<TData>({
   };
 
   const baseOptions: TableOptions<TData> = {
-    data: rows,
+    data: rows ?? NO_ROWS,
     columns: displayColumns,
     state,
     getRowId,
@@ -975,7 +1002,7 @@ function DataTable<TData>({
     manualSorting: sorting ? sorting.mode !== 'client' : undefined,
     manualFiltering: filters ? filters.mode !== 'client' : undefined,
     manualPagination: pagination ? pagination.mode !== 'client' : undefined,
-    rowCount: pagination && pagination.mode !== 'client' ? pagination.totalItems : undefined,
+    rowCount: serverTotal ?? undefined,
   };
 
   if (sorting) {
@@ -1012,9 +1039,13 @@ function DataTable<TData>({
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
-  // The row count of the last load, read at mount. Each finished load stores
-  // the current page's count for the next first load.
-  const rememberedRowCount = useRememberedRowCount(rowCountKey, bodyRows.length, !isLoading);
+  // The list's total of the last load, read at mount. Each finished load
+  // stores its total for the next first load, which draws as many skeleton
+  // rows as the current page will have.
+  const loadedTotal =
+    firstLoad || isLoading ? null : (serverTotal ?? table.getPrePaginationRowModel().rows.length);
+  const rememberedRowCount = useRememberedRowCount(rowCountKey, loadedTotal);
+  const skeletonRows = skeletonRowCountFor(rememberedRowCount, pagination, skeletonRowCount);
 
   // The select checkbox is floated absolutely over a zero-width cell, so the
   // gutter it needs is folded into the leading data column as left padding —
@@ -1196,11 +1227,6 @@ function DataTable<TData>({
     filters.showAppliedFilters !== false &&
     table.getState().columnFilters.length > 0;
   const showHeader = header != null || showControls || showChips;
-  // The first load: no rows yet, so the body shows skeleton rows. A load with
-  // rows on screen (a page, sort or filter change with the previous rows kept)
-  // is pending instead: the rows stay and dim after a short delay.
-  const firstLoad = Boolean(isLoading) && rows.length === 0;
-  const pending = Boolean(isLoading) && !firstLoad;
   // "Clear filters" after the chips. With no rows (and not loading) the empty
   // state has the only one.
   const clearFilters = resolveClearFilters(
@@ -1449,12 +1475,12 @@ function DataTable<TData>({
             ))}
           </TableHeader>
           <TableBody
-            aria-busy={isLoading ? true : undefined}
+            aria-busy={isLoading || firstLoad ? true : undefined}
             data-pending={pending ? '' : undefined}
             className={PENDING_CLASS}
           >
-            {firstLoad && rememberedRowCount !== 0 ? (
-              Array.from({ length: rememberedRowCount ?? skeletonRowCount }).map((_, rowIndex) => (
+            {firstLoad && skeletonRows > 0 ? (
+              Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
                     <TableCell>
@@ -1476,9 +1502,10 @@ function DataTable<TData>({
                 </TableRow>
               ))
             ) : bodyRows.length === 0 ? (
-              // The empty state. While a list whose last load was empty loads
-              // again, it is already here but hidden and inert, so the body
-              // has its exact height and the empty result shows in place.
+              // The empty state. Before the first load of a page that will be
+              // empty (by the remembered total), it is already here but hidden
+              // and inert, so the body has its exact height and the empty
+              // result shows in place.
               <TableRow
                 data-slot={firstLoad ? 'data-table-empty-placeholder' : undefined}
                 aria-hidden={firstLoad ? true : undefined}
@@ -1557,11 +1584,13 @@ function DataTable<TData>({
             className="w-full"
             page={pagination.page}
             pageSize={pagination.pageSize}
-            // Unknown while the first page loads: a skeleton instead of "0 of 0".
+            // Unknown (null, or client rows not loaded): a skeleton, not "0 of 0".
             totalItems={
-              firstLoad
-                ? undefined
-                : (pagination.totalItems ?? table.getPrePaginationRowModel().rows.length)
+              pagination.mode === 'client'
+                ? firstLoad
+                  ? undefined
+                  : table.getPrePaginationRowModel().rows.length
+                : (pagination.totalItems ?? undefined)
             }
             isLoading={pending}
             onPageChange={pagination.onPageChange}

@@ -863,7 +863,7 @@ Without children, `LoadingState` draws `rows` full-width bars, as before. Use th
 
 ### DataTable loading rows
 
-While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
+Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `rowCountKey`, it remembers the list's total and draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
 import {
@@ -872,9 +872,9 @@ import {
 } from "@vendure-io/ui/components/molecules/data-table/data-table";
 
 <DataTable
-  rows={data?.items ?? []}
+  rows={data?.items}
   columns={columns}
-  isLoading={isPending}
+  isLoading={isFetching}
   skeletonCells={{
     // A title over a muted text-xs sub-line.
     customer: (
@@ -1015,6 +1015,11 @@ These packages are optional — install them only if you use the features that n
 ### Breaking changes in `@vendure-io/ui`
 
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
+2. DataTable marks "not loaded yet" in the data, not with `isLoading`:
+   - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
+   - Server pagination requires `totalItems: number | null`. `null` means "not known" and draws a skeleton range. Pass `data?.totalItems ?? null`, not `0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
+   - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
+   - `rowCountKey` stores the list's total (all pages), not the row count of the last page. Put the filters and search in the key when they change the total.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

@@ -100,17 +100,33 @@ export type DataTableRowSelection<TData> = ControlledState<RowSelectionState> & 
  * controlled via `page`/`onPageChange` — no `defaultValue` branch, because page
  * is typically URL-owned.
  */
-export interface DataTablePagination {
-  mode?: 'server' | 'client'; // default 'server'
+interface DataTablePaginationBase {
   page: number; // 1-based
   pageSize: number;
-  totalItems?: number; // required in server mode
   onPageChange: (page: number) => void;
   onPageSizeChange?: (size: number) => void; // presence renders the size selector
   pageSizeOptions?: number[]; // default [10, 25, 50, 100]
   getPageHref?: (page: number) => string;
   formatRange?: (range: { start: number; end: number; total: number }) => string;
 }
+
+/** The server pages, sorts and filters. The table shows one page of `rows`. */
+export interface DataTableServerPagination extends DataTablePaginationBase {
+  mode?: 'server';
+  /**
+   * The number of rows on all pages. `null` while it is not known (the first
+   * page has not loaded yet): the footer range is a skeleton until then. Do
+   * not pass 0 for "not known": 0 means the list is empty.
+   */
+  totalItems: number | null;
+}
+
+/** `rows` is the full set. The table pages it. */
+export interface DataTableClientPagination extends DataTablePaginationBase {
+  mode: 'client';
+}
+
+export type DataTablePagination = DataTableServerPagination | DataTableClientPagination;
 
 /**
  * Open operator vocabulary — the core never interprets it; it only stores it in
@@ -314,7 +330,13 @@ export interface DataTableLabels {
 }
 
 export interface DataTableProps<TData> {
-  rows: TData[]; // current page (server) or full set (client). The core never fetches.
+  /**
+   * The current page (server) or the full set (client). The core never
+   * fetches. `undefined` until the first load finishes: the body shows
+   * skeleton rows. `[]` is a loaded empty list and shows the empty state, also
+   * while a new load runs. Do not pass `[]` for "not loaded".
+   */
+  rows: TData[] | undefined;
   /**
    * THE cell/header seam. `meta` is passed through; the DataTable reads
    * `meta.align` and `meta.width` (see `DataTableColumnMeta`).
@@ -325,34 +347,42 @@ export interface DataTableProps<TData> {
   getRowId?: (row: TData, index: number) => string;
 
   /**
-   * The rows are loading. With `rows` empty (the first load) the body shows
-   * skeleton rows (`skeletonRowCount`, or the count remembered under
-   * `rowCountKey`) and the pagination footer a skeleton range
-   * with prev/next disabled. With rows on screen (a page, sort or filter
-   * change that keeps the previous rows) the rows stay: the body is
+   * A load is running. With `rows` loaded (a page, sort or filter change that
+   * keeps the previous rows, or the empty state) they stay: the body is
    * `aria-busy`, the rows and the footer range dim after a short delay, and
-   * prev/next ignore presses. Never blanks populated rows.
+   * prev/next ignore presses. Never blanks loaded rows. Before the first load
+   * (`rows` is `undefined`) the body shows skeleton rows with or without it.
    */
   isLoading?: boolean;
-  skeletonRowCount?: number; // default 10
   /**
-   * Remembers how many rows the current page showed, in local storage under
-   * this key. On the next first load the body draws that many skeleton rows,
-   * at the loaded row height, so the table does not change height when the
-   * rows arrive. A remembered 0 renders the empty state (`emptyState` or "No
-   * results") hidden and inert instead, so the body has its exact height and
-   * the empty result shows in place.
+   * Skeleton rows before the first load of a table without `pagination`.
+   * Default 10. With `pagination` the count comes from the page size (and the
+   * total remembered under `rowCountKey`), so this prop is not used.
+   */
+  skeletonRowCount?: number;
+  /**
+   * Remembers the list's total row count (all pages), in local storage under
+   * this key. Before the next first load the body draws as many skeleton rows
+   * as the current page will have: the page size, fewer on a short last page,
+   * so the table does not change height when the rows arrive. A page that
+   * will be empty renders the empty state (`emptyState` or "No results")
+   * hidden and inert instead, so the body has its exact height and the empty
+   * result shows in place.
    *
-   * - The count is read once, when the table mounts (or the key changes),
-   *   before the first paint. Nothing remembered keeps `skeletonRowCount`.
-   * - Each finished load (`isLoading` false) stores the count of the rows on
-   *   the current page.
-   * - Blocked or full storage is ignored. A server render draws
-   *   `skeletonRowCount`.
+   * - The total is read once, when the table mounts (or the key changes),
+   *   before the first paint. With nothing remembered a paginated table draws
+   *   one full page, any other table `skeletonRowCount`.
+   * - Each finished load (`isLoading` false, `rows` and the total known)
+   *   stores the total: `pagination.totalItems` in server mode, else the row
+   *   count after client filtering.
+   * - The remembered total only sets the skeleton row count. The footer never
+   *   shows it: it can be out of date.
+   * - Blocked or full storage is ignored. A server render draws the default.
    *
    * The key names the list and anything that scopes its rows, such as a
-   * channel: `${route}:${channelId}`. Rows taller than one text line still
-   * need `skeletonCells`. Without the prop nothing changes.
+   * channel, the filters or the search: `${route}:${channelId}:${filterHash}`.
+   * Rows taller than one text line still need `skeletonCells`. Without the
+   * prop the first visit of every mount draws the default.
    */
   rowCountKey?: string;
   /**
