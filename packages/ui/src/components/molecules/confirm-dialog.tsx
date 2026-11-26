@@ -21,6 +21,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 
 // The dialog's buttons show the ring on any focus, not only keyboard focus:
 // the dialog moves focus itself when it opens, and after a mouse click some
@@ -68,6 +69,11 @@ interface ConfirmDialogProps {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   /**
+   * Screen-reader text of the spinner while `onConfirm` runs.
+   * @default `messages.confirmDialog.loading`, "Loading"
+   */
+  loadingLabel?: string;
+  /**
    * `default`: Confirm is the filled primary and takes the focus.
    * `caution`: a costly action that is not destructive ("Deploy anyway" after
    * a failed check). Cancel takes the focus and Confirm is an outline button,
@@ -114,6 +120,7 @@ function ConfirmDialog({
   onConfirm,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  loadingLabel,
   variant = 'default',
   confirmDisabled = false,
   confirmDisabledReason,
@@ -123,6 +130,7 @@ function ConfirmDialog({
   open,
   onOpenChange,
 }: ConfirmDialogProps) {
+  const t = useMessages('confirmDialog', { loading: loadingLabel });
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -232,7 +240,7 @@ function ConfirmDialog({
             <span data-slot="confirm-dialog-label" className={cn(pending && 'opacity-0')}>
               {confirmLabel}
             </span>
-            {pending ? <Spinner className="absolute inset-0 m-auto" /> : null}
+            {pending ? <Spinner aria-label={t.loading} className="absolute inset-0 m-auto" /> : null}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

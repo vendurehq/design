@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `combobox` (`loading`, announced while a page of options loads), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `loadingState` (`loading`, LoadingState's screen-reader text), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -726,6 +726,8 @@ import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialo
 - `default`: a consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus, so Enter confirms.
 - `caution`: a costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog points one way.
 - `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
+
+While an async `onConfirm` runs, the spinner announces "Loading". Translate it with `loadingLabel`, or once for the app with `messages.confirmDialog.loading`. SecretValue works the same way (`loadingLabel`, `messages.secretValue.loading`).
 
 ### Card
 

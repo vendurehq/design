@@ -11,6 +11,7 @@ import { VisibilityIcon } from '@vendure-io/ui/components/molecules/visibility-i
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useReducer, useRef } from 'react';
+import { useMessages } from '../../lib/format-messages.ts';
 
 interface SecretValueProps extends Omit<React.ComponentProps<'span'>, 'children'> {
   /**
@@ -39,6 +40,11 @@ interface SecretValueProps extends Omit<React.ComponentProps<'span'>, 'children'
   copiedLabel?: CopyButtonProps['copiedLabel'];
   /** Shown inline when `loadValue` rejects. @default "Couldn't load the value." */
   loadErrorMessage?: string;
+  /**
+   * Screen-reader text of the spinner while the value loads.
+   * @default `messages.secretValue.loading`, "Loading"
+   */
+  loadingLabel?: string;
 }
 
 const MASK = '••••••••';
@@ -99,9 +105,11 @@ function SecretValue({
   copyLabel = 'Copy value',
   copiedLabel = 'Value copied',
   loadErrorMessage = "Couldn't load the value.",
+  loadingLabel,
   className,
   ...props
 }: SecretValueProps) {
+  const t = useMessages('secretValue', { loading: loadingLabel });
   const [state, dispatch] = useReducer(revealReducer, { status: 'hidden' });
   // Drops a load that settles after the user hid the value or asked again.
   const request = useRef(0);
@@ -171,7 +179,7 @@ function SecretValue({
           else void reveal();
         }}
       >
-        {loading ? <Spinner /> : <VisibilityIcon visible={!revealed} />}
+        {loading ? <Spinner aria-label={t.loading} /> : <VisibilityIcon visible={!revealed} />}
       </Button>
       {copyable ? (
         <CopyButton
