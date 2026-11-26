@@ -1290,7 +1290,7 @@ function FilterValueTable({ labels }: { labels?: DataTableProps<Order>['labels']
       rows={orders}
       columns={columns}
       getRowId={(order) => order.id}
-      filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+      filters={{ value: filters, onValueChange: setFilters, columns: filterColumns }}
       labels={labels}
     />
   );
