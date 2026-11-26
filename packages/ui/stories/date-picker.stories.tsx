@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useState } from 'react';
 import { fr } from 'react-day-picker/locale/fr';
+import { Input } from '../src/components/atoms/input.tsx';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
 import {
   DateRangePicker,
@@ -88,6 +89,15 @@ export const Open: Story = {
   },
 };
 
+export const OpenDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: DateAndTime.render,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getAllByRole('button')[0] as HTMLElement);
+    await waitFor(() => expect(within(document.body).getByRole('dialog')).toBeVisible());
+  },
+};
+
 /**
  * Opens the picker and checks the calendar follows the `FormatProvider` language:
  * a French caption and a week that starts on Monday.
@@ -161,4 +171,191 @@ export const FrenchRange: Story = {
     );
   },
   play: ({ canvasElement }) => expectFrenchCalendar(canvasElement, 'mars 2026'),
+};
+
+/** Without `value`, the picker keeps the pick itself. `defaultValue` sets the first one. */
+export const UncontrolledDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DatePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date');
+    await userEvent.click(trigger);
+    await userEvent.click(await within(document.body).findByRole('button', { name: /\b15th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/15/));
+    await expect(within(canvasElement).getByRole('button', { name: 'Clear date' })).toBeVisible();
+  },
+};
+
+export const UncontrolledDateOnlyWithDefault: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DatePicker defaultValue="2026-03-10" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent(/10/);
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Clear date' }));
+    await waitFor(() => expect(trigger).toHaveTextContent('Pick a date'));
+  },
+};
+
+export const UncontrolledDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-[460px]">
+      <DateTimePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date and time');
+    await expect(canvas.getByLabelText('Time')).toBeDisabled();
+    await userEvent.click(trigger);
+    await userEvent.click(await within(document.body).findByRole('button', { name: /\b15th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/15/));
+    await expect(canvas.getByLabelText('Time')).toBeEnabled();
+  },
+};
+
+export const UncontrolledRange: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-80">
+      <DateRangePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await expect(trigger).toHaveTextContent('Pick a date range');
+    await userEvent.click(trigger);
+    const body = within(document.body);
+    await userEvent.click(await body.findByRole('button', { name: /\b10th\b/ }));
+    await userEvent.click(await body.findByRole('button', { name: /\b12th\b/ }));
+    await waitFor(() => expect(trigger).toHaveTextContent(/10.*12/));
+  },
+};
+
+/**
+ * A picker stops at its cap in a wide column, and its popup is at least as wide
+ * as the field. `fitsField` also checks the popup is the calendar's width, which
+ * is not true of the range picker with presets.
+ */
+async function expectCappedField(canvasElement: HTMLElement, fitsField = true) {
+  const root = canvasElement.querySelector<HTMLElement>('[data-slot$="picker"]');
+  if (!root?.parentElement) throw new Error('The picker is missing.');
+  await expect(root.offsetWidth).toBeLessThan(root.parentElement.offsetWidth);
+  const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+  await userEvent.click(trigger);
+  const popup = await within(document.body).findByRole('dialog');
+  // offsetWidth ignores the scale of the opening animation.
+  await expect(popup.offsetWidth).toBeGreaterThanOrEqual(trigger.offsetWidth);
+  if (fitsField) await expect(popup.offsetWidth).toBeLessThanOrEqual(root.offsetWidth);
+}
+
+export const WideDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-120">
+      <DatePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
+};
+
+/** A field narrower than the calendar keeps the calendar's width. */
+export const NarrowDateOnly: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-48">
+      <DatePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getAllByRole('button')[0] as HTMLElement;
+    await userEvent.click(trigger);
+    const popup = await within(document.body).findByRole('dialog');
+    await expect(popup.offsetWidth).toBeGreaterThanOrEqual(trigger.offsetWidth);
+  },
+};
+
+export const WideDateAndTime: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-160">
+      <DateTimePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
+};
+
+export const WideRange: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-120">
+      <DateRangePicker />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectCappedField(canvasElement),
+};
+
+export const WideRangeWithPresets: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-160">
+      <DateRangePicker
+        presets={[
+          { id: 'today', label: 'Today', value: { from: '2026-11-26', to: '2026-11-26' } },
+          { id: 'week', label: 'Last 7 days', value: { from: '2026-11-20', to: '2026-11-26' } },
+        ]}
+      />
+    </div>
+  ),
+  play: ({ canvasElement }) => expectCappedField(canvasElement, false),
+};
+
+/** The longest realistic range, across two years, fits the field without truncating. */
+export const LongRangeLabel: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="w-120">
+      <DateRangePicker defaultValue={{ from: '2026-11-01', to: '2027-12-26' }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const label = canvasElement.querySelector<HTMLElement>('[data-slot="date-range-picker"] .truncate');
+    if (!label) throw new Error('The range label is missing.');
+    await expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+  },
+};
+
+/**
+ * Next to an Input, the pickers stop at their cap while the Input fills the
+ * column. Pass `className="max-w-none"` to a picker to fill the column too.
+ */
+export const FullWidthFormColumn: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <div className="flex w-full max-w-120 flex-col gap-3">
+      <Input aria-label="Name" placeholder="Name" />
+      <DatePicker />
+      <Input aria-label="Reference" placeholder="Reference" />
+      <DateTimePicker />
+      <Input aria-label="Notes" placeholder="Notes" />
+      <DateRangePicker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText('Name');
+    const roots = canvasElement.querySelectorAll<HTMLElement>('[data-slot$="picker"]');
+    await expect(roots).toHaveLength(3);
+    for (const root of roots) await expect(root.offsetWidth).toBeLessThan(input.offsetWidth);
+  },
 };
