@@ -6,11 +6,11 @@ import {
   CopyButton,
   type CopyButtonProps,
 } from '@vendure-io/ui/components/molecules/copyable-text';
-import { chipChromeClass, chipIconButtonClass } from '@vendure-io/ui/components/molecules/id-chip';
 import { VisibilityIcon } from '@vendure-io/ui/components/molecules/visibility-icon';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useReducer, useRef } from 'react';
+import { chipChromeClass, chipIconButtonClass } from './id-chip-chrome.tsx';
 
 interface SecretValueProps extends Omit<React.ComponentProps<'span'>, 'children'> {
   /**

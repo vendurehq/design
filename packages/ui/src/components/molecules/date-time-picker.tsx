@@ -6,10 +6,10 @@ import { Input } from '@vendure-io/ui/components/atoms/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@vendure-io/ui/components/atoms/popover';
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { formatDateLabel, parseInstant } from '@vendure-io/ui/lib/date-value';
-import { fieldButton } from '@vendure-io/ui/lib/field-surface';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarClockIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
+import { fieldButton } from '../../lib/field-surface.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,

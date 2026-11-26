@@ -1,13 +1,13 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
+import { cn } from '@vendure-io/ui/lib/utils';
+import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
 import {
   type FormatRelativeOptions,
   formatRelative,
   formatRelativeDuration,
-} from '@vendure-io/ui/lib/format-relative';
-import { cn } from '@vendure-io/ui/lib/utils';
-import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
+} from '../../lib/format-relative.ts';
 // Relative: `time-tooltip` is internal.
 import { TimeSpan, TimeTooltip, toTime, useReadersClock } from './time-tooltip.tsx';
 

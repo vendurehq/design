@@ -5,14 +5,10 @@ import {
   type CopyButtonProps,
   useCopyAction,
 } from '@vendure-io/ui/components/molecules/copyable-text';
-import {
-  ChipCopyTooltip,
-  chipChromeClass,
-  chipCopyButtonProps,
-} from '@vendure-io/ui/components/molecules/id-chip';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useState } from 'react';
+import { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps } from './id-chip-chrome.tsx';
 
 function clampLength(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
