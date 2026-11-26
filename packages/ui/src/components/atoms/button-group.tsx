@@ -3,7 +3,7 @@ import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@vendure-io/ui/lib/utils"
-import { outlineEdgeRing } from "@vendure-io/ui/lib/outline-edge"
+import { outlineEdgeRing } from "../../lib/outline-edge.ts"
 import { Separator } from "@vendure-io/ui/components/atoms/separator"
 
 // The v3 look: the group draws one outer edge and its children draw none.

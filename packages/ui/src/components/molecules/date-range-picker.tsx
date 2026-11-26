@@ -9,11 +9,11 @@ import {
   formatDateRangeLabel,
   parseCalendarDate,
 } from '@vendure-io/ui/lib/date-value';
-import { fieldButton } from '@vendure-io/ui/lib/field-surface';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarRangeIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
+import { fieldButton } from '../../lib/field-surface.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,

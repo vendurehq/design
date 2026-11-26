@@ -5,8 +5,8 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 
 import { cn } from "@vendure-io/ui/lib/utils"
 import { MenuCheck, menuCheckItem, menuItemDisabled } from "../../lib/menu-item.tsx"
-import { statusChipRing } from "@vendure-io/ui/lib/tint-recipes"
-import { fieldSurface, fieldSurfaceWithin } from "@vendure-io/ui/lib/field-surface"
+import { statusChipRing } from "../../lib/tint-recipes.ts"
+import { fieldSurface, fieldSurfaceWithin } from "../../lib/field-surface.ts"
 import { popupMotion } from "../../lib/popup-motion.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import {

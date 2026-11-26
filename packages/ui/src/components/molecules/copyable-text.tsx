@@ -3,10 +3,10 @@
 import { Button } from '@vendure-io/ui/components/atoms/button';
 import { useCopyFeedback } from '@vendure-io/ui/components/molecules/copy-feedback-provider';
 import { useCopy } from '@vendure-io/ui/hooks/use-copy';
-import type { ClipboardSource } from '@vendure-io/ui/lib/clipboard';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import type * as React from 'react';
+import type { ClipboardSource } from '../../lib/clipboard.ts';
 import { useMessages } from '../../lib/format-messages.ts';
 
 interface UseCopyActionOptions {
