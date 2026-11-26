@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip.tsx"
 // Relative: `label-swap` is closed in the package exports.
 import { LabelSwap } from "./label-swap.tsx"
 import { menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
+import { useMessages } from "../../lib/format-messages.ts"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -189,7 +190,12 @@ type BreadcrumbSearchMenuOption = Omit<BreadcrumbMenuOption, "render" | "href">
 
 /** The props both crumb menus share. */
 type BreadcrumbMenuBaseProps = {
-  options: readonly BreadcrumbSearchMenuOption[]
+  /**
+   * The items to switch to. `undefined` means they are still loading: the
+   * open menu shows a loading row, one item tall, in their place. `[]` means
+   * there are none.
+   */
+  options: readonly BreadcrumbSearchMenuOption[] | undefined
   value: string
   onValueChange?: (value: string) => void
   /** Names the list: it heads the menu and starts the crumb's accessible name. */
@@ -215,6 +221,12 @@ type BreadcrumbMenuBaseProps = {
    * `placeholder` undefined and the skeleton shows.
    */
   pending?: boolean
+  /**
+   * Read while the options load, and after the list label in the pending
+   * crumb ("Project: Loading…").
+   * @default `messages.breadcrumb.loading`, "Loading…"
+   */
+  loadingLabel?: string
   open?: boolean
   onOpenChange?: (open: boolean) => void
   defaultOpen?: boolean
@@ -261,7 +273,15 @@ const crumbTriggerClassName =
  * is known. The skeleton is hidden from screen readers, which hear the
  * status text instead. A `div`, as the skeleton is one.
  */
-function PendingCrumb({ label, className }: { label: string; className?: string }) {
+function PendingCrumb({
+  label,
+  loadingLabel,
+  className,
+}: {
+  label: string
+  loadingLabel: string
+  className?: string
+}) {
   return (
     <div
       role="status"
@@ -271,7 +291,7 @@ function PendingCrumb({ label, className }: { label: string; className?: string 
         className
       )}
     >
-      <span className="sr-only">{`${label}: Loading…`}</span>
+      <span className="sr-only">{`${label}: ${loadingLabel}`}</span>
       <Skeleton aria-hidden className="h-[0.8lh] w-24 min-w-0 shrink" />
     </div>
   )
@@ -290,7 +310,8 @@ function useCrumbTrigger({
   label,
   placeholder,
   open,
-}: Pick<BreadcrumbMenuBaseProps, "options" | "value" | "label" | "placeholder"> & {
+}: Pick<BreadcrumbMenuBaseProps, "value" | "label" | "placeholder"> & {
+  options: readonly BreadcrumbSearchMenuOption[]
   open: boolean
 }) {
   const found = options.findIndex((option) => option.value === value)
@@ -427,6 +448,7 @@ function BreadcrumbMenu({
   label,
   placeholder,
   pending = false,
+  loadingLabel,
   open: openProp,
   onOpenChange,
   defaultOpen = false,
@@ -434,14 +456,21 @@ function BreadcrumbMenu({
   className,
   contentClassName,
 }: Omit<BreadcrumbMenuBaseProps, "options"> & {
-  options: readonly BreadcrumbMenuOption[]
+  /**
+   * The items to switch to. `undefined` means they are still loading: the
+   * open menu shows a loading row, one item tall, in their place. `[]` means
+   * there are none.
+   */
+  options: readonly BreadcrumbMenuOption[] | undefined
   children?: React.ReactNode
 }) {
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
-  const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
+  const crumb = useCrumbTrigger({ options: options ?? [], value, label, placeholder, open })
+  const t = useMessages("breadcrumb", { loading: loadingLabel })
   // Without a name, a skeleton. The trigger mounts with the first name, so
   // it shows without a swap.
-  if (pending && !crumb.named) return <PendingCrumb label={label} className={className} />
+  if (pending && !crumb.named)
+    return <PendingCrumb label={label} loadingLabel={t.loading} className={className} />
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -470,30 +499,44 @@ function BreadcrumbMenu({
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel>{label}</DropdownMenuLabel>
-          <MenuPrimitive.RadioGroup
-            value={value}
-            onValueChange={(next: string, details) => {
-              // A modifier or middle click opens a link row elsewhere: the
-              // current item stays.
-              if (isNewTabClick(details.event)) return
-              onValueChange?.(next)
-            }}
-          >
-            {options.map((option) => (
-              <MenuPrimitive.RadioItem
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-                closeOnClick={false}
-                data-slot="breadcrumb-menu-item"
-                render={option.disabled ? undefined : (option.render ?? (option.href !== undefined ? <a href={option.href} /> : undefined))}
-                className={cn(menuItem, menuRadioItem)}
-              >
-                <OptionRow option={option} />
-                <MenuCheck />
-              </MenuPrimitive.RadioItem>
-            ))}
-          </MenuPrimitive.RadioGroup>
+          {options === undefined ? (
+            // In the group, not straight in the menu, which takes only items,
+            // groups and separators. One item tall, so the items take its
+            // place without a jump.
+            <div
+              role="status"
+              data-slot="breadcrumb-menu-loading"
+              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-2 text-sm"
+            >
+              <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
+              {t.loading}
+            </div>
+          ) : (
+            <MenuPrimitive.RadioGroup
+              value={value}
+              onValueChange={(next: string, details) => {
+                // A modifier or middle click opens a link row elsewhere: the
+                // current item stays.
+                if (isNewTabClick(details.event)) return
+                onValueChange?.(next)
+              }}
+            >
+              {options.map((option) => (
+                <MenuPrimitive.RadioItem
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                  closeOnClick={false}
+                  data-slot="breadcrumb-menu-item"
+                  render={option.disabled ? undefined : (option.render ?? (option.href !== undefined ? <a href={option.href} /> : undefined))}
+                  className={cn(menuItem, menuRadioItem)}
+                >
+                  <OptionRow option={option} />
+                  <MenuCheck />
+                </MenuPrimitive.RadioItem>
+              ))}
+            </MenuPrimitive.RadioGroup>
+          )}
         </DropdownMenuGroup>
         {children}
       </DropdownMenuContent>
@@ -518,12 +561,13 @@ function searchFilter(_value: string, search: string, keywords?: string[]) {
  * project". The search matches the option labels and `keywords`.
  *
  * Picking an option calls `onValueChange` and closes the popup, so the crumb's
- * label is seen swapping. `loading` shows a loading row in place of the
- * options. `error` shows its text as a row that cannot be picked and, with
- * `onRetry`, a Retry row. A search that matches nothing shows `emptyText`.
+ * label is seen swapping. `options={undefined}` shows a loading row in place
+ * of the options. `error` shows its text as a row that cannot be picked and,
+ * with `onRetry`, a Retry row; it wins over the loading row. A search that
+ * matches nothing shows `emptyText`.
  * Footer items are `CommandItem`s with `forceMount`, so a search does not
  * hide them, and close the popup themselves through `onOpenChange`. *
- * `loading` is about the list in the open popup. `pending` is about the
+ * `options={undefined}` is about the list in the open popup. `pending` is about the
  * crumb: while the current item loads, it shows the last known name, or a
  * text skeleton in place of a placeholder word when no name is known.
  */
@@ -539,9 +583,10 @@ function BreadcrumbSearchMenu({
   defaultOpen = false,
   searchPlaceholder = `Find ${label.toLowerCase()}…`,
   emptyText = "No results.",
-  loading = false,
   error,
   onRetry,
+  loadingLabel,
+  retryLabel,
   children,
   className,
   contentClassName,
@@ -550,21 +595,28 @@ function BreadcrumbSearchMenu({
   searchPlaceholder?: string
   /** Shows when the search matches no option. */
   emptyText?: React.ReactNode
-  /** The options are on their way: a loading row shows in their place. */
-  loading?: boolean
   /** The options could not be read: this text shows as a row. */
   error?: React.ReactNode
   /** With `error`, a Retry row calls it. */
   onRetry?: () => void
+  /**
+   * The text of the Retry row.
+   * @default `messages.breadcrumb.retry`, "Retry"
+   */
+  retryLabel?: string
   /** Footer items: `CommandItem`s with `forceMount`. */
   children?: React.ReactNode
 }) {
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
-  const crumb = useCrumbTrigger({ options, value, label, placeholder, open })
+  const crumb = useCrumbTrigger({ options: options ?? [], value, label, placeholder, open })
+  const t = useMessages("breadcrumb", { loading: loadingLabel, retry: retryLabel })
   const failed = error != null && error !== false
+  // The error wins: a failed first read has no options either.
+  const loading = options === undefined && !failed
   // Without a name, a skeleton. The trigger mounts with the first name, so
   // it shows without a swap.
-  if (pending && !crumb.named) return <PendingCrumb label={label} className={className} />
+  if (pending && !crumb.named)
+    return <PendingCrumb label={label} loadingLabel={t.loading} className={className} />
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -598,30 +650,32 @@ function BreadcrumbSearchMenu({
             that is gone (aria-activedescendant). */}
         <Command key={failed ? "failed" : "read"} label={label} filter={searchFilter}>
           <CommandInput autoFocus placeholder={searchPlaceholder} />
-          {/* Outside the list: a listbox takes only options and groups. */}
+          {/* Outside the list: a listbox takes only options and groups. As
+              tall as one option row with its group's padding, so one
+              option takes its place without a jump. */}
           {loading && (
             <div
               role="status"
               data-slot="breadcrumb-search-menu-loading"
-              className="text-muted-foreground flex min-h-8.5 items-center gap-2.5 px-4 pt-2.5 pb-1 text-sm"
+              className="text-muted-foreground flex min-h-10 items-center gap-2.5 px-4 pt-2 text-sm"
             >
               <Loader2Icon aria-hidden className="size-3.75 animate-spin motion-reduce:animate-none" />
-              Loading…
+              {t.loading}
             </div>
           )}
           <CommandList>
             {!loading && !failed && <CommandEmpty>{emptyText}</CommandEmpty>}
-            {failed && !loading && (
+            {failed && (
               <CommandGroup forceMount heading={error}>
                 {onRetry && (
                   <CommandItem forceMount value="__retry" onSelect={onRetry}>
                     <RefreshCwIcon />
-                    <span className="min-w-0 truncate">Retry</span>
+                    <span className="min-w-0 truncate">{t.retry}</span>
                   </CommandItem>
                 )}
               </CommandGroup>
             )}
-            {!loading && options.length > 0 && (
+            {options !== undefined && options.length > 0 && (
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
