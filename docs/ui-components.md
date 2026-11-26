@@ -57,9 +57,9 @@ document.documentElement.setAttribute("dir", "rtl");
 
 Popups (menus, selects, popovers, tooltips, comboboxes, hover cards) render in a portal at the end of the body. Inside a `DirectionProvider` they take the provider's direction, also when the document has another one. Use this provider, not the one from `@base-ui/react`: only this one passes the direction to the portalled popups.
 
-Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet or Drawer keeps the side you give it (`side="right"`, `swipeDirection`): the sides are physical and do not mirror in right-to-left. Pick the side for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
+Dialog, AlertDialog, Sheet and Drawer render in a portal too and take the provider's direction the same way. A Sheet's `side` is logical (`start` or `end`, plus `top` and `bottom`): in right-to-left `start` is the right edge, and the slide runs the other way. A Drawer keeps the `swipeDirection` you give it: that one is physical and does not mirror. Pick it for the language. The Sheet's close button sits at the end of the line, so it moves to the left in right-to-left.
 
-A Sidebar's `side` is physical too, as for Sheet and Drawer: it does not mirror. Give it `side="right"` in right-to-left, so it sits at the start of the line, and keep `side="left"` in left-to-right. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side. The space the sidebar keeps in the layout follows `side` too, wherever the Sidebar sits in the markup.
+A Sidebar's `side` is logical too, as for Sheet: `start` (the default) is the left edge in left-to-right and the right edge in right-to-left, and `end` is the other edge. The same `side` works in both directions. On mobile it opens as a Sheet from the same side. With `variant="inset"` the content pane drops its margin on the sidebar's side. The space the sidebar keeps in the layout follows `side` too, wherever the Sidebar sits in the markup.
 
 A CodeBlock keeps its code left to right in a right-to-left page: the lines start at the left and scroll from there. Its header mirrors with the page.
 
@@ -1036,6 +1036,8 @@ These packages are optional — install them only if you use the features that n
 2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
 4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
+5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
+6. `side` on Sidebar is `'start' | 'end'` (default `start`), and on SheetContent it is `'top' | 'bottom' | 'start' | 'end'` (default `end`). `left` and `right` are removed. Nothing moves in left-to-right: the old defaults were `left` for Sidebar and `right` for Sheet. In right-to-left `start` is the right edge, so remove the `dir === 'rtl' ? 'right' : 'left'` branch. The `data-side` attribute on both follows the new values.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

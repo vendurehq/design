@@ -891,7 +891,7 @@ export const IconRailWithAvatarAndWrappedIcon: Story = {
 function IdentitySidebar({ dir = 'ltr' }: { dir?: 'ltr' | 'rtl' }) {
   return (
     <>
-      <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir}>
+      <Sidebar collapsible="icon" dir={dir}>
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -1130,7 +1130,7 @@ function TwoLevelSidebar({
     <DirectionProvider direction={dir}>
       <div dir={dir}>
         <SidebarProvider defaultOpen={defaultOpen}>
-          <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} dir={dir} variant={variant}>
+          <Sidebar collapsible="icon" dir={dir} variant={variant}>
             <SidebarHeader>
               <div className="flex h-8 items-center gap-2.5 overflow-hidden px-3">
                 <div className="bg-primary text-primary-foreground flex size-4.5 shrink-0 items-center justify-center rounded-md text-2xs font-bold">
@@ -1238,8 +1238,8 @@ export const TwoLevelsRightToLeft: Story = {
 
 /**
  * The inset pane sits 8px from every edge except the sidebar's: there it
- * meets the sidebar with no margin. `side` is physical, so the sidebar on
- * the right drops the right margin.
+ * meets the sidebar with no margin. `side` is logical, so the start sidebar
+ * of a right-to-left page is on the right and drops the right margin.
  */
 async function checkInsetMargins(canvasElement: HTMLElement, side: 'left' | 'right') {
   const inset = canvasElement.querySelector('[data-slot=sidebar-inset]') as HTMLElement;
