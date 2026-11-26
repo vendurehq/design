@@ -95,7 +95,7 @@ describe('cn knows every theme key', () => {
 
   test('a theme text size is a size, not a colour', () => {
     for (const key of textSizes) {
-      expect(cn(`text-${key}`, 'text-[20px]')).toBe('text-[20px]');
+      expect(cn(`text-${key}`, 'text-base')).toBe('text-base');
       expect(cn(`text-${key}`, 'text-primary')).toBe(`text-${key} text-primary`);
     }
   });

@@ -193,12 +193,12 @@ export const Anatomy: Story = {
       <AppShell className="h-[620px] min-h-0 overflow-hidden rounded-xl border border-border/60">
         <div className="relative">
           <Nav />
-          <span className="text-muted-foreground pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] tracking-wide">
+          <span className="text-muted-foreground pointer-events-none absolute bottom-3 left-3 font-mono text-2xs tracking-wide">
             sidebar · --sidebar
           </span>
         </div>
         <AppShellContent className="relative">
-          <span className="text-muted-foreground pointer-events-none absolute right-4 top-3 z-10 font-mono text-[10px] tracking-wide">
+          <span className="text-muted-foreground pointer-events-none absolute right-4 top-3 z-10 font-mono text-2xs tracking-wide">
             content · --background
           </span>
           <AppShellHeader>
