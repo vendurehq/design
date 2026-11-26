@@ -428,7 +428,7 @@ export const CompactForSmallPanels: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Compact with an icon inside a card; full size for a page or a list"
-        intro="Inside a card, a secondary panel or a side column, use size compact with an icon: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps the title, the description and at most one action, and sits flush."
+        intro="Inside a card, a secondary panel or a side column, use size sm with an icon: a faint 28px icon, then the title. Use the full size with an illustration only for a whole page or a whole list, such as a table body. Compact keeps the title, the description and at most one action, and sits flush."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <Example
@@ -441,7 +441,7 @@ export const CompactForSmallPanels: Story = {
               </CardHeader>
               <CardContent>
                 <ErrorState
-                  size="compact"
+                  size="sm"
                   title="Couldn't load usage"
                   description="This is on us. Try again in a moment."
                   onRetry={() => {}}
@@ -459,7 +459,7 @@ export const CompactForSmallPanels: Story = {
               </CardHeader>
               <CardContent>
                 <EmptyState
-                  size="compact"
+                  size="sm"
                   icon={<WebhookIcon />}
                   title="No webhooks"
                   description="Send order events to your own endpoint."
