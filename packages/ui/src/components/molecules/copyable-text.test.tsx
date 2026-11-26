@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { CopyableText, CopyButton, CopyStateIcon } from './copyable-text.tsx';
+import { FormatProvider } from './format-provider.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -21,6 +22,26 @@ describe('CopyableText', () => {
 
     expect(markup).toContain('aria-label="Kopieren"');
     expect(markup).not.toContain('aria-label="Copy"');
+  });
+
+  test('reads the label from FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={{ copyButton: { copy: 'Kopieren' } }}>
+        <CopyableText value="sku-123" />
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Kopieren"');
+  });
+
+  test('the copyLabel prop wins over FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={{ copyButton: { copy: 'Kopieren' } }}>
+        <CopyButton value="sku-123" copyLabel="Copy SKU" />
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Copy SKU"');
   });
 
   test('renders children beside the copy button', () => {

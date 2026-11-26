@@ -2,13 +2,15 @@
 
 import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import type { Locale } from 'react-day-picker';
+import type { FormatMessages } from '../../lib/format-messages.ts';
 
 // The design system cannot depend on any app's i18n. Formatters resolve their
 // locale/currency in a fixed order — explicit prop → this context → `undefined`
 // (a valid Intl argument that falls back to the runtime default locale) — so a
 // bare `<Money>` or `<DateTime>` works with zero setup, and an app that mounts
 // `FormatProvider` (e.g. from its own locale + server config) gets consistent
-// output everywhere without threading props.
+// output everywhere without threading props. Texts follow the same order
+// through `messages` (see `lib/format-messages.ts`).
 interface FormatContextValue {
   /** BCP 47 locale tag, e.g. `en-GB`. */
   locale?: string;
@@ -30,6 +32,13 @@ interface FormatContextValue {
    * `undefined` → US English. A `Calendar`'s own `locale` prop wins.
    */
   calendarLocale?: Locale;
+  /**
+   * The library's texts in the active language, nested by component, for
+   * example `{ passwordInput: { showPassword: 'Passwort anzeigen' } }`. Every
+   * text is optional: a missing one stays English. A component's own label
+   * prop wins over this.
+   */
+  messages?: FormatMessages;
 }
 
 const FormatContext = createContext<FormatContextValue>({});
@@ -41,10 +50,11 @@ function FormatProvider({
   currency,
   currencyPrecision,
   calendarLocale,
+  messages,
 }: FormatContextValue & { children: ReactNode }) {
   const value = useMemo(
-    () => ({ locale, timeZone, currency, currencyPrecision, calendarLocale }),
-    [locale, timeZone, currency, currencyPrecision, calendarLocale],
+    () => ({ locale, timeZone, currency, currencyPrecision, calendarLocale, messages }),
+    [locale, timeZone, currency, currencyPrecision, calendarLocale, messages],
   );
   return <FormatContext.Provider value={value}>{children}</FormatContext.Provider>;
 }
@@ -53,4 +63,4 @@ function useFormatSettings(): FormatContextValue {
   return useContext(FormatContext);
 }
 
-export { FormatProvider, useFormatSettings, type FormatContextValue };
+export { FormatProvider, useFormatSettings, type FormatContextValue, type FormatMessages };

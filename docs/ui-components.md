@@ -171,6 +171,22 @@ behavior you need instead of rebuilding it from atoms.
 
 > **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
 
+> **Texts.** `FormatProvider`'s `messages` translates the library's texts in one place, so an app does not pass a label prop to every component. It is nested by component (`{ passwordInput: { showPassword } }`), and every group and text is optional: a text you leave out stays English. An unknown group or text is a type error, so your editor completes the keys. A component's own label prop wins over `messages`. Type your table with `FormatMessages` from `components/molecules/format-provider`:
+>
+> ```tsx
+> import { FormatProvider, type FormatMessages } from '@vendure-io/ui/components/molecules/format-provider';
+>
+> const de: FormatMessages = {
+>   copyButton: { copy: 'Kopieren', copied: 'Kopiert' },
+>   passwordInput: { showPassword: 'Passwort anzeigen', hidePassword: 'Passwort verbergen' },
+>   searchTrigger: { label: 'Suchen', commandPalette: 'Befehlspalette' },
+> };
+>
+> <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
+> ```
+>
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
