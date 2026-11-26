@@ -25,6 +25,14 @@ const defaultMessages = {
     /** Added to the accessible name in brackets: "Search (command palette)". */
     commandPalette: 'command palette',
   },
+  money: {
+    /** Screen-reader text while the amount loads (`value={undefined}`). */
+    loading: 'Loading amount',
+  },
+  anonymizedToken: {
+    /** Screen-reader text while the token loads (`value={undefined}`). */
+    loading: 'Loading token',
+  },
   dateTime: {
     /** Screen-reader text while the date loads (`value={undefined}`). */
     loading: 'Loading date',

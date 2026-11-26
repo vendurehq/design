@@ -150,7 +150,7 @@ function SidebarProvider({
 }
 
 function Sidebar({
-  side = "left",
+  side = "start",
   variant = "sidebar",
   collapsible = "offcanvas",
   className,
@@ -158,7 +158,7 @@ function Sidebar({
   dir,
   ...props
 }: React.ComponentProps<"div"> & {
-  side?: "left" | "right"
+  side?: "start" | "end"
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
 }) {
@@ -205,13 +205,13 @@ function Sidebar({
     )
   }
 
-  // The sidebar's flex order follows its physical side, not its place in the
-  // markup, so the gap that keeps its width sits on the same side as the
-  // fixed container: at the start of the line for the start side, at the end
-  // for the end side, in either direction.
+  // The sidebar's flex order follows its side, not its place in the markup,
+  // so the gap that keeps its width sits on the same side as the fixed
+  // container: at the start of the line for the start side, at the end for
+  // the end side, in either direction.
   return (
     <div
-      className="group peer text-sidebar-foreground hidden md:block data-[side=left]:order-first data-[side=left]:rtl:order-last data-[side=right]:order-last data-[side=right]:rtl:order-first"
+      className="group peer text-sidebar-foreground hidden md:block data-[side=start]:order-first data-[side=end]:order-last"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -224,7 +224,7 @@ function Sidebar({
         className={cn(
           "relative w-(--sidebar-width) bg-transparent transition-[width] duration-slow ease-drawer motion-reduce:transition-none",
           "group-data-[collapsible=offcanvas]:w-0",
-          "group-data-[side=right]:rotate-180",
+          "group-data-[side=end]:rotate-180",
           variant === "floating" || variant === "inset"
             ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
@@ -234,11 +234,11 @@ function Sidebar({
         data-slot="sidebar-container"
         data-side={side}
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-slow ease-drawer motion-reduce:transition-none data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[inset-inline-start,inset-inline-end,width] duration-slow ease-drawer motion-reduce:transition-none data-[side=start]:start-0 data-[side=start]:group-data-[collapsible=offcanvas]:start-[calc(var(--sidebar-width)*-1)] data-[side=end]:end-0 data-[side=end]:group-data-[collapsible=offcanvas]:end-[calc(var(--sidebar-width)*-1)] md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=start]:border-e group-data-[side=end]:border-s",
           className
         )}
         {...props}
@@ -293,12 +293,12 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-[left,right,translate,background-color] ease-drawer group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
-        "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
-        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-        "hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
-        "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
-        "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 transition-[inset-inline-start,inset-inline-end,translate,background-color] ease-drawer group-data-[side=start]:-end-4 group-data-[side=end]:start-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:translate-x-1/2",
+        "in-data-[side=start]:ltr:cursor-w-resize in-data-[side=start]:rtl:cursor-e-resize in-data-[side=end]:ltr:cursor-e-resize in-data-[side=end]:rtl:cursor-w-resize",
+        "[[data-side=start][data-state=collapsed]_&]:ltr:cursor-e-resize [[data-side=start][data-state=collapsed]_&]:rtl:cursor-w-resize [[data-side=end][data-state=collapsed]_&]:ltr:cursor-w-resize [[data-side=end][data-state=collapsed]_&]:rtl:cursor-e-resize",
+        "hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:start-full",
+        "[[data-side=start][data-collapsible=offcanvas]_&]:-end-2",
+        "[[data-side=end][data-collapsible=offcanvas]_&]:-start-2",
         className
       )}
       {...props}
@@ -316,14 +316,14 @@ function SidebarInset({
   // recedes and cards (--surface-raised) lift off the pane. A border carries the
   // tier in light mode where the ramp collapses to white; flat by design, no drop
   // shadow (see AGENTS.md "flat look"). The default variant stays flush on canvas.
-  // The pane drops its margin on the sidebar's side. `side` is physical, as
-  // for Sheet: it does not mirror in right-to-left.
+  // The pane drops its margin on the sidebar's side. `side` is logical, as
+  // for Sheet: in right-to-left the start side is the right edge.
   return useRender({
     defaultTagName: "main",
     props: mergeProps<"main">(
       {
         className: cn(
-          "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:peer-data-[side=left]:ml-0 md:peer-data-[variant=inset]:peer-data-[side=right]:mr-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border/60",
+          "bg-background relative flex w-full flex-1 flex-col md:peer-data-[variant=inset]:bg-surface md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:peer-data-[side=start]:ms-0 md:peer-data-[variant=inset]:peer-data-[side=end]:me-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border/60",
           className
         ),
       },
@@ -693,7 +693,7 @@ function SidebarMenuButton({
     <Tooltip>
       {comp}
       <TooltipContent
-        side="right"
+        side="inline-end"
         align="center"
         // Clears the rail: the button ends one group padding (8px) short of
         // the rail edge, and the label sits 8px beyond that edge.
