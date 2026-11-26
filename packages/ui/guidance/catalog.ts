@@ -213,6 +213,50 @@ export const uiGuidance = [
     related: ['confirm-dialog', 'page-header'],
   },
   {
+    id: 'card-link',
+    title: 'CardLink',
+    summary:
+      'Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.',
+    sourceStory: 'card-link-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'One link, around the title',
+        body: 'Put exactly one CardLink in a card, inside CardTitle around the title text. It stretches over the card, so a click anywhere opens it and the card has one tab stop named by the title. Never wrap the whole card in a link or give the Card an onClick.',
+      },
+      {
+        title: 'A link for a page, a button for a dialog',
+        body: 'Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.',
+      },
+      {
+        title: 'Controls stay above the link',
+        body: 'Buttons, menus, links, Tooltip triggers, IdChip and CopyableText inside the card keep their own click and tab stop. Another element that must stay hoverable takes `data-card-control`. Every action in a card menu is also on the page the card opens.',
+      },
+      {
+        title: 'The look comes with the link',
+        body: 'The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.',
+      },
+    ],
+    choices: [
+      {
+        choice: 'CardLink',
+        when: 'A few items in a grid that each open a page or a dialog: projects, capabilities, integrations.',
+      },
+      {
+        choice: 'ChoiceCard',
+        when: 'The user picks one or more cards from a set as a value in a form. That is a choice, not navigation.',
+      },
+      {
+        choice: 'ListRowLink',
+        when: 'A list the user scans, one item per row, each opening a page.',
+      },
+      {
+        choice: 'DataTableRowLink',
+        when: 'Rows the user sorts, filters or compares, each opening a page.',
+      },
+    ],
+    related: ['choice-card', 'list-row', 'data-table'],
+  },
+  {
     id: 'chart',
     title: 'Chart',
     summary: 'Give every shape a chart draws an accessible name, from the config where Chart can.',

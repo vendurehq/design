@@ -95,6 +95,23 @@ Compose actions as an emphasis ladder with one primary action per view.
 - `link`: Inline navigation that should read as text.
 
 Related decisions: `confirm-dialog`, `page-header`.
+## CardLink
+
+Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.
+
+- **One link, around the title:** Put exactly one CardLink in a card, inside CardTitle around the title text. It stretches over the card, so a click anywhere opens it and the card has one tab stop named by the title. Never wrap the whole card in a link or give the Card an onClick.
+- **A link for a page, a button for a dialog:** Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.
+- **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip and CopyableText inside the card keep their own click and tab stop. Another element that must stay hoverable takes `data-card-control`. Every action in a card menu is also on the page the card opens.
+- **The look comes with the link:** The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.
+
+**Choose:**
+
+- `CardLink`: A few items in a grid that each open a page or a dialog: projects, capabilities, integrations.
+- `ChoiceCard`: The user picks one or more cards from a set as a value in a form. That is a choice, not navigation.
+- `ListRowLink`: A list the user scans, one item per row, each opening a page.
+- `DataTableRowLink`: Rows the user sorts, filters or compares, each opening a page.
+
+Related decisions: `choice-card`, `list-row`, `data-table`.
 ## Chart
 
 Give every shape a chart draws an accessible name, from the config where Chart can.
