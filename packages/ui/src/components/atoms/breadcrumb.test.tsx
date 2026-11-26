@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { slotTag, slotTokens } from '../../test/slot-tokens.ts';
+import { FormatProvider } from '../molecules/format-provider.tsx';
 import { BreadcrumbMenu, BreadcrumbSearchMenu } from './breadcrumb.tsx';
 
 const options = [{ value: 'p1', label: 'Acme Storefront' }];
@@ -11,7 +12,7 @@ type Crumb = { pending: boolean; known?: 'option' | 'placeholder' };
 function props({ pending, known }: Crumb) {
   return {
     label: 'Project',
-    options: known === 'option' ? options : [],
+    options: known === 'option' ? options : undefined,
     placeholder: known === 'placeholder' ? 'Acme Storefront' : undefined,
     value: 'p1',
     pending,
@@ -68,5 +69,39 @@ describe.each(Object.entries(menus))('%s pending', (_name, render) => {
     expect(loaded).not.toContain('breadcrumb-menu-pending');
     expect(slotTag(loaded, 'breadcrumb-menu')).toMatch(/^<button/);
     expect(loaded).toContain('Acme Storefront');
+  });
+});
+
+describe.each(Object.entries({ BreadcrumbMenu, BreadcrumbSearchMenu }))('%s texts', (_name, Menu) => {
+  const pending = (loadingLabel?: string) =>
+    renderToStaticMarkup(
+      <FormatProvider messages={{ breadcrumb: { loading: 'Wird geladen…' } }}>
+        <Menu label="Project" options={undefined} value="p1" pending loadingLabel={loadingLabel} />
+      </FormatProvider>,
+    );
+
+  test('the pending crumb reads messages.breadcrumb.loading, and loadingLabel wins', () => {
+    expect(pending()).toContain('<span class="sr-only">Project: Wird geladen…</span>');
+    expect(pending('Chargement…')).toContain('<span class="sr-only">Project: Chargement…</span>');
+  });
+});
+
+describe('options', () => {
+  test('"not known yet" is undefined, and the prop is required', () => {
+    const known: React.ComponentProps<typeof BreadcrumbMenu> = { label: 'Project', options: undefined, value: 'p1' };
+    // @ts-expect-error Pass `options={undefined}` while the options load, never leave it out.
+    const missing: React.ComponentProps<typeof BreadcrumbMenu> = { label: 'Project', value: 'p1' };
+    expect([known, missing]).toBeDefined();
+  });
+
+  test('the BreadcrumbSearchMenu loading prop is gone', () => {
+    const props: React.ComponentProps<typeof BreadcrumbSearchMenu> = {
+      label: 'Project',
+      options: undefined,
+      value: 'p1',
+      // @ts-expect-error `loading` is removed: pass `options={undefined}` while the options load.
+      loading: true,
+    };
+    expect(props).toBeDefined();
   });
 });

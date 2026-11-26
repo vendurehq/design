@@ -151,6 +151,57 @@ export const WithMenu: Story = {
   },
 };
 
+/**
+ * Pass `options={undefined}` while the options load. The open menu shows a
+ * loading row one item tall, so the items take its place without a jump.
+ * Never pass `[]` for "not known yet": it means there are none.
+ */
+export const WithMenuLoading: Story = {
+  render: () => <LoadingEnvironments />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: /^Environment:/ }));
+    const menu = await within(document.body).findByRole('menu');
+    const loading = within(menu).getByRole('status');
+    await expect(loading).toHaveTextContent('Loading…');
+    await expect(within(menu).queryAllByRole('menuitemradio')).toHaveLength(0);
+    // offsetHeight: the popup scales in, which a bounding box would include.
+    const loadingHeight = loading.offsetHeight;
+    // A click event only: a press outside would close the menu.
+    fireEvent.click(within(canvasElement).getByRole('button', { name: 'Finish loading', hidden: true }));
+    const item = await within(menu).findByRole('menuitemradio', { name: /Production/ });
+    await expectPx(item.offsetHeight, loadingHeight);
+  },
+};
+
+function LoadingEnvironments() {
+  const [loaded, setLoaded] = React.useState(false);
+  const [value, setValue] = React.useState('production');
+  return (
+    <div className="flex items-center gap-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbMenu
+              label="Environment"
+              options={loaded ? environments : undefined}
+              placeholder="All environments"
+              value={value}
+              onValueChange={setValue}
+            />
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Overview</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Button variant="outline" size="sm" onClick={() => setLoaded(true)}>
+        Finish loading
+      </Button>
+    </div>
+  );
+}
+
 /** Without a `leading` slot the crumb starts with the label. */
 export const WithMenuNoDot: Story = {
   render: () => (
@@ -545,7 +596,7 @@ function ProjectCrumbs({
   const read = readControlled ?? ownRead;
   const [value, setValue] = React.useState(projectId);
   const [open, setOpen] = React.useState(false);
-  const projects = read === 'loaded' ? allProjects : [];
+  const projects = read === 'loaded' ? allProjects : read === 'loading' ? undefined : [];
   return (
     <Breadcrumb>
       <BreadcrumbList className="flex-nowrap">
@@ -555,7 +606,7 @@ function ProjectCrumbs({
             searchPlaceholder="Find project…"
             emptyText="No project found."
             placeholder={read === 'error' ? 'Projects unavailable' : value ? 'Project' : 'All projects'}
-            options={projects.map((project) => ({
+            options={projects?.map((project) => ({
               value: project.id,
               label: project.name,
               keywords: [project.slug],
@@ -565,7 +616,6 @@ function ProjectCrumbs({
             onValueChange={setValue}
             open={open}
             onOpenChange={setOpen}
-            loading={read === 'loading'}
             error={read === 'error' ? 'Projects could not be loaded' : undefined}
             onRetry={() => setRead('loaded')}
           >
@@ -679,6 +729,31 @@ export const SearchMenuLoaded: Story = {
     // measures again, so the longer name is not cut.
     const shown = loaded.querySelector<HTMLElement>('[data-swap="in"]')!;
     await waitFor(() => expect(shown.scrollWidth).toBeLessThanOrEqual(shown.clientWidth));
+  },
+};
+
+/**
+ * The loading row is as tall as one option row: when one project arrives,
+ * the footer stays where it was.
+ */
+export const SearchMenuLoadingHeight: Story = {
+  tags: ['!autodocs'],
+  render: () => <LoadingProjects />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Projects: Project' }));
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    await Promise.all(popup.getAnimations({ subtree: true }).map((animation) => animation.finished));
+    const footerTop = () => {
+      const footer = popup.querySelector<HTMLElement>('[data-slot="breadcrumb-search-menu-footer"] [cmdk-item]')!;
+      return footer.getBoundingClientRect().top - popup.getBoundingClientRect().top;
+    };
+    await expect(within(popup).getByRole('status')).toHaveTextContent('Loading…');
+    const loadingTop = footerTop();
+    // A click event only: a press outside would close the popup.
+    fireEvent.click(within(canvasElement).getByRole('button', { name: 'Finish loading', hidden: true }));
+    await userEvent.type(within(popup).getByRole('combobox'), 'glob');
+    await waitFor(() => expect(within(popup).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1));
+    await expectPx(footerTop(), loadingTop);
   },
 };
 
@@ -831,7 +906,7 @@ function PendingEnvironment({ known }: { known?: string }) {
             <BreadcrumbMenu
               label="Environment"
               pending={!loaded}
-              options={loaded ? environments : []}
+              options={loaded ? environments : undefined}
               placeholder={loaded ? undefined : known}
               value={value}
               onValueChange={setValue}
@@ -911,12 +986,15 @@ function PendingProject({ known }: { known?: string }) {
             <BreadcrumbSearchMenu
               label="Projects"
               pending={!loaded}
-              loading={!loaded}
-              options={(loaded ? allProjects : []).map((project) => ({
-                value: project.id,
-                label: project.name,
-                keywords: [project.slug],
-              }))}
+              options={
+                loaded
+                  ? allProjects.map((project) => ({
+                      value: project.id,
+                      label: project.name,
+                      keywords: [project.slug],
+                    }))
+                  : undefined
+              }
               placeholder={loaded ? undefined : known}
               value={value}
               onValueChange={setValue}
@@ -942,8 +1020,8 @@ const northwind = 'Northwind Outdoor Equipment and Apparel Europe';
 
 /**
  * `BreadcrumbSearchMenu` takes the same `pending`. It is about the crumb;
- * `loading` is about the list in the open popup. On the first load, with no
- * name known, pass both: the crumb shows the skeleton. On a later read, keep
+ * `options={undefined}` is about the list in the open popup. On the first
+ * load, with no name known, pass both: the crumb shows the skeleton. On a later read, keep
  * the last known name, and the crumb shows it.
  */
 export const SearchMenuPending: Story = {
