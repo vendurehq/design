@@ -1051,7 +1051,7 @@ These packages are optional — install them only if you use the features that n
 6. `@vendure-io/design-tokens` is a peer dependency. Install it next to `@vendure-io/ui`.
 7. CodeBlock no longer exports `transformCommand`, `processCode` or `matchFileTypeIcon`. The `molecules/code-block/*` files and `molecules/data-table/data-table-helpers` are not exported. StatCard no longer exports `statCardDeltaVariants`.
 8. The data-table module exports the TanStack table type as `TableInstance`, not `Table`.
-9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. CodeBlock has no outer margin: add your own.
+9. `ComboboxFreeText` `loading` is deprecated. Use `isLoading`. Chip `variant` no longer accepts `link` or `ghost`. Chip `removeLabel` is required with `onRemove` and not allowed without it (type only). CodeBlock has no outer margin: add your own.
 10. Drawer is built on Base UI, and `vaul` is gone. Replace `asChild` with the `render` prop, and `direction` with `swipeDirection` (`top` is `up`, `bottom` is `down`). See the Drawer note under [Atoms](#atoms).
 11. `@vendure-io/ui` requires `@base-ui/react` `^1.8.0` (1.x required `^1.2.0`).
 

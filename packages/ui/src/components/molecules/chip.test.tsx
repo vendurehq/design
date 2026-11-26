@@ -85,3 +85,16 @@ test('editLabel names the edit button', () => {
   );
   expect(html).toContain('aria-label="Edit Apparel"');
 });
+
+test('removeLabel is required with onRemove, and not allowed without it', () => {
+  // @ts-expect-error: a remove button needs an accessible name.
+  renderToStaticMarkup(<Chip onRemove={() => {}}>Apparel</Chip>);
+  // @ts-expect-error: `removeLabel` names a remove button that is not there.
+  renderToStaticMarkup(<Chip removeLabel="Remove Apparel">Apparel</Chip>);
+  const html = renderToStaticMarkup(
+    <Chip onRemove={() => {}} removeLabel="Remove Apparel">
+      Apparel
+    </Chip>,
+  );
+  expect(html).toContain('aria-label="Remove Apparel"');
+});
