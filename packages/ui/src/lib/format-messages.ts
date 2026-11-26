@@ -16,6 +16,10 @@ const defaultMessages = {
     /** Screen-reader text of the loading region. */
     loading: 'Loading…',
   },
+  multiSelect: {
+    /** Stands in for the selected values while the options load. */
+    loading: 'Loading…',
+  },
   passwordInput: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
