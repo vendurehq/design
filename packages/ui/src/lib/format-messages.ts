@@ -8,6 +8,10 @@ const defaultMessages = {
     /** Announced while a page of options loads. */
     loading: 'Loading…',
   },
+  comboboxFreeText: {
+    /** Announced by the field's spinner while suggestions load. */
+    loading: 'Loading…',
+  },
   copyButton: {
     copy: 'Copy',
     copied: 'Copied',
