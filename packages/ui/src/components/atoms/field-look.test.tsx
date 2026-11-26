@@ -26,7 +26,8 @@ describe('v3 field look', () => {
   test('the recipe: muted fill, inset hairline, 8px radius, inset ring, invalid hairline', () => {
     for (const token of [
       'bg-muted',
-      'inset-ring', 'inset-ring-border',
+      'inset-ring',
+      'inset-ring-border',
       'rounded-xl',
       'focus-visible:outline-2',
       'focus-visible:-outline-offset-2',
@@ -114,7 +115,8 @@ describe('v3 field look', () => {
   // turns red when a control inside is invalid. Rendered, so an override fails.
   const within = [
     'bg-muted',
-    'inset-ring', 'inset-ring-border',
+    'inset-ring',
+    'inset-ring-border',
     'rounded-xl',
     'forced-colors:border',
     'focus-within:outline-solid',
