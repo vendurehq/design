@@ -359,3 +359,37 @@ export const FullWidthFormColumn: Story = {
     for (const root of roots) await expect(root.offsetWidth).toBeLessThan(input.offsetWidth);
   },
 };
+
+/** The clear buttons and the time field take their names from `messages`; the label props win. */
+export const TranslatedLabels: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <FormatProvider
+      messages={{
+        datePicker: { clear: 'Datum löschen' },
+        dateTimePicker: { clear: 'Datum und Uhrzeit löschen', time: 'Uhrzeit' },
+        dateRangePicker: { clear: 'Zeitraum löschen' },
+      }}
+    >
+      <div className="flex w-[460px] flex-col gap-3">
+        <DatePicker defaultValue="2026-03-10" />
+        <DateTimePicker defaultValue="2026-03-10T14:30:00.000Z" />
+        <DateTimePicker
+          defaultValue="2026-03-10T14:30:00.000Z"
+          clearLabel="Reset both"
+          timeLabel="Clock"
+        />
+        <DateRangePicker defaultValue={{ from: '2026-03-10', to: '2026-03-17' }} />
+      </div>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: 'Datum löschen' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Datum und Uhrzeit löschen' })).toBeVisible();
+    await expect(canvas.getByLabelText('Uhrzeit')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Zeitraum löschen' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Reset both' })).toBeVisible();
+    await expect(canvas.getByLabelText('Clock')).toBeVisible();
+  },
+};
