@@ -203,11 +203,39 @@ export const FirstLoad: Story = {
     });
     const list = loadingRow.closest('[data-slot=combobox-list]') as HTMLElement;
     const loadingHeight = list.offsetHeight;
+    const loadingWidth = list.offsetWidth;
     const option = await body.findByRole('option', { name: 'Medium' }, { timeout: 3000 });
     await expect(option).toBeVisible();
-    await expect(canvas.queryByRole('status')).toBeNull();
-    // The loading row and the one loaded suggestion are the same height.
+    await expect(canvas.queryByRole('status', { hidden: true })).toBeNull();
+    // The loading row and the one loaded suggestion are the same height, and
+    // the list keeps its width when the field's spinner goes away.
     await expect(list.offsetHeight).toBe(loadingHeight);
+    await expect(list.offsetWidth).toBe(loadingWidth);
+  },
+};
+
+/** The first load, held open: the field's spinner and the list's loading row. */
+export const FirstLoadHeld: Story = {
+  render: () => (
+    <div className="w-[320px]">
+      <ComboboxFreeText
+        value=""
+        onValueChange={() => {}}
+        items={undefined}
+        aria-label="Size"
+        placeholder="Pick a size or type a new one…"
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('status')).toHaveAccessibleName('Loading…');
+    await userEvent.click(canvas.getByRole('combobox', { name: 'Size' }));
+    await waitFor(() =>
+      expect(
+        canvasElement.ownerDocument.querySelector('[data-slot=combobox-free-text-loading]'),
+      ).not.toBeNull(),
+    );
   },
 };
 

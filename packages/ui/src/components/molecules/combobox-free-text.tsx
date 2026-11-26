@@ -133,6 +133,9 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   const [open, setOpen] = React.useState(false);
   const t = useMessages('comboboxFreeText', { loading: loadingLabel });
   const firstLoad = items === undefined;
+  // The list lines up with the whole field, as a Combobox list does. Anchored
+  // to the input, it would widen when the trailing spinner goes away.
+  const fieldRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <Autocomplete.Root
@@ -158,7 +161,7 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
       onOpenChange={setOpen}
       disabled={disabled}
     >
-      <InputGroup className={cn('w-full', className)}>
+      <InputGroup ref={fieldRef} className={cn('w-full', className)}>
         <Autocomplete.Input
           render={<InputGroupInput />}
           id={id}
@@ -193,7 +196,7 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
           </InputGroupAddon>
         ) : null}
       </InputGroup>
-      <ComboboxContent>
+      <ComboboxContent anchor={fieldRef}>
         <ComboboxList>
           {firstLoad ? (
             // Decorative: the field's spinner announces the load. One
