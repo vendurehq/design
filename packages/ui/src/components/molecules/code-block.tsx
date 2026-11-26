@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { type ComponentProps, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
-import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 // Relative imports: `code-block/*` is closed in the package exports, so a
 // `@vendure-io/ui/...` self-reference to these modules fails in consumers.
 import { useMessages } from '../../lib/format-messages.ts';
+import { highlightCode, normalizeLanguage, type SupportedLanguage } from '../../lib/highlight.ts';
 import { FileTypeIcon, matchFileTypeIcon } from './code-block/file-type-icons.tsx';
 import { processCode } from './code-block/process-code.ts';
 import {
