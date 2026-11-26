@@ -29,6 +29,10 @@ const defaultMessages = {
     /** Announced by the field's spinner while suggestions load. */
     loading: 'Loading…',
   },
+  confirmDialog: {
+    /** Screen-reader text of the spinner while the confirm action runs. */
+    loading: 'Loading',
+  },
   copyButton: {
     copy: 'Copy',
     copied: 'Copied',
@@ -44,6 +48,10 @@ const defaultMessages = {
   passwordInput: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
+  },
+  secretValue: {
+    /** Screen-reader text of the spinner while the value loads. */
+    loading: 'Loading',
   },
   searchTrigger: {
     label: 'Search',

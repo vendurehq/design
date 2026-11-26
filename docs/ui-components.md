@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -759,6 +759,8 @@ import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialo
 - `caution`: a costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog points one way.
 - `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
 
+While an async `onConfirm` runs, the spinner announces "Loading". Translate it with `loadingLabel`, or once for the app with `messages.confirmDialog.loading`. SecretValue works the same way (`loadingLabel`, `messages.secretValue.loading`).
+
 ### Card
 
 ```tsx
@@ -939,7 +941,7 @@ Every other file in `data-table/` is internal, and an import of it fails to reso
 
 ### DataTable loading rows
 
-While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
+Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `expectedTotal` (the list's total from an earlier visit, for example from `useRememberedListTotal`), it draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
 import {
@@ -948,9 +950,9 @@ import {
 } from "@vendure-io/ui/components/molecules/data-table/data-table";
 
 <DataTable
-  rows={data?.items ?? []}
+  rows={data?.items}
   columns={columns}
-  isLoading={isPending}
+  isLoading={isFetching}
   skeletonCells={{
     // A title over a muted text-xs sub-line.
     customer: (
@@ -1099,6 +1101,10 @@ These packages are optional — install them only if you use the features that n
 7. `PageHeaderBackLink` is gone. Use `PageHeaderBackRow`, with a `PageHeaderBack` in it for the link.
 8. An `<svg>` in the `children` of `StatusBadge` or `Alert` no longer replaces the tone icon, and a StatusBadge no longer colours it. Pass the icon as `icon`.
 9. A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` no longer sets `--dialog-padding`. Set the variable instead: `p-0` becomes `[--dialog-padding:0px]`, `p-8` becomes `[--dialog-padding:--spacing(8)]`.
+10. DataTable marks "not loaded yet" in the data, not with `isLoading`:
+    - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
+    - Server pagination requires `totalItems: number | null`. `null` means "not known" and draws a skeleton range. Pass `data?.totalItems ?? null`, not `0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
+    - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

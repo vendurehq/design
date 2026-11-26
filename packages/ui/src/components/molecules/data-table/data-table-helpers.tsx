@@ -9,6 +9,16 @@ import type {
 // so each function is unit-testable in isolation (the getRange/clampPage
 // precedent from table-pagination.tsx).
 
+/**
+ * The pending look of a range or a table body whose next content is loading:
+ * after `--transition-duration-slow` (300ms) it fades to half opacity, so a
+ * read that ends sooner shows nothing. Leaving pending is immediate. Under
+ * reduced motion the dim still waits, then steps instead of fading. Set
+ * `data-pending` on the element to turn it on.
+ */
+export const PENDING_CLASS =
+  '[transition:opacity_var(--transition-duration-moderate)_var(--ease-soft)] data-pending:opacity-50 data-pending:[transition-delay:var(--transition-duration-slow)] motion-reduce:[transition-duration:0s]';
+
 // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
 type AnyColumnDef<TData> = ColumnDef<TData, any>;
 
@@ -162,4 +172,48 @@ export function sameIndents(a: Record<string, number>, b: Record<string, number>
  */
 export function columnAlign(meta: unknown): NonNullable<DataTableColumnMeta['align']> {
   return (meta as DataTableColumnMeta | undefined)?.align === 'end' ? 'end' : 'start';
+}
+
+/** A column's width from its `meta.width` (see DataTableColumnMeta), if it sets one. */
+export function columnWidth(meta: unknown): DataTableColumnMeta['width'] {
+  return cssLength((meta as DataTableColumnMeta | undefined)?.width);
+}
+
+/**
+ * A column's minimum width: its `meta.minWidth`, else its `meta.width`, so a
+ * set width is also a floor (see DataTableColumnMeta).
+ */
+export function columnMinWidth(meta: unknown): DataTableColumnMeta['minWidth'] {
+  const column = meta as DataTableColumnMeta | undefined;
+  return cssLength(column?.minWidth) ?? cssLength(column?.width);
+}
+
+// The `--content-inset` of a default-size StatusBadge, as status-badge.tsx
+// sets it: the chip with an icon or a dot marker, and `appearance="icon"`.
+// A test keeps them equal to that file.
+export const STATUS_BADGE_CONTENT_INSETS = {
+  'status-badge': 'calc(var(--spacing)*6.75)',
+  'status-badge-dot': 'calc(var(--spacing)*5)',
+  'status-icon': 'calc(var(--spacing)*6)',
+} as const;
+
+/**
+ * A column's declared indent (see DataTableColumnMeta.contentInset), as the
+ * `--column-indent` value: the content's pull-back past the cell's gutter
+ * (TableCell's `px-2`), or none. Undefined when the meta sets no inset, so
+ * the table measures it instead.
+ */
+export function columnContentIndent(meta: unknown): string | undefined {
+  const inset = (meta as DataTableColumnMeta | undefined)?.contentInset;
+  const length =
+    typeof inset === 'number'
+      ? `${inset}px`
+      : typeof inset === 'string'
+        ? (STATUS_BADGE_CONTENT_INSETS[inset as keyof typeof STATUS_BADGE_CONTENT_INSETS] ?? inset)
+        : undefined;
+  return length == null ? undefined : `max(0px, calc(${length} - var(--spacing)*2))`;
+}
+
+function cssLength(value: unknown): number | string | undefined {
+  return typeof value === 'number' || typeof value === 'string' ? value : undefined;
 }
