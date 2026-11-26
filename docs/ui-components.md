@@ -699,11 +699,9 @@ dialog with another padding, set the variable:
 <DialogContent className="[--dialog-padding:--spacing(8)]">…</DialogContent>
 ```
 
-A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` (`p-0`,
-`p-4`, `px-[24px]`) also sets the variable, so code written for 2.x keeps its
-header and footer flush with the dialog's edges. A `px-*` class sets the
-padding on all four sides. `py-*`, `pt-*` and a class behind a breakpoint
-(`sm:p-0`) do not set it: use the variable for those.
+Only the variable sets the padding. A `p-*` class on `DialogContent` or
+`AlertDialogContent` changes the padding but not the variable, so the header
+and footer no longer line up with the dialog's edges.
 `SheetContent` has no padding of its own. Its header and footer bring their
 own 16px; pad the body, not `SheetContent`.
 
@@ -1035,6 +1033,9 @@ These packages are optional — install them only if you use the features that n
 3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
 4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
 5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
+6. `PageHeaderBackLink` is gone. Use `PageHeaderBackRow`, with a `PageHeaderBack` in it for the link.
+7. An `<svg>` in the `children` of `StatusBadge` or `Alert` no longer replaces the tone icon, and a StatusBadge no longer colours it. Pass the icon as `icon`.
+8. A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` no longer sets `--dialog-padding`. Set the variable instead: `p-0` becomes `[--dialog-padding:0px]`, `p-8` becomes `[--dialog-padding:--spacing(8)]`.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 
