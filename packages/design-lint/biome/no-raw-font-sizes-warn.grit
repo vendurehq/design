@@ -1,0 +1,25 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+// AUTO-GENERATED — do not edit manually. Run `bun scripts/generate-grit.ts`;
+// the pattern is composed from eslint/pattern-parts.js so both engines stay
+// behaviorally equivalent.
+//
+// Flags an arbitrary font size (text-[13px], text-[length:…], text-[clamp(…)])
+// and Tailwind's text-6xl to text-9xl. A bare text-[var(--x)] is a colour to
+// Tailwind and is not flagged. Mirrors eslint/index.js.
+or {
+  JsxAttribute() as $attribute where {
+    $attribute <: r"(?i)(?:className|style|fill|stroke|stopColor)=(?:\"[^\"]*\"|'[^']*')",
+    $attribute <: r".*(?:^|[^a-z0-9_-])(?:text-(?:\[(?:length:|[0-9.]|(?:clamp|calc|min|max)\()|\(length:)|text-[6-9]xl(?:[^a-z0-9-]|$)).*",
+    register_diagnostic(span=$attribute, message="Use a type role or a scale step (text-2xs to text-5xl). Arbitrary font sizes and text-6xl to text-9xl are not design-system sizes.", severity="warn")
+  },
+  string() as $literal where {
+    $literal <: r".*(?:^|[^a-z0-9_-])(?:text-(?:\[(?:length:|[0-9.]|(?:clamp|calc|min|max)\()|\(length:)|text-[6-9]xl(?:[^a-z0-9-]|$)).*",
+    register_diagnostic(span=$literal, message="Use a type role or a scale step (text-2xs to text-5xl). Arbitrary font sizes and text-6xl to text-9xl are not design-system sizes.", severity="warn")
+  },
+  JsTemplateChunkElement() as $literal where {
+    $literal <: r".*(?:^|[^a-z0-9_-])(?:text-(?:\[(?:length:|[0-9.]|(?:clamp|calc|min|max)\()|\(length:)|text-[6-9]xl(?:[^a-z0-9-]|$)).*",
+    register_diagnostic(span=$literal, message="Use a type role or a scale step (text-2xs to text-5xl). Arbitrary font sizes and text-6xl to text-9xl are not design-system sizes.", severity="warn")
+  }
+}

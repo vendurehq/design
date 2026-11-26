@@ -3,7 +3,9 @@ import { Linter } from 'eslint';
 import plugin from '../eslint/index.js';
 import cases from './cases.json';
 
-function lint(code: string) {
+const rules = Object.keys(cases) as (keyof typeof cases)[];
+
+function lint(code: string, rule: string) {
   const linter = new Linter();
   return linter.verify(code, [
     {
@@ -18,24 +20,40 @@ function lint(code: string) {
         },
       },
       rules: {
-        '@vendure-io/design/no-raw-colors': 'error',
+        [`@vendure-io/design/${rule}`]: 'error',
       },
     },
   ]);
 }
 
-describe('ESLint no-raw-colors', () => {
-  for (const code of cases.valid) {
-    test(`accepts ${code}`, () => {
-      expect(lint(code)).toEqual([]);
-    });
-  }
+for (const rule of rules) {
+  describe(`ESLint ${rule}`, () => {
+    for (const code of cases[rule].valid) {
+      test(`accepts ${code}`, () => {
+        expect(lint(code, rule)).toEqual([]);
+      });
+    }
 
-  for (const code of cases.invalid) {
-    test(`rejects ${code}`, () => {
-      const messages = lint(code);
-      expect(messages).toHaveLength(1);
-      expect(messages[0]?.ruleId).toBe('@vendure-io/design/no-raw-colors');
-    });
-  }
+    for (const code of cases[rule].invalid) {
+      test(`rejects ${code}`, () => {
+        const messages = lint(code, rule);
+        expect(messages).toHaveLength(1);
+        expect(messages[0]?.ruleId).toBe(`@vendure-io/design/${rule}`);
+      });
+    }
+
+    // Each rule leaves the other rule's violations alone.
+    for (const other of rules.filter((name) => name !== rule)) {
+      test(`does not report the ${other} cases`, () => {
+        for (const code of cases[other].invalid) {
+          expect({ code, messages: lint(code, rule) }).toEqual({ code, messages: [] });
+        }
+      });
+    }
+  });
+}
+
+test('the recommended config turns on every rule', () => {
+  const configured = Object.keys(plugin.configs.recommended[0]?.rules ?? {});
+  expect(configured.sort()).toEqual(rules.map((rule) => `@vendure-io/design/${rule}`).sort());
 });

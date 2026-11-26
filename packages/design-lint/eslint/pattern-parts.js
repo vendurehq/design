@@ -16,3 +16,19 @@ export const opacitySuffix = '(?:/(?:[0-9.]+|\\[[0-9.]+\\]))?';
 // The paren must be adjacent: CSS never allows whitespace before it, and
 // requiring adjacency keeps prose like "Background color (hex)" from matching.
 export const colorFunctionNames = '(?:rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)';
+
+// Shared regex building blocks for the no-raw-font-sizes rule. No lookaround,
+// so the Biome flavor can use them as they are.
+// A utility boundary: the class starts the string or follows a space, a quote,
+// a variant colon or the important `!`. A letter, digit, `_` or `-` before
+// `text-` makes it part of another word.
+export const classStart = '(?:^|[^a-z0-9_-])';
+// An arbitrary font size: a number with or without a unit (`text-[13px]`,
+// `text-[0.8rem]`, `text-[13vw]`), a length type hint (`text-[length:…]`,
+// `text-(length:…)`), or a size function (`text-[clamp(…)]`, calc, min, max).
+// A bare `text-[var(--x)]` or `text-(--x)` is a colour to Tailwind, so it is
+// not matched.
+export const arbitraryFontSize =
+  'text-(?:\\[(?:length:|[0-9.]|(?:clamp|calc|min|max)\\()|\\(length:)';
+// Tailwind's default steps above the Vendure scale. The scale ends at text-5xl.
+export const oversizedFontSize = 'text-[6-9]xl(?:[^a-z0-9-]|$)';
