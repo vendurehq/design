@@ -20,8 +20,8 @@ import { interactiveCardVariants } from './interactive-card.tsx';
 // role, aria-checked, the disabled state and the hidden form input.
 //
 // The look is the shared interactive card (interactive-card.tsx). Selected
-// adds a primary border and a 1px inset primary line on ::after, so the edge
-// reads 2px without a layout shift and stays over a media image; the focus
+// draws one 2px primary edge on ::after, on the border box, so it reads as one
+// stroke with no layout shift and stays over a media image; the focus
 // ring is an outline outside it, so both show together. The indicator (a radio
 // dot or a check box) shows the state in shape too, not only in colour.
 //
@@ -105,18 +105,24 @@ function useChoiceCardPart(part: 'title' | 'description' | 'meta') {
 const choiceCardVariants = cva(
   [
     'group/choice-card flex text-start',
-    // Selected: the primary border plus a 1px inset line drawn over the
-    // content (a media image too), so the edge reads 2px with no shift.
-    'after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-checked:border-primary data-checked:hover:border-primary data-checked:after:shadow-[inset_0_0_0_1px_var(--primary)]',
+    // Selected: one 2px inset primary stroke on ::after. The ::after sits on
+    // the border box (-inset-px) with the card's radius, so it covers the
+    // border and adds the inner pixel in one curve. On the padding box
+    // (inset-0) its corners would take the outer radius and leave a gap
+    // between two strokes. So the card never clips its children: the media
+    // variant rounds the image itself to the padding box instead.
+    'after:pointer-events-none after:absolute after:-inset-px after:z-10 after:rounded-[inherit] after:[transition:box-shadow_var(--transition-duration-fast)_var(--ease-soft)] data-checked:border-primary data-checked:hover:border-primary data-checked:after:shadow-[inset_0_0_0_2px_var(--primary)]',
   ],
   {
     variants: {
       variant: {
         default: 'items-start gap-3',
         // An image tile: the image fills the card, the indicator sits in the
-        // start corner over it.
+        // start corner over it. The image takes the padding-box radius (the
+        // card radius minus the 1px border) rather than the card clipping it,
+        // which would cut the selected stroke at the border's inner edge.
         media:
-          'aspect-square overflow-hidden p-0 [&_img]:size-full [&_img]:object-cover [&_video]:size-full [&_video]:object-cover',
+          'aspect-square p-0 [&_img]:size-full [&_img]:rounded-[calc(var(--radius-2xl)-1px)] [&_img]:object-cover [&_video]:size-full [&_video]:rounded-[calc(var(--radius-2xl)-1px)] [&_video]:object-cover',
       },
       size: {
         default: '',
