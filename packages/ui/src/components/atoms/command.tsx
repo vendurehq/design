@@ -93,7 +93,7 @@ function CommandInput({
     // Unboxed: the input runs edge to edge above a hairline, with no field
     // border, fill or ring. 54px with 16px text in the palette dialog.
     <div data-slot="command-input-wrapper" className="border-border border-b">
-      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pe-3.5 shadow-none! ring-0! outline-none! in-data-command-palette:h-13.5! *:data-[slot=input-group-addon]:ps-3! in-data-command-palette:*:data-[slot=input-group-addon]:ps-4.5!">
+      <InputGroup className="h-10! rounded-none! border-0! bg-transparent! pe-3.5 shadow-none! inset-ring-0! ring-0! outline-none! in-data-command-palette:h-13.5! *:data-[slot=input-group-addon]:ps-3! in-data-command-palette:*:data-[slot=input-group-addon]:ps-4.5!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
