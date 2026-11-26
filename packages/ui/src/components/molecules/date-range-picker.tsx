@@ -14,6 +14,7 @@ import { CalendarRangeIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import type { DateRange } from 'react-day-picker';
 import { fieldButton } from '../../lib/field-surface.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
@@ -47,6 +48,8 @@ interface DateRangePickerProps
   invalid?: boolean;
   presets?: readonly DateRangePreset[];
   calendarProps?: CalendarProps;
+  /** Accessible name of the clear button. @default `messages.dateRangePicker.clear`, "Clear date range" */
+  clearLabel?: string;
 }
 
 function resolvePreset(value: DateRangePreset['value']): DateRangeValue {
@@ -64,6 +67,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
     invalid,
     presets = [],
     calendarProps,
+    clearLabel,
     className,
     ...props
   } = allProps;
@@ -80,6 +84,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
   const generatedId = React.useId();
   const triggerId = generatedId;
   const { locale } = useFormatSettings();
+  const t = useMessages('dateRangePicker', { clear: clearLabel });
   const selected: DateRange = {
     from: parseCalendarDate(value?.from),
     to: parseCalendarDate(value?.to),
@@ -169,7 +174,7 @@ function DateRangePicker(allProps: DateRangePickerProps) {
           variant="ghost"
           size="icon-sm"
           disabled={disabled}
-          aria-label="Clear date range"
+          aria-label={t.clear}
           onClick={() => commit(undefined)}
         >
           <XIcon />

@@ -355,8 +355,9 @@ function DataTableRowLink({
  * Bridge a capability config to a `[value, onChange]` pair TanStack can consume
  * as fully controlled. Controlled configs (`value`) are the source of truth every
  * render; uncontrolled configs (`defaultValue` or nothing) get internal state the
- * core owns, with any `onChange` observing. This fixes the donor's seed-then-emit
- * bug: the prop, not a one-time seed, drives every render.
+ * core owns, with any `onValueChange` observing. This fixes the donor's
+ * seed-then-emit bug: the prop, not a one-time seed, drives every render.
+ * TanStack's updater is resolved here, so `onValueChange` gets the next value.
  */
 function useControlledTableState<T>(
   config: ControlledState<T> | undefined,
@@ -365,10 +366,15 @@ function useControlledTableState<T>(
   const controlled = config?.value !== undefined;
   const [internal, setInternal] = React.useState<T>(config?.defaultValue ?? fallback);
   const value = controlled ? (config?.value as T) : internal;
+  // Updates in one tick build on each other before the next render.
+  const latest = React.useRef(value);
+  latest.current = value;
   const onChange = React.useCallback<OnChangeFn<T>>(
     (updater) => {
-      if (!controlled) setInternal((old) => functionalUpdate(updater, old));
-      config?.onChange?.(updater);
+      const next = functionalUpdate(updater, latest.current);
+      latest.current = next;
+      if (!controlled) setInternal(next);
+      config?.onValueChange?.(next);
     },
     [controlled, config],
   );
@@ -781,18 +787,20 @@ function DataTable<TData>({
   const pending = Boolean(isLoading) && !firstLoad;
   const serverTotal =
     pagination != null && pagination.mode !== 'client' ? pagination.totalItems : undefined;
+  const serverTotalUnknown =
+    pagination != null && pagination.mode !== 'client' && serverTotal == null;
 
   const warnedUnknownTotal = React.useRef(false);
   if (
     isDevelopment &&
-    serverTotal === null &&
+    serverTotalUnknown &&
     !firstLoad &&
     !isLoading &&
     !warnedUnknownTotal.current
   ) {
     warnedUnknownTotal.current = true;
     console.warn(
-      '[DataTable] The rows have loaded but pagination.totalItems is null. ' +
+      '[DataTable] The rows have loaded but pagination.totalItems is not known (null or undefined). ' +
         'Pass the total with the rows: the footer range stays a skeleton until then.',
     );
   }
@@ -1338,6 +1346,7 @@ function DataTable<TData>({
                           table={table}
                           columns={filters.columns}
                           label={l.addFilter}
+                          valueLabel={labels?.filterValue}
                         />
                       )}
                       {showViewOptions && (
@@ -1576,13 +1585,13 @@ function DataTable<TData>({
             className="w-full"
             page={pagination.page}
             pageSize={pagination.pageSize}
-            // Unknown (null, or client rows not loaded): a skeleton, not "0 of 0".
+            // Unknown (null or undefined, or client rows not loaded): a skeleton, not "0 of 0".
             totalItems={
               pagination.mode === 'client'
                 ? firstLoad
                   ? undefined
                   : table.getPrePaginationRowModel().rows.length
-                : (pagination.totalItems ?? undefined)
+                : pagination.totalItems
             }
             isLoading={pending}
             onPageChange={pagination.onPageChange}
