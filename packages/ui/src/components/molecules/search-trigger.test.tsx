@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { FormatProvider } from './format-provider.tsx';
 import { SearchTrigger } from './search-trigger.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
@@ -60,5 +61,28 @@ describe('SearchTrigger', () => {
     expect(always).toContain('w-7');
     expect(always).not.toContain('w-55');
     expect(always).toContain('<span class="truncate hidden">Search</span>');
+  });
+
+  test('reads the word and the accessible name from FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider
+        messages={{ searchTrigger: { label: 'Suchen', commandPalette: 'Befehlspalette' } }}
+      >
+        <SearchTrigger />
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('>Suchen</span>');
+    expect(markup).toContain('aria-label="Suchen (Befehlspalette)"');
+  });
+
+  test('the label prop wins over FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={{ searchTrigger: { label: 'Suchen' } }}>
+        <SearchTrigger label="Finden" />
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('>Finden</span>');
   });
 });
