@@ -298,6 +298,58 @@ export const uiGuidance = [
     related: ['badge', 'id-chip', 'status-badge'],
   },
   {
+    id: 'choice-card',
+    title: 'ChoiceCard',
+    summary:
+      'Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.',
+    sourceStory: 'choice-card-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'The card is the control',
+        body: 'A ChoiceCard is a radio (single choice) or a checkbox (`multiple`) itself. Do not build a picker from a clickable Card with onClick, or a div with a role: it misses the arrow keys, Space and the checked state.',
+      },
+      {
+        title: 'Nothing interactive inside',
+        body: 'Slots hold text, icons and images. A link or button inside a card is not reachable as its own control. Put an action that belongs to one option next to the group, not in the card.',
+      },
+      {
+        title: 'Current is not selected',
+        body: 'Mark the option the customer already has (their current plan) with a ChoiceCardBadge on the title line. The selection is the option they are moving to. Never pre-select the current option to show that it is current.',
+      },
+      {
+        title: 'Name the group and every media tile',
+        body: 'Give ChoiceCardGroup an aria-label or aria-labelledby. A media card has no title, so give it an aria-label.',
+      },
+      {
+        title: 'Keep the indicator',
+        body: 'The radio dot or check box shows the state in shape, not only in colour. Do not hide it.',
+      },
+    ],
+    choices: [
+      {
+        choice: 'ChoiceCard',
+        when: 'Two to about six options that each need more than a label: a plan, a shipping method, an address, an asset.',
+      },
+      {
+        choice: 'RadioGroup',
+        when: 'One choice of a few short labels, as one field in a form.',
+      },
+      {
+        choice: 'Select',
+        when: 'More than about six options, or little room on the screen.',
+      },
+      {
+        choice: 'Checkbox',
+        when: 'Independent on/off settings with short labels.',
+      },
+      {
+        choice: 'A card link',
+        when: 'The whole card opens a page. That is navigation, not a choice.',
+      },
+    ],
+    related: ['form', 'badge', 'list-row'],
+  },
+  {
     id: 'code-block',
     title: 'CodeBlock',
     summary:

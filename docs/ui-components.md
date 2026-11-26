@@ -143,7 +143,24 @@ behavior you need instead of rebuilding it from atoms.
 > ```
 
 #### Forms & selection
-`combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
+`choice-card`, `combobox-free-text`, `file-dropzone`, `multi-select`, `password-input`
+
+> **ChoiceCard.** A card the user picks from a set: a plan, a shipping method, an address, an asset. The card is the control: in a `ChoiceCardGroup` it is a radio (arrow keys move the choice), and in `<ChoiceCardGroup multiple>` a checkbox (Space toggles, `value` is an array). Base UI sets the role, `aria-checked` and the hidden form input. Slots: `ChoiceCardMedia` (an icon, or `variant="image"`), `ChoiceCardContent` with `ChoiceCardTitle` and `ChoiceCardDescription`, and `ChoiceCardMeta` at the end (a price). The title names the card; the description and the meta describe it. `variant="media"` is an image tile that the image fills, with the indicator in the corner; give it an `aria-label`. `ChoiceCardBadge` on the title line marks the option the customer already has ("Current"); it is separate from the selection. Slots hold text and images only, never a link or a button. Use a ChoiceCard when each option needs more than a label; a few short labels in a form are a `RadioGroup`, and a long list is a `Select`.
+>
+> ```tsx
+> <ChoiceCardGroup aria-label="Shipping method" value={method} onValueChange={setMethod}>
+>   <ChoiceCard value="express">
+>     <ChoiceCardMedia><TruckIcon /></ChoiceCardMedia>
+>     <ChoiceCardContent>
+>       <ChoiceCardTitle>Express</ChoiceCardTitle>
+>       <ChoiceCardDescription>Next working day</ChoiceCardDescription>
+>     </ChoiceCardContent>
+>     <ChoiceCardMeta>€12.00</ChoiceCardMeta>
+>   </ChoiceCard>
+> </ChoiceCardGroup>
+> ```
+>
+> The card's border, hover, press and focus ring come from `interactiveCardVariants` (`components/molecules/interactive-card`), the look every card the user acts on shares.
 
 > **VisibilityIcon.** An eye for a show/hide toggle: `<VisibilityIcon visible={isVisible} />`. When `visible` turns false a line draws across the eye and cuts it; when it turns true the line draws back out. It does not animate on first render, and with reduced motion the change is instant. It sizes and colours like a lucide icon. It is decorative, so label the button or menu item that holds it. An `opacity-*` class on it (to dim a hidden state) fades on the line's timing. PasswordInput and SecretValue use it.
 
