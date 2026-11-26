@@ -1,7 +1,9 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 // Relative: `label-swap` is closed in the package exports.
@@ -128,24 +130,119 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
+type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>
+
+// Whether `render` is a link, from what is known before the first render, so
+// server markup is right too: an `<a>`, or an element with `href` (Next and
+// plain components) or `to` (React Router and TanStack Router). A render
+// function is opaque; it takes the button path, and the dev check in Button
+// reports a link that slipped through.
+function rendersLink(render: ButtonProps["render"]) {
+  if (!React.isValidElement<{ href?: unknown; to?: unknown }>(render)) return false
+  return render.type === "a" || render.props.href != null || render.props.to != null
+}
+
+// Base UI's Button, given `nativeButton={false}`, makes an anchor
+// role="button", gives it a Space-key click and a tab stop of its own. A link
+// wants none of that: it keeps its link role, Enter follows it natively and
+// Space scrolls the page. So a link skips Base UI's Button and takes the same
+// classes, plus its disabled rules (see Button).
+function LinkButton({
   className,
-  variant = "default",
-  size = "default",
+  variant,
+  size,
   render,
-  nativeButton,
+  disabled = false,
+  focusableWhenDisabled = false,
+  // Meaningless for a link; kept out of the DOM.
+  nativeButton: _nativeButton,
+  ref,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
+  // A disabled link follows nothing. An `<a>` loses its href, which also stops
+  // a middle click and "open in new tab". A router link computes its own href,
+  // so it cannot lose it: only its clicks are stopped.
+  const rendered =
+    disabled && React.isValidElement<{ href?: unknown }>(render) && render.type === "a"
+      ? React.cloneElement(render, { href: undefined })
+      : render
+  return useRender({
+    defaultTagName: "a",
+    render: rendered,
+    ref,
+    state: { disabled },
+    props: mergeProps<"a">(
+      {
+        ...{ "data-slot": "button" },
+        className: cn(buttonVariants({ variant, size, className })),
+        ...(disabled && {
+          // An `<a>` without href has no role; the link role stays explicit.
+          role: "link",
+          "aria-disabled": true,
+          tabIndex: focusableWhenDisabled ? undefined : -1,
+          onClick: (event: React.MouseEvent) => event.preventDefault(),
+          onAuxClick: (event: React.MouseEvent) => event.preventDefault(),
+        }),
+      },
+      props as React.ComponentProps<"a">
+    ),
+  })
+}
+
+// Dev only. A render function can hide a link from `rendersLink`; the anchor in
+// the DOM gives it away, and the Button would then announce it as a button.
+function useUndetectedLinkCheck(ref: React.Ref<HTMLButtonElement> | undefined, enabled: boolean) {
+  return React.useCallback(
+    (element: HTMLButtonElement | null) => {
+      if (enabled && element instanceof HTMLAnchorElement && element.hasAttribute("href")) {
+        console.error(
+          'Button rendered a link but gave it role="button". Pass the link as an element with `href` or `to` (render={<Link to="/x" />}), not as a render function, so Button can tell.'
+        )
+      }
+      if (typeof ref === "function") return ref(element)
+      if (ref) ref.current = element
+    },
+    [ref, enabled]
+  )
+}
+
+/**
+ * A button. Pass `render` to draw it as another element.
+ *
+ * A Button that renders a link keeps the link role: `render={<a href="/x" />}`
+ * or a router link such as `render={<Link to="/x" />}`. It gets the whole
+ * button look and states. Do not call `buttonVariants()` on your own `<a>`;
+ * that skips the disabled rules below. Button finds the link from the element
+ * you pass (an `<a>`, or an element with `href` or `to`), so there is no extra
+ * prop.
+ *
+ * A disabled link (`disabled`) has `role="link"` and `aria-disabled="true"`,
+ * follows nothing and leaves the tab order. An `<a>` loses its href; a router
+ * link keeps the href it computes, so it can still be copied, but a click,
+ * Enter and a middle click do nothing. Add `focusableWhenDisabled` to keep the
+ * tab stop, for a link with a tooltip that says why.
+ */
+function Button({ className, variant = "default", size = "default", render, nativeButton, ...props }: ButtonProps) {
+  const isLink = rendersLink(render)
+  const ref = useUndetectedLinkCheck(
+    props.ref,
+    process.env.NODE_ENV !== "production" && Boolean(render) && !isLink
+  )
+  if (isLink) {
+    return <LinkButton className={className} variant={variant} size={size} render={render} {...props} />
+  }
+  const { ref: _ref, ...rest } = props
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       // Base UI warns when `render` swaps in a non-native element unless
       // nativeButton is false. Default it off when rendering as something else
-      // (e.g. an anchor) so consumers don't have to pass it every time.
+      // (e.g. a div) so consumers don't have to pass it every time.
       render={render}
       nativeButton={render ? (nativeButton ?? false) : nativeButton}
-      {...props}
+      ref={ref}
+      {...rest}
     />
   )
 }

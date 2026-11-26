@@ -120,7 +120,7 @@ export const uiGuidance = [
       },
       {
         title: 'Not inside running text',
-        body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
+        body: 'A link inside a sentence or a form is a TextLink; a chevron there breaks the sentence.',
       },
       {
         title: 'A diagonal arrow means another site',
@@ -190,6 +190,10 @@ export const uiGuidance = [
         body: 'Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.',
       },
       {
+        title: 'A button that goes to a page is a link',
+        body: 'Render it with the element you navigate with: `<Button render={<a href="/billing" />}>` or `<Button render={<Link to="/billing" />}>`. It keeps the link role and takes the whole button look; Button finds the link from the element (an `<a>`, or an element with `href` or `to`), so there is no extra prop. Do not call `buttonVariants()` on your own `<a>` or `<Link>`. A disabled link has `role="link"` and `aria-disabled="true"`, follows nothing and leaves the tab order; add `focusableWhenDisabled` to keep the tab stop for a Tooltip that says why.',
+      },
+      {
         title: 'A disabled button that must say why keeps its focus',
         body: 'Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.',
       },
@@ -236,6 +240,37 @@ export const uiGuidance = [
       },
     ],
     related: ['stat-card'],
+  },
+  {
+    id: 'checklist',
+    title: 'Checklist',
+    summary:
+      'Show a short set of steps the person completes, with its progress, until every step is done.',
+    sourceStory: 'checklist-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Steps the person completes',
+        body: 'Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.',
+      },
+      {
+        title: 'Let the data decide when it can',
+        body: 'Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.',
+      },
+      {
+        title: 'One action per open step',
+        body: 'Give an open step at most one secondary Button or link in ChecklistStepAction. Put longer content, such as commands to run, in ChecklistStepBody. Split a step that needs two actions.',
+      },
+      {
+        title: 'Dismiss only when every step is done',
+        body: 'Pass `onDismiss`: its button shows once the last step is done. Remove the Checklist there and remember the choice. Keep a half-done checklist in view.',
+      },
+    ],
+    choices: [
+      { choice: 'Checklist', when: 'Steps the person completes, each with its own action.' },
+      { choice: 'Timeline', when: 'What already happened to one thing, newest first.' },
+      { choice: 'Progress', when: 'One task the system runs.' },
+    ],
+    related: ['step-indicator', 'timeline', 'collapsible-section'],
   },
   {
     id: 'chip',
@@ -1148,8 +1183,8 @@ export const uiGuidance = [
         body: 'Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.',
       },
       {
-        title: 'Pending splits by resolver',
-        body: 'Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.',
+        title: 'Pending splits by who acts next',
+        body: "Waiting that the system or another person resolves is progress, blue with no icon: commonStates.pending sets icon to false. Pending that waits for the viewer's own action is warning, declared by that domain.",
       },
       {
         title: 'Positive terminal or healthy operating is success',
@@ -1173,7 +1208,7 @@ export const uiGuidance = [
       },
       {
         title: 'A spinner means work that runs right now',
-        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
+        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone. Pending, waiting on the system or another person, is the progress tone with no icon (icon={false}): blue, and nothing spins.',
       },
       {
         title: 'A live dot means a state that stays on',
@@ -1189,7 +1224,7 @@ export const uiGuidance = [
       },
       {
         title: 'The chip brings its own icon',
-        body: 'Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
+        body: 'Each tone shows its own icon, and progress spins. Pending is progress with icon={false}: blue, no icon, no spinner. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
       },
       {
         title: 'Quiet normal, loud abnormal in a list column',
@@ -1201,12 +1236,15 @@ export const uiGuidance = [
       },
     ],
     choices: [
-      { choice: 'neutral', when: 'Inert, terminal without failure, or waiting on system/time.' },
+      { choice: 'neutral', when: 'Inert, or terminal without failure.' },
       { choice: 'info', when: 'A noteworthy fact with no positive or negative valence.' },
       { choice: 'success', when: 'Positive terminal, healthy, enabled, or operating.' },
       { choice: 'warning', when: 'Human action is needed or risk is present.' },
       { choice: 'critical', when: 'Failed, blocked, invalid, or service-affecting.' },
-      { choice: 'progress', when: 'The system is actively working right now.' },
+      {
+        choice: 'progress',
+        when: 'The system is working (spinner), or waiting on the system or another person (pending: no icon).',
+      },
     ],
     related: ['badge', 'chip'],
   },
@@ -1267,7 +1305,41 @@ export const uiGuidance = [
       { choice: 'done', when: 'Finished.' },
       { choice: 'failed', when: 'The flow stopped here.' },
     ],
-    related: ['timeline', 'progress'],
+    related: ['checklist', 'timeline', 'progress'],
+  },
+  {
+    id: 'text-link',
+    title: 'TextLink',
+    summary:
+      'Link inside running text, or a small standalone link that must not compete with the actions next to it.',
+    sourceStory: 'text-link-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'TextLink in text, ArrowLink at the end of a region, Button for an action',
+        body: 'A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.',
+      },
+      {
+        title: 'Default tone in a sentence',
+        body: 'The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.',
+      },
+      {
+        title: 'Quiet tone stands alone',
+        body: 'The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.',
+      },
+      {
+        title: 'Another site is external',
+        body: 'Set `external` on a link to another site. It opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and tells screen readers it opens a new tab. A page of this app never takes `external`.',
+      },
+      {
+        title: 'A router link goes in render',
+        body: 'Pass the router link as `render`. TextLink keeps the link role; never give it `role="button"` or an `onClick` that does not navigate.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'A link inside a sentence or a form hint.' },
+      { choice: 'quiet', when: 'A small standalone link beside more important actions.' },
+    ],
+    related: ['arrow-link', 'button'],
   },
   {
     id: 'timeline',

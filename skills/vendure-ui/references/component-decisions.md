@@ -51,7 +51,7 @@ Link to a page with more of what the user is looking at, at the end of the regio
 
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
-- **Not inside running text:** A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.
+- **Not inside running text:** A link inside a sentence or a form is a TextLink; a chevron there breaks the sentence.
 - **A diagonal arrow means another site:** A chevron goes to a page of this app; an up-right arrow leaves it. Use `direction="external"` for a link to another site. A hostname fact in a PageHeader is a PageHeaderFactLink. A Button that opens another site takes a 14px `ArrowUpRight` as its last child, which the Button keeps quieter than the label. Never use the arrow for a page of this app.
 
 Related decisions: `button`.
@@ -81,6 +81,7 @@ Compose actions as an emphasis ladder with one primary action per view.
 - **Destructive means loss:** Reserve destructive for irreversible or removing actions. An outward-facing action is not automatically destructive.
 - **Destructive comes in two weights:** A destructive action that is on screen at rest, such as a danger zone on a settings page, is `destructive-outline`: the outline button with a red label and a red tint on hover. The solid `destructive` is for the press that does the damage, the confirm in a ConfirmDialog. Do not put a solid red button on a page at rest.
 - **Brand is an identity spend, not a louder primary:** Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.
+- **A button that goes to a page is a link:** Render it with the element you navigate with: `<Button render={<a href="/billing" />}>` or `<Button render={<Link to="/billing" />}>`. It keeps the link role and takes the whole button look; Button finds the link from the element (an `<a>`, or an element with `href` or `to`), so there is no extra prop. Do not call `buttonVariants()` on your own `<a>` or `<Link>`. A disabled link has `role="link"` and `aria-disabled="true"`, follows nothing and leaves the tab order; add `focusableWhenDisabled` to keep the tab stop for a Tooltip that says why.
 - **A disabled button that must say why keeps its focus:** Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.
 
 **Choose:**
@@ -105,6 +106,22 @@ Give every shape a chart draws an accessible name, from the config where Chart c
 - **A table or text carries the data too:** Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.
 
 Related decisions: `stat-card`.
+## Checklist
+
+Show a short set of steps the person completes, with its progress, until every step is done.
+
+- **Steps the person completes:** Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.
+- **Let the data decide when it can:** Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.
+- **One action per open step:** Give an open step at most one secondary Button or link in ChecklistStepAction. Put longer content, such as commands to run, in ChecklistStepBody. Split a step that needs two actions.
+- **Dismiss only when every step is done:** Pass `onDismiss`: its button shows once the last step is done. Remove the Checklist there and remember the choice. Keep a half-done checklist in view.
+
+**Choose:**
+
+- `Checklist`: Steps the person completes, each with its own action.
+- `Timeline`: What already happened to one thing, newest first.
+- `Progress`: One task the system runs.
+
+Related decisions: `step-indicator`, `timeline`, `collapsible-section`.
 ## Chip
 
 Use Chip for removable members of an editable set or applied filters.
@@ -454,28 +471,28 @@ Map domain states to the six shared tones by consequence for the viewer.
 
 - **Tone follows consequence, not the verb:** The same state word can map differently across domains. Build domain-specific state dictionaries rather than a global string map.
 - **Critical means intervene:** Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.
-- **Pending splits by resolver:** Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.
+- **Pending splits by who acts next:** Waiting that the system or another person resolves is progress, blue with no icon: commonStates.pending sets icon to false. Pending that waits for the viewer's own action is warning, declared by that domain.
 - **Positive terminal or healthy operating is success:** Use success for completed, approved, enabled, healthy, and operating states rather than brand or neutral.
 - **Unknown wire values fall back safely:** Use the state dictionary helpers so unknown values remain neutral and warn in development instead of receiving invented color. An unknown state shows its name in sentence case words ("ValidatingCustomer" reads "Validating customer"), never the code word.
 - **Pick the appearance by the room it has:** Use the default chip for a status that stands alone (size="lg" beside a page title). Inside a tinted or accent surface, use appearance="bare": the icon and tinted label without the box, never a chip inside a coloured card. A status that every row of a table or list shows uses appearance="icon": the tone icon and a neutral label. Never plain coloured text (appearance="text") in a column. Use dot for a group of chips that is not a column, and icon={false} only for an inline chip whose label already names the tone. Use appearance="dot" only where no word fits, and still pass the label: it stays as screen-reader text.
 - **Status comes after the name, never at an edge:** In a table or list the name comes first and the status directly after it. A StatusBadge chip is never in the first or the last column: it would sit against the edge of the list.
 - **A status column is an icon and a label, with the icon in its tone colour:** Do: when every row of a table shows a status, use appearance="icon" on every row: the tone icon with no box, then the label in neutral text. The icon keeps its tone colour for every state, green for success included; only the label is neutral. Example: a deployments table shows Ready with a green icon, Failed with a red icon, Building with a blue spinner. An orders list shows one line per order with no time under it: a blue icon for an order to fulfil (Payment settled), a grey truck for Shipped, a green check for Delivered, a grey slash for Cancelled and a red icon for a declined payment. Labels are words ("Payment settled"), not code words. Give each group of states its own icon shape, so the column reads without colour. Don't: plain coloured text (appearance="text") in a column, a grey icon for a finished success, a coloured label, or a chip in every row.
-- **A spinner means work that runs right now:** Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.
+- **A spinner means work that runs right now:** Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone. Pending, waiting on the system or another person, is the progress tone with no icon (icon={false}): blue, and nothing spins.
 - **A live dot means a state that stays on:** Use LiveIndicator, a tone dot with a soft pulsing ring, for a state that stays on rather than ends: a live log stream, a service that runs right now. Keep the progress spinner for work that ends. Pass pulse={false} where a spinner or progress sweep on the same page already moves for the same state. Give the dot a visible label or a label prop, or leave both out when the text beside it says the same.
 - **A chip marks only the exception:** Do: a chip or badge signals importance, so use its colour sparingly: put a chip only on the exception that needs attention, and show nothing for the normal state, when the normal state is far more common. Example: a products list shows no mark on an enabled product and a "Disabled" chip on a disabled one. Don't: a chip on every row, or a chip for the normal state. A table where every row has a status uses the icon and label instead.
 - **The second line holds one time:** Pass detail for a second line under the label, with the one time that matters for the state: an ElapsedTime that counts up for a state that is happening ("1m 15s") or waiting ("Waiting 9m 07s"), a RelativeTime for when it finished ("2 minutes ago", "yesterday"), and how long a state that continues has lasted ("for 13 days"). Write each time once, with no Tooltip around it: <ElapsedTime since={startedAt} tooltip /> for a count, <RelativeTime value={finishedAt} start={startedAt} /> for a finished state (its tooltip shows the range and the duration), and your own word "for" before <RelativeTime value={since} display="duration" /> for a state that continues. Under the label each time is a tab stop and its tooltip opens beside the status block, so the label stays readable and the table needs no Duration or Created column.
-- **The chip brings its own icon:** Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.
+- **The chip brings its own icon:** Each tone shows its own icon, and progress spins. Pending is progress with icon={false}: blue, no icon, no spinner. Never put an icon in children: pass a more exact shape as icon={<Icon />}.
 - **Quiet normal, loud abnormal in a list column:** When most rows of a list column share one normal state (Enabled, Public), pass reveal="row" for that state only: its badge shows while its group/row row is hovered or focused, and the other states always show. The consumer decides which state is normal.
 - **A state explains itself in a tooltip:** To say why a state is what it is (which service is degraded, since when), render the StatusBadge as the TooltipTrigger: <TooltipTrigger render={<StatusBadge …/>} />. The badge then becomes a tab stop with the focus ring, and a chip takes the hover fill. Do not wrap it in a Button. A lone dot never opens a tooltip.
 
 **Choose:**
 
-- `neutral`: Inert, terminal without failure, or waiting on system/time.
+- `neutral`: Inert, or terminal without failure.
 - `info`: A noteworthy fact with no positive or negative valence.
 - `success`: Positive terminal, healthy, enabled, or operating.
 - `warning`: Human action is needed or risk is present.
 - `critical`: Failed, blocked, invalid, or service-affecting.
-- `progress`: The system is actively working right now.
+- `progress`: The system is working (spinner), or waiting on the system or another person (pending: no icon).
 
 Related decisions: `badge`, `chip`.
 ## TablePagination
@@ -505,7 +522,23 @@ Show where an ordered flow stands: signup, the build and deploy steps of a deplo
 - `done`: Finished.
 - `failed`: The flow stopped here.
 
-Related decisions: `timeline`, `progress`.
+Related decisions: `checklist`, `timeline`, `progress`.
+## TextLink
+
+Link inside running text, or a small standalone link that must not compete with the actions next to it.
+
+- **TextLink in text, ArrowLink at the end of a region, Button for an action:** A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.
+- **Default tone in a sentence:** The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.
+- **Quiet tone stands alone:** The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.
+- **Another site is external:** Set `external` on a link to another site. It opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and tells screen readers it opens a new tab. A page of this app never takes `external`.
+- **A router link goes in render:** Pass the router link as `render`. TextLink keeps the link role; never give it `role="button"` or an `onClick` that does not navigate.
+
+**Choose:**
+
+- `default`: A link inside a sentence or a form hint.
+- `quiet`: A small standalone link beside more important actions.
+
+Related decisions: `arrow-link`, `button`.
 ## Timeline
 
 Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.

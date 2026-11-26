@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Switch } from '../src/components/atoms/switch.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 
 const meta = {
@@ -81,4 +83,153 @@ export const States: Story = {
       )}
     </LightAndDark>
   ),
+};
+
+/**
+ * Toggling slides the thumb with `--ease-out` and fades the track colour;
+ * pressing stretches the thumb toward the middle of the track (`--ease-press`),
+ * which the preview shows with a real mouse down. Under reduced motion the
+ * thumb jumps and does not stretch, and only colours fade. Nothing plays on
+ * first render.
+ */
+export const Toggle: Story = {
+  args: { 'aria-label': 'Airplane mode' },
+  play: async ({ canvasElement, step }) => {
+    const control = within(canvasElement).getByRole('switch', { name: 'Airplane mode' });
+    const thumb = control.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const running = () => control.getAnimations({ subtree: true });
+    const settled = async () => {
+      for (const animation of running()) animation.finish();
+      await waitFor(() => expect(running()).toHaveLength(0));
+    };
+    // How far the thumb sits from the track's start edge, border included.
+    const offset = () => thumb.getBoundingClientRect().left - control.getBoundingClientRect().left;
+    const moves = () =>
+      running().some((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+
+    await step('nothing is running on first render', async () => {
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a press response is set up: the thumb stretches from its resting side', async () => {
+      await expect(getComputedStyle(thumb).transformOrigin.split(' ')[0]).toBe('0px');
+      await expect(getComputedStyle(thumb).transitionProperty).toContain('scale');
+    });
+
+    await step('toggling on slides the thumb, or jumps under reduced motion', async () => {
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(moves()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(15, 0);
+      // Checked, the thumb rests on the right and stretches from there.
+      await expect(getComputedStyle(thumb).transformOrigin.split(' ')[0]).toBe('16px');
+    });
+
+    await step('Space toggles back with the same motion', async () => {
+      control.focus();
+      await userEvent.keyboard(' ');
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(moves()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a fast toggle twice reverses from where the thumb is', async () => {
+      if (reduced) return;
+      await userEvent.click(control);
+      const [slide] = running().filter((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+      if (!slide) throw new Error('the thumb is not sliding');
+      slide.pause();
+      slide.currentTime = 60;
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await settled();
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+  },
+};
+
+/** With reduced motion emulated the thumb has no slide or stretch. */
+export const ReducedMotion: Story = {
+  args: { 'aria-label': 'Airplane mode', defaultChecked: true },
+  play: async ({ canvasElement }) => {
+    const thumb = canvasElement.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    await expect(getComputedStyle(thumb).transitionProperty).not.toMatch(/translate|scale/);
+  },
+};
+
+/**
+ * A button outside the Switch flips `checked`, like data that loads after
+ * render, a form reset or another control would. The thumb jumps to its new
+ * place with no motion. A click or Space on the Switch itself still slides it.
+ */
+export const SetFromCode: Story = {
+  render: () => {
+    const [checked, setChecked] = useState(false);
+    return (
+      <div className="flex items-center gap-4">
+        <Switch aria-label="Airplane mode" checked={checked} onCheckedChange={setChecked} />
+        <Button variant="outline" size="sm" onClick={() => setChecked((value) => !value)}>
+          Set from code
+        </Button>
+      </div>
+    );
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const control = canvas.getByRole('switch', { name: 'Airplane mode' });
+    const outside = canvas.getByRole('button', { name: 'Set from code' });
+    const thumb = control.querySelector('[data-slot="switch-thumb"]') as HTMLElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const running = () => control.getAnimations({ subtree: true });
+    const settled = async () => {
+      for (const animation of running()) animation.finish();
+      await waitFor(() => expect(running()).toHaveLength(0));
+    };
+    const offset = () => thumb.getBoundingClientRect().left - control.getBoundingClientRect().left;
+    const slides = () =>
+      running().some((animation) => (animation as CSSTransition).transitionProperty === 'translate');
+
+    await step('a change from code jumps with no transition', async () => {
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(15, 0);
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a click on the Switch slides the thumb', async () => {
+      await userEvent.click(control);
+      await expect(control).toHaveAttribute('aria-checked', 'true');
+      await expect(slides()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(15, 0);
+    });
+
+    await step('Space slides it back', async () => {
+      control.focus();
+      await userEvent.keyboard(' ');
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(slides()).toBe(!reduced);
+      await settled();
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+
+    await step('a change from code after a user toggle jumps again', async () => {
+      await userEvent.click(control);
+      await settled();
+      await userEvent.click(outside);
+      await expect(control).toHaveAttribute('aria-checked', 'false');
+      await expect(running()).toHaveLength(0);
+      await expect(offset()).toBeCloseTo(1, 0);
+    });
+  },
 };
