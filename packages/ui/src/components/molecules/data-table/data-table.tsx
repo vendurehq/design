@@ -87,7 +87,7 @@ import {
   sameIndents,
 } from './data-table-helpers.tsx';
 // Relative: `data-table-row-count-storage` is closed in the package exports.
-import { skeletonRowCountFor, useRememberedRowCount } from './data-table-row-count-storage.tsx';
+import { skeletonRowCountFor, useRememberedListTotal } from './data-table-row-count-storage.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
 
@@ -737,7 +737,7 @@ function DataTable<TData>({
   isLoading,
   skeletonRowCount = 10,
   skeletonCells,
-  rowCountKey,
+  expectedTotal,
   pagination,
   sorting,
   filters,
@@ -1039,13 +1039,8 @@ function DataTable<TData>({
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
-  // The list's total of the last load, read at mount. Each finished load
-  // stores its total for the next first load, which draws as many skeleton
-  // rows as the current page will have.
-  const loadedTotal =
-    firstLoad || isLoading ? null : (serverTotal ?? table.getPrePaginationRowModel().rows.length);
-  const rememberedRowCount = useRememberedRowCount(rowCountKey, loadedTotal);
-  const skeletonRows = skeletonRowCountFor(rememberedRowCount, pagination, skeletonRowCount);
+  // The first load draws as many skeleton rows as the current page will have.
+  const skeletonRows = skeletonRowCountFor(expectedTotal ?? null, pagination, skeletonRowCount);
 
   // The select checkbox is floated absolutely over a zero-width cell, so the
   // gutter it needs is folded into the leading data column as left padding —
@@ -1632,7 +1627,12 @@ function DataTable<TData>({
 
 // `DataTableSkeletonLine` is the shared SkeletonLine under its old name, kept for
 // consumers that stack it in `skeletonCells`.
-export { DataTable, DataTableRowLink, SkeletonLine as DataTableSkeletonLine };
+export {
+  DataTable,
+  DataTableRowLink,
+  SkeletonLine as DataTableSkeletonLine,
+  useRememberedListTotal,
+};
 
 // Re-export the consumer-facing TanStack types so columns can be authored from
 // the same import as `DataTable` — no direct `@tanstack/react-table` dependency

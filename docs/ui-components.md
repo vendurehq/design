@@ -863,7 +863,7 @@ Without children, `LoadingState` draws `rows` full-width bars, as before. Use th
 
 ### DataTable loading rows
 
-Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `rowCountKey`, it remembers the list's total and draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
+Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `expectedTotal` (the list's total from an earlier visit, for example from `useRememberedListTotal`), it draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
 import {
@@ -1019,7 +1019,6 @@ These packages are optional — install them only if you use the features that n
    - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
    - Server pagination requires `totalItems: number | null`. `null` means "not known" and draws a skeleton range. Pass `data?.totalItems ?? null`, not `0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
    - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
-   - `rowCountKey` stores the list's total (all pages), not the row count of the last page. Put the filters and search in the key when they change the total.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

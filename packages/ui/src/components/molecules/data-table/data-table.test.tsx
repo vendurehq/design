@@ -35,6 +35,7 @@ import {
 import {
   readRowCount,
   skeletonRowCountFor,
+  useRememberedListTotal,
   writeRowCount,
 } from './data-table-row-count-storage.tsx';
 import { readStoredSelection, writeStoredSelection } from './data-table-selection-storage.tsx';
@@ -1433,7 +1434,7 @@ describe('DataTable row count storage', () => {
     const store: Record<string, string> = {};
     stubStorage(store);
     writeRowCount('orders', 3);
-    expect(store).toEqual({ 'vendure-ui:row-count:orders': '3' });
+    expect(store).toEqual({ 'vendure-ui:list-total:orders': '3' });
     expect(readRowCount('orders')).toBe(3);
     writeRowCount('orders', 0);
     expect(readRowCount('orders')).toBe(0);
@@ -1442,10 +1443,10 @@ describe('DataTable row count storage', () => {
 
   test('malformed, negative or fractional counts read as nothing remembered', () => {
     stubStorage({
-      'vendure-ui:row-count:a': 'abc',
-      'vendure-ui:row-count:b': '-1',
-      'vendure-ui:row-count:c': '2.5',
-      'vendure-ui:row-count:d': '',
+      'vendure-ui:list-total:a': 'abc',
+      'vendure-ui:list-total:b': '-1',
+      'vendure-ui:list-total:c': '2.5',
+      'vendure-ui:list-total:d': '',
     });
     for (const key of ['a', 'b', 'c', 'd']) expect(readRowCount(key)).toBeNull();
   });
@@ -1481,22 +1482,40 @@ describe('DataTable row count storage', () => {
     expect(skeletonRowCountFor(3, undefined, 10)).toBe(3);
   });
 
-  test('a server render ignores the key and draws skeletonRowCount rows', () => {
-    stubStorage({ 'vendure-ui:row-count:countries': '3' });
-    const plain = html(
-      <DataTable rows={undefined} columns={columns} isLoading skeletonRowCount={6} />,
-    );
-    const keyed = html(
+  test('expectedTotal sets the skeleton rows of the first load', () => {
+    const skeletonRows = (markup: string) =>
+      count(markup, /data-slot="data-table-skeleton-line"/g) / columns.length;
+    expect(
+      skeletonRows(html(<DataTable rows={undefined} columns={columns} expectedTotal={3} />)),
+    ).toBe(3);
+    const lastPage = html(
       <DataTable
         rows={undefined}
         columns={columns}
-        isLoading
-        skeletonRowCount={6}
-        rowCountKey="countries"
+        expectedTotal={132}
+        pagination={{ page: 14, pageSize: 10, totalItems: null, onPageChange: () => {} }}
       />,
     );
-    expect(keyed).toBe(plain);
-    expect(keyed.match(/<tr[^>]*>/g)?.length).toBe(1 + 6);
+    expect(skeletonRows(lastPage)).toBe(2);
+    const empty = html(<DataTable rows={undefined} columns={columns} expectedTotal={0} />);
+    expect(skeletonRows(empty)).toBe(0);
+    expect(empty).toContain('data-table-empty-placeholder');
+  });
+
+  test('a server render of the hook reads nothing, so the table draws the default', () => {
+    stubStorage({ 'vendure-ui:list-total:countries': '3' });
+    function Remembered() {
+      const expectedTotal = useRememberedListTotal('countries', null);
+      return (
+        <DataTable
+          rows={undefined}
+          columns={columns}
+          skeletonRowCount={6}
+          expectedTotal={expectedTotal}
+        />
+      );
+    }
+    expect(html(<Remembered />).match(/<tr[^>]*>/g)?.length).toBe(1 + 6);
   });
 });
 

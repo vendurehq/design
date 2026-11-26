@@ -356,35 +356,27 @@ export interface DataTableProps<TData> {
   isLoading?: boolean;
   /**
    * Skeleton rows before the first load of a table without `pagination`.
-   * Default 10. With `pagination` the count comes from the page size (and the
-   * total remembered under `rowCountKey`), so this prop is not used.
+   * Default 10. With `pagination` the count comes from the page size (and
+   * `expectedTotal`), so this prop is not used.
    */
   skeletonRowCount?: number;
   /**
-   * Remembers the list's total row count (all pages), in local storage under
-   * this key. Before the next first load the body draws as many skeleton rows
+   * The list's total row count (all pages) from an earlier visit, while the
+   * rows are not loaded yet. The first load then draws as many skeleton rows
    * as the current page will have: the page size, fewer on a short last page,
-   * so the table does not change height when the rows arrive. A page that
-   * will be empty renders the empty state (`emptyState` or "No results")
-   * hidden and inert instead, so the body has its exact height and the empty
-   * result shows in place.
+   * so the table does not change height when the rows arrive. A page that will
+   * be empty renders the empty state (`emptyState` or "No results") hidden and
+   * inert instead, so the body has its exact height.
    *
-   * - The total is read once, when the table mounts (or the key changes),
-   *   before the first paint. With nothing remembered a paginated table draws
-   *   one full page, any other table `skeletonRowCount`.
-   * - Each finished load (`isLoading` false, `rows` and the total known)
-   *   stores the total: `pagination.totalItems` in server mode, else the row
-   *   count after client filtering.
-   * - The remembered total only sets the skeleton row count. The footer never
-   *   shows it: it can be out of date.
-   * - Blocked or full storage is ignored. A server render draws the default.
+   * - Only the skeleton row count uses it. The footer never shows it: it can
+   *   be out of date.
+   * - Without it a paginated table draws one full page, any other table
+   *   `skeletonRowCount`.
    *
-   * The key names the list and anything that scopes its rows, such as a
-   * channel, the filters or the search: `${route}:${channelId}:${filterHash}`.
-   * Rows taller than one text line still need `skeletonCells`. Without the
-   * prop the first visit of every mount draws the default.
+   * `useRememberedListTotal` keeps the total in local storage. Any other store
+   * works too.
    */
-  rowCountKey?: string;
+  expectedTotal?: number | null;
   /**
    * Per-column loading cells, keyed by column id, for cells that are not one
    * text line tall (a title over a muted sub-line, an avatar, a button), so the

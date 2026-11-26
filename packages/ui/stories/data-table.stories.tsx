@@ -36,6 +36,7 @@ import {
   type RowSelectionState,
   type SortingState,
   type TableInstance,
+  useRememberedListTotal,
   type VisibilityState,
 } from '../src/components/molecules/data-table/data-table.tsx';
 import { AnonymizedToken } from '../src/components/molecules/anonymized-token.tsx';
@@ -609,7 +610,7 @@ export const LoadingKeepsColumnWidths: Story = {
   },
 };
 
-const ROW_COUNT_PREFIX = 'vendure-ui:row-count:';
+const LIST_TOTAL_PREFIX = 'vendure-ui:list-total:';
 
 /** The height of the table body inside `[data-testid=testId]`. */
 function bodyHeight(canvasElement: HTMLElement, testId: string) {
@@ -625,34 +626,27 @@ const tallEmptyState = (
   </EmptyState>
 );
 
+/** A loaded table that remembers its total with `useRememberedListTotal`. */
+function RememberedLoadedTable() {
+  const rows = orders.slice(0, 3);
+  useRememberedListTotal('story:loaded', rows.length);
+  return <DataTable<Order> rows={rows} columns={sizedColumns} getRowId={(o) => o.id} />;
+}
+
 /**
- * With `rowCountKey`, a first load draws as many skeleton rows as the
- * remembered total of the list, so the body keeps its height when the rows
- * arrive. A remembered total of 0 renders the empty state hidden and inert, so
+ * With `expectedTotal`, a first load draws as many skeleton rows as the
+ * expected total of the list, so the body keeps its height when the rows
+ * arrive. An expected total of 0 renders the empty state hidden and inert, so
  * the body has its exact height. From the top: 3 loaded rows (their total
- * stored under their key), a load that remembers 3, "No results", a load that
- * remembers 0, then the same pair with a tall custom `emptyState`.
+ * stored by `useRememberedListTotal`), a load that expects 3, "No results", a
+ * load that expects 0, then the same pair with a tall custom `emptyState`.
  */
-export const LoadingRemembersRowCount: Story = {
-  beforeEach: () => {
-    localStorage.setItem(`${ROW_COUNT_PREFIX}story:three`, '3');
-    localStorage.setItem(`${ROW_COUNT_PREFIX}story:none`, '0');
-    localStorage.setItem(`${ROW_COUNT_PREFIX}story:none-custom`, '0');
-    return () => {
-      for (const key of ['three', 'none', 'none-custom', 'loaded']) {
-        localStorage.removeItem(`${ROW_COUNT_PREFIX}story:${key}`);
-      }
-    };
-  },
+export const LoadingWithExpectedTotal: Story = {
+  beforeEach: () => () => localStorage.removeItem(`${LIST_TOTAL_PREFIX}story:loaded`),
   render: () => (
     <div className="flex flex-col gap-6">
       <div data-testid="loaded">
-        <DataTable<Order>
-          rows={orders.slice(0, 3)}
-          columns={sizedColumns}
-          getRowId={(o) => o.id}
-          rowCountKey="story:loaded"
-        />
+        <RememberedLoadedTable />
       </div>
       <div data-testid="loading">
         <DataTable<Order>
@@ -660,7 +654,7 @@ export const LoadingRemembersRowCount: Story = {
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
-          rowCountKey="story:three"
+          expectedTotal={3}
         />
       </div>
       <div data-testid="empty">
@@ -672,7 +666,7 @@ export const LoadingRemembersRowCount: Story = {
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
-          rowCountKey="story:none"
+          expectedTotal={0}
         />
       </div>
       <div data-testid="empty-custom">
@@ -689,18 +683,18 @@ export const LoadingRemembersRowCount: Story = {
           columns={sizedColumns}
           getRowId={(o) => o.id}
           isLoading
-          rowCountKey="story:none-custom"
+          expectedTotal={0}
           emptyState={tallEmptyState}
         />
       </div>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // Remembered 3: three skeleton rows instead of the default ten, as tall
+    // Expected 3: three skeleton rows instead of the default ten, as tall
     // as the three loaded rows.
     await expectSameRowHeights(canvasElement, 3);
     await expect(bodyHeight(canvasElement, 'loading')).toBe(bodyHeight(canvasElement, 'loaded'));
-    // Remembered 0: the empty state, hidden, so the body is exactly as tall
+    // Expected 0: the empty state, hidden, so the body is exactly as tall
     // as the loaded empty result, also for a tall custom `emptyState`.
     await expect(bodyHeight(canvasElement, 'loading-empty')).toBe(
       bodyHeight(canvasElement, 'empty'),
@@ -722,9 +716,8 @@ export const LoadingRemembersRowCount: Story = {
     await expect(
       within(canvasElement).getAllByRole('button', { name: 'Create order' }),
     ).toHaveLength(1);
-    // A finished load stores its count; a load in progress stores nothing.
-    await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:loaded`)).toBe('3');
-    await expect(localStorage.getItem(`${ROW_COUNT_PREFIX}story:three`)).toBe('3');
+    // The hook stores the loaded total for the next visit.
+    await expect(localStorage.getItem(`${LIST_TOTAL_PREFIX}story:loaded`)).toBe('3');
   },
 };
 
