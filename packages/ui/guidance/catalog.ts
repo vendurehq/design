@@ -270,7 +270,7 @@ export const uiGuidance = [
       { choice: 'Timeline', when: 'What already happened to one thing, newest first.' },
       { choice: 'Progress', when: 'One task the system runs.' },
     ],
-    related: ['timeline', 'collapsible-section'],
+    related: ['step-indicator', 'timeline', 'collapsible-section'],
   },
   {
     id: 'chip',
@@ -1269,6 +1269,43 @@ export const uiGuidance = [
       },
     ],
     related: ['data-table', 'list-header'],
+  },
+  {
+    id: 'step-indicator',
+    title: 'StepIndicator',
+    summary:
+      'Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.',
+    sourceStory: 'step-indicator-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'An ordered flow, not a to-do list',
+        body: 'Use StepIndicator when the steps go one after the other. Tasks the user ticks off in any order are a Checklist. Events that already happened are a Timeline.',
+      },
+      {
+        title: 'Waiting is current, working is running',
+        body: 'A step that waits for the user or a queue is `current`: blue, with no spinner, because it can wait for days. Only a step whose work happens now is `running` and spins. A step where the flow stopped is `failed`; the steps after it stay `upcoming`.',
+      },
+      {
+        title: 'A track for progress, a guide for content',
+        body: 'Horizontal for steps that need only a name and a time (signup, deployment steps). Vertical when a step holds content: the actions of the current step, a command, a note.',
+      },
+      {
+        title: 'Numbers when the user moves, icons when the system runs',
+        body: 'Use `marker="number"` for a flow the user goes through. Use `marker="icon"` for steps the system runs, where the state says more than the number.',
+      },
+      {
+        title: 'Name the list, keep the states in words',
+        body: 'Give the StepIndicator an `aria-label`. Each title is followed by its state in words for screen readers; pass translations through `stateLabels`. Give guide titles `render={<h3 />}` when they belong in the page outline.',
+      },
+    ],
+    choices: [
+      { choice: 'upcoming', when: 'Not reached yet.' },
+      { choice: 'current', when: 'The step the flow is on, waiting for the user or the system.' },
+      { choice: 'running', when: 'Work on this step is happening now.' },
+      { choice: 'done', when: 'Finished.' },
+      { choice: 'failed', when: 'The flow stopped here.' },
+    ],
+    related: ['checklist', 'timeline', 'progress'],
   },
   {
     id: 'text-link',

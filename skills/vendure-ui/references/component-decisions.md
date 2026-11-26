@@ -121,7 +121,7 @@ Show a short set of steps the person completes, with its progress, until every s
 - `Timeline`: What already happened to one thing, newest first.
 - `Progress`: One task the system runs.
 
-Related decisions: `timeline`, `collapsible-section`.
+Related decisions: `step-indicator`, `timeline`, `collapsible-section`.
 ## Chip
 
 Use Chip for removable members of an editable set or applied filters.
@@ -504,6 +504,25 @@ Use the standalone collection footer only when DataTable is not coordinating pag
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## StepIndicator
+
+Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.
+
+- **An ordered flow, not a to-do list:** Use StepIndicator when the steps go one after the other. Tasks the user ticks off in any order are a Checklist. Events that already happened are a Timeline.
+- **Waiting is current, working is running:** A step that waits for the user or a queue is `current`: blue, with no spinner, because it can wait for days. Only a step whose work happens now is `running` and spins. A step where the flow stopped is `failed`; the steps after it stay `upcoming`.
+- **A track for progress, a guide for content:** Horizontal for steps that need only a name and a time (signup, deployment steps). Vertical when a step holds content: the actions of the current step, a command, a note.
+- **Numbers when the user moves, icons when the system runs:** Use `marker="number"` for a flow the user goes through. Use `marker="icon"` for steps the system runs, where the state says more than the number.
+- **Name the list, keep the states in words:** Give the StepIndicator an `aria-label`. Each title is followed by its state in words for screen readers; pass translations through `stateLabels`. Give guide titles `render={<h3 />}` when they belong in the page outline.
+
+**Choose:**
+
+- `upcoming`: Not reached yet.
+- `current`: The step the flow is on, waiting for the user or the system.
+- `running`: Work on this step is happening now.
+- `done`: Finished.
+- `failed`: The flow stopped here.
+
+Related decisions: `checklist`, `timeline`, `progress`.
 ## TextLink
 
 Link inside running text, or a small standalone link that must not compete with the actions next to it.
