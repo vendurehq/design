@@ -6,7 +6,6 @@ import {
   PageHeader,
   PageHeaderActions,
   PageHeaderBack,
-  PageHeaderBackLink,
   PageHeaderBackRow,
   PageHeaderContent,
   PageHeaderFact,
@@ -151,16 +150,9 @@ test('PageHeaderFactLink takes render for a router link', () => {
   expect(html.startsWith('<button')).toBe(true);
 });
 
-test('PageHeaderBackLink, the 2.x name, is PageHeaderBackRow', () => {
-  // Type test: the alias takes the same props as PageHeaderBackRow. check-types
-  // fails if either drifts.
-  const alias: typeof PageHeaderBackRow = PageHeaderBackLink;
-  expect(alias).toBe(PageHeaderBackRow);
-  const html = (Row: typeof PageHeaderBackRow) =>
-    renderToStaticMarkup(
-      <Row className="mb-2">
-        <PageHeaderBack href="/products">Products</PageHeaderBack>
-      </Row>,
-    );
-  expect(html(PageHeaderBackLink)).toBe(html(PageHeaderBackRow));
+test('PageHeaderBackLink, the 2.x name, is gone', async () => {
+  const pageHeader = await import('./page-header.tsx');
+  expect('PageHeaderBackLink' in pageHeader).toBe(false);
+  // @ts-expect-error PageHeaderBackRow is the only name
+  expect(pageHeader.PageHeaderBackLink).toBeUndefined();
 });

@@ -158,12 +158,6 @@ function PageHeaderBackRow({ className, ...props }: React.ComponentProps<'div'>)
 }
 
 /**
- * @deprecated Use `PageHeaderBackRow`, and put a `PageHeaderBack` in it for the
- * link. The 2.x name, kept so code written against 2.x still compiles.
- */
-const PageHeaderBackLink = PageHeaderBackRow;
-
-/**
  * The link up one level, above the title: "Deployments", "All profiles".
  * Renders an `<a>` with a leading chevron in `muted-foreground`; the look,
  * motion and right-to-left handling are ArrowLink's, pointing back. Pass
@@ -188,7 +182,6 @@ export {
   PageHeaderDescription,
   PageHeaderActions,
   PageHeaderBackRow,
-  PageHeaderBackLink,
   PageHeaderBack,
   PageHeaderFacts,
   PageHeaderFact,
