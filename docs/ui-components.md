@@ -185,7 +185,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`. `dateTime`, `relativeTime` and `elapsedTime` (`loading`): the hidden text while the time loads.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `combobox` (`loading`, announced while a page of options loads), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -1033,9 +1033,8 @@ These packages are optional — install them only if you use the features that n
 1. Default, brand, destructive, destructive-outline and outline buttons, button groups and cards sit on the themed `shadow-control`, a 1px lift. Ghost and link buttons stay flat. Remove any shadow you added to these components yourself.
 2. `isActive` is `active` on SidebarMenuButton, SidebarMenuSubButton and PaginationLink, as on TabsLink. SidebarMenuSubButton `size` is `'sm' | 'default'` (`md` is `default`), and its `data-size` attribute follows. EmptyState and ErrorState `size` is `'default' | 'sm'` (`compact` is `sm`), and `data-size` on EmptyState follows. There are no aliases.
 3. `Skeleton` and `SkeletonLine` render a `<span>` (with `block` and `flex`), not a `<div>`, so a skeleton is valid inside a `<p>` or a `<span>`. Their props are `<span>` props and the ref element is an `HTMLSpanElement`; a ref typed `HTMLDivElement` still compiles. Change a CSS selector such as `div[data-slot=skeleton]` to `[data-slot=skeleton]`. The look does not change.
-4. DateTime, RelativeTime and ElapsedTime: an `undefined` time renders a one-line skeleton, not `fallback`. `null` and an invalid date still render `fallback`. Pass `null` for "no date".
-5. ElapsedTime `since` and `until` are `from` and `to`. RelativeTime `start` is `from`; its `value` stays. The names match DateRangePicker's `{ from, to }`.
-6. `formatRelative`, `formatRelativeDuration` and `FormatRelativeOptions` are no longer exported from `components/molecules/relative-time`. Import them from `@vendure-io/ui/lib/format-relative`.
+4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
+5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 
