@@ -1,9 +1,11 @@
 'use client';
 
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
+import { SkeletonLine } from '@vendure-io/ui/components/molecules/state-views/skeleton-parts';
 import { cn } from '@vendure-io/ui/lib/utils';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { isDevelopment } from '../../lib/env.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 // How many minor-unit digits a currency uses — 2 for USD (cents), 0 for JPY, 3
 // for BHD. Derived from Intl rather than a hardcoded `/100`, which is wrong for
@@ -26,8 +28,16 @@ function currencyFractionDigits(currency?: string): number {
 let warnedMissingCurrency = false;
 
 interface MoneyProps extends ComponentProps<'span'> {
-  /** Amount in integer minor units (Vendure convention), e.g. `2500` = $25.00. */
-  value: number;
+  /**
+   * Amount in integer minor units (Vendure convention), e.g. `2500` = $25.00.
+   * `undefined` means not loaded yet and renders a one-line skeleton; `null`
+   * means there is no amount and renders `fallback`. `0` is a real amount.
+   */
+  value: number | null | undefined;
+  /** Rendered when `value` is `null`. @default "—" */
+  fallback?: ReactNode;
+  /** Screen-reader text while `value` is `undefined`. @default `messages.money.loading`, "Loading amount" */
+  loadingLabel?: string;
   /** ISO 4217 code. Falls back to `FormatProvider`'s `currency`. */
   currency?: string;
   /** BCP 47 locale. Falls back to `FormatProvider`, then the runtime default. */
@@ -48,6 +58,8 @@ interface MoneyProps extends ComponentProps<'span'> {
  */
 function Money({
   value,
+  fallback = '—',
+  loadingLabel,
   currency,
   locale,
   precision,
@@ -56,6 +68,35 @@ function Money({
   ...props
 }: MoneyProps) {
   const settings = useFormatSettings();
+  const t = useMessages('money', { loading: loadingLabel });
+
+  // The skeleton is a typical amount wide ("$1,234.56" in tabular digits) and
+  // one line box tall, so the line does not move when the amount arrives.
+  if (value === undefined) {
+    return (
+      <span
+        data-slot="money"
+        aria-busy="true"
+        className={cn('inline-flex w-[9ch] max-w-full tabular-nums', className)}
+        {...props}
+      >
+        {/* A zero-width space gives the skeleton a text baseline, so a
+            baseline-aligned row does not grow when it loads. */}
+        <span aria-hidden="true">{'\u200b'}</span>
+        <SkeletonLine />
+        <span className="sr-only">{t.loading}</span>
+      </span>
+    );
+  }
+
+  if (value === null) {
+    return (
+      <span data-slot="money" className={cn('tabular-nums', className)} {...props}>
+        {fallback}
+      </span>
+    );
+  }
+
   const resolvedCurrency = currency ?? settings.currency;
   const resolvedLocale = locale ?? settings.locale;
   const resolvedPrecision =

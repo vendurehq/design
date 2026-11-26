@@ -247,3 +247,147 @@ export const CountTone: Story = {
     expect(getComputedStyle(title!).columnGap).toBe('10px');
   },
 };
+
+const insightsHeader = (
+  <CardHeader>
+    <CardTitle>Order insights</CardTitle>
+    <CardDescription>Revenue and orders for the selected period.</CardDescription>
+    <CardAction>
+      <Button size="sm" variant="outline">
+        Last 30 days
+      </Button>
+      <Button size="sm" variant="outline">
+        Export
+      </Button>
+    </CardAction>
+  </CardHeader>
+);
+
+const insightsBody = (
+  <CardContent>
+    <p className="text-foreground-secondary">1,284 orders · 82,410 revenue</p>
+  </CardContent>
+);
+
+/**
+ * A header narrower than 20rem moves the action under the title and
+ * description. The query runs on the card header, so it follows the card width
+ * and not the viewport. A wide card keeps the action beside the title.
+ */
+export const NarrowAction: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-start gap-6">
+      <Card className="w-[280px]" data-testid="narrow">
+        {insightsHeader}
+        {insightsBody}
+      </Card>
+      <Card className="w-[520px]" data-testid="wide">
+        {insightsHeader}
+        {insightsBody}
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const action = (testId: string) =>
+      canvasElement.querySelector<HTMLElement>(`[data-testid=${testId}] [data-slot=card-action]`)!;
+    const title = (testId: string) =>
+      canvasElement.querySelector<HTMLElement>(`[data-testid=${testId}] [data-slot=card-title]`)!;
+    const header = (testId: string) =>
+      canvasElement.querySelector<HTMLElement>(`[data-testid=${testId}] [data-slot=card-header]`)!;
+
+    // Narrow: the action sits under the title and stays inside the header.
+    const narrowAction = action('narrow').getBoundingClientRect();
+    const narrowHeader = header('narrow').getBoundingClientRect();
+    expect(narrowAction.top).toBeGreaterThanOrEqual(title('narrow').getBoundingClientRect().bottom);
+    expect(narrowAction.left).toBeGreaterThanOrEqual(narrowHeader.left);
+    expect(narrowAction.right).toBeLessThanOrEqual(narrowHeader.right + 0.5);
+
+    // Wide: the action stays in the second column, level with the title.
+    const wideAction = action('wide').getBoundingClientRect();
+    const wideTitle = title('wide').getBoundingClientRect();
+    expect(wideAction.left).toBeGreaterThan(wideTitle.right);
+    expect(wideAction.top).toBeLessThan(wideTitle.bottom);
+  },
+};
+
+/** The narrow layout follows the writing direction: the action starts at the right edge in RTL. */
+export const NarrowActionRtl: Story = {
+  render: () => (
+    <div dir="rtl" className="flex flex-wrap items-start gap-6">
+      <Card className="w-[280px]" data-testid="narrow">
+        <CardHeader>
+          <CardTitle>رؤى الطلبات</CardTitle>
+          <CardDescription>الإيرادات والطلبات للفترة المحددة.</CardDescription>
+          <CardAction>
+            <Button size="sm" variant="outline">
+              آخر 30 يومًا
+            </Button>
+            <Button size="sm" variant="outline">
+              تصدير
+            </Button>
+          </CardAction>
+        </CardHeader>
+        {insightsBody}
+      </Card>
+      <Card className="w-[520px]" data-testid="wide">
+        <CardHeader>
+          <CardTitle>رؤى الطلبات</CardTitle>
+          <CardDescription>الإيرادات والطلبات للفترة المحددة.</CardDescription>
+          <CardAction>
+            <Button size="sm" variant="outline">
+              آخر 30 يومًا
+            </Button>
+          </CardAction>
+        </CardHeader>
+        {insightsBody}
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const rect = (testId: string, slot: string) =>
+      canvasElement.querySelector<HTMLElement>(`[data-testid=${testId}] [data-slot=${slot}]`)!.getBoundingClientRect();
+
+    // Narrow: under the title, flush with the right (inline start) edge of the header.
+    const narrowAction = rect('narrow', 'card-action');
+    const narrowHeader = rect('narrow', 'card-header');
+    expect(narrowAction.top).toBeGreaterThanOrEqual(rect('narrow', 'card-title').bottom);
+    expect(Math.abs(narrowAction.right - (narrowHeader.right - 16))).toBeLessThanOrEqual(2);
+    expect(narrowAction.left).toBeGreaterThanOrEqual(narrowHeader.left);
+
+    // Wide: the action sits at the left (inline end), level with the title.
+    const wideAction = rect('wide', 'card-action');
+    const wideTitle = rect('wide', 'card-title');
+    expect(wideAction.right).toBeLessThan(wideTitle.left);
+    expect(wideAction.top).toBeLessThan(wideTitle.bottom);
+  },
+};
+
+/** A one-line header (title and action only) stacks the same way, and a narrow card with no action is unchanged. */
+export const NarrowActionOneLine: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-start gap-6">
+      <Card className="w-[280px]">
+        <CardHeader className="border-b">
+          <CardTitle>Deployments</CardTitle>
+          <CardAction>
+            <Button size="sm" variant="ghost">
+              View all
+            </Button>
+          </CardAction>
+        </CardHeader>
+        {insightsBody}
+      </Card>
+      <Card className="w-[520px]">
+        <CardHeader className="border-b">
+          <CardTitle>Deployments</CardTitle>
+          <CardAction>
+            <Button size="sm" variant="ghost">
+              View all
+            </Button>
+          </CardAction>
+        </CardHeader>
+        {insightsBody}
+      </Card>
+    </div>
+  ),
+};

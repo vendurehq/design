@@ -135,6 +135,21 @@
         "Approves a literal because it looks correct",
         "Suggests an automatic color-to-color rewrite without semantic context"
       ]
+    },
+    {
+      "skill": "vendure-tokens",
+      "prompt": "Build a marketing hero with a very large headline, bigger than anything else on the page, and a small label above it.",
+      "context": "The app imports @vendure-io/design-tokens/css/theme. The origin remote is git@github.com:vendurehq/cloud.git.",
+      "expect": [
+        "Sets the headline with a display type role, at most display-xl",
+        "Sets the label with a scale step such as text-xs or text-2xs",
+        "Says that a larger size needs a new step or role in the design-tokens package"
+      ],
+      "reject": [
+        "text-6xl, text-7xl, text-8xl or text-9xl",
+        "An arbitrary size such as text-[5rem] or text-[13vw]",
+        "clamp(), a viewport unit or an inline fontSize for the headline"
+      ]
     }
   ]
 }
