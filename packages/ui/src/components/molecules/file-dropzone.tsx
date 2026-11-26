@@ -13,8 +13,11 @@ interface FileRejection {
   messages: string[];
 }
 
-interface FileDropzoneProps extends Omit<React.ComponentProps<'div'>, 'onChange'> {
+interface FileDropzoneProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
+  /** Selected files. Pass `value` to control the dropzone. Leave the prop out and it keeps its own state. */
   value?: readonly File[];
+  /** Initial files when `value` is not passed. */
+  defaultValue?: readonly File[];
   onValueChange?: (files: File[]) => void;
   onRejected?: (rejections: FileRejection[]) => void;
   accept?: string;
@@ -57,32 +60,45 @@ function normalizeValidationResult(result: FileValidationResult): string[] {
   return typeof result === 'string' ? [result] : [...result];
 }
 
+const NO_FILES: readonly File[] = [];
+
 /**
- * Controlled, transport-agnostic file input. It owns accessible picking,
+ * Transport-agnostic file input, controlled with `value` or uncontrolled with
+ * `defaultValue`. It owns accessible picking,
  * drag-and-drop, limits, validation, errors, and removal; consumers own upload
  * persistence and can replace the selected-file rendering with `renderFile`.
  */
-function FileDropzone({
-  value = [],
-  onValueChange,
-  onRejected,
-  accept,
-  multiple = false,
-  maxFiles = multiple ? Number.POSITIVE_INFINITY : 1,
-  maxSize,
-  validateFile,
-  disabled,
-  required,
-  name,
-  id: providedId,
-  label = 'Upload files',
-  description,
-  emptyLabel = 'Drag and drop files here, or choose files',
-  dragLabel = 'Drop files to add them',
-  renderFile,
-  className,
-  ...props
-}: FileDropzoneProps) {
+function FileDropzone(allProps: FileDropzoneProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    onRejected,
+    accept,
+    multiple = false,
+    maxFiles = multiple ? Number.POSITIVE_INFINITY : 1,
+    maxSize,
+    validateFile,
+    disabled,
+    required,
+    name,
+    id: providedId,
+    label = 'Upload files',
+    description,
+    emptyLabel = 'Drag and drop files here, or choose files',
+    dragLabel = 'Drop files to add them',
+    renderFile,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
+  const [own, setOwn] = React.useState(defaultValue ?? NO_FILES);
+  const value = controlled ? (valueProp ?? NO_FILES) : own;
+  function commit(files: File[]) {
+    if (!controlled) setOwn(files);
+    onValueChange?.(files);
+  }
   const generatedId = React.useId();
   const id = providedId ?? generatedId;
   const descriptionId = `${id}-description`;
@@ -134,12 +150,12 @@ function FileDropzone({
     setValidating(false);
     if (rejected.length > 0) onRejected?.(rejected);
     if (accepted.length > 0) {
-      onValueChange?.(multiple ? [...value, ...accepted] : accepted.slice(0, 1));
+      commit(multiple ? [...value, ...accepted] : accepted.slice(0, 1));
     }
   }
 
   function removeFile(index: number) {
-    onValueChange?.(value.filter((_, fileIndex) => fileIndex !== index));
+    commit(value.filter((_, fileIndex) => fileIndex !== index));
     setRejections([]);
   }
 

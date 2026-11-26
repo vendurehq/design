@@ -1,5 +1,6 @@
 'use client';
 
+import { Skeleton } from '@vendure-io/ui/components/atoms/skeleton';
 import {
   CopyButton,
   type CopyButtonProps,
@@ -8,6 +9,8 @@ import {
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
 import { useState } from 'react';
+import { contentInsetPull } from '../../lib/content-inset.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 import { ChipCopyTooltip, chipChromeClass, chipCopyButtonProps } from './id-chip-chrome.tsx';
 
 function clampLength(value: number): number {
@@ -34,7 +37,11 @@ function getTokenPreview(
 }
 
 interface AnonymizedTokenProps extends Omit<React.ComponentProps<'span'>, 'children'> {
-  /** Full token copied by the button. Never rendered in full by the component. */
+  /**
+   * Full token copied by the button. Never rendered in full by the component.
+   * `undefined` means not loaded yet and renders a skeleton the size of the
+   * chip; `null` and `''` mean there is no token and render `fallback`.
+   */
   value: string | null | undefined;
   /** Remove the blur from the preview on hover/focus. @default true */
   revealOnHover?: boolean;
@@ -48,8 +55,10 @@ interface AnonymizedTokenProps extends Omit<React.ComponentProps<'span'>, 'child
   obscuredLabel?: string;
   /** Accessible name while the preview is sharp. @default "Partially visible token" */
   previewLabel?: string;
-  /** Rendered for nullish or empty values. @default "-" */
+  /** Rendered when `value` is `null` or `''`. @default "—" */
   fallback?: React.ReactNode;
+  /** Screen-reader text while `value` is `undefined`. @default `messages.anonymizedToken.loading`, "Loading token" */
+  loadingLabel?: string;
   /** Render the copy affordance. @default true */
   copyable?: boolean;
   /** How long the check-mark feedback stays visible, in ms. */
@@ -79,7 +88,8 @@ function AnonymizedToken({
   previewSeparator = '...',
   obscuredLabel = 'Partially obscured token',
   previewLabel = 'Partially visible token',
-  fallback = '-',
+  fallback = '—',
+  loadingLabel,
   copyable = true,
   timeout,
   onCopied,
@@ -95,6 +105,44 @@ function AnonymizedToken({
 }: AnonymizedTokenProps) {
   const [previewRevealed, setPreviewRevealed] = useState(false);
   const action = useCopyAction({ timeout, onCopied, onCopyError });
+  const t = useMessages('anonymizedToken', { loading: loadingLabel });
+
+  // The skeleton is the chip's own box: 24px tall, rounded like the chip and
+  // as wide as the preview this token will show (prefix, separator and
+  // suffix in monospace `ch`) plus the padding and the copy button, so
+  // nothing moves when the token arrives. A zero-width space, centred like
+  // the chip's text, gives it the chip's baseline.
+  if (value === undefined) {
+    const previewLength = getTokenPreview(
+      'x'.repeat(clampLength(previewPrefixLength) + clampLength(previewSuffixLength) + 1),
+      previewPrefixLength,
+      previewSuffixLength,
+      previewSeparator,
+    ).length;
+    return (
+      <span
+        data-slot="anonymized-token"
+        aria-busy="true"
+        className={cn(
+          'inline-flex w-fit items-center font-mono text-xs [--content-inset:calc(var(--spacing)*2)]',
+          // Pulled to the column edge like the chip, so it starts where the chip starts.
+          contentInsetPull,
+          className,
+        )}
+        {...props}
+      >
+        <span aria-hidden="true">{'\u200b'}</span>
+        <Skeleton
+          aria-hidden="true"
+          className="h-6 rounded-lg"
+          style={{
+            width: `calc(${previewLength}ch + var(--spacing) * ${copyable ? 8.25 : 4})`,
+          }}
+        />
+        <span className="sr-only">{t.loading}</span>
+      </span>
+    );
+  }
 
   if (!value) {
     return (

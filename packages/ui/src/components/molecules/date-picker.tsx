@@ -20,8 +20,13 @@ type CalendarProps = Omit<
 >;
 
 interface DatePickerProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
-  /** Local calendar date (`YYYY-MM-DD`), never an instant. */
+  /**
+   * Local calendar date (`YYYY-MM-DD`), never an instant. Pass `value` to
+   * control the picker. Leave the prop out and it keeps its own state.
+   */
   value?: string;
+  /** Initial date when `value` is not passed. */
+  defaultValue?: string;
   onValueChange?: (value: string | undefined) => void;
   min?: string;
   max?: string;
@@ -35,22 +40,32 @@ interface DatePickerProps extends Omit<React.ComponentProps<'div'>, 'defaultValu
 }
 
 /** Date-only picker whose value cannot shift when serialized across time zones. */
-function DatePicker({
-  value,
-  onValueChange,
-  min,
-  max,
-  placeholder = 'Pick a date',
-  clearable = true,
-  disabled,
-  invalid,
-  name,
-  id,
-  calendarProps,
-  className,
-  ...props
-}: DatePickerProps) {
+function DatePicker(allProps: DatePickerProps) {
+  const {
+    value: valueProp,
+    defaultValue,
+    onValueChange,
+    min,
+    max,
+    placeholder = 'Pick a date',
+    clearable = true,
+    disabled,
+    invalid,
+    name,
+    id,
+    calendarProps,
+    className,
+    ...props
+  } = allProps;
+  // Controlled when the `value` prop is passed, even as `undefined` (no value).
+  const controlled = 'value' in allProps;
   const [open, setOpen] = React.useState(false);
+  const [own, setOwn] = React.useState(defaultValue);
+  const value = controlled ? valueProp : own;
+  function commit(next: string | undefined) {
+    if (!controlled) setOwn(next);
+    onValueChange?.(next);
+  }
   // The calendar popup is a dialog, named by its trigger.
   const generatedId = React.useId();
   const triggerId = id ?? generatedId;
@@ -66,7 +81,8 @@ function DatePicker({
   return (
     <div
       data-slot="date-picker"
-      className={cn('flex min-w-0 items-center gap-1', className)}
+      // max-w-62 is the calendar: 7 cells of 2rem plus p-3. Pass max-w-none to fill the column.
+      className={cn('flex min-w-0 max-w-62 items-center gap-1', className)}
       {...props}
     >
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
@@ -92,15 +108,21 @@ function DatePicker({
             {selected ? formatDateLabel(selected, locale) : placeholder}
           </span>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start" aria-labelledby={triggerId}>
+        <PopoverContent
+          className="w-auto min-w-(--anchor-width) p-0"
+          align="start"
+          aria-labelledby={triggerId}
+        >
           <Calendar
             {...calendarProps}
+            // In a popup wider than the grid, the month sits centred with even padding.
+            className={cn('mx-auto', calendarProps?.className)}
             mode="single"
             selected={selected}
             defaultMonth={selected ?? minDate}
             disabled={disabledMatchers}
             onSelect={(date) => {
-              onValueChange?.(date ? formatCalendarDate(date) : undefined);
+              commit(date ? formatCalendarDate(date) : undefined);
               if (date) setOpen(false);
             }}
           />
@@ -113,7 +135,7 @@ function DatePicker({
           size="icon-sm"
           disabled={disabled}
           aria-label="Clear date"
-          onClick={() => onValueChange?.(undefined)}
+          onClick={() => commit(undefined)}
         >
           <XIcon />
         </Button>
