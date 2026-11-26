@@ -39,7 +39,8 @@
     "!src/**/*.test.tsx",
     "!src/test",
     "README.md",
-    "LICENSE.md"
+    "LICENSE.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "lint": "biome check src/ guidance/",

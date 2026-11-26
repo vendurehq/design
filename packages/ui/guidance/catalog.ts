@@ -242,6 +242,37 @@ export const uiGuidance = [
     related: ['stat-card'],
   },
   {
+    id: 'checklist',
+    title: 'Checklist',
+    summary:
+      'Show a short set of steps the person completes, with its progress, until every step is done.',
+    sourceStory: 'checklist-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Steps the person completes',
+        body: 'Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.',
+      },
+      {
+        title: 'Let the data decide when it can',
+        body: 'Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.',
+      },
+      {
+        title: 'One action per open step',
+        body: 'Give an open step at most one secondary Button or link in ChecklistStepAction. Put longer content, such as commands to run, in ChecklistStepBody. Split a step that needs two actions.',
+      },
+      {
+        title: 'Dismiss only when every step is done',
+        body: 'Pass `onDismiss`: its button shows once the last step is done. Remove the Checklist there and remember the choice. Keep a half-done checklist in view.',
+      },
+    ],
+    choices: [
+      { choice: 'Checklist', when: 'Steps the person completes, each with its own action.' },
+      { choice: 'Timeline', when: 'What already happened to one thing, newest first.' },
+      { choice: 'Progress', when: 'One task the system runs.' },
+    ],
+    related: ['timeline', 'collapsible-section'],
+  },
+  {
     id: 'chip',
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
