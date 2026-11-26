@@ -1306,6 +1306,7 @@ async function openFilterValueInput(canvasElement: HTMLElement, name: string) {
     if (!element) throw new Error('The filter popover is not open');
     return element;
   });
+  await expect(popover).toHaveAccessibleName('Add filter');
   await userEvent.click(within(popover).getByRole('button', { name: 'Order' }));
   return within(popover).findByRole('textbox', { name });
 }

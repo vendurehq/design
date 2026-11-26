@@ -90,7 +90,7 @@ function DataTableAddFilter<TData>({
           </Button>
         }
       />
-      <PopoverContent align="start" className="w-64 gap-2 p-2">
+      <PopoverContent align="start" className="w-64 gap-2 p-2" aria-label={label}>
         {active ? (
           <div className="flex flex-col gap-2">
             <button
