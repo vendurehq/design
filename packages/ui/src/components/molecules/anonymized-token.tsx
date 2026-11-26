@@ -112,28 +112,36 @@ function AnonymizedToken({
   const t = useMessages('anonymizedToken', { loading: loadingLabel });
 
   // The skeleton is the chip's own box: 24px tall, rounded like the chip and
-  // as wide as the default preview ("abcdefgh...mnop", 15 monospace
-  // characters) plus the padding and the copy button, so nothing moves when
-  // the token arrives. `align-middle` centres it on the line like the chip.
+  // as wide as the preview this token will show (prefix, separator and
+  // suffix in monospace `ch`) plus the padding and the copy button, so
+  // nothing moves when the token arrives. A zero-width space, centred like
+  // the chip's text, gives it the chip's baseline.
   if (value === undefined) {
+    const previewLength = getTokenPreview(
+      'x'.repeat(clampLength(previewPrefixLength) + clampLength(previewSuffixLength) + 1),
+      previewPrefixLength,
+      previewSuffixLength,
+      previewSeparator,
+    ).length;
     return (
       <span
         data-slot="anonymized-token"
         aria-busy="true"
         className={cn(
-          'inline-flex w-fit align-middle font-mono text-xs [--content-inset:calc(var(--spacing)*2)]',
+          'inline-flex w-fit items-center font-mono text-xs [--content-inset:calc(var(--spacing)*2)]',
           // Pulled to the column edge like the chip, so it starts where the chip starts.
           contentInsetPull,
           className,
         )}
         {...props}
       >
+        <span aria-hidden="true">{'\u200b'}</span>
         <Skeleton
           aria-hidden="true"
-          className={cn(
-            'h-6 rounded-lg',
-            copyable ? 'w-[calc(15ch+var(--spacing)*8.25)]' : 'w-[calc(15ch+var(--spacing)*4)]',
-          )}
+          className="h-6 rounded-lg"
+          style={{
+            width: `calc(${previewLength}ch + var(--spacing) * ${copyable ? 8.25 : 4})`,
+          }}
         />
         <span className="sr-only">{t.loading}</span>
       </span>

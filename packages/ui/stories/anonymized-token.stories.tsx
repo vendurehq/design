@@ -75,6 +75,14 @@ export const LoadingAndMissing: Story = {
           </p>
         </div>
       ))}
+      <div data-row="baseline-loaded" className="flex items-baseline gap-2">
+        <span className="text-lg">API key</span>
+        <AnonymizedToken value={TOKEN} previewPrefixLength={4} previewSuffixLength={6} previewSeparator="--" />
+      </div>
+      <div data-row="baseline-loading" className="flex items-baseline gap-2">
+        <span className="text-lg">API key</span>
+        <AnonymizedToken value={undefined} previewPrefixLength={4} previewSuffixLength={6} previewSeparator="--" />
+      </div>
       <p data-state="missing">
         Key <AnonymizedToken value={null} /> created today.
       </p>
@@ -94,8 +102,16 @@ export const LoadingAndMissing: Story = {
       await expect(Math.abs((skeleton?.width ?? 0) - (chip?.width ?? 0))).toBeLessThan(2);
       await expect(Math.abs((skeleton?.top ?? 0) - (chip?.top ?? 0) - (rect(p('loading'))?.top ?? 0) + (rect(p('loaded'))?.top ?? 0))).toBeLessThan(1);
     }
+    // A custom preview: the skeleton follows its width. In a baseline-aligned
+    // row the skeleton sits where the chip sits, and the row keeps its height.
+    const row = (state: string) => `[data-row="baseline-${state}"]`;
+    await expect(rect(row('loading'))?.height).toBe(rect(row('loaded'))?.height);
+    const customChip = rect(`${row('loaded')} [data-slot="anonymized-token"]`);
+    const customSkeleton = rect(`${row('loading')} [data-slot="skeleton"]`);
+    await expect(Math.abs((customSkeleton?.width ?? 0) - (customChip?.width ?? 0))).toBeLessThan(2);
+    await expect(Math.abs((customSkeleton?.top ?? 0) - (customChip?.top ?? 0) - (rect(row('loading'))?.top ?? 0) + (rect(row('loaded'))?.top ?? 0))).toBeLessThan(1);
     const busy = canvasElement.querySelector('p[data-state="loading"] [aria-busy="true"]');
-    await expect(busy?.textContent).toBe('Loading token');
+    await expect(busy?.querySelector('.sr-only')?.textContent).toBe('Loading token');
     await expect(canvasElement.querySelector('p[data-state="missing"]')?.textContent).toContain('—');
   },
 };

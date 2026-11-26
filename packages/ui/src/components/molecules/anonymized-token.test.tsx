@@ -89,6 +89,35 @@ describe('AnonymizedToken while the token is not known', () => {
     );
   });
 
+  test('the skeleton is as wide as the preview the token will show', () => {
+    const width = (markup: string) => markup.match(/width:([^;"]+)/)?.[1];
+
+    // "abcdefgh...mnop": 15 characters, plus the padding and the copy button.
+    expect(width(html(<AnonymizedToken value={undefined} />))).toBe(
+      'calc(15ch + var(--spacing) * 8.25)',
+    );
+    // "abcd--mnopqr": 12 characters, no copy button.
+    expect(
+      width(
+        html(
+          <AnonymizedToken
+            value={undefined}
+            previewPrefixLength={4}
+            previewSuffixLength={6}
+            previewSeparator="--"
+            copyable={false}
+          />,
+        ),
+      ),
+    ).toBe('calc(12ch + var(--spacing) * 4)');
+    // No visible characters: the separator alone.
+    expect(
+      width(
+        html(<AnonymizedToken value={undefined} previewPrefixLength={0} previewSuffixLength={0} />),
+      ),
+    ).toBe('calc(3ch + var(--spacing) * 8.25)');
+  });
+
   test('the skeleton is valid inside a paragraph', () => {
     expect(
       html(
