@@ -260,7 +260,7 @@ export const ControlledSorting: Story = {
         rows={orders}
         columns={columns}
         getRowId={(order) => order.id}
-        sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+        sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
       />
     );
   },
@@ -916,7 +916,7 @@ export const RowSelection: Story = {
         rows={orders}
         columns={columns}
         getRowId={(order) => order.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         toolbar={
           <InputGroup className="flex-1">
             <InputGroupAddon align="inline-start">
@@ -957,8 +957,8 @@ export const SortedLeadingColumnWithSelection: Story = {
         rows={orders}
         columns={columns}
         getRowId={(order) => order.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
-        sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
+        sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
       />
     );
   },
@@ -1037,8 +1037,8 @@ function StoredSelectionTable({
         selectionStorageKey={channels ? `${storageKey}:${channel}` : storageKey}
         rowSelection={
           controlled
-            ? { value: selection, onChange: setSelection }
-            : { defaultValue: {}, onChange: setSelection }
+            ? { value: selection, onValueChange: setSelection }
+            : { defaultValue: {}, onValueChange: setSelection }
         }
         pagination={{
           page,
@@ -1217,7 +1217,7 @@ export const ColumnVisibility: Story = {
             </PageHeaderContent>
           </PageHeader>
         }
-        columnVisibility={{ value: visibility, onChange: setVisibility }}
+        columnVisibility={{ value: visibility, onValueChange: setVisibility }}
       />
     );
   },
@@ -1251,7 +1251,7 @@ export const ToolbarWithSearchFiltersAndColumns: Story = {
             <InputGroupInput placeholder="Search orders" />
           </InputGroup>
         }
-        filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+        filters={{ value: filters, onValueChange: setFilters, columns: filterColumns }}
         columnVisibility={{ defaultValue: {} }}
       />
     );
@@ -1276,7 +1276,7 @@ export const ToolbarWithFiltersAndColumns: Story = {
             </PageHeaderContent>
           </PageHeader>
         }
-        filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+        filters={{ value: filters, onValueChange: setFilters, columns: filterColumns }}
         columnVisibility={{ defaultValue: {} }}
       />
     );
@@ -1290,7 +1290,7 @@ function FilterValueTable({ labels }: { labels?: DataTableProps<Order>['labels']
       rows={orders}
       columns={columns}
       getRowId={(order) => order.id}
-      filters={{ value: filters, onChange: setFilters, columns: filterColumns }}
+      filters={{ value: filters, onValueChange: setFilters, columns: filterColumns }}
       labels={labels}
     />
   );
@@ -1383,7 +1383,7 @@ export const FiltersWithAppliedChips: Story = {
         }
         filters={{
           value: filters,
-          onChange: setFilters,
+          onValueChange: setFilters,
           columns: filterColumns,
           inlineChipLimit: 2,
         }}
@@ -1419,7 +1419,7 @@ function ClearFiltersTable({ initial }: { initial: ColumnFiltersState }) {
       }
       filters={{
         value: filters,
-        onChange: setFilters,
+        onValueChange: setFilters,
         columns: filterColumns,
         clearFilters: true,
       }}
@@ -1526,7 +1526,7 @@ export const FiltersWithEditableChips: Story = {
         }
         filters={{
           value: filters,
-          onChange: setFilters,
+          onValueChange: setFilters,
           columns: editableFilterColumns,
           clearFilters: true,
         }}
@@ -1618,7 +1618,7 @@ export const OnTableReady: Story = {
           rows={orders}
           columns={columns}
           getRowId={(order) => order.id}
-          sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+          sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
           onTableReady={setTable}
         />
       </div>
@@ -1754,7 +1754,7 @@ export const CellTextAlignment: Story = {
         rows={products}
         columns={alignmentColumns}
         getRowId={(product) => product.id}
-        sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+        sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
       />
     );
   },
@@ -1845,7 +1845,7 @@ function EndAlignedTable() {
       rows={orders}
       columns={endAlignedColumns}
       getRowId={(order) => order.id}
-      sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+      sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
     />
   );
 }
@@ -2118,7 +2118,7 @@ export const RowLink: Story = {
         rows={variants}
         columns={variantColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         rowActions={(variant) => (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -2223,7 +2223,7 @@ function PinnedVariants({ dir, selected }: { dir?: 'rtl'; selected?: string }) {
         rows={variants}
         columns={variantColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         rowActions={(variant) => (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -2713,7 +2713,7 @@ export const LookupKeyWhileSelecting: Story = {
         rows={orderRows}
         columns={orderRowColumns}
         getRowId={(order) => order.code}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
       />
     );
   },
@@ -2779,7 +2779,7 @@ export const KeyboardSelection: Story = {
         rows={variants}
         columns={variantColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         rowActions={(variant) => (
           <Button variant="ghost" size="icon" className="size-8">
             <MoreHorizontalIcon />
@@ -2857,7 +2857,7 @@ export const SelectionMotion: Story = {
         rows={orders}
         columns={columns}
         getRowId={(order) => order.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         bulkActions={({ selectedCount, clearSelection }) => (
           <>
             <span className="text-sm font-medium">{selectedCount} selected</span>
@@ -3022,7 +3022,7 @@ function RippleTable({ count, custom = false }: { count: number; custom?: boolea
           </PageHeaderContent>
         </PageHeader>
       }
-      rowSelection={{ value: selection, onChange: setSelection }}
+      rowSelection={{ value: selection, onValueChange: setSelection }}
       bulkActions={({ selectedCount, clearSelection }) => (
         <>
           <span className="text-sm font-medium">{selectedCount} selected</span>
@@ -3245,7 +3245,7 @@ export const RowBarHeights: Story = {
           },
         ]}
         getRowId={(order) => order.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
       />
     );
   },
@@ -3297,7 +3297,7 @@ export const ClickSelectsWhileSelecting: Story = {
         rows={variants}
         columns={variantColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         rowActions={(variant) => (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -3437,7 +3437,7 @@ export const NameOpensWhileSelecting: Story = {
         rows={variants}
         columns={variantColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
       />
     );
   },
@@ -3575,7 +3575,7 @@ export const ClickSelectsCustomRows: Story = {
         rows={variants}
         columns={dragColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         renderRow={renderDraggableRow}
       />
     );
@@ -3707,7 +3707,7 @@ export const ClickSelectsInAppShell: Story = {
           rows={variants}
           columns={productRowColumns}
           getRowId={(variant) => variant.id}
-          rowSelection={{ value: selection, onChange: setSelection }}
+          rowSelection={{ value: selection, onValueChange: setSelection }}
           rowActions={(variant) => (
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -3784,7 +3784,7 @@ export const SelectCellClickArea: Story = {
         rows={variants}
         columns={productRowColumns}
         getRowId={(variant) => variant.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
       />
     );
   },
@@ -4250,7 +4250,7 @@ function LowToolbarTable({ initialSelection = {} }: { initialSelection?: RowSele
         rows={orders}
         columns={columns}
         getRowId={(order) => order.id}
-        rowSelection={{ value: selection, onChange: setSelection }}
+        rowSelection={{ value: selection, onValueChange: setSelection }}
         toolbar={
           <Button variant="outline" size="sm" className="ms-auto" aria-label="More">
             <MoreHorizontalIcon />

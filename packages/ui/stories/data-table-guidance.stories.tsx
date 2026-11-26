@@ -172,7 +172,7 @@ function ControlledSortingTable() {
       rows={PRODUCTS}
       columns={productColumns}
       getRowId={(p) => p.id}
-      sorting={{ value: sorting, onChange: setSorting, mode: 'client' }}
+      sorting={{ value: sorting, onValueChange: setSorting, mode: 'client' }}
     />
   );
 }
@@ -318,7 +318,7 @@ const WHAT_ITS_NOT: NotRow[] = [
   {
     myth: 'A URL-state owner',
     reality:
-      'Controlled configs report intent through `onChange`; the consumer maps that to the URL. The core holds no route state.',
+      'Controlled configs report intent through `onValueChange`; the consumer maps that to the URL. The core holds no route state.',
   },
   {
     myth: 'A persistence layer',
@@ -511,7 +511,7 @@ export const ControlledState: Story = {
     <div className="text-foreground max-w-4xl p-1">
       <Section
         title="Controlled means the prop is the source of truth every render"
-        intro="Each capability is either controlled, where you pass `value` and `onChange` and the prop drives every render, or uncontrolled, where you pass `defaultValue` and the core owns the state. Controlled is not a seed: the core reads `value` on every render, so pushing new state from the URL, a saved view, or a reset flows straight through. The consumer owns the URL, the fetching, and any persistence; DataTable renders the numbers it is handed and never fetches."
+        intro="Each capability is either controlled, where you pass `value` and `onValueChange` and the prop drives every render, or uncontrolled, where you pass `defaultValue` and the core owns the state. Controlled is not a seed: the core reads `value` on every render, so pushing new state from the URL, a saved view, or a reset flows straight through. The consumer owns the URL, the fetching, and any persistence; DataTable renders the numbers it is handed and never fetches."
       >
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full min-w-[560px] text-left text-sm">
@@ -537,12 +537,12 @@ export const ControlledState: Story = {
 
       <Section
         title="Control the state the URL owns; default only what is ephemeral"
-        intro="If back/forward, a shareable link, or a saved view must reproduce the table, that state belongs in the URL and must be controlled: `value` bound to the route, `onChange` pushing to it. Reserve `defaultValue` for genuinely uncontrolled, ephemeral state (a client-only sort of an in-memory list). Using `defaultValue` for URL-owned state silently forks the table from the address bar."
+        intro="If back/forward, a shareable link, or a saved view must reproduce the table, that state belongs in the URL and must be controlled: `value` bound to the route, `onValueChange` pushing to it. Reserve `defaultValue` for genuinely uncontrolled, ephemeral state (a client-only sort of an in-memory list). Using `defaultValue` for URL-owned state silently forks the table from the address bar."
       >
         <div className="grid gap-3 lg:grid-cols-2">
           <Example
             verdict="do"
-            caption="Controlled sorting: `value` comes from the route (local state stands in here), `onChange` writes back. New sorts are shareable and survive navigation."
+            caption="Controlled sorting: `value` comes from the route (local state stands in here), `onValueChange` writes back. New sorts are shareable and survive navigation."
           >
             <ControlledSortingTable />
           </Example>

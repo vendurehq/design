@@ -10,6 +10,7 @@ import {
   DataTable,
   type DataTableFilterEditorContext,
   type DataTablePagination,
+  type DataTableProps,
   DataTableRowLink,
   DataTableSkeletonLine,
   type TableInstance as Table,
@@ -112,7 +113,7 @@ describe('DataTable capability absence', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        rowSelection={{ value: { '1': true }, onValueChange: () => {} }}
       />,
     );
     expect(markup).not.toContain('data-slot="data-table-bulk-actions"');
@@ -382,7 +383,7 @@ describe('DataTable loading state', () => {
         columns={columns}
         isLoading
         skeletonRowCount={1}
-        columnVisibility={{ value: { name: false }, onChange: () => {} }}
+        columnVisibility={{ value: { name: false }, onValueChange: () => {} }}
         skeletonCells={{ name: <span data-testid="hidden-name" /> }}
       />,
     );
@@ -674,10 +675,83 @@ describe('DataTable empty state', () => {
   });
 });
 
+describe('DataTable controlled state reports the resolved value', () => {
+  /** Renders the table once and returns its TanStack instance. */
+  const tableOf = (props: Partial<React.ComponentProps<typeof DataTable<Country>>>) => {
+    let captured: Table<Country> | undefined;
+    html(
+      <DataTable
+        rows={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        toolbar={(table) => {
+          captured = table;
+          return null;
+        }}
+        {...props}
+      />,
+    );
+    if (!captured) throw new Error('The toolbar did not render');
+    return captured;
+  };
+
+  test('sorting.onValueChange gets the next sorting, not an updater', () => {
+    const onValueChange = mock();
+    const table = tableOf({ sorting: { value: [{ id: 'code', desc: true }], onValueChange } });
+    table.setSorting((old) => [...old, { id: 'name', desc: false }]);
+    expect(onValueChange).toHaveBeenCalledWith([
+      { id: 'code', desc: true },
+      { id: 'name', desc: false },
+    ]);
+  });
+
+  test('filters.onValueChange gets the next filters', () => {
+    const onValueChange = mock();
+    const table = tableOf({ filters: { value: [], onValueChange } });
+    table.setColumnFilters((old) => [...old, { id: 'name', value: { contains: 'Al' } }]);
+    expect(onValueChange).toHaveBeenCalledWith([{ id: 'name', value: { contains: 'Al' } }]);
+  });
+
+  test('columnVisibility.onValueChange gets the next visibility', () => {
+    const onValueChange = mock();
+    const table = tableOf({ columnVisibility: { value: { code: false }, onValueChange } });
+    table.setColumnVisibility((old) => ({ ...old, name: false }));
+    expect(onValueChange).toHaveBeenCalledWith({ code: false, name: false });
+  });
+
+  test('rowSelection.onValueChange gets the next selection', () => {
+    const onValueChange = mock();
+    const table = tableOf({ rowSelection: { value: { '1': true }, onValueChange } });
+    table.setRowSelection((old) => ({ ...old, '2': true }));
+    expect(onValueChange).toHaveBeenCalledWith({ '1': true, '2': true });
+  });
+
+  test('an uncontrolled config reports changes on top of its defaultValue', () => {
+    const onValueChange = mock();
+    const table = tableOf({
+      sorting: { defaultValue: [{ id: 'code', desc: false }], onValueChange },
+    });
+    table.setSorting((old) => old.map((sort) => ({ ...sort, desc: true })));
+    expect(onValueChange).toHaveBeenCalledWith([{ id: 'code', desc: true }]);
+  });
+
+  test('the configs take onValueChange, not onChange', () => {
+    const sorting: DataTableProps<Country>['sorting'] = {
+      value: [],
+      onValueChange: (next) => next.map((sort) => sort.id),
+    };
+    // @ts-expect-error: onChange was renamed to onValueChange.
+    const old: DataTableProps<Country>['sorting'] = { value: [], onChange: () => {} };
+    // @ts-expect-error: a controlled value needs onValueChange.
+    const missing: DataTableProps<Country>['rowSelection'] = { value: {} };
+    expect([sorting, old, missing]).toHaveLength(3);
+  });
+});
+
 describe('DataTable sorting (controlled source of truth)', () => {
   test('sorting wired → headers become sortable buttons', () => {
     const markup = html(
-      <DataTable rows={rows} columns={columns} sorting={{ value: [], onChange: () => {} }} />,
+      <DataTable rows={rows} columns={columns} sorting={{ value: [], onValueChange: () => {} }} />,
     );
     expect(markup).toContain('data-slot="data-table-column-header"');
   });
@@ -687,7 +761,7 @@ describe('DataTable sorting (controlled source of truth)', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        sorting={{ value: [{ id: 'name', desc: false }], onChange: () => {} }}
+        sorting={{ value: [{ id: 'name', desc: false }], onValueChange: () => {} }}
       />,
     );
     expect(markup).toContain('aria-sort="ascending"');
@@ -700,7 +774,7 @@ describe('DataTable sorting (controlled source of truth)', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        sorting={{ value: [{ id: 'name', desc: true }], onChange: () => {} }}
+        sorting={{ value: [{ id: 'name', desc: true }], onValueChange: () => {} }}
       />,
     );
     expect(markup).toContain('aria-sort="descending"');
@@ -714,7 +788,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: {}, onChange: () => {} }}
+        rowSelection={{ value: {}, onValueChange: () => {} }}
       />,
     );
     expect(markup).toContain('role="checkbox"');
@@ -727,7 +801,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        rowSelection={{ value: { '1': true }, onValueChange: () => {} }}
       />,
     );
     // Exactly one row is flagged selected, and its checkbox is checked.
@@ -741,7 +815,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        rowSelection={{ value: { '1': true }, onValueChange: () => {} }}
         bulkActions={({ selection, selectedRowIds }) => (
           <span>{`Delete ${selection.length} (${selectedRowIds.join(',')})`}</span>
         )}
@@ -760,7 +834,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         pagination={{ page: 1, pageSize: 2, totalItems: 4, onPageChange: () => {} }}
-        rowSelection={{ value: { '0': true }, onChange: () => {} }}
+        rowSelection={{ value: { '0': true }, onValueChange: () => {} }}
       />,
     );
 
@@ -777,7 +851,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
           rows={rows}
           columns={columns}
           getRowId={(row) => row.id}
-          rowSelection={{ value, onChange: () => {} }}
+          rowSelection={{ value, onValueChange: () => {} }}
         />,
       ).match(/<table[^>]*>/)?.[0] ?? '';
     expect(table({})).not.toContain(' data-selecting=');
@@ -790,7 +864,7 @@ describe('DataTable row selection (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        rowSelection={{ value: { '1': true }, onValueChange: () => {} }}
       />,
     );
 
@@ -806,7 +880,7 @@ describe('DataTable column visibility (controlled source of truth)', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        columnVisibility={{ value: {}, onChange: () => {} }}
+        columnVisibility={{ value: {}, onValueChange: () => {} }}
       />,
     );
     expect(markup).toContain('data-slot="data-table-view-options"');
@@ -818,7 +892,7 @@ describe('DataTable column visibility (controlled source of truth)', () => {
         rows={rows}
         columns={columns}
         toolbar={<input placeholder="Search" />}
-        columnVisibility={{ value: {}, onChange: () => {} }}
+        columnVisibility={{ value: {}, onValueChange: () => {} }}
       />,
     );
     const trigger = markup.slice(
@@ -832,7 +906,7 @@ describe('DataTable column visibility (controlled source of truth)', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        columnVisibility={{ value: { code: false }, onChange: () => {} }}
+        columnVisibility={{ value: { code: false }, onValueChange: () => {} }}
       />,
     );
     expect(markup).toContain('Name');
@@ -847,7 +921,11 @@ describe('DataTable column visibility (controlled source of truth)', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        columnVisibility={{ value: { code: false }, onChange: () => {}, showViewOptions: false }}
+        columnVisibility={{
+          value: { code: false },
+          onValueChange: () => {},
+          showViewOptions: false,
+        }}
         toolbar={() => <span>Dashboard columns</span>}
       />,
     );
@@ -866,7 +944,7 @@ describe('DataTable filters', () => {
         columns={columns}
         filters={{
           value: [{ id: 'name', value: { contains: 'a' } }],
-          onChange: () => {},
+          onValueChange: () => {},
           columns: [{ id: 'name', label: 'Name' }],
         }}
       />,
@@ -879,7 +957,7 @@ describe('DataTable filters', () => {
       <DataTable
         rows={rows}
         columns={columns}
-        filters={{ value: [], onChange: () => {}, columns: [{ id: 'name', label: 'Name' }] }}
+        filters={{ value: [], onValueChange: () => {}, columns: [{ id: 'name', label: 'Name' }] }}
       />,
     );
     expect(markup).toContain('data-slot="data-table-add-filter"');
@@ -892,7 +970,7 @@ describe('DataTable filters', () => {
         columns={columns}
         filters={{
           value: [{ id: 'name', value: { contains: 'Al' } }],
-          onChange: () => {},
+          onValueChange: () => {},
           columns: [
             {
               id: 'name',
@@ -917,7 +995,7 @@ describe('DataTable filters', () => {
         columns={columns}
         filters={{
           value: [{ id: 'name', value: { contains: 'Al' } }],
-          onChange: () => {},
+          onValueChange: () => {},
           columns: [{ id: 'name', label: 'Name' }],
           showAppliedFilters: false,
         }}
@@ -938,7 +1016,7 @@ describe('DataTable editable filter chips', () => {
         columns={columns}
         filters={{
           value: [{ id: 'name', value: { contains: 'Al' } }],
-          onChange: () => {},
+          onValueChange: () => {},
           columns: [{ id: 'name', label: 'Name', renderEditor }],
         }}
       />,
@@ -986,7 +1064,7 @@ describe('DataTable clear filters', () => {
         labels={props.clearLabel ? { clearFilters: props.clearLabel } : undefined}
         filters={{
           value: props.value ?? nameFilter,
-          onChange: () => {},
+          onValueChange: () => {},
           columns: [{ id: 'name', label: 'Name' }],
           clearFilters: props.clearFilters,
         }}
@@ -1230,7 +1308,7 @@ describe('DataTable renderRow select props', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value, onChange: () => {} }}
+        rowSelection={{ value, onValueChange: () => {} }}
         renderRow={(_row, { defaultRow, selectProps }) => {
           seen.push({
             selectProps: selectProps as unknown as Record<string, unknown>,
@@ -1273,7 +1351,7 @@ describe('DataTable renderRow cell classes', () => {
     const firstRow = markup.split('<tbody')[1]?.split('</tr>')[0] ?? '';
     return [...firstRow.matchAll(/<td[^>]*?class="([^"]*)"/g)].map((match) => match[1]);
   };
-  const selectable = { value: {}, onChange: () => {} };
+  const selectable = { value: {}, onValueChange: () => {} };
 
   test('a custom row built from ctx.cellProps gets the same cell classes as a built-in row', () => {
     const builtIn = html(
@@ -1574,7 +1652,11 @@ describe('DataTable selection column', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {}, selectColumnId: 'selection' }}
+        rowSelection={{
+          value: { '1': true },
+          onValueChange: () => {},
+          selectColumnId: 'selection',
+        }}
         bulkActions={({ table }) => (
           <span>
             {table
@@ -1591,7 +1673,7 @@ describe('DataTable selection column', () => {
 });
 
 describe('DataTable pinFirstColumn', () => {
-  const selectable = { value: {}, onChange: () => {} };
+  const selectable = { value: {}, onValueChange: () => {} };
   const linkedColumns: ColumnDef<Country>[] = [
     {
       accessorKey: 'name',
@@ -1837,7 +1919,7 @@ describe('DataTable card frame', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: { '1': true }, onChange: () => {} }}
+        rowSelection={{ value: { '1': true }, onValueChange: () => {} }}
         bulkActions={() => <span>Archive</span>}
       />
     );
@@ -1856,7 +1938,7 @@ describe('DataTable card frame', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: {}, onChange: () => {} }}
+        rowSelection={{ value: {}, onValueChange: () => {} }}
         bulkActions={() => <span>Archive</span>}
       />,
     );
@@ -1873,14 +1955,16 @@ describe('DataTable card frame', () => {
       bulkActions: () => <span>Archive</span>,
     };
     const selected = html(
-      <DataTable {...props} rowSelection={{ value: { '1': true }, onChange: () => {} }} />,
+      <DataTable {...props} rowSelection={{ value: { '1': true }, onValueChange: () => {} }} />,
     );
     expect(selected).toContain('data-slot="data-table-bulk-actions"');
     // The controls row stays in the cell, out of reach, so the cell keeps its
     // height from the first frame.
     expect(selected).toMatch(/<div[^>]*inert=""[^>]*><div data-slot="list-header-controls"/);
 
-    const idle = html(<DataTable {...props} rowSelection={{ value: {}, onChange: () => {} }} />);
+    const idle = html(
+      <DataTable {...props} rowSelection={{ value: {}, onValueChange: () => {} }} />,
+    );
     expect(idle).toContain('data-slot="list-header-controls"');
     expect(idle).not.toContain('data-slot="data-table-bulk-actions"');
   });
@@ -1901,7 +1985,7 @@ describe('DataTable card frame', () => {
         rows={rows}
         columns={columns}
         getRowId={(row) => row.id}
-        rowSelection={{ value: {}, onChange: () => {} }}
+        rowSelection={{ value: {}, onValueChange: () => {} }}
         rowActions={() => <span>edit</span>}
         footerRows={({ columnCount }) => (
           <tr data-slot="footer-row">
@@ -1999,7 +2083,7 @@ describe('DataTable bulk action context', () => {
   test('every selected id counts, also for a row on another page', () => {
     // '9' is on a page the table has not shown: the table holds two rows.
     expect(
-      contextOf({ rowSelection: { value: { '1': true, '9': true }, onChange: () => {} } }),
+      contextOf({ rowSelection: { value: { '1': true, '9': true }, onValueChange: () => {} } }),
     ).toEqual({ ids: ['1', '9'], count: 2, loaded: 1, missing: ['9'] });
   });
 
@@ -2008,7 +2092,7 @@ describe('DataTable bulk action context', () => {
       contextOf({
         rows: undefined,
         isLoading: true,
-        rowSelection: { value: { '1': true, '2': true, '9': true }, onChange: () => {} },
+        rowSelection: { value: { '1': true, '2': true, '9': true }, onValueChange: () => {} },
       }),
     ).toEqual({ ids: ['1', '2', '9'], count: 3, loaded: 0, missing: ['1', '2', '9'] });
   });
@@ -2016,14 +2100,14 @@ describe('DataTable bulk action context', () => {
   test('a row deleted on the server stays in the ids and is reported missing', () => {
     expect(
       contextOf({
-        rowSelection: { value: { '1': true, '2': true, '404': true }, onChange: () => {} },
+        rowSelection: { value: { '1': true, '2': true, '404': true }, onValueChange: () => {} },
       }),
     ).toEqual({ ids: ['1', '2', '404'], count: 3, loaded: 2, missing: ['404'] });
   });
 
   test('nothing is missing when every selected row is loaded', () => {
     expect(
-      contextOf({ rowSelection: { value: { '1': true, '2': true }, onChange: () => {} } }),
+      contextOf({ rowSelection: { value: { '1': true, '2': true }, onValueChange: () => {} } }),
     ).toEqual({ ids: ['1', '2'], count: 2, loaded: 2, missing: [] });
   });
 });
@@ -2082,7 +2166,7 @@ describe('resolveSlot', () => {
 
 describe('isControlled', () => {
   test('a config with a value is controlled', () => {
-    expect(isControlled({ value: [], onChange: () => {} })).toBe(true);
+    expect(isControlled({ value: [], onValueChange: () => {} })).toBe(true);
   });
 
   test('a defaultValue config is uncontrolled', () => {

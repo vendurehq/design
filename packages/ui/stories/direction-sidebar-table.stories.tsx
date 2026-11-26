@@ -86,7 +86,7 @@ function SidebarAndTable({ dir }: { dir: Dir }) {
             rows={products}
             columns={columns}
             getRowId={(product) => product.id}
-            rowSelection={{ value: selection, onChange: setSelection }}
+            rowSelection={{ value: selection, onValueChange: setSelection }}
           />
         </div>
       </div>

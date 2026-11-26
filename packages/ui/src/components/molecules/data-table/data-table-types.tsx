@@ -3,7 +3,6 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   HeaderContext,
-  OnChangeFn,
   Row,
   RowSelectionState,
   SortingState,
@@ -67,12 +66,13 @@ export interface DataTableColumnMeta {
 /**
  * Controlled OR uncontrolled, per capability. `value` present → controlled: the
  * prop is the source of truth on every render (no internal seeding). `defaultValue`
- * → uncontrolled: the core seeds its own state and `onChange` (if given) only
- * observes. Never mix `value` with `defaultValue`.
+ * → uncontrolled: the core seeds its own state and `onValueChange` (if given)
+ * only observes. `onValueChange` always gets the next value, never an updater
+ * function. Never mix `value` with `defaultValue`.
  */
 export type ControlledState<T> =
-  | { value: T; onChange: OnChangeFn<T>; defaultValue?: never }
-  | { value?: never; onChange?: OnChangeFn<T>; defaultValue?: T };
+  | { value: T; onValueChange: (value: T) => void; defaultValue?: never }
+  | { value?: never; onValueChange?: (value: T) => void; defaultValue?: T };
 
 /* --- capability configs; PRESENCE of the config is the only feature switch --- */
 
@@ -411,7 +411,7 @@ export interface DataTableProps<TData> {
    * reload and a visit to another page in the same tab. Needs `rowSelection`.
    *
    * - On the first load the table restores the ids stored under the key and
-   *   reports them through `rowSelection.onChange`.
+   *   reports them through `rowSelection.onValueChange`.
    * - Every change is stored, with the ids of rows on other pages: a selection
    *   can span pages. An empty selection removes the entry.
    * - A new key switches to the selection stored under it, or to none. Nothing
