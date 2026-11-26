@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ChevronRightIcon, HomeIcon } from 'lucide-react';
 
@@ -18,6 +20,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSubButton,
   SidebarProvider,
+  SidebarRail,
 } from './sidebar.tsx';
 import { slotTokens } from '../../test/slot-tokens.ts';
 
@@ -422,6 +425,49 @@ describe('SidebarMenuSubButton size', () => {
         <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
         {/* @ts-expect-error `isActive` was renamed to `active` */}
         <SidebarMenuButton isActive>Orders</SidebarMenuButton>
+      </SidebarProvider>,
+    );
+  });
+});
+
+describe('Sidebar side', () => {
+  const render = (side?: 'start' | 'end') =>
+    renderToStaticMarkup(
+      <SidebarProvider>
+        <Sidebar side={side}>
+          <SidebarRail />
+        </Sidebar>
+        <SidebarInset>Content</SidebarInset>
+      </SidebarProvider>,
+    );
+
+  test('the side is start by default and end on request', () => {
+    expect(render()).toContain('data-side="start"');
+    expect(render()).not.toContain('data-side="end"');
+    expect(render('end')).toContain('data-side="end"');
+  });
+
+  test('the fixed container sits on the logical edge', () => {
+    const tokens = slotTokens(render(), 'sidebar-container');
+    expect(tokens).toEqual(
+      expect.arrayContaining(['data-[side=start]:start-0', 'data-[side=end]:end-0']),
+    );
+  });
+
+  test('the sidebar has no physical edge in its classes', () => {
+    const code = readFileSync(join(import.meta.dir, 'sidebar.tsx'), 'utf8');
+    // The old values and the physical utilities that carried them.
+    expect(code).not.toMatch(/data-side=(left|right)|data-\[side=(left|right)\]|side=\{?["'](left|right)["']/);
+    expect(code).not.toMatch(/[\s"'[:](-?left|-?right)-(0|2|4|full|\[)|[\s"']border-[lr]\b|[\s"':]m[lr]-0/);
+  });
+
+  test('the old physical values are gone', () => {
+    renderToStaticMarkup(
+      <SidebarProvider>
+        {/* @ts-expect-error `left` was renamed to `start` */}
+        <Sidebar side="left" />
+        {/* @ts-expect-error `right` was renamed to `end` */}
+        <Sidebar side="right" />
       </SidebarProvider>,
     );
   });
