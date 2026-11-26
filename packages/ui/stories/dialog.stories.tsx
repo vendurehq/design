@@ -404,12 +404,11 @@ export const TallForm: Story = {
 };
 
 /**
- * Code written for 2.x sets the dialog's padding with a class: `p-0` around a
- * full-bleed picker, `p-4` for a tighter dialog. The class also sets
- * `--dialog-padding`, so the pinned header and footer stay flush with the
- * dialog's edges.
+ * `--dialog-padding` sets the padding: `0px` around a full-bleed picker,
+ * `--spacing(4)` for a tighter dialog. The pinned header and footer reach
+ * over the same variable, so they stay flush with the dialog's edges.
  */
-function PaddingClassDialog({ padding }: { padding: string }) {
+function PaddingVariableDialog({ padding }: { padding: string }) {
   return (
     <Dialog>
       <DialogTrigger render={<Button variant="outline" />}>Choose asset</DialogTrigger>
@@ -450,13 +449,13 @@ async function expectFlushHeaderAndFooter(canvasElement: HTMLElement, padding: n
 
 export const PaddingZero: Story = {
   tags: ['!autodocs'],
-  render: () => <PaddingClassDialog padding="p-0" />,
+  render: () => <PaddingVariableDialog padding="[--dialog-padding:0px]" />,
   play: async ({ canvasElement }) => expectFlushHeaderAndFooter(canvasElement, 0),
 };
 
 export const PaddingFour: Story = {
   tags: ['!autodocs'],
-  render: () => <PaddingClassDialog padding="p-4" />,
+  render: () => <PaddingVariableDialog padding="[--dialog-padding:--spacing(4)]" />,
   play: async ({ canvasElement }) => expectFlushHeaderAndFooter(canvasElement, 16),
 };
 

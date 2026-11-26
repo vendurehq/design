@@ -8,7 +8,6 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
-import { dialogPaddingStyle } from "../../lib/dialog-padding.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
 
@@ -95,7 +94,6 @@ function DialogContent({
   size = "default",
   showCloseButton,
   overlayClassName,
-  style,
   ...props
 }: DialogPrimitive.Popup.Props & {
   /**
@@ -129,7 +127,7 @@ function DialogContent({
       <DialogOverlay className={overlayClassName} />
       {/* Enters from 4px below at 96%: opacity 200ms, scale and translate 240ms on the strong ease-out. Leaves to 98% (opacity 120ms on `ease`, scale 140ms on the strong ease-out). The scrim fades in 180ms and out in 140ms. Reduced motion keeps the fades. */}
       {/* At most the viewport height less 1rem on each side. A taller dialog scrolls inside; DialogHeader and DialogFooter stick to its top and bottom edges. */}
-      {/* The padding is `--dialog-padding` (20px), and the pinned header and footer reach over it. Change the variable; a `p-*` or `px-*` class also sets it (dialogPaddingStyle). */}
+      {/* The padding is `--dialog-padding` (20px), and the pinned header and footer reach over it. Change the variable, not the padding: a `p-*` class leaves the header and the footer at 20px. */}
       {/* One column as wide as the space inside the padding: content wider than that shrinks or wraps inside it instead of widening the dialog past its padding. */}
       {/* The scroll padding is the pinned header's and footer's measured heights plus 4px for a focus ring: a focused field scrolls clear of both. */}
       <DialogPrimitive.Popup
@@ -141,7 +139,6 @@ function DialogContent({
           dialogSizes[size],
           className
         )}
-        style={dialogPaddingStyle(className, style)}
         {...props}
       >
         <DialogCloseControlContext.Provider value={registerCloseControl}>

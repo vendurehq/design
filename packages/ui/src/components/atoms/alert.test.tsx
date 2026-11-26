@@ -109,14 +109,17 @@ describe('Alert icon', () => {
     expect(svgs(renderToStaticMarkup(<Alert tone="info" icon={false}>Text</Alert>))).toHaveLength(0);
   });
 
-  test('an svg child hides the tone icon', () => {
+  // The 2.x way, an svg child in place of the tone icon, is gone: `icon` is
+  // the only way to replace it.
+  test('an svg child does not hide the tone icon', () => {
     const html = renderToStaticMarkup(
       <Alert tone="warning">
         <TerminalIcon />
         Text
       </Alert>,
     );
-    expect(html).toContain('[&amp;:has(&gt;svg:not([data-slot=alert-icon]))&gt;[data-slot=alert-icon]]:hidden');
+    expect(html).not.toMatch(/data-slot=alert-icon\]\]:hidden/);
+    expect(html).toContain('data-slot="alert-icon"');
   });
 });
 

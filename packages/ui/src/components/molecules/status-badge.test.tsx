@@ -19,10 +19,9 @@ describe('StatusBadge', () => {
     expect(markup).toContain('[&amp;_svg]:size-3.25!');
   });
 
-  test('an icon in children hides the tone icon of the chip and the bare badge', () => {
-    // The hiding is CSS on the badge (the IconInChildren story measures it):
-    // a direct <svg> child hides the marker with data-marker="icon".
-    const rule = '[&amp;:has(&gt;svg)&gt;[data-marker=icon]]:hidden';
+  // The 2.x way, an svg in children in place of the tone icon, is gone:
+  // `icon` is the only way to replace it.
+  test('an icon in children neither hides nor colours the tone icon', () => {
     for (const appearance of ['chip', 'bare'] as const) {
       const markup = html(
         <StatusBadge tone="success" appearance={appearance}>
@@ -30,8 +29,10 @@ describe('StatusBadge', () => {
           Verified
         </StatusBadge>,
       );
-      expect(slotTag(markup, 'status-badge')).toContain(rule);
-      expect(markup).toContain('data-marker="icon"');
+      const tag = slotTag(markup, 'status-badge');
+      expect(tag).not.toContain('[data-marker=icon]]:hidden');
+      expect(tag).not.toContain('[:where(&amp;&gt;svg)]');
+      expect(markup).toContain('lucide-circle-check');
     }
   });
 

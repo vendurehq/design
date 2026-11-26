@@ -6,7 +6,6 @@ import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react/alert-dialog
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { usePopupDir } from "../../lib/popup-direction.ts"
-import { dialogPaddingStyle } from "../../lib/dialog-padding.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
 
@@ -45,7 +44,6 @@ function AlertDialogOverlay({
 function AlertDialogContent({
   className,
   size = "default",
-  style,
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm"
@@ -54,7 +52,7 @@ function AlertDialogContent({
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
-      {/* At most the viewport height less 1rem on each side. A taller dialog scrolls inside; the header and the footer stick to its edges, as in DialogContent. The padding is `--dialog-padding`, which a `p-*` or `px-*` class also sets (dialogPaddingStyle), and the scroll padding keeps a focused field clear of the header and the footer. */}
+      {/* At most the viewport height less 1rem on each side. A taller dialog scrolls inside; the header and the footer stick to its edges, as in DialogContent. The padding is `--dialog-padding`; change the variable, not the padding, and the scroll padding keeps a focused field clear of the header and the footer. */}
       <AlertDialogPrimitive.Popup
         dir={dir}
         data-slot="alert-dialog-content"
@@ -63,7 +61,6 @@ function AlertDialogContent({
           "bg-overlay shadow-overlay group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid grid-cols-[minmax(0,1fr)] max-h-[calc(100dvh-2rem)] w-full -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto overscroll-contain rounded-2xl [--dialog-padding:--spacing(5)] p-(--dialog-padding) [scroll-padding-block:calc(var(--pinned-header-height,0px)+--spacing(1))_calc(var(--pinned-footer-height,0px)+--spacing(1))] transition-[opacity,scale,translate] duration-[var(--transition-duration-normal),var(--transition-duration-dialog-enter),var(--transition-duration-dialog-enter)] ease-out data-starting-style:opacity-0 data-ending-style:opacity-0 data-ending-style:duration-[var(--transition-duration-quick),var(--transition-duration-dialog-exit),var(--transition-duration-dialog-exit)] data-ending-style:ease-[var(--ease-soft),var(--ease-out),var(--ease-out)] motion-safe:data-starting-style:scale-96 motion-safe:data-starting-style:translate-y-[calc(-50%+4px)] motion-safe:data-ending-style:scale-98 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-110",
           className
         )}
-        style={dialogPaddingStyle(className, style)}
         {...props}
       />
     </AlertDialogPortal>
