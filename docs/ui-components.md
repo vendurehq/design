@@ -209,7 +209,7 @@ behavior you need instead of rebuilding it from atoms.
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
 #### Data display
-`code-block`, `data-table/*`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+`code-block`, `data-table/data-table`, `data-table/data-table-types`, `data-table/list-header`, `data-table/table-pagination`, `data-table/data-table-filters`, `data-table/data-table-column-header`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
 > **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
@@ -927,6 +927,17 @@ import {
 ```
 
 Without children, `LoadingState` draws `rows` full-width bars, as before. Use the bars only where no part fits the shape.
+
+### DataTable parts
+
+`DataTable` already draws its header, filters, pagination and column headers. Import these parts only when you build a list page around your own table. Each one is public:
+
+- `data-table/list-header`: `ListHeader` stacks the page header, the control row (`ListHeaderControls`) and the applied-filter chips (`ListHeaderChips`). The three are layout only.
+- `data-table/table-pagination`: `TablePagination` shows the item range, the page size and the previous and next buttons. It takes `page`, `pageSize` and `totalItems`, and `getPageHref` makes the buttons links.
+- `data-table/data-table-filters`: `DataTableAddFilter` (the "Add filter" menu) and `DataTableAppliedFilters` (one chip per applied filter) read and write the column filters of a TanStack `table`.
+- `data-table/data-table-column-header`: `DataTableColumnHeader` is a sortable column title for a TanStack `column`. `align="end"` lines it up with end-aligned cells.
+
+Every other file in `data-table/` is internal, and an import of it fails to resolve.
 
 ### DataTable loading rows
 
