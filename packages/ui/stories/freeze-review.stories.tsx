@@ -155,7 +155,7 @@ export const AllItems: Story = {
   render: () => (
     <div className="flex flex-col gap-12">
       <p className="text-muted-foreground max-w-5xl text-sm">
-        Menus, the dialog, the drawer, the sidebar, the combobox chips and the calendar labels are drawn as static
+        D2 (popup radius) and the nested menu-item corners are on hold and not part of this PR. Menus, the dialog, the sidebar, the combobox chips and the calendar labels are drawn as static
         stand-ins with the component's classes, so they stay open on this page. The real components are in their own
         stories.
       </p>
@@ -178,7 +178,7 @@ export const D1: Story = {
   render: () => (
     <Item
       id="D1"
-      title="Field and button corners: fields to 8px (recommended), or buttons to 6px"
+      title="Field and button corners: fields to 8px (decided: A)"
       why="A field and a button in one row should have the same corner. Today fields are 6px and buttons 8px."
       options={[
         before((theme) => <FieldRow theme={theme} field="rounded-lg" />),
@@ -194,8 +194,8 @@ export const D2: Story = {
   render: () => (
     <Item
       id="D2"
-      title="Menu popup radius: 12px (recommended), a new 10px token, or 8px with 4px items"
-      why="The 6px items sit about 5px inside the popup, so a nested corner is 6 + 5 ≈ 12px. At 8px the popup corner is tighter than its items."
+      title="Menu popup radius (on hold, not in this PR): popup 12px with derived items, a new 10px token, or 8px with 4px items"
+      why="Option A: the popup is a 12px surface and each item derives its corner from it, 12 − 5px padding = 7px. This PR keeps popups at 8px until this is decided."
       options={[
         before(() => <MenuSurface radius="rounded-xl" />),
         { label: 'A: 12px', recommended: true, render: () => <MenuSurface radius="rounded-2xl" /> },
@@ -340,28 +340,6 @@ export const S5: Story = {
   },
 };
 
-export const S6: Story = {
-  name: 'S6. Drawer edge',
-  render: () => {
-    const drawer = (extra: string) => (
-      <div className="bg-background flex h-36 w-72 items-end overflow-hidden rounded-lg">
-        <div className={`bg-overlay text-popover-foreground flex h-24 w-full flex-col gap-1 rounded-t-xl p-4 text-sm ${extra}`}>
-          <span className="font-medium">Filters</span>
-          <span className="text-muted-foreground">A drawer from the bottom edge.</span>
-        </div>
-      </div>
-    );
-    return (
-      <Item
-        id="S6"
-        title="Drawer: its edge border → shadow-overlay"
-        why="A drawer floats over the page like every other popup, so it takes the overlay shadow, which is also its edge."
-        options={[before(() => drawer('border-t')), after(() => drawer('shadow-overlay'))]}
-      />
-    );
-  },
-};
-
 // ---------------------------------------------------------------------------
 // Radii
 // ---------------------------------------------------------------------------
@@ -392,18 +370,6 @@ export const R2: Story = {
         before((theme) => <GroupWithButton theme={theme} button="rounded-lg bg-accent" />),
         after((theme) => <GroupWithButton theme={theme} button="bg-accent" />),
       ]}
-    />
-  ),
-};
-
-export const R3: Story = {
-  name: 'R3. Popups 8 → 12px',
-  render: () => (
-    <Item
-      id="R3"
-      title="Popups 8 → 12px (dropdown and context menus, Select, Combobox, Popover, HoverCard, NavigationMenu)"
-      why="Follows D2: a popup is a surface, like a Card, and its 6px items nest inside it."
-      options={[before(() => <MenuSurface radius="rounded-xl" />), after(() => <MenuSurface radius="rounded-2xl" />)]}
     />
   ),
 };
@@ -486,58 +452,43 @@ export const R6: Story = {
   },
 };
 
-export const R7: Story = {
-  name: 'R7. Chart tooltip is a popup',
-  render: () => {
-    const tip = (radius: string) => (
-      <div className={`bg-popover text-popover-foreground grid min-w-32 gap-1.5 px-2.5 py-1.5 text-xs shadow-overlay ${radius}`}>
-        <span className="font-medium">March</span>
-        <span className="flex items-center gap-1.5">
-          <span className="bg-chart-1 size-2.5 rounded-sm" />
-          <span className="text-muted-foreground">Orders</span>
-          <span className="ms-auto font-mono font-medium tabular-nums">1,204</span>
-        </span>
-      </div>
-    );
-    return (
-      <Item
-        id="R7"
-        title="Chart tooltip: 8px → 12px"
-        why="The chart tooltip is a popup surface (popover colour, overlay shadow), so it takes the popup radius like menus. The dark text tooltip stays 6px."
-        options={[before(() => tip('rounded-xl')), after(() => tip('rounded-2xl'))]}
-      />
-    );
-  },
-};
-
 export const R8: Story = {
-  name: 'R8. Radius roles rule',
+  name: 'R8. Radius rules',
   render: () => {
     const roles = [
-      ['Inner', 'rounded-lg', '6px', 'menu items, chips, xs buttons'],
-      ['Control', 'rounded-xl', '8px', 'buttons, fields'],
-      ['Surface', 'rounded-2xl', '12px', 'cards, dialogs, popups'],
+      ['Control', 'rounded-xl', '8px', 'buttons, toggles, fields'],
+      ['Surface', 'rounded-2xl', '12px', 'cards, toasts, dialogs'],
       ['Palette', 'rounded-3xl', '16px', 'command palette'],
       ['Pill', 'rounded-full', 'full', 'badges, avatars, switches'],
     ];
     return (
       <Item
         id="R8"
-        title="New guidance rule: Radius roles"
-        why="Every corner comes from one of five roles. rounded-xs and rounded-4xl no longer exist. The rule is in the token guidance and the vendure-tokens skill."
+        title="New guidance rules: Radius roles, and nested corners follow outer − gap"
+        why="A shape on its own takes a role radius. A shape nested with a small gap takes the outer radius minus the gap (padding + border). When the gap is as big as the outer radius, the inner shape keeps its role radius. Both rules are in the token guidance, the docs and the vendure-tokens skill."
         options={[
           before(() => <p className="text-muted-foreground text-sm">No rule. Seven radius steps, picked per component.</p>),
           after(() => (
-            <div className="flex flex-wrap gap-3">
-              {roles.map(([role, cls, px, use]) => (
-                <div key={role} className="flex w-24 flex-col items-start gap-1.5">
-                  <div className={`bg-muted inset-ring inset-ring-border size-12 ${cls}`} />
-                  <span className="text-xs font-medium">
-                    {role} · {px}
+            <div className="flex flex-col items-start gap-4">
+              <div className="flex flex-wrap gap-3">
+                {roles.map(([role, cls, px, use]) => (
+                  <div key={role} className="flex w-24 flex-col items-start gap-1.5">
+                    <div className={`bg-muted inset-ring inset-ring-border size-12 ${cls}`} />
+                    <span className="text-xs font-medium">
+                      {role} · {px}
+                    </span>
+                    <span className="text-muted-foreground text-2xs">{use}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-muted inset-ring inset-ring-border flex h-8.5 w-40 items-center rounded-xl p-1.25">
+                  <span className="bg-accent flex h-6 items-center rounded-[calc(var(--radius-xl)-5px)] px-2 text-xs font-medium">
+                    DE
                   </span>
-                  <span className="text-muted-foreground text-2xs">{use}</span>
                 </div>
-              ))}
+                <span className="text-muted-foreground font-mono text-xs">8px − 5px = 3px</span>
+              </div>
             </div>
           )),
         ]}
@@ -735,14 +686,11 @@ const items: [string, () => ReactNode][] = [
   ['S3', () => S3.render?.({} as never, {} as never)],
   ['S4', () => S4.render?.({} as never, {} as never)],
   ['S5', () => S5.render?.({} as never, {} as never)],
-  ['S6', () => S6.render?.({} as never, {} as never)],
   ['R1', () => R1.render?.({} as never, {} as never)],
   ['R2', () => R2.render?.({} as never, {} as never)],
-  ['R3', () => R3.render?.({} as never, {} as never)],
   ['R4', () => R4.render?.({} as never, {} as never)],
   ['R5', () => R5.render?.({} as never, {} as never)],
   ['R6', () => R6.render?.({} as never, {} as never)],
-  ['R7', () => R7.render?.({} as never, {} as never)],
   ['R8', () => R8.render?.({} as never, {} as never)],
   ['B1', () => B1.render?.({} as never, {} as never)],
   ['B2', () => B2.render?.({} as never, {} as never)],
