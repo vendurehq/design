@@ -767,10 +767,11 @@ export const SearchMenuLoadingHeight: Story = {
     await userEvent.keyboard('{Escape}');
     await userEvent.click(canvas.getByRole('button', { name: 'Finish loading' }));
     await userEvent.click(await canvas.findByRole('button', { name: 'Projects: Acme Storefront' }));
-    await userEvent.keyboard('glob');
-    await waitFor(() =>
-      expect(within(document.body).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1),
-    );
+    const popup = await within(document.body).findByRole('dialog', { name: 'Projects' });
+    const search = within(popup).getByRole('combobox');
+    await waitFor(() => expect(search).toHaveFocus());
+    await userEvent.type(search, 'glob');
+    await waitFor(() => expect(within(popup).getAllByRole('option', { name: /Acme|Northwind|Globex/ })).toHaveLength(1));
     await expectPx(await footerTop(), loadingTop);
   },
 };
