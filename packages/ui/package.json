@@ -30,7 +30,8 @@
     "./lib/trigger-slot": null,
     "./hooks/*": "./src/hooks/*.ts",
     "./hooks/use-active-label-size": null,
-    "./hooks/use-pinned-height": null
+    "./hooks/use-pinned-height": null,
+    "./hooks/use-user-toggle-motion": null
   },
   "files": [
     "src",
@@ -38,7 +39,8 @@
     "!src/**/*.test.tsx",
     "!src/test",
     "README.md",
-    "LICENSE.md"
+    "LICENSE.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "lint": "biome check src/ guidance/",

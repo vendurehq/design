@@ -124,7 +124,7 @@ export const uiGuidance = [
       },
       {
         title: 'Not inside running text',
-        body: 'A link inside a sentence or a form is `Button variant="link" size={null}` or a plain anchor; a chevron there breaks the sentence. `size={null}` drops the button height and padding, so the link sits on the line of the text.',
+        body: 'A link inside a sentence or a form is a TextLink; a chevron there breaks the sentence.',
       },
       {
         title: 'A diagonal arrow means another site',
@@ -194,6 +194,10 @@ export const uiGuidance = [
         body: 'Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.',
       },
       {
+        title: 'A button that goes to a page is a link',
+        body: 'Render it with the element you navigate with: `<Button render={<a href="/billing" />}>` or `<Button render={<Link to="/billing" />}>`. It keeps the link role and takes the whole button look; Button finds the link from the element (an `<a>`, or an element with `href` or `to`), so there is no extra prop. Do not call `buttonVariants()` on your own `<a>` or `<Link>`. A disabled link has `role="link"` and `aria-disabled="true"`, follows nothing and leaves the tab order; add `focusableWhenDisabled` to keep the tab stop for a Tooltip that says why.',
+      },
+      {
         title: 'A disabled button that must say why keeps its focus',
         body: 'Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.',
       },
@@ -242,6 +246,37 @@ export const uiGuidance = [
     related: ['stat-card'],
   },
   {
+    id: 'checklist',
+    title: 'Checklist',
+    summary:
+      'Show a short set of steps the person completes, with its progress, until every step is done.',
+    sourceStory: 'checklist-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'Steps the person completes',
+        body: 'Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.',
+      },
+      {
+        title: 'Let the data decide when it can',
+        body: 'Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.',
+      },
+      {
+        title: 'One action per open step',
+        body: 'Give an open step at most one secondary Button or link in ChecklistStepAction. Put longer content, such as commands to run, in ChecklistStepBody. Split a step that needs two actions.',
+      },
+      {
+        title: 'Dismiss only when every step is done',
+        body: 'Pass `onDismiss`: its button shows once the last step is done. Remove the Checklist there and remember the choice. Keep a half-done checklist in view.',
+      },
+    ],
+    choices: [
+      { choice: 'Checklist', when: 'Steps the person completes, each with its own action.' },
+      { choice: 'Timeline', when: 'What already happened to one thing, newest first.' },
+      { choice: 'Progress', when: 'One task the system runs.' },
+    ],
+    related: ['step-indicator', 'timeline', 'collapsible-section'],
+  },
+  {
     id: 'chip',
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
@@ -265,6 +300,58 @@ export const uiGuidance = [
       },
     ],
     related: ['badge', 'id-chip', 'status-badge'],
+  },
+  {
+    id: 'choice-card',
+    title: 'ChoiceCard',
+    summary:
+      'Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.',
+    sourceStory: 'choice-card-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'The card is the control',
+        body: 'A ChoiceCard is a radio (single choice) or a checkbox (`multiple`) itself. Do not build a picker from a clickable Card with onClick, or a div with a role: it misses the arrow keys, Space and the checked state.',
+      },
+      {
+        title: 'Nothing interactive inside',
+        body: 'Slots hold text, icons and images. A link or button inside a card is not reachable as its own control. Put an action that belongs to one option next to the group, not in the card.',
+      },
+      {
+        title: 'Current is not selected',
+        body: 'Mark the option the customer already has (their current plan) with a ChoiceCardBadge on the title line. The selection is the option they are moving to. Never pre-select the current option to show that it is current.',
+      },
+      {
+        title: 'Name the group and every media tile',
+        body: 'Give ChoiceCardGroup an aria-label or aria-labelledby. A media card has no title, so give it an aria-label.',
+      },
+      {
+        title: 'Keep the indicator',
+        body: 'The radio dot or check box shows the state in shape, not only in colour. Do not hide it.',
+      },
+    ],
+    choices: [
+      {
+        choice: 'ChoiceCard',
+        when: 'Two to about six options that each need more than a label: a plan, a shipping method, an address, an asset.',
+      },
+      {
+        choice: 'RadioGroup',
+        when: 'One choice of a few short labels, as one field in a form.',
+      },
+      {
+        choice: 'Select',
+        when: 'More than about six options, or little room on the screen.',
+      },
+      {
+        choice: 'Checkbox',
+        when: 'Independent on/off settings with short labels.',
+      },
+      {
+        choice: 'A card link',
+        when: 'The whole card opens a page. That is navigation, not a choice.',
+      },
+    ],
+    related: ['form', 'badge', 'list-row'],
   },
   {
     id: 'code-block',
@@ -1152,8 +1239,8 @@ export const uiGuidance = [
         body: 'Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.',
       },
       {
-        title: 'Pending splits by resolver',
-        body: 'Human-blocked is warning, system- or time-resolved waiting is neutral, and active execution is progress.',
+        title: 'Pending splits by who acts next',
+        body: "Waiting that the system or another person resolves is progress, blue with no icon: commonStates.pending sets icon to false. Pending that waits for the viewer's own action is warning, declared by that domain.",
       },
       {
         title: 'Positive terminal or healthy operating is success',
@@ -1177,7 +1264,7 @@ export const uiGuidance = [
       },
       {
         title: 'A spinner means work that runs right now',
-        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone.',
+        body: 'Use the progress tone, and its spinner, only for work that runs right now and ends in seconds or minutes: a build, a deploy, a running job. A state that lasts hours or days, such as an order that is Shipped, gets a still icon (icon={<TruckIcon />}) and a neutral tone. Pending, waiting on the system or another person, is the progress tone with no icon (icon={false}): blue, and nothing spins.',
       },
       {
         title: 'A live dot means a state that stays on',
@@ -1193,7 +1280,7 @@ export const uiGuidance = [
       },
       {
         title: 'The chip brings its own icon',
-        body: 'Each tone shows its own icon, and progress always spins. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
+        body: 'Each tone shows its own icon, and progress spins. Pending is progress with icon={false}: blue, no icon, no spinner. Never put an icon in children: pass a more exact shape as icon={<Icon />}.',
       },
       {
         title: 'Quiet normal, loud abnormal in a list column',
@@ -1205,12 +1292,15 @@ export const uiGuidance = [
       },
     ],
     choices: [
-      { choice: 'neutral', when: 'Inert, terminal without failure, or waiting on system/time.' },
+      { choice: 'neutral', when: 'Inert, or terminal without failure.' },
       { choice: 'info', when: 'A noteworthy fact with no positive or negative valence.' },
       { choice: 'success', when: 'Positive terminal, healthy, enabled, or operating.' },
       { choice: 'warning', when: 'Human action is needed or risk is present.' },
       { choice: 'critical', when: 'Failed, blocked, invalid, or service-affecting.' },
-      { choice: 'progress', when: 'The system is actively working right now.' },
+      {
+        choice: 'progress',
+        when: 'The system is working (spinner), or waiting on the system or another person (pending: no icon).',
+      },
     ],
     related: ['badge', 'chip'],
   },
@@ -1235,6 +1325,77 @@ export const uiGuidance = [
       },
     ],
     related: ['data-table', 'list-header'],
+  },
+  {
+    id: 'step-indicator',
+    title: 'StepIndicator',
+    summary:
+      'Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.',
+    sourceStory: 'step-indicator-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'An ordered flow, not a to-do list',
+        body: 'Use StepIndicator when the steps go one after the other. Tasks the user ticks off in any order are a Checklist. Events that already happened are a Timeline.',
+      },
+      {
+        title: 'Waiting is current, working is running',
+        body: 'A step that waits for the user or a queue is `current`: blue, with no spinner, because it can wait for days. Only a step whose work happens now is `running` and spins. A step where the flow stopped is `failed`; the steps after it stay `upcoming`.',
+      },
+      {
+        title: 'A track for progress, a guide for content',
+        body: 'Horizontal for steps that need only a name and a time (signup, deployment steps). Vertical when a step holds content: the actions of the current step, a command, a note.',
+      },
+      {
+        title: 'Numbers when the user moves, icons when the system runs',
+        body: 'Use `marker="number"` for a flow the user goes through. Use `marker="icon"` for steps the system runs, where the state says more than the number.',
+      },
+      {
+        title: 'Name the list, keep the states in words',
+        body: 'Give the StepIndicator an `aria-label`. Each title is followed by its state in words for screen readers; pass translations through `stateLabels`. Give guide titles `render={<h3 />}` when they belong in the page outline.',
+      },
+    ],
+    choices: [
+      { choice: 'upcoming', when: 'Not reached yet.' },
+      { choice: 'current', when: 'The step the flow is on, waiting for the user or the system.' },
+      { choice: 'running', when: 'Work on this step is happening now.' },
+      { choice: 'done', when: 'Finished.' },
+      { choice: 'failed', when: 'The flow stopped here.' },
+    ],
+    related: ['checklist', 'timeline', 'progress'],
+  },
+  {
+    id: 'text-link',
+    title: 'TextLink',
+    summary:
+      'Link inside running text, or a small standalone link that must not compete with the actions next to it.',
+    sourceStory: 'text-link-guidance.stories.tsx',
+    rules: [
+      {
+        title: 'TextLink in text, ArrowLink at the end of a region, Button for an action',
+        body: 'A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.',
+      },
+      {
+        title: 'Default tone in a sentence',
+        body: 'The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.',
+      },
+      {
+        title: 'Quiet tone stands alone',
+        body: 'The quiet tone is muted and underlined only on hover. Use it for a small standalone link next to more important actions: "Forgot password?", a legal footer. Never inside a sentence, where it looks like plain text.',
+      },
+      {
+        title: 'Another site is external',
+        body: 'Set `external` on a link to another site. It opens a new tab with `rel="noopener noreferrer"`, ends with an up-right arrow and tells screen readers it opens a new tab. A page of this app never takes `external`.',
+      },
+      {
+        title: 'A router link goes in render',
+        body: 'Pass the router link as `render`. TextLink keeps the link role; never give it `role="button"` or an `onClick` that does not navigate.',
+      },
+    ],
+    choices: [
+      { choice: 'default', when: 'A link inside a sentence or a form hint.' },
+      { choice: 'quiet', when: 'A small standalone link beside more important actions.' },
+    ],
+    related: ['arrow-link', 'button'],
   },
   {
     id: 'timeline',
