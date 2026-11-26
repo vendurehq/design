@@ -4,6 +4,17 @@ import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-pr
 // that gains a text adds its group here; the `FormatMessages` type follows.
 // List the new texts in the FormatProvider section of `docs/ui-components.md`.
 const defaultMessages = {
+  codeBlock: {
+    copyCode: 'Copy code',
+    copied: 'Copied!',
+    /** Header of a shell block with no filename and no package-manager tabs. */
+    terminal: 'Terminal',
+    /** Header of a block with no filename and no language. */
+    code: 'Code',
+    showLess: 'Show less',
+    /** `{count}` is the number of hidden lines, formatted with `FormatProvider`'s `locale`. */
+    showMore: 'Show {count} more lines',
+  },
   combobox: {
     /** Announced while a page of options loads. */
     loading: 'Loading…',
