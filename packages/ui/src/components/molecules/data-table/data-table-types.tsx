@@ -78,8 +78,8 @@ export type ControlledState<T> = (
 ) & {
   /**
    * @deprecated Use `onValueChange`, which gets the next value. `onChange`
-   * gets the next value too, never an updater. When both are set, only
-   * `onValueChange` is called. Removed in 4.0.
+   * gets TanStack's updater (the next value or a function of the previous
+   * one). When both are set, only `onValueChange` is called. Removed in 4.0.
    */
   onChange?: OnChangeFn<T>;
 };

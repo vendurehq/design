@@ -2,7 +2,7 @@
 // name wins when both are set, and each warns once in development. Delete this
 // file with `lib/deprecated.ts` in 4.0.
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test';
-import type { SortingState } from '@tanstack/react-table';
+import type { OnChangeFn, SortingState } from '@tanstack/react-table';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Alert } from './components/atoms/alert.tsx';
@@ -24,7 +24,10 @@ import {
   setStoredPackageManager,
 } from './components/molecules/code-block/package-manager-storage.ts';
 import { ComboboxFreeText } from './components/molecules/combobox-free-text.tsx';
-import { withValueChange } from './components/molecules/data-table/data-table-helpers.tsx';
+import {
+  useControlledTableState,
+  warnOnChange,
+} from './components/molecules/data-table/data-table-helpers.tsx';
 import { readRowCount } from './components/molecules/data-table/data-table-row-count-storage.tsx';
 import { readStoredSelection } from './components/molecules/data-table/data-table-selection-storage.tsx';
 import type { DataTableSorting } from './components/molecules/data-table/data-table-types.tsx';
@@ -301,14 +304,12 @@ describe('time names', () => {
   });
 
   test('molecules/relative-time still exports the format helpers', () => {
-    const now = new Date(START);
-    const then = new Date(START - 120_000);
-    expect(relativeTimeModule.formatRelative(then, { now })).toBe(formatRelative(then, { now }));
-    expect(relativeTimeModule.formatRelativeDuration(then, { now })).toBe(
-      formatRelativeDuration(then, { now }),
+    const then = new Date(Date.now() - 120_000);
+    const options: relativeTimeModule.FormatRelativeOptions = { locale: 'en' };
+    expect(relativeTimeModule.formatRelative(then, options)).toBe(formatRelative(then, options));
+    expect(relativeTimeModule.formatRelativeDuration(then, options)).toBe(
+      formatRelativeDuration(then, options),
     );
-    const options: relativeTimeModule.FormatRelativeOptions = { now };
-    expect(options.now).toBe(now);
   });
 });
 
@@ -344,34 +345,37 @@ test('PageHeaderBackLink → PageHeaderBackRow', () => {
 });
 
 describe('DataTable onChange → onValueChange', () => {
-  test('onChange gets the next value', () => {
-    const calls: SortingState[] = [];
-    const config = withValueChange<SortingState, DataTableSorting>(
-      { value: [], onChange: (next) => calls.push(next as SortingState) },
-      'sorting',
-    );
-    config?.onValueChange?.([{ id: 'name', desc: true }]);
-    expect(calls).toEqual([[{ id: 'name', desc: true }]]);
-    expect(config && 'onChange' in config).toBe(false);
+  // Renders a bridge once and hands back its setter, as TanStack would call it.
+  const bridge = (config: DataTableSorting) => {
+    let set: OnChangeFn<SortingState> = () => {};
+    function Probe() {
+      warnOnChange(config, 'sorting');
+      set = useControlledTableState<SortingState>(config, [])[1];
+      return null;
+    }
+    render(<Probe />);
+    return set;
+  };
+  const next: SortingState = [{ id: 'name', desc: true }];
+
+  test('onChange alone gets the updater, as before onValueChange', () => {
+    const calls: unknown[] = [];
+    const updater = () => next;
+    bridge({ value: [], onChange: (value) => calls.push(value) })(updater);
+    expect(calls).toEqual([updater]);
     expect(warned()).toEqual([
       'DataTable: `sorting.onChange` is deprecated, use `sorting.onValueChange`. It will be removed in 4.0.',
     ]);
   });
 
-  test('onValueChange wins: onChange is not called', () => {
-    const calls: string[] = [];
-    const config = withValueChange<SortingState, DataTableSorting>(
-      { value: [], onValueChange: () => calls.push('new'), onChange: () => calls.push('old') },
-      'sorting',
-    );
-    config?.onValueChange?.([]);
-    expect(calls).toEqual(['new']);
-  });
-
-  test('a config without onChange is passed through unchanged', () => {
-    const config: DataTableSorting = { defaultValue: [] };
-    expect(withValueChange<SortingState, DataTableSorting>(config, 'sorting')).toBe(config);
-    expect(withValueChange<SortingState, DataTableSorting>(undefined, 'sorting')).toBeUndefined();
+  test('onValueChange wins and gets the next value; onChange is not called', () => {
+    const calls: unknown[] = [];
+    bridge({
+      value: [],
+      onValueChange: (value) => calls.push(['new', value]),
+      onChange: () => calls.push('old'),
+    })(() => next);
+    expect(calls).toEqual([['new', next]]);
   });
 });
 

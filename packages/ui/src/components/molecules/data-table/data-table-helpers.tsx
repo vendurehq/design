@@ -1,13 +1,21 @@
-import type { Column, ColumnDef, RowSelectionState, Table } from '@tanstack/react-table';
+import {
+  type Column,
+  type ColumnDef,
+  functionalUpdate,
+  type OnChangeFn,
+  type RowSelectionState,
+  type Table,
+} from '@tanstack/react-table';
 import type {
   ControlledState,
   DataTableClearFilters,
   DataTableColumnMeta,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
+import * as React from 'react';
 import { warnDeprecated } from '../../../lib/deprecated.ts';
 
-// Pure, TanStack-shaped logic for the DataTable core. No JSX and no React state,
-// so each function is unit-testable in isolation (the getRange/clampPage
+// Pure, TanStack-shaped logic for the DataTable core. No JSX, and React state
+// only in `useControlledTableState`, so each function is unit-testable in isolation (the getRange/clampPage
 // precedent from table-pagination.tsx).
 
 /**
@@ -29,18 +37,13 @@ type AnyColumnDef<TData> = ColumnDef<TData, any>;
  * or nothing) means the core owns the state.
  */
 /**
- * Turns the 3.0.0-next `onChange` of a capability config into `onValueChange`.
- * `onValueChange` wins when both are set. Remove in 4.0.
+ * Warns when a capability config uses the deprecated `onChange`. The state
+ * bridge calls it with TanStack's updater when `onValueChange` is not set.
+ * Remove in 4.0.
  */
-export function withValueChange<T, C extends ControlledState<T>>(
-  config: C | undefined,
-  capability: string,
-): C | undefined {
-  if (config?.onChange === undefined) return config;
+export function warnOnChange<T>(config: ControlledState<T> | undefined, capability: string): void {
+  if (config?.onChange === undefined) return;
   warnDeprecated('DataTable', `${capability}.onChange`, `${capability}.onValueChange`);
-  if (config.onValueChange !== undefined) return config;
-  const { onChange, ...rest } = config;
-  return { ...rest, onValueChange: (value: T) => onChange(value) } as unknown as C;
 }
 
 export function isControlled<T>(config: ControlledState<T> | undefined): boolean {
@@ -232,4 +235,37 @@ export function columnContentIndent(meta: unknown): string | undefined {
 
 function cssLength(value: unknown): number | string | undefined {
   return typeof value === 'number' || typeof value === 'string' ? value : undefined;
+}
+
+/**
+ * Bridge a capability config to a `[value, onChange]` pair TanStack can consume
+ * as fully controlled. Controlled configs (`value`) are the source of truth every
+ * render; uncontrolled configs (`defaultValue` or nothing) get internal state the
+ * core owns, with any `onValueChange` observing. This fixes the donor's
+ * seed-then-emit bug: the prop, not a one-time seed, drives every render.
+ * TanStack's updater is resolved here, so `onValueChange` gets the next value.
+ */
+export function useControlledTableState<T>(
+  config: ControlledState<T> | undefined,
+  fallback: T,
+): readonly [T, OnChangeFn<T>] {
+  const controlled = config?.value !== undefined;
+  const [internal, setInternal] = React.useState<T>(config?.defaultValue ?? fallback);
+  const value = controlled ? (config?.value as T) : internal;
+  // Updates in one tick build on each other before the next render.
+  const latest = React.useRef(value);
+  latest.current = value;
+  const onChange = React.useCallback<OnChangeFn<T>>(
+    (updater) => {
+      const next = functionalUpdate(updater, latest.current);
+      latest.current = next;
+      if (!controlled) setInternal(next);
+      // The deprecated `onChange` gets TanStack's updater, as it did before
+      // `onValueChange`; `onValueChange` wins when both are set.
+      if (config?.onValueChange) config.onValueChange(next);
+      else config?.onChange?.(updater);
+    },
+    [controlled, config],
+  );
+  return [value, onChange] as const;
 }

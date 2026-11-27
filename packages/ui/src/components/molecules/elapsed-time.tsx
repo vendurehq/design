@@ -99,27 +99,13 @@ function useOnScreen(element: React.RefObject<HTMLElement | null>) {
 
 type ElapsedTimeValue = string | number | Date | null | undefined;
 
-// `since` is the 2.x name of `from`. Remove the second branch in 4.0.
-type ElapsedTimeStart =
-  | {
-      /**
-       * When the count started: a Date, an ISO string or epoch milliseconds.
-       * `undefined` means not loaded yet and renders a one-line skeleton.
-       * `null` and an invalid date render `fallback`.
-       */
-      from: ElapsedTimeValue;
-      /** @deprecated Use `from`. Removed in 4.0. */
-      since?: ElapsedTimeValue;
-    }
-  | {
-      from?: ElapsedTimeValue;
-      /** @deprecated Use `from`. Removed in 4.0. */
-      since: ElapsedTimeValue;
-    };
-
-type ElapsedTimeProps = ElapsedTimeStart & ElapsedTimeOptions;
-
-interface ElapsedTimeOptions extends Omit<ComponentProps<'time'>, 'dateTime' | 'children'> {
+interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'children'> {
+  /**
+   * When the count started: a Date, an ISO string or epoch milliseconds.
+   * `undefined` means not loaded yet and renders a one-line skeleton. `null`
+   * and an invalid date render `fallback`.
+   */
+  from?: ElapsedTimeValue;
   /**
    * When the count stopped. With `to`, the text is fixed. Omitted,
    * `undefined` or `null` means it has not stopped: a live count that ticks
@@ -128,6 +114,8 @@ interface ElapsedTimeOptions extends Omit<ComponentProps<'time'>, 'dateTime' | '
    * until both are known, or the count runs live until `to` arrives.
    */
   to?: string | number | Date | null;
+  /** @deprecated Use `from`. Removed in 4.0. */
+  since?: ElapsedTimeValue;
   /** @deprecated Use `to`. Removed in 4.0. */
   until?: string | number | Date | null;
   /** Screen-reader text while `from` is `undefined`. @default `messages.elapsedTime.loading`, "Loading duration" */
