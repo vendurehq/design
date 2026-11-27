@@ -150,6 +150,56 @@
         "An arbitrary size such as text-[5rem] or text-[13vw]",
         "clamp(), a viewport unit or an inline fontSize for the headline"
       ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Add a grid of project cards to the standalone Projects page. Clicking a card opens that project.",
+      "context": "The app uses @vendure-io/ui.",
+      "expect": [
+        "Uses Card with one CardLink inside CardTitle around the title",
+        "Keeps menus and copy buttons inside the card as their own controls"
+      ],
+      "reject": [
+        "A card wrapped in an <a> element",
+        "A Card with an onClick handler",
+        "A separate \"Open\" link or button as the only way into the project"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Our admin sidebar collapses to an icon rail. Show each group's pages when the user hovers its icon.",
+      "context": "The app uses the Sidebar atom from @vendure-io/ui with collapsible=\"icon\".",
+      "expect": [
+        "Uses SidebarMenuFlyout with SidebarMenuFlyoutTrigger, SidebarMenuFlyoutContent and SidebarMenuFlyoutItem",
+        "Sets hasActiveChild on the trigger and active on the current item"
+      ],
+      "reject": [
+        "A Popover or HoverCard built by hand from the rail icon",
+        "A Tooltip on the same icon as the flyout"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Above the orders list, add a control to switch between All, Open and Closed orders.",
+      "context": "The app uses @vendure-io/ui. The list stays on the same URL.",
+      "expect": ["Uses ToggleGroup with one ToggleGroupItem per option"],
+      "reject": [
+        "Buttons that swap between filled and outline variants",
+        "Tabs or TabsNav for a filter of one list"
+      ]
+    },
+    {
+      "skill": "vendure-ui",
+      "prompt": "Add section tabs under the project page header: Overview, Deployments and Settings. Each one has its own route.",
+      "context": "The app uses @vendure-io/ui and TanStack Router.",
+      "expect": [
+        "Uses TabsNav with one TabsLink per route",
+        "Passes the router link through render"
+      ],
+      "reject": [
+        "A row of buttons with an underline on the selected one",
+        "Tabs with TabsContent panels for separate routes"
+      ]
     }
   ]
 }
