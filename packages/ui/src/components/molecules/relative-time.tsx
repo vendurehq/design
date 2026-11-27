@@ -3,8 +3,13 @@
 import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { type ComponentProps, type ReactNode, useEffect, useId, useState } from 'react';
+import { warnDeprecated } from '../../lib/deprecated.ts';
 import { useMessages } from '../../lib/format-messages.ts';
-import { formatRelative, formatRelativeDuration } from '../../lib/format-relative.ts';
+import {
+  type FormatRelativeOptions,
+  formatRelative,
+  formatRelativeDuration,
+} from '../../lib/format-relative.ts';
 // Relative: `time-tooltip` is internal.
 import {
   sampleText,
@@ -54,6 +59,8 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
    * `11/11/2026, 10:14:47 – 10:15:29 AM` over `42s`.
    */
   from?: string | number | Date | null;
+  /** @deprecated Use `from`. Removed in 4.0. */
+  start?: string | number | Date | null;
   /**
    * The tooltip on hover and focus. Default `true`: the absolute time (or the
    * range, with `from`). Pass content to show that instead, or `false` where
@@ -94,11 +101,14 @@ function RelativeTime({
   fallback = '—',
   loadingLabel,
   display = 'relative',
-  from,
+  from: fromProp,
+  start,
   tooltip = true,
   focusable,
   ...props
 }: RelativeTimeProps) {
+  if (start !== undefined) warnDeprecated('RelativeTime', 'start', 'from');
+  const from = fromProp !== undefined ? fromProp : start;
   const descriptionId = useId();
   const settings = useFormatSettings();
   const t = useMessages('relativeTime', { loading: loadingLabel });
@@ -194,4 +204,34 @@ function RelativeTime({
   );
 }
 
-export { RelativeTime, type RelativeTimeProps };
+// The 3.0.0-next.0 import surface re-exported the format helpers from here.
+// They live in `@vendure-io/ui/lib/format-relative`. Remove these in 4.0.
+const relativeTimeModule = 'molecules/relative-time';
+const libPath = '`@vendure-io/ui/lib/format-relative`';
+
+/** @deprecated Import `formatRelative` from `@vendure-io/ui/lib/format-relative`. Removed in 4.0. */
+const deprecatedFormatRelative: typeof formatRelative = (...args) => {
+  warnDeprecated(relativeTimeModule, 'formatRelative', `formatRelative from ${libPath}`);
+  return formatRelative(...args);
+};
+
+/** @deprecated Import `formatRelativeDuration` from `@vendure-io/ui/lib/format-relative`. Removed in 4.0. */
+const deprecatedFormatRelativeDuration: typeof formatRelativeDuration = (...args) => {
+  warnDeprecated(
+    relativeTimeModule,
+    'formatRelativeDuration',
+    `formatRelativeDuration from ${libPath}`,
+  );
+  return formatRelativeDuration(...args);
+};
+
+/** @deprecated Import `FormatRelativeOptions` from `@vendure-io/ui/lib/format-relative`. Removed in 4.0. */
+type DeprecatedFormatRelativeOptions = FormatRelativeOptions;
+
+export {
+  RelativeTime,
+  type RelativeTimeProps,
+  deprecatedFormatRelative as formatRelative,
+  deprecatedFormatRelativeDuration as formatRelativeDuration,
+  type DeprecatedFormatRelativeOptions as FormatRelativeOptions,
+};

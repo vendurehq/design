@@ -62,17 +62,6 @@ describe('ComboboxFreeText loading', () => {
     );
     expect(status(fromProp)).toBe('Chargement…');
   });
-
-  test('the 2.x loading alias is gone', () => {
-    const props: ComboboxFreeTextProps = {
-      value: '',
-      onValueChange: () => {},
-      items: [],
-      // @ts-expect-error `loading` was removed; use `isLoading`.
-      loading: true,
-    };
-    expect(render(props)).not.toContain(SPINNER);
-  });
 });
 
 describe('ComboboxFreeText input naming', () => {

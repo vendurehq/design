@@ -109,13 +109,4 @@ describe('Combobox isLoading', () => {
     );
     expect(status(fromProp)).toBe('Chargement…');
   });
-
-  test('the 2.x loading prop is gone', () => {
-    const props: React.ComponentProps<typeof Combobox<string>> = {
-      items: ['DE'],
-      // @ts-expect-error `loading` was renamed to `isLoading`.
-      loading: true,
-    };
-    expect(props).toBeDefined();
-  });
 });

@@ -169,8 +169,15 @@ export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
 ```ts
 import * as React from "react";
 import type { Tone } from "@vendure-io/ui/lib/state-dictionary";
-declare function Alert({ className, tone, icon, children, ...props }: React.ComponentProps<"div"> & {
+declare const variantTones: {
+    readonly default: undefined;
+    readonly destructive: "critical";
+    readonly warning: "warning";
+    readonly info: "info";
+};
+declare function Alert({ className, tone: toneProp, variant, icon, children, ...props }: React.ComponentProps<"div"> & {
     tone?: Tone;
+    variant?: keyof typeof variantTones;
     icon?: React.ReactNode;
 }): import("react/jsx-runtime").JSX.Element;
 declare function AlertTitle({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
@@ -234,7 +241,7 @@ export { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, Ava
 import { useRender } from "@base-ui/react/use-render";
 import { type VariantProps } from "class-variance-authority";
 declare const badgeVariants: (props?: ({
-    variant?: "link" | "default" | "brand" | "outline" | "ghost" | "destructive" | "primary" | null | undefined;
+    variant?: "link" | "destructive" | "default" | "brand" | "outline" | "ghost" | "primary" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 declare function Badge({ className, variant, render, ...props }: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>): import("react").ReactElement<unknown, string | import("react").JSXElementConstructor<any>>;
 export { Badge, badgeVariants };
@@ -282,12 +289,13 @@ declare function BreadcrumbMenu({ options, value, onValueChange, label, placehol
     options: readonly BreadcrumbMenuOption[] | undefined;
     children?: React.ReactNode;
 }): import("react/jsx-runtime").JSX.Element;
-declare function BreadcrumbSearchMenu({ options, value, onValueChange, label, placeholder, pending, open: openProp, onOpenChange, defaultOpen, searchPlaceholder, emptyText, error, onRetry, loadingLabel, retryLabel, children, className, contentClassName, }: BreadcrumbMenuBaseProps & {
+declare function BreadcrumbSearchMenu({ options: optionsProp, loading: loadingProp, value, onValueChange, label, placeholder, pending, open: openProp, onOpenChange, defaultOpen, searchPlaceholder, emptyText, error, onRetry, loadingLabel, retryLabel, children, className, contentClassName, }: BreadcrumbMenuBaseProps & {
     searchPlaceholder?: string;
     emptyText?: React.ReactNode;
     error?: React.ReactNode;
     onRetry?: () => void;
     retryLabel?: string;
+    loading?: boolean;
     children?: React.ReactNode;
 }): import("react/jsx-runtime").JSX.Element;
 export { Breadcrumb, BreadcrumbMenu, BreadcrumbSearchMenu, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis, };
@@ -301,8 +309,8 @@ import * as React from "react";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { type VariantProps } from "class-variance-authority";
 declare const buttonVariants: (props?: ({
-    variant?: "link" | "default" | "brand" | "outline" | "secondary" | "ghost" | "destructive" | "destructive-outline" | null | undefined;
-    size?: "icon" | "default" | "sm" | "xs" | "lg" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
+    variant?: "link" | "destructive" | "default" | "brand" | "outline" | "secondary" | "ghost" | "destructive-outline" | null | undefined;
+    size?: "default" | "icon" | "sm" | "xs" | "lg" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>;
 declare function Button({ className, variant, size, render, nativeButton, ...props }: ButtonProps): import("react/jsx-runtime").JSX.Element;
@@ -476,9 +484,10 @@ type ComboboxPagingProps = {
     onLoadMore?: () => void;
     hasMore?: boolean;
     isLoading?: boolean;
+    loading?: boolean;
     loadingLabel?: string;
 };
-declare function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({ onLoadMore, hasMore, isLoading, loadingLabel, onItemHighlighted, onInputValueChange, ...props }: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & ComboboxPagingProps): import("react/jsx-runtime").JSX.Element;
+declare function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({ onLoadMore, hasMore, isLoading: isLoadingProp, loading, loadingLabel, onItemHighlighted, onInputValueChange, ...props }: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & ComboboxPagingProps): import("react/jsx-runtime").JSX.Element;
 declare function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props): import("react/jsx-runtime").JSX.Element;
 declare function ComboboxTrigger({ className, size, children, ref, ...props }: ComboboxPrimitive.Trigger.Props & {
     size?: "sm" | "default";
@@ -682,7 +691,7 @@ import { type VariantProps } from "class-variance-authority";
 declare function Empty({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
 declare function EmptyHeader({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
 declare const emptyMediaVariants: (props?: ({
-    variant?: "icon" | "default" | "bare" | null | undefined;
+    variant?: "default" | "icon" | "bare" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 declare function EmptyMedia({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof emptyMediaVariants>): import("react/jsx-runtime").JSX.Element;
 declare function EmptyTitle({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
@@ -817,7 +826,7 @@ declare const itemVariants: (props?: ({
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 declare function Item({ className, variant, size, render, ...props }: useRender.ComponentProps<"div"> & VariantProps<typeof itemVariants>): React.ReactElement<unknown, string | React.JSXElementConstructor<any>>;
 declare const itemMediaVariants: (props?: ({
-    variant?: "image" | "icon" | "default" | null | undefined;
+    variant?: "image" | "default" | "icon" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 declare function ItemMedia({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof itemMediaVariants>): import("react/jsx-runtime").JSX.Element;
 declare function ItemContent({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
@@ -919,8 +928,9 @@ declare function PaginationContent({ className, ...props }: React.ComponentProps
 declare function PaginationItem({ ...props }: React.ComponentProps<"li">): import("react/jsx-runtime").JSX.Element;
 type PaginationLinkProps = {
     active?: boolean;
+    isActive?: boolean;
 } & Pick<React.ComponentProps<typeof Button>, "size"> & React.ComponentProps<"a">;
-declare function PaginationLink({ className, active, size, ...props }: PaginationLinkProps): import("react/jsx-runtime").JSX.Element;
+declare function PaginationLink({ className, active: activeProp, isActive, size, ...props }: PaginationLinkProps): import("react/jsx-runtime").JSX.Element;
 declare function PaginationPrevious({ className, text, ...props }: React.ComponentProps<typeof PaginationLink> & {
     text?: string;
 }): import("react/jsx-runtime").JSX.Element;
@@ -1030,6 +1040,7 @@ export { Separator };
 ```ts
 import * as React from "react";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
+import { type PhysicalSide } from "../../lib/deprecated.ts";
 declare function Sheet({ ...props }: SheetPrimitive.Root.Props): import("react/jsx-runtime").JSX.Element;
 declare function SheetTrigger({ ...props }: SheetPrimitive.Trigger.Props): import("react/jsx-runtime").JSX.Element;
 declare function SheetClose({ ...props }: SheetPrimitive.Close.Props): import("react/jsx-runtime").JSX.Element;
@@ -1037,8 +1048,8 @@ declare const sheetSizes: {
     readonly default: "data-[side=start]:sm:max-w-lg data-[side=end]:sm:max-w-lg";
     readonly xl: "data-[side=start]:sm:max-w-200 data-[side=end]:sm:max-w-200";
 };
-declare function SheetContent({ className, children, side, size, showCloseButton, closeLabel, ...props }: SheetPrimitive.Popup.Props & {
-    side?: "top" | "bottom" | "start" | "end";
+declare function SheetContent({ className, children, side: sideProp, size, showCloseButton, closeLabel, ...props }: SheetPrimitive.Popup.Props & {
+    side?: "top" | "bottom" | "start" | "end" | PhysicalSide;
     size?: keyof typeof sheetSizes;
     showCloseButton?: boolean;
     closeLabel?: string;
@@ -1056,6 +1067,7 @@ export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter
 import * as React from "react";
 import { useRender } from "@base-ui/react/use-render";
 import { type VariantProps } from "class-variance-authority";
+import { type PhysicalSide } from "../../lib/deprecated.ts";
 import { Button } from "@vendure-io/ui/components/atoms/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@vendure-io/ui/components/atoms/hover-card";
 import { Input } from "@vendure-io/ui/components/atoms/input";
@@ -1076,8 +1088,8 @@ declare function SidebarProvider({ defaultOpen, open: openProp, onOpenChange: se
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
 }): import("react/jsx-runtime").JSX.Element;
-declare function Sidebar({ side, variant, collapsible, className, children, dir, mobileLabels, ...props }: React.ComponentProps<"div"> & {
-    side?: "start" | "end";
+declare function Sidebar({ side: sideProp, variant, collapsible, className, children, dir, mobileLabels, ...props }: React.ComponentProps<"div"> & {
+    side?: "start" | "end" | PhysicalSide;
     variant?: "sidebar" | "floating" | "inset";
     collapsible?: "offcanvas" | "icon" | "none";
     mobileLabels?: {
@@ -1105,8 +1117,9 @@ declare const sidebarMenuButtonVariants: (props?: ({
     variant?: "default" | "outline" | null | undefined;
     size?: "default" | "sm" | "lg" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
-declare function SidebarMenuButton({ render, active, hasActiveChild, variant, size, tooltip, className, ...props }: useRender.ComponentProps<"button"> & React.ComponentProps<"button"> & {
+declare function SidebarMenuButton({ render, active: activeProp, isActive, hasActiveChild, variant, size, tooltip, className, ...props }: useRender.ComponentProps<"button"> & React.ComponentProps<"button"> & {
     active?: boolean;
+    isActive?: boolean;
     hasActiveChild?: boolean;
     tooltip?: string | React.ComponentProps<typeof TooltipContent>;
 } & VariantProps<typeof sidebarMenuButtonVariants>): import("react/jsx-runtime").JSX.Element;
@@ -1124,9 +1137,10 @@ declare function SidebarMenuSkeleton({ className, showIcon, ...props }: React.Co
 }): import("react/jsx-runtime").JSX.Element;
 declare function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">): import("react/jsx-runtime").JSX.Element;
 declare function SidebarMenuSubItem({ className, ...props }: React.ComponentProps<"li">): import("react/jsx-runtime").JSX.Element;
-declare function SidebarMenuSubButton({ render, size, active, className, ...props }: useRender.ComponentProps<"a"> & React.ComponentProps<"a"> & {
-    size?: "sm" | "default";
+declare function SidebarMenuSubButton({ render, size: sizeProp, active: activeProp, isActive, className, ...props }: useRender.ComponentProps<"a"> & React.ComponentProps<"a"> & {
+    size?: "sm" | "default" | "md";
     active?: boolean;
+    isActive?: boolean;
 }): React.ReactElement<unknown, string | React.JSXElementConstructor<any>>;
 declare function SidebarMenuFlyout(props: React.ComponentProps<typeof HoverCard>): import("react/jsx-runtime").JSX.Element;
 declare function SidebarMenuFlyoutTrigger({ delay, closeDelay, ...props }: Omit<React.ComponentProps<typeof SidebarMenuButton>, "tooltip"> & Pick<React.ComponentProps<typeof HoverCardTrigger>, "delay" | "closeDelay">): import("react/jsx-runtime").JSX.Element;
@@ -1567,6 +1581,7 @@ export interface ComboboxFreeTextProps<T extends ComboboxFreeTextItem = Combobox
     onSelectItem?: (item: T) => void;
     items: readonly T[] | undefined;
     isLoading?: boolean;
+    loading?: boolean;
     loadingLabel?: string;
     renderItem?: (item: T) => React.ReactNode;
     id?: string;
@@ -1578,7 +1593,7 @@ export interface ComboboxFreeTextProps<T extends ComboboxFreeTextItem = Combobox
     disabled?: boolean;
     className?: string;
 }
-declare function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>({ value, onValueChange, onSelectItem, items, isLoading, loadingLabel, renderItem, id, name, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, placeholder, invalid, disabled, className, }: ComboboxFreeTextProps<T>): import("react/jsx-runtime").JSX.Element;
+declare function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>({ value, onValueChange, onSelectItem, items, isLoading: isLoadingProp, loading, loadingLabel, renderItem, id, name, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, placeholder, invalid, disabled, className, }: ComboboxFreeTextProps<T>): import("react/jsx-runtime").JSX.Element;
 export { ComboboxFreeText };
 ```
 
@@ -1747,7 +1762,7 @@ export { DataTableAddFilter, DataTableAppliedFilters };
 ## `@vendure-io/ui/components/molecules/data-table/data-table-types`
 
 ```ts
-import type { CellContext, ColumnDef, ColumnFiltersState, HeaderContext, Row, RowSelectionState, SortingState, Table, TableOptions, VisibilityState } from '@tanstack/react-table';
+import type { CellContext, ColumnDef, ColumnFiltersState, HeaderContext, OnChangeFn, Row, RowSelectionState, SortingState, Table, TableOptions, VisibilityState } from '@tanstack/react-table';
 import type * as React from 'react';
 export interface DataTableColumnMeta {
     align?: 'start' | 'end';
@@ -1755,14 +1770,21 @@ export interface DataTableColumnMeta {
     minWidth?: number | string;
     contentInset?: 'status-badge' | 'status-badge-dot' | 'status-icon' | number | string;
 }
-export type ControlledState<T> = {
+export type ControlledState<T> = ({
     value: T;
     onValueChange: (value: T) => void;
+    defaultValue?: never;
+} | {
+    value: T;
+    onValueChange?: (value: T) => void;
+    onChange: OnChangeFn<T>;
     defaultValue?: never;
 } | {
     value?: never;
     onValueChange?: (value: T) => void;
     defaultValue?: T;
+}) & {
+    onChange?: OnChangeFn<T>;
 };
 export type DataTableSorting = ControlledState<SortingState> & {
     mode?: 'server' | 'client';
@@ -2089,9 +2111,12 @@ export { DescriptionList, DescriptionItem, DescriptionTerm, DescriptionDetail, D
 
 ```ts
 import { type ComponentProps, type ReactNode } from 'react';
+type ElapsedTimeValue = string | number | Date | null | undefined;
 interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'children'> {
-    from: string | number | Date | null | undefined;
+    from?: ElapsedTimeValue;
     to?: string | number | Date | null;
+    since?: ElapsedTimeValue;
+    until?: string | number | Date | null;
     loadingLabel?: string;
     fallback?: ReactNode;
     format?: (ms: number) => string;
@@ -2099,7 +2124,7 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
     focusable?: boolean;
     locale?: string;
 }
-declare function ElapsedTime({ from, to, fallback, loadingLabel, format, tooltip, focusable, locale, className, ...props }: ElapsedTimeProps): import("react/jsx-runtime").JSX.Element;
+declare function ElapsedTime({ from: fromProp, since, to: toProp, until, fallback, loadingLabel, format, tooltip, focusable, locale, className, ...props }: ElapsedTimeProps): import("react/jsx-runtime").JSX.Element;
 export { ElapsedTime, type ElapsedTimeProps };
 ```
 
@@ -2623,8 +2648,9 @@ declare function PageHeaderFacts({ className, ...props }: React.ComponentProps<'
 declare function PageHeaderFact({ className, ...props }: React.ComponentProps<'span'>): import("react/jsx-runtime").JSX.Element;
 declare function PageHeaderFactLink({ className, render, children, ...props }: useRender.ComponentProps<'a'>): React.ReactElement<unknown, string | React.JSXElementConstructor<any>>;
 declare function PageHeaderBackRow({ className, ...props }: React.ComponentProps<'div'>): import("react/jsx-runtime").JSX.Element;
+declare function PageHeaderBackLink(props: React.ComponentProps<'div'>): import("react/jsx-runtime").JSX.Element;
 declare function PageHeaderBack({ className, ...props }: useRender.ComponentProps<'a'>): import("react/jsx-runtime").JSX.Element;
-export { PageHeader, PageHeaderContent, PageHeaderTitle, PageHeaderDescription, PageHeaderActions, PageHeaderBackRow, PageHeaderBack, PageHeaderFacts, PageHeaderFact, PageHeaderFactLink, };
+export { PageHeader, PageHeaderContent, PageHeaderTitle, PageHeaderDescription, PageHeaderActions, PageHeaderBackRow, PageHeaderBackLink, PageHeaderBack, PageHeaderFacts, PageHeaderFact, PageHeaderFactLink, };
 ```
 
 ## `@vendure-io/ui/components/molecules/password-input`
@@ -2643,6 +2669,7 @@ export { PasswordInput };
 
 ```ts
 import { type ComponentProps, type ReactNode } from 'react';
+import { type FormatRelativeOptions, formatRelative, formatRelativeDuration } from '../../lib/format-relative.ts';
 interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
     value: string | number | Date | null | undefined;
     locale?: string;
@@ -2653,11 +2680,15 @@ interface RelativeTimeProps extends Omit<ComponentProps<'time'>, 'dateTime'> {
     loadingLabel?: string;
     display?: 'relative' | 'duration';
     from?: string | number | Date | null;
+    start?: string | number | Date | null;
     tooltip?: boolean | ReactNode;
     focusable?: boolean;
 }
-declare function RelativeTime({ value, locale, numeric, unitStyle, updateInterval, fallback, loadingLabel, display, from, tooltip, focusable, ...props }: RelativeTimeProps): import("react/jsx-runtime").JSX.Element;
-export { RelativeTime, type RelativeTimeProps };
+declare function RelativeTime({ value, locale, numeric, unitStyle, updateInterval, fallback, loadingLabel, display, from: fromProp, start, tooltip, focusable, ...props }: RelativeTimeProps): import("react/jsx-runtime").JSX.Element;
+declare const deprecatedFormatRelative: typeof formatRelative;
+declare const deprecatedFormatRelativeDuration: typeof formatRelativeDuration;
+type DeprecatedFormatRelativeOptions = FormatRelativeOptions;
+export { RelativeTime, type RelativeTimeProps, deprecatedFormatRelative as formatRelative, deprecatedFormatRelativeDuration as formatRelativeDuration, type DeprecatedFormatRelativeOptions as FormatRelativeOptions, };
 ```
 
 ## `@vendure-io/ui/components/molecules/search-trigger`
@@ -2718,6 +2749,7 @@ import type { ComponentProps, ReactNode } from 'react';
 interface StatCardDelta {
     value: number | undefined;
     unit?: string;
+    label?: string;
     goodWhen?: 'up' | 'down';
 }
 interface StatCardProps extends ComponentProps<typeof Card> {
@@ -2732,8 +2764,9 @@ interface StatCardProps extends ComponentProps<typeof Card> {
     loadingLabel?: string;
     deltaUpLabel?: string;
     deltaDownLabel?: string;
+    isLoading?: boolean;
 }
-declare function StatCard({ label, value, fallback, description, icon, delta, chart, action, loadingLabel, deltaUpLabel, deltaDownLabel, className, ...props }: StatCardProps): import("react/jsx-runtime").JSX.Element;
+declare function StatCard({ label, value: valueProp, fallback, description, icon, delta: deltaProp, chart, action, loadingLabel, deltaUpLabel, deltaDownLabel, isLoading, className, ...props }: StatCardProps): import("react/jsx-runtime").JSX.Element;
 export { StatCard, type StatCardProps, type StatCardDelta };
 ```
 
@@ -2748,9 +2781,9 @@ export interface EmptyStateProps extends Omit<React.ComponentProps<typeof Empty>
     description?: React.ReactNode;
     children?: React.ReactNode;
     bordered?: boolean;
-    size?: 'default' | 'sm';
+    size?: 'default' | 'sm' | 'compact';
 }
-declare function EmptyState({ icon, illustration, title, description, children, bordered, size, className, ...props }: EmptyStateProps): import("react/jsx-runtime").JSX.Element;
+declare function EmptyState({ icon, illustration, title, description, children, bordered, size: sizeProp, className, ...props }: EmptyStateProps): import("react/jsx-runtime").JSX.Element;
 export { EmptyState };
 ```
 
@@ -2767,9 +2800,9 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
     retryLabel?: React.ReactNode;
     children?: React.ReactNode;
     bordered?: boolean;
-    size?: 'default' | 'sm';
+    size?: 'default' | 'sm' | 'compact';
 }
-declare function ErrorState({ icon, illustration, title, description, onRetry, retryLabel, children, bordered, size, className, ...props }: ErrorStateProps): import("react/jsx-runtime").JSX.Element;
+declare function ErrorState({ icon, illustration, title, description, onRetry, retryLabel, children, bordered, size: sizeProp, className, ...props }: ErrorStateProps): import("react/jsx-runtime").JSX.Element;
 export { ErrorState };
 ```
 
@@ -2785,10 +2818,11 @@ export interface LoadingStateProps extends React.ComponentProps<'output'>, Varia
     rowClassName?: string;
     label?: React.ReactNode;
     loadingLabel?: string;
+    srLabel?: string;
     delay?: number;
     children?: React.ReactNode;
 }
-declare function LoadingState({ variant, rows, rowClassName, label, loadingLabel, delay, children, className, style, ...props }: LoadingStateProps): import("react/jsx-runtime").JSX.Element;
+declare function LoadingState({ variant, rows, rowClassName, label, loadingLabel, srLabel, delay, children, className, style, ...props }: LoadingStateProps): import("react/jsx-runtime").JSX.Element;
 export { LoadingState, loadingStateVariants };
 ```
 
@@ -3067,6 +3101,16 @@ export type ClipboardSource = string | (() => Promise<string>);
 type ClipboardWriter = Pick<Clipboard, 'writeText'> & Partial<Pick<Clipboard, 'write'>>;
 export declare function writeToClipboard(source: ClipboardSource, clipboard?: ClipboardWriter): Promise<void>;
 export {};
+```
+
+## Internal: `src/lib/deprecated.ts`
+
+```ts
+export declare function warnDeprecated(component: string, oldName: string, newName: string): void;
+export declare function resetDeprecationWarnings(): void;
+export declare function migrateStorageKey(area: 'localStorage' | 'sessionStorage', oldKey: string, newKey: string): void;
+export type PhysicalSide = 'left' | 'right';
+export declare function logicalSide<S extends string>(component: string, side: S | PhysicalSide, dir: string | undefined): S | 'start' | 'end';
 ```
 
 ## Internal: `src/lib/format-messages.ts`

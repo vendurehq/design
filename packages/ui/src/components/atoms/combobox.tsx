@@ -20,6 +20,7 @@ import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePopupAlign } from "../../lib/popup-align.ts"
 import { hasName, nameFrom, useRegisteredRef } from "../../lib/control-name.ts"
 import { useMessages } from "../../lib/format-messages.ts"
+import { warnDeprecated } from "../../lib/deprecated.ts"
 
 /**
  * The controls of the nearest Combobox. Base UI names the trigger and the
@@ -54,6 +55,8 @@ type ComboboxPagingProps = {
    * the loading row takes the place of ComboboxEmpty.
    */
   isLoading?: boolean
+  /** @deprecated Use `isLoading`. Removed in 4.0. */
+  loading?: boolean
   /**
    * Announced to screen readers while `isLoading` is set.
    * @default `messages.combobox.loading`, "Loading…"
@@ -82,12 +85,15 @@ const ComboboxPagingContext = React.createContext<ComboboxPaging | null>(null)
 function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({
   onLoadMore,
   hasMore = false,
-  isLoading,
+  isLoading: isLoadingProp,
+  loading,
   loadingLabel,
   onItemHighlighted,
   onInputValueChange,
   ...props
 }: ComboboxPrimitive.Root.Props<Value, Multiple, Item> & ComboboxPagingProps) {
+  if (loading !== undefined) warnDeprecated("Combobox", "loading", "isLoading")
+  const isLoading = isLoadingProp ?? loading
   const [trigger, setTrigger] = React.useState<HTMLElement | null>(null)
   const [input, setInput] = React.useState<HTMLElement | null>(null)
   const [list, setList] = React.useState<HTMLElement | null>(null)

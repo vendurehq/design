@@ -14,6 +14,7 @@ import {
 import { cn } from '@vendure-io/ui/lib/utils';
 import { Loader2Icon } from 'lucide-react';
 import * as React from 'react';
+import { warnDeprecated } from '../../lib/deprecated.ts';
 import { useMessages } from '../../lib/format-messages.ts';
 
 export interface ComboboxFreeTextItem {
@@ -61,6 +62,8 @@ export interface ComboboxFreeTextProps<T extends ComboboxFreeTextItem = Combobox
    * trailing spinner. For the first load, pass `items={undefined}` instead.
    */
   isLoading?: boolean;
+  /** @deprecated Use `isLoading`. Removed in 4.0. */
+  loading?: boolean;
   /**
    * Announced by the spinner while the suggestions load.
    * @default `messages.comboboxFreeText.loading`, "Loading…"
@@ -111,7 +114,8 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   onValueChange,
   onSelectItem,
   items,
-  isLoading,
+  isLoading: isLoadingProp,
+  loading,
   loadingLabel,
   renderItem = defaultRenderItem,
   id,
@@ -123,6 +127,8 @@ function ComboboxFreeText<T extends ComboboxFreeTextItem = ComboboxFreeTextItem>
   disabled,
   className,
 }: ComboboxFreeTextProps<T>) {
+  if (loading !== undefined) warnDeprecated('ComboboxFreeText', 'loading', 'isLoading');
+  const isLoading = isLoadingProp ?? loading;
   // Base UI opens the popup on every keystroke; we only want it open when there
   // is something pickable, so a no-match closes it silently instead of flashing
   // an empty box. `open` tracks the user's intent (typing, Escape, blur,

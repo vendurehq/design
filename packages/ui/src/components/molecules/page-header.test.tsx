@@ -149,10 +149,3 @@ test('PageHeaderFactLink takes render for a router link', () => {
   );
   expect(html.startsWith('<button')).toBe(true);
 });
-
-test('PageHeaderBackLink, the 2.x name, is gone', async () => {
-  const pageHeader = await import('./page-header.tsx');
-  expect('PageHeaderBackLink' in pageHeader).toBe(false);
-  // @ts-expect-error PageHeaderBackRow is the only name
-  expect(pageHeader.PageHeaderBackLink).toBeUndefined();
-});

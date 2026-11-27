@@ -735,16 +735,14 @@ describe('DataTable controlled state reports the resolved value', () => {
     expect(onValueChange).toHaveBeenCalledWith([{ id: 'code', desc: true }]);
   });
 
-  test('the configs take onValueChange, not onChange', () => {
+  test('the configs take onValueChange', () => {
     const sorting: DataTableProps<Country>['sorting'] = {
       value: [],
       onValueChange: (next) => next.map((sort) => sort.id),
     };
-    // @ts-expect-error: onChange was renamed to onValueChange.
-    const old: DataTableProps<Country>['sorting'] = { value: [], onChange: () => {} };
     // @ts-expect-error: a controlled value needs onValueChange.
     const missing: DataTableProps<Country>['rowSelection'] = { value: {} };
-    expect([sorting, old, missing]).toHaveLength(3);
+    expect([sorting, missing]).toHaveLength(2);
   });
 });
 

@@ -4,15 +4,19 @@ import type {
   DataTableRowSelection,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import * as React from 'react';
+import { migrateStorageKey } from '../../../lib/deprecated.ts';
 
 // The row selection of a table, kept in session storage under a consumer's key.
 // It survives a reload and a visit to another page in the same tab. It is not in
 // the URL: a URL change is a navigation, and each checkbox click would run one.
 
 const STORAGE_PREFIX = 'vendure-ui:data-table:selection:';
+// The 3.0.0-next key, moved on read. Remove in 4.0.
+const OLD_STORAGE_PREFIX = 'vendure-ui:data-table-selection:';
 
 /** The ids stored under `key`. Blocked, missing or malformed storage gives none. */
 export function readStoredSelection(key: string): RowSelectionState {
+  migrateStorageKey('sessionStorage', OLD_STORAGE_PREFIX + key, STORAGE_PREFIX + key);
   try {
     const stored = globalThis.sessionStorage?.getItem(STORAGE_PREFIX + key);
     const ids: unknown = stored ? JSON.parse(stored) : [];
@@ -49,6 +53,15 @@ const sameSelection = (a: RowSelectionState, b: RowSelectionState) => {
   return left.length === selectedIds(b).length && left.every((id) => b[id]);
 };
 
+/** `onValueChange` wins over the deprecated `onChange` (removed in 4.0). */
+function reportSelection(
+  handlers: Pick<ControlledState<RowSelectionState>, 'onValueChange' | 'onChange'>,
+  next: RowSelectionState,
+) {
+  if (handlers.onValueChange) handlers.onValueChange(next);
+  else handlers.onChange?.(next);
+}
+
 /**
  * Wraps a table's `rowSelection` config so its selection is stored under
  * `storageKey`. Without a key, or without `rowSelection`, it returns the config
@@ -78,8 +91,14 @@ export function useSelectionStorage<TData>(
     storageKey,
     current,
     onValueChange: rowSelection?.onValueChange,
+    onChange: rowSelection?.onChange,
   });
-  latest.current = { storageKey, current, onValueChange: rowSelection?.onValueChange };
+  latest.current = {
+    storageKey,
+    current,
+    onValueChange: rowSelection?.onValueChange,
+    onChange: rowSelection?.onChange,
+  };
   const loadedKey = React.useRef<string | undefined>(undefined);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: restores when the key changes, nothing else
@@ -95,19 +114,19 @@ export function useSelectionStorage<TData>(
     if (first && selectedIds(stored).length === 0) return;
     if (sameSelection(stored, latest.current.current)) return;
     if (!controlled) setOwn(stored);
-    latest.current.onValueChange?.(stored);
+    reportSelection(latest.current, stored);
   }, [enabled, storageKey]);
 
   const onValueChange = React.useCallback((next: RowSelectionState) => {
     latest.current.current = next;
     if (latest.current.storageKey != null) writeStoredSelection(latest.current.storageKey, next);
     setOwn(next);
-    latest.current.onValueChange?.(next);
+    reportSelection(latest.current, next);
   }, []);
 
   return React.useMemo(() => {
     if (!enabled || rowSelection == null) return rowSelection;
-    const { defaultValue: _defaultValue, ...rest } = rowSelection;
+    const { defaultValue: _defaultValue, onChange: _onChange, ...rest } = rowSelection;
     return { ...rest, value: current, onValueChange } as ControlledState<RowSelectionState> &
       DataTableRowSelection<TData>;
   }, [enabled, rowSelection, current, onValueChange]);

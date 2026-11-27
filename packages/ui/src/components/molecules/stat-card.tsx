@@ -5,6 +5,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { cva } from 'class-variance-authority';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
+import { warnDeprecated } from '../../lib/deprecated.ts';
 import { useMessages } from '../../lib/format-messages.ts';
 
 // Delta color follows the outcome, not the direction: `goodWhen` says which
@@ -40,6 +41,11 @@ interface StatCardDelta {
    * "12,4 %").
    */
   unit?: string;
+  /**
+   * @deprecated Use `unit`. `'%'` (the 2.x default) is the locale percent,
+   * so leave `unit` out for it. Removed in 4.0.
+   */
+  label?: string;
   /** Which direction is a good outcome for this metric. @default "up" */
   goodWhen?: 'up' | 'down';
 }
@@ -70,6 +76,8 @@ interface StatCardProps extends ComponentProps<typeof Card> {
   deltaUpLabel?: string;
   /** Screen-reader word before a falling delta. @default `messages.statCard.down`, "down" */
   deltaDownLabel?: string;
+  /** @deprecated Leave `value` undefined while it loads. Removed in 4.0. */
+  isLoading?: boolean;
 }
 
 // One line of the surrounding text size, so the loaded text takes exactly its
@@ -148,19 +156,33 @@ function StatCardDeltaBadge({
 
 function StatCard({
   label,
-  value,
+  value: valueProp,
   fallback = '—',
   description,
   icon,
-  delta,
+  delta: deltaProp,
   chart,
   action,
   loadingLabel,
   deltaUpLabel,
   deltaDownLabel,
+  isLoading,
   className,
   ...props
 }: StatCardProps) {
+  if (isLoading !== undefined) warnDeprecated('StatCard', 'isLoading', 'value={undefined}');
+  if (deltaProp?.label !== undefined) warnDeprecated('StatCard', 'delta.label', 'delta.unit');
+  // 2.x: `isLoading` hid the value and the delta; `label` was the unit, with
+  // `'%'` for a percent.
+  const value = isLoading ? undefined : valueProp;
+  const delta =
+    deltaProp === undefined
+      ? undefined
+      : {
+          ...deltaProp,
+          value: isLoading ? undefined : deltaProp.value,
+          unit: deltaProp.unit ?? (deltaProp.label === '%' ? undefined : deltaProp.label),
+        };
   const t = useMessages('statCard', {
     loading: loadingLabel,
     up: deltaUpLabel,
