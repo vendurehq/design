@@ -7,6 +7,15 @@ export const uiGuidance = [
     summary:
       'Use one ActionNeeded for a list of findings that each wait on someone, such as the setup problems of a store or the alerts of a project.',
     sourceStory: 'action-needed-guidance.stories.tsx',
+    components: ['ActionNeeded', 'ActionNeededRow'],
+    replaces: [
+      {
+        pattern: 'Tinted boxes inside a card, one per finding, or a stack of Alerts',
+        use: ['ActionNeeded'],
+      },
+      { pattern: 'A bare "Open" link under each finding', use: ['ActionNeededRow'] },
+      { pattern: 'A second "Action needed" header inside a card', use: ['ActionNeeded'] },
+    ],
     rules: [
       {
         title: 'Findings that wait on someone',
