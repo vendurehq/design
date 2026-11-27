@@ -85,7 +85,7 @@ export const Invalid: Story = {
   play: async ({ canvasElement }) => {
     const group = canvasElement.querySelector<HTMLElement>('[data-slot="input-otp-group"]') as HTMLElement;
     const probe = document.createElement('div');
-    probe.className = 'bg-muted inset-ring inset-ring-destructive outline-destructive';
+    probe.className = 'bg-field inset-ring inset-ring-destructive outline-destructive';
     canvasElement.append(probe);
     const style = getComputedStyle(group);
     await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);

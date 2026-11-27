@@ -23,9 +23,9 @@ const recipe = readFileSync(join(import.meta.dir, '../../lib/field-surface.ts'),
 const retired = ['border-input', 'dark:bg-input/30', 'dark:hover:bg-input/50', 'aria-invalid:ring-3', 'data-[size=default]:h-9'];
 
 describe('v3 field look', () => {
-  test('the recipe: muted fill, inset hairline, 8px radius, inset ring, invalid hairline', () => {
+  test('the recipe: field fill, inset hairline, 8px radius, inset ring, invalid hairline', () => {
     for (const token of [
-      'bg-muted',
+      'bg-field',
       'inset-ring',
       'inset-ring-border',
       'rounded-xl',
@@ -114,7 +114,7 @@ describe('v3 field look', () => {
   // A field whose focus sits on an element inside it rings on focus-within and
   // turns red when a control inside is invalid. Rendered, so an override fails.
   const within = [
-    'bg-muted',
+    'bg-field',
     'inset-ring',
     'inset-ring-border',
     'rounded-xl',
@@ -161,7 +161,7 @@ describe('v3 field look', () => {
       expect(tokens).toContain(token);
     }
     // No fill or outer border of its own: the group draws the field.
-    for (const token of ['bg-muted', 'border-y', 'border-e', 'first:border-s', 'border-l', 'border-r', 'aria-invalid:border-destructive']) {
+    for (const token of ['bg-field', 'bg-muted', 'border-y', 'border-e', 'first:border-s', 'border-l', 'border-r', 'aria-invalid:border-destructive']) {
       expect(tokens).not.toContain(token);
     }
   });

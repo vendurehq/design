@@ -42,6 +42,10 @@ export const lightTheme = {
   'secondary-foreground': neutral[900],
   // The v3 look's light tints: 5.5% at rest, 8.5% on hover.
   muted: 'color-mix(in oklab, var(--foreground) 5.5%, transparent)',
+  // The fill of a text field (Input, Select, Combobox, the date pickers).
+  // Lighter than `muted` in light mode: at 5.5% an enabled field on a white
+  // card reads as disabled. A disabled field is this fill at half opacity.
+  field: 'color-mix(in oklab, var(--foreground) 3%, transparent)',
   // Darker than the plain surface needs: muted text also sits on the `muted`
   // and `secondary` fills (kbd, avatar fallback, chips) and on the `accent`
   // hover fill (menu and list rows), and holds 4.5:1 there.
@@ -180,6 +184,8 @@ export const darkTheme = {
   'secondary-foreground': neutral[100],
   // Matches the v3 look's dark tints: 6% foreground at rest, 9.5% on hover.
   muted: 'color-mix(in oklab, var(--foreground) 6%, transparent)',
+  // Dark fields keep the `muted` fill.
+  field: 'var(--muted)',
   // Holds 4.5:1 on the `accent` hover fill over the overlay tier.
   'muted-foreground': 'oklch(0.715 0.005 231)',
   'faint-foreground': neutral[500],
