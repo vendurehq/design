@@ -442,7 +442,7 @@ export const R6: Story = {
   name: 'R6. Combobox chips follow the field',
   render: () => {
     const chips = (field: string, chip: string) => (
-      <div className={`bg-muted inset-ring inset-ring-border flex min-h-8.5 w-64 items-center gap-1.5 p-1.25 text-sm ${field}`}>
+      <div className={`bg-field inset-ring inset-ring-border flex min-h-8.5 w-64 items-center gap-1.5 p-1.25 text-sm ${field}`}>
         {['DE', 'FR'].map((code) => (
           <span key={code} className={`bg-accent text-foreground flex h-6 items-center px-2 text-xs font-medium ${chip}`}>
             {code}
