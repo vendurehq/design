@@ -28,6 +28,21 @@ interface ChipBaseProps extends React.ComponentProps<'span'> {
   disabled?: boolean;
 }
 
+/**
+ * The remove button's props: both or neither. Type a conditional value with
+ * it, then spread that value. A `{}` else branch written inside the JSX spread
+ * does not compile.
+ *
+ * ```tsx
+ * const removeProps: ChipRemoveProps = canRemove
+ *   ? { onRemove: remove, removeLabel: `Remove ${name}` }
+ *   : {};
+ *
+ * <Chip {...removeProps}>{name}</Chip>
+ * ```
+ *
+ * Inline, give the else branch `{ onRemove: undefined }`.
+ */
 type ChipRemoveProps =
   | {
       /**
@@ -130,4 +145,4 @@ function Chip({
 }
 
 export { Chip };
-export type { ChipProps };
+export type { ChipProps, ChipRemoveProps };

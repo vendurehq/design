@@ -148,6 +148,7 @@
 - `@vendure-io/ui/hooks/use-scrolled` → `./src/hooks/use-scrolled.ts`
 - `@vendure-io/ui/lib/base-ui` → `./src/lib/base-ui.ts`
 - `@vendure-io/ui/lib/date-value` → `./src/lib/date-value.ts`
+- `@vendure-io/ui/lib/format-relative` → `./src/lib/format-relative.ts`
 - `@vendure-io/ui/lib/state-dictionary` → `./src/lib/state-dictionary.ts`
 - `@vendure-io/ui/lib/tone-icons` → `./src/lib/tone-icons.ts`
 - `@vendure-io/ui/lib/utils` → `./src/lib/utils.ts`
@@ -1424,7 +1425,7 @@ type ChipRemoveProps = {
 type ChipProps = ChipBaseProps & ChipRemoveProps;
 declare function Chip({ className, variant, icon, onRemove, removeLabel, onEdit, editLabel, editExpanded, disabled, children, ...props }: ChipProps): import("react/jsx-runtime").JSX.Element;
 export { Chip };
-export type { ChipProps };
+export type { ChipProps, ChipRemoveProps };
 ```
 
 ## `@vendure-io/ui/components/molecules/choice-card`
@@ -2977,6 +2978,19 @@ declare function parseInstant(value: string | null | undefined): Date | undefine
 declare function formatDateLabel(date: Date, locale?: string): string;
 declare function formatDateRangeLabel(from: Date, to: Date | undefined, locale?: string): string;
 export { formatCalendarDate, formatDateLabel, formatDateRangeLabel, parseCalendarDate, parseInstant, };
+```
+
+## `@vendure-io/ui/lib/format-relative`
+
+```ts
+interface FormatRelativeOptions {
+    locale?: string;
+    numeric?: 'auto' | 'always';
+    unitStyle?: Intl.RelativeTimeFormatOptions['style'];
+}
+declare function formatRelative(value: string | number | Date, { locale, numeric, unitStyle }?: FormatRelativeOptions): string;
+declare function formatRelativeDuration(value: string | number | Date, { locale, unitStyle }?: Omit<FormatRelativeOptions, 'numeric'>): string;
+export { formatRelative, formatRelativeDuration, type FormatRelativeOptions };
 ```
 
 ## `@vendure-io/ui/lib/state-dictionary`
