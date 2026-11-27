@@ -9,7 +9,7 @@ const code = readFileSync(join(import.meta.dir, 'sheet.tsx'), 'utf8');
 
 describe('SheetContent side', () => {
   test('the sides are top, bottom, start and end, and the default is end', () => {
-    expect(code).toContain('side = "end"');
+    expect(code).toContain('side: sideProp = "end"');
     expect(code).toContain('side?: "top" | "bottom" | "start" | "end"');
   });
 
