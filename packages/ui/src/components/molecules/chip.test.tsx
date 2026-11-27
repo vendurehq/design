@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Chip } from './chip.tsx';
+import { Chip, type ChipRemoveProps } from './chip.tsx';
 
 test('a disabled Chip is marked aria-disabled', () => {
   const html = renderToStaticMarkup(
@@ -97,4 +97,30 @@ test('removeLabel is required with onRemove, and not allowed without it', () => 
     </Chip>,
   );
   expect(html).toContain('aria-label="Remove Apparel"');
+});
+
+test('a conditional remove button compiles with both props set or neither', () => {
+  const render = (removable: boolean) => {
+    const onRemove = () => {};
+    const removeProps: ChipRemoveProps = removable
+      ? { onRemove, removeLabel: 'Remove Apparel' }
+      : {};
+    return [
+      <Chip key="typed" {...removeProps}>
+        Apparel
+      </Chip>,
+      <Chip
+        key="inline"
+        {...(removable ? { onRemove, removeLabel: 'Remove Apparel' } : { onRemove: undefined })}
+      >
+        Apparel
+      </Chip>,
+      // @ts-expect-error: a `{}` else branch makes both props optional on their own.
+      <Chip key="empty" {...(removable ? { onRemove, removeLabel: 'Remove Apparel' } : {})}>
+        Apparel
+      </Chip>,
+    ];
+  };
+  expect(renderToStaticMarkup(render(true)).match(/aria-label="Remove Apparel"/g)).toHaveLength(3);
+  expect(renderToStaticMarkup(render(false))).not.toContain('chip-remove');
 });
