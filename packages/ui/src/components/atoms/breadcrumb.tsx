@@ -38,6 +38,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip.tsx"
 import { LabelSwap } from "./label-swap.tsx"
 import { menuItem, menuRadioItem, MenuCheck } from "../../lib/menu-item.tsx"
 import { useMessages } from "../../lib/format-messages.ts"
+import { warnDeprecated } from "../../lib/deprecated.ts"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -575,7 +576,8 @@ function searchFilter(_value: string, search: string, keywords?: string[]) {
  * text skeleton in place of a placeholder word when no name is known.
  */
 function BreadcrumbSearchMenu({
-  options,
+  options: optionsProp,
+  loading: loadingProp,
   value,
   onValueChange,
   label,
@@ -607,11 +609,22 @@ function BreadcrumbSearchMenu({
    * @default `messages.breadcrumb.retry`, "Retry"
    */
   retryLabel?: string
+  /**
+   * @deprecated Pass `options={undefined}` while the options load. Removed
+   * in 4.0.
+   */
+  loading?: boolean
   /** Footer items: `CommandItem`s with `forceMount`. */
   children?: React.ReactNode
 }) {
+  if (loadingProp !== undefined) {
+    warnDeprecated("BreadcrumbSearchMenu", "loading", "options={undefined}")
+  }
+  // The 2.x `loading` flag stands for `options={undefined}` in the list. The
+  // crumb still names the current option from the options it has.
+  const options = loadingProp ? undefined : optionsProp
   const [open, setOpen] = useMenuOpen(openProp, defaultOpen, onOpenChange)
-  const crumb = useCrumbTrigger({ options: options ?? [], value, label, placeholder, open })
+  const crumb = useCrumbTrigger({ options: optionsProp ?? [], value, label, placeholder, open })
   const t = useMessages("breadcrumb", { loading: loadingLabel, retry: retryLabel })
   const failed = error != null && error !== false
   // The error wins: a failed first read has no options either.

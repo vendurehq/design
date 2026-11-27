@@ -5,6 +5,7 @@ import { cn } from "@vendure-io/ui/lib/utils"
 import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { alertTint, alertToneVars } from "../../lib/tint-recipes.ts"
 import { toneIcons } from "@vendure-io/ui/lib/tone-icons"
+import { warnDeprecated } from "../../lib/deprecated.ts"
 
 // Alert is an inline-size container so AlertAction can move under the text when
 // the alert is narrow. A container cannot size to its content: an Alert inside a
@@ -60,18 +61,34 @@ const spinnerClass = "animate-spin-slow motion-reduce:animate-none"
  * tone it sits on the card with no icon. `icon` replaces the tone icon, and
  * `icon={false}` shows no icon. Pass the icon here, not as a child.
  */
+// The 2.x variant names and the tone each one maps to. Remove in 4.0.
+const variantTones = {
+  default: undefined,
+  destructive: "critical",
+  warning: "warning",
+  info: "info",
+} as const satisfies Record<string, Tone | undefined>
+
 function Alert({
   className,
-  tone,
+  tone: toneProp,
+  variant,
   icon,
   children,
   ...props
 }: React.ComponentProps<"div"> & {
   /** The tone from the state dictionary. Leave it out for a plain notice on the card. */
   tone?: Tone
+  /**
+   * @deprecated Use `tone`: `destructive` is `critical`, `warning` and `info`
+   * keep their names, and `default` is no tone. Removed in 4.0.
+   */
+  variant?: keyof typeof variantTones
   /** Replaces the tone icon. `false` or `null` shows no icon. */
   icon?: React.ReactNode
 }) {
+  if (variant !== undefined) warnDeprecated("Alert", "variant", "tone")
+  const tone = toneProp ?? (variant === undefined ? undefined : variantTones[variant])
   const ToneIcon = tone ? toneIcons[tone] : undefined
   const shownIcon =
     icon !== undefined ? (

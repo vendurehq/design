@@ -3,6 +3,7 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   HeaderContext,
+  OnChangeFn,
   Row,
   RowSelectionState,
   SortingState,
@@ -70,9 +71,18 @@ export interface DataTableColumnMeta {
  * only observes. `onValueChange` always gets the next value, never an updater
  * function. Never mix `value` with `defaultValue`.
  */
-export type ControlledState<T> =
+export type ControlledState<T> = (
   | { value: T; onValueChange: (value: T) => void; defaultValue?: never }
-  | { value?: never; onValueChange?: (value: T) => void; defaultValue?: T };
+  | { value: T; onValueChange?: (value: T) => void; onChange: OnChangeFn<T>; defaultValue?: never }
+  | { value?: never; onValueChange?: (value: T) => void; defaultValue?: T }
+) & {
+  /**
+   * @deprecated Use `onValueChange`, which gets the next value. `onChange`
+   * gets the next value too, never an updater. When both are set, only
+   * `onValueChange` is called. Removed in 4.0.
+   */
+  onChange?: OnChangeFn<T>;
+};
 
 /* --- capability configs; PRESENCE of the config is the only feature switch --- */
 

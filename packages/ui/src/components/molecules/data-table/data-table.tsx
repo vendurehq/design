@@ -48,10 +48,14 @@ import {
 } from '@vendure-io/ui/components/molecules/data-table/data-table-filters';
 import type {
   ControlledState,
+  DataTableColumnVisibility,
+  DataTableFilters,
   DataTableProps,
   DataTableRowCellProps,
   DataTableRowRipple,
+  DataTableRowSelection,
   DataTableRowSelectProps,
+  DataTableSorting,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import {
   ListHeader,
@@ -81,6 +85,7 @@ import {
   resolveClearFilters,
   resolveSlot,
   sameIndents,
+  withValueChange,
 } from './data-table-helpers.tsx';
 // Relative: `data-table-row-count-storage` is closed in the package exports.
 import { skeletonRowCountFor, useRememberedListTotal } from './data-table-row-count-storage.tsx';
@@ -742,10 +747,10 @@ function DataTable<TData>({
   skeletonCells,
   expectedTotal,
   pagination,
-  sorting,
-  filters,
-  columnVisibility,
-  rowSelection,
+  sorting: sortingProp,
+  filters: filtersProp,
+  columnVisibility: columnVisibilityProp,
+  rowSelection: rowSelectionProp,
   selectionStorageKey,
   header,
   toolbar,
@@ -766,7 +771,7 @@ function DataTable<TData>({
   const warnedMissingPaginatedSelectionRowId = React.useRef(false);
   if (
     isDevelopment &&
-    rowSelection != null &&
+    rowSelectionProp != null &&
     pagination != null &&
     pagination.mode !== 'client' &&
     getRowId == null &&
@@ -827,6 +832,19 @@ function DataTable<TData>({
     [labels],
   );
 
+  const sorting = withValueChange<SortingState, DataTableSorting>(sortingProp, 'sorting');
+  const filters = withValueChange<ColumnFiltersState, DataTableFilters<TData>>(
+    filtersProp,
+    'filters',
+  );
+  const columnVisibility = withValueChange<VisibilityState, DataTableColumnVisibility>(
+    columnVisibilityProp,
+    'columnVisibility',
+  );
+  const rowSelection = withValueChange<RowSelectionState, DataTableRowSelection<TData>>(
+    rowSelectionProp,
+    'rowSelection',
+  );
   const [sortingState, onSortingChange] = useControlledTableState<SortingState>(sorting, []);
   const [filtersState, onColumnFiltersChange] = useControlledTableState<ColumnFiltersState>(
     filters,

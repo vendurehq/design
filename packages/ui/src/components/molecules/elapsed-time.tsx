@@ -12,6 +12,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { warnDeprecated } from '../../lib/deprecated.ts';
 import { formatElapsed, isoDuration } from '../../lib/format-elapsed.ts';
 import { useMessages } from '../../lib/format-messages.ts';
 // Relative: `time-tooltip` is internal.
@@ -96,13 +97,29 @@ function useOnScreen(element: React.RefObject<HTMLElement | null>) {
   return onScreen && tabVisible;
 }
 
-interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'children'> {
-  /**
-   * When the count started: a Date, an ISO string or epoch milliseconds.
-   * `undefined` means not loaded yet and renders a one-line skeleton. `null`
-   * and an invalid date render `fallback`.
-   */
-  from: string | number | Date | null | undefined;
+type ElapsedTimeValue = string | number | Date | null | undefined;
+
+// `since` is the 2.x name of `from`. Remove the second branch in 4.0.
+type ElapsedTimeStart =
+  | {
+      /**
+       * When the count started: a Date, an ISO string or epoch milliseconds.
+       * `undefined` means not loaded yet and renders a one-line skeleton.
+       * `null` and an invalid date render `fallback`.
+       */
+      from: ElapsedTimeValue;
+      /** @deprecated Use `from`. Removed in 4.0. */
+      since?: ElapsedTimeValue;
+    }
+  | {
+      from?: ElapsedTimeValue;
+      /** @deprecated Use `from`. Removed in 4.0. */
+      since: ElapsedTimeValue;
+    };
+
+type ElapsedTimeProps = ElapsedTimeStart & ElapsedTimeOptions;
+
+interface ElapsedTimeOptions extends Omit<ComponentProps<'time'>, 'dateTime' | 'children'> {
   /**
    * When the count stopped. With `to`, the text is fixed. Omitted,
    * `undefined` or `null` means it has not stopped: a live count that ticks
@@ -111,6 +128,8 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
    * until both are known, or the count runs live until `to` arrives.
    */
   to?: string | number | Date | null;
+  /** @deprecated Use `to`. Removed in 4.0. */
+  until?: string | number | Date | null;
   /** Screen-reader text while `from` is `undefined`. @default `messages.elapsedTime.loading`, "Loading duration" */
   loadingLabel?: string;
   /**
@@ -160,8 +179,10 @@ interface ElapsedTimeProps extends Omit<ComponentProps<'time'>, 'dateTime' | 'ch
  *   a tab stop and the tooltip opens beside the whole status block.
  */
 function ElapsedTime({
-  from,
-  to,
+  from: fromProp,
+  since,
+  to: toProp,
+  until,
   fallback = '—',
   loadingLabel,
   format,
@@ -171,6 +192,10 @@ function ElapsedTime({
   className,
   ...props
 }: ElapsedTimeProps) {
+  if (since !== undefined) warnDeprecated('ElapsedTime', 'since', 'from');
+  if (until !== undefined) warnDeprecated('ElapsedTime', 'until', 'to');
+  const from = fromProp !== undefined ? fromProp : since;
+  const to = toProp !== undefined ? toProp : until;
   const ref = useRef<HTMLTimeElement>(null);
   const descriptionId = useId();
   const settings = useFormatSettings();

@@ -10,6 +10,7 @@ import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
 import { usePinnedHeight } from "../../hooks/use-pinned-height.ts"
 import { triggerSlot } from "../../lib/trigger-slot.ts"
+import { logicalSide, type PhysicalSide } from "../../lib/deprecated.ts"
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -75,7 +76,7 @@ const sheetSizes = {
 function SheetContent({
   className,
   children,
-  side = "end",
+  side: sideProp = "end",
   size = "default",
   showCloseButton = true,
   closeLabel,
@@ -84,8 +85,10 @@ function SheetContent({
   /**
    * The edge the sheet slides in from. `start` and `end` follow the reading
    * direction: in right-to-left, `start` is the right edge. Defaults to `end`.
+   * `left` and `right` are deprecated: use `start` or `end`. They are removed
+   * in 4.0.
    */
-  side?: "top" | "bottom" | "start" | "end"
+  side?: "top" | "bottom" | "start" | "end" | PhysicalSide
   /**
    * The width of a start or end sheet. `default` (512px): a short form or a
    * settings list. `xl` (800px): a table or a wide form. Both stay at 3/4 of
@@ -100,6 +103,7 @@ function SheetContent({
   closeLabel?: string
 }) {
   const dir = usePopupDir()
+  const side = logicalSide("SheetContent", sideProp, dir)
   const t = useMessages("sheet", { close: closeLabel })
   return (
     <SheetPortal>

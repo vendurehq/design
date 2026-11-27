@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { migrateStorageKey } from '../../../lib/deprecated.ts';
 
 // The total row count (all pages) of a list at its last load, kept in local
 // storage under a consumer's key. Passed back as DataTable `expectedTotal`, it
@@ -6,9 +7,12 @@ import * as React from 'react';
 // have, so the body keeps its height when the rows arrive, also after a reload.
 
 const STORAGE_PREFIX = 'vendure-ui:data-table:list-total:';
+// The 3.0.0-next key, moved on read. Remove in 4.0.
+const OLD_STORAGE_PREFIX = 'vendure-ui:list-total:';
 
 /** The total stored under `key`, or null. Blocked, missing or malformed storage gives null. */
 export function readRowCount(key: string): number | null {
+  migrateStorageKey('localStorage', OLD_STORAGE_PREFIX + key, STORAGE_PREFIX + key);
   try {
     const stored = globalThis.localStorage?.getItem(STORAGE_PREFIX + key);
     const count = stored ? Number(stored) : Number.NaN;

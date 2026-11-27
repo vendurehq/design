@@ -4,15 +4,19 @@ import type {
   DataTableRowSelection,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
 import * as React from 'react';
+import { migrateStorageKey } from '../../../lib/deprecated.ts';
 
 // The row selection of a table, kept in session storage under a consumer's key.
 // It survives a reload and a visit to another page in the same tab. It is not in
 // the URL: a URL change is a navigation, and each checkbox click would run one.
 
 const STORAGE_PREFIX = 'vendure-ui:data-table:selection:';
+// The 3.0.0-next key, moved on read. Remove in 4.0.
+const OLD_STORAGE_PREFIX = 'vendure-ui:data-table-selection:';
 
 /** The ids stored under `key`. Blocked, missing or malformed storage gives none. */
 export function readStoredSelection(key: string): RowSelectionState {
+  migrateStorageKey('sessionStorage', OLD_STORAGE_PREFIX + key, STORAGE_PREFIX + key);
   try {
     const stored = globalThis.sessionStorage?.getItem(STORAGE_PREFIX + key);
     const ids: unknown = stored ? JSON.parse(stored) : [];

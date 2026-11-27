@@ -4,6 +4,7 @@ import type {
   DataTableClearFilters,
   DataTableColumnMeta,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-types';
+import { warnDeprecated } from '../../../lib/deprecated.ts';
 
 // Pure, TanStack-shaped logic for the DataTable core. No JSX and no React state,
 // so each function is unit-testable in isolation (the getRange/clampPage
@@ -27,6 +28,21 @@ type AnyColumnDef<TData> = ColumnDef<TData, any>;
  * the prop is the source of truth on every render; uncontrolled (`defaultValue`
  * or nothing) means the core owns the state.
  */
+/**
+ * Turns the 3.0.0-next `onChange` of a capability config into `onValueChange`.
+ * `onValueChange` wins when both are set. Remove in 4.0.
+ */
+export function withValueChange<T, C extends ControlledState<T>>(
+  config: C | undefined,
+  capability: string,
+): C | undefined {
+  if (config?.onChange === undefined) return config;
+  warnDeprecated('DataTable', `${capability}.onChange`, `${capability}.onValueChange`);
+  if (config.onValueChange !== undefined) return config;
+  const { onChange, ...rest } = config;
+  return { ...rest, onValueChange: (value: T) => onChange(value) } as unknown as C;
+}
+
 export function isControlled<T>(config: ControlledState<T> | undefined): boolean {
   return config?.value !== undefined;
 }
