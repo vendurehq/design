@@ -12,7 +12,17 @@ const twMerge = extendTailwindMerge<'text-style'>({
   extend: {
     theme: {
       shadow: ['control', 'overlay', 'scrolled'],
-      ease: ['default', 'spring', 'drawer', 'drawer-content', 'height', 'press', 'soft', 'flash', 'fold'],
+      ease: [
+        'default',
+        'spring',
+        'drawer',
+        'drawer-content',
+        'height',
+        'press',
+        'soft',
+        'flash',
+        'fold',
+      ],
       animate: [
         'shimmer',
         'spin-slow',
