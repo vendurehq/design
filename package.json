@@ -16,6 +16,8 @@
     "check-freshness": "turbo run check-freshness && bun run skills:check",
     "test": "turbo run test",
     "pack:check": "turbo run pack:check",
+    "api:check": "bun test scripts/api-report.test.ts && bun scripts/api-report.ts --check",
+    "api:update": "bun scripts/api-report.ts",
     "storybook": "turbo run storybook",
     "skills:generate": "bun scripts/generate-skill-references.ts",
     "skills:check": "bun scripts/generate-skill-references.ts --check && bun scripts/validate-skills.ts",

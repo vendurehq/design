@@ -39,6 +39,11 @@ jobs:
       - name: Test
         run: bun run test
 
+      # Fails when an export or an exported type changes and the API report was
+      # not updated. Needs the build above (the token types). See docs/releasing.md.
+      - name: API report
+        run: bun run api:check
+
       - name: Package smoke test
         run: bun run pack:check
 
