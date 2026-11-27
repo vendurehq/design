@@ -16,7 +16,7 @@ describe('ComboboxTrigger field styling', () => {
     );
     const classes = slotTokens(html, 'combobox-trigger');
     for (const token of [
-      'bg-muted',
+      'bg-field',
       'inset-ring',
       'inset-ring-border',
       'rounded-xl',

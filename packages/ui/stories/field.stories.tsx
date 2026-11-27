@@ -11,6 +11,7 @@ import {
   FieldLegend,
   FieldSet,
 } from '../src/components/atoms/field.tsx';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
 import { RadioGroup, RadioGroupItem } from '../src/components/atoms/radio-group.tsx';
@@ -228,7 +229,7 @@ export const LabelLook: Story = {
 };
 
 /**
- * Every field in the v3 look, side by side: the muted fill, a 1px inset
+ * Every field in the v3 look, side by side: the field fill, a 1px inset
  * hairline, the 6px radius, 34px tall, and a 2px ring inside the field on
  * keyboard focus. The play function reads the computed styles.
  */
@@ -266,7 +267,7 @@ export const FieldLook: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const probe = document.createElement('div');
-    probe.className = 'bg-muted inset-ring inset-ring-border';
+    probe.className = 'bg-field inset-ring inset-ring-border';
     canvasElement.append(probe);
     const fields = [
       canvas.getByRole('textbox', { name: 'Name' }),
@@ -325,6 +326,98 @@ export const FieldLook: Story = {
     await userEvent.tab();
     await waitFor(() => expect(getComputedStyle(name).outlineOffset).toBe('-2px'));
     await expect(getComputedStyle(name).outlineWidth).toBe('2px');
+  },
+};
+
+/**
+ * Fields on a card. The field fill is the `field` token: in light mode it is
+ * lighter than `muted`, so an enabled field does not read as disabled on a
+ * white card; in dark mode it is the `muted` value. A disabled field is the
+ * same field at half opacity.
+ */
+export const FillOnCard: Story = {
+  render: () => (
+    <Card className="w-[560px]">
+      <CardHeader>
+        <CardTitle>Product details</CardTitle>
+        <CardDescription>Shown on the storefront product page.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          <Field>
+            <FieldLabel htmlFor="fill-name">Name</FieldLabel>
+            <Input id="fill-name" defaultValue="Trail Runner GTX" />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="fill-category">Category</FieldLabel>
+            <Select
+              items={[
+                { value: 'shoes', label: 'Running shoes' },
+                { value: 'apparel', label: 'Apparel' },
+              ]}
+              defaultValue="shoes"
+            >
+              <SelectTrigger id="fill-category" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="shoes">Running shoes</SelectItem>
+                <SelectItem value="apparel">Apparel</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field className="col-span-2">
+            <FieldLabel htmlFor="fill-description">Description</FieldLabel>
+            <Textarea id="fill-description" defaultValue="A waterproof trail shoe with a grippy outsole." />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="fill-date">Available from</FieldLabel>
+            <DatePicker id="fill-date" defaultValue="2026-12-01" className="max-w-none" />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="fill-price">Price</FieldLabel>
+            <InputGroup>
+              <InputGroupAddon>$</InputGroupAddon>
+              <InputGroupInput id="fill-price" defaultValue="149.00" inputMode="decimal" />
+            </InputGroup>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="fill-sku">SKU (disabled)</FieldLabel>
+            <Input id="fill-sku" defaultValue="TR-GTX-42" disabled />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="fill-barcode">Barcode (disabled)</FieldLabel>
+            <Input id="fill-barcode" placeholder="None" disabled />
+          </Field>
+        </div>
+      </CardContent>
+    </Card>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const probe = document.createElement('div');
+    canvasElement.append(probe);
+    probe.className = 'bg-muted';
+    const muted = getComputedStyle(probe).backgroundColor;
+    probe.className = 'bg-field';
+    const field = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+
+    // Light: its own, lighter fill. Dark: the `muted` value.
+    if (document.documentElement.classList.contains('dark')) await expect(field).toBe(muted);
+    else await expect(field).not.toBe(muted);
+
+    for (const control of [
+      canvas.getByRole('textbox', { name: 'Name' }),
+      canvas.getByRole('combobox', { name: 'Category' }),
+      canvas.getByRole('textbox', { name: 'Description' }),
+      canvas.getByRole('textbox', { name: 'Price' }).closest('[data-slot="input-group"]') as HTMLElement,
+      canvas.getByRole('textbox', { name: 'SKU (disabled)' }),
+    ]) {
+      await expect(getComputedStyle(control).backgroundColor).toBe(field);
+    }
+    // Disabled is the same fill at half opacity.
+    await expect(getComputedStyle(canvas.getByRole('textbox', { name: 'SKU (disabled)' })).opacity).toBe('0.5');
   },
 };
 

@@ -103,6 +103,10 @@ export const tokenGuidance = [
         title: 'Neutral intensity has an order',
         body: 'Use muted for the lowest emphasis and for hover and selected fills on rows, items and ghost controls. Use secondary for supporting filled surfaces. Use accent as the hover step for a control that already rests on muted.',
       },
+      {
+        title: 'Fields have their own fill',
+        body: 'A text field (input, textarea, select, combobox, date picker) rests on field, not on muted. In light mode field is lighter than muted, so an enabled field on a white card does not read as disabled; in dark mode the two are the same. A disabled field is the same fill at half opacity. Use bg-field only for a shape the user types or picks a value in.',
+      },
     ],
   },
   {
