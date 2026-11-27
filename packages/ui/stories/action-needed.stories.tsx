@@ -146,8 +146,8 @@ export const Folded: Story = {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(trigger).toHaveTextContent('1 Error');
     await expect(trigger).toHaveTextContent('2 Warning');
-    await userEvent.click(trigger);
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    // The rows stay in the page, inert, so the fold can animate both ways.
+    await expect(canvasElement.querySelectorAll('[inert]')).toHaveLength(4);
   },
 };
 
@@ -179,6 +179,7 @@ export const ReopenOnNewFinding: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const trigger = canvas.getByRole('button', { name: /Action needed/ });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await userEvent.click(trigger);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(canvas.getByRole('button', { name: 'Add a finding' }));
