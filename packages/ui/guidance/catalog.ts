@@ -27,6 +27,10 @@ export const uiGuidance = [
         title: 'Actions go in AlertAction',
         body: 'Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.',
       },
+      {
+        title: 'Several findings are one ActionNeeded list, not a stack of Alerts',
+        body: 'When a page or card lists several problems that each wait on the user, such as the setup problems of a store, use ActionNeeded: a fold row over plain rows with a divider between them, each with a tone icon, a short title, one sentence and one action button named for what it does ("Change password", not "Open"). Do not stack Alerts or put tinted boxes inside a card. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding.',
+      },
     ],
     choices: [
       { choice: 'default', when: 'A routine notice with no consequence attached.' },
