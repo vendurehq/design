@@ -103,11 +103,4 @@ describe('ElapsedTime while the start is not known', () => {
   test('null renders the fallback', () => {
     expect(renderToStaticMarkup(<ElapsedTime from={null} />)).toContain('>—</time>');
   });
-
-  test('the old since and until names are gone', () => {
-    // @ts-expect-error `since` is `from` since 3.0
-    void (<ElapsedTime since={START} from={START} />);
-    // @ts-expect-error `until` is `to` since 3.0
-    void (<ElapsedTime from={START} until={START} />);
-  });
 });

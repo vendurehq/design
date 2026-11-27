@@ -3,6 +3,7 @@ import { Spinner } from '@vendure-io/ui/components/atoms/spinner';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Children } from 'react';
+import { warnDeprecated } from '../../../lib/deprecated.ts';
 import { useMessages } from '../../../lib/format-messages.ts';
 
 const loadingStateVariants = cva('flex w-full min-w-0 flex-col gap-3', {
@@ -33,6 +34,8 @@ export interface LoadingStateProps
    * @default `messages.loadingState.loading`, "Loading…"
    */
   loadingLabel?: string;
+  /** @deprecated Use `loadingLabel`. Removed in 4.0. */
+  srLabel?: string;
   /**
    * Milliseconds before the placeholder appears. A load that ends sooner never
    * shows it, so fast loads do not flash. `0` shows it at once. @default 150
@@ -67,13 +70,15 @@ function LoadingState({
   rowClassName,
   label,
   loadingLabel,
+  srLabel,
   delay = 150,
   children,
   className,
   style,
   ...props
 }: LoadingStateProps) {
-  const t = useMessages('loadingState', { loading: loadingLabel });
+  if (srLabel !== undefined) warnDeprecated('LoadingState', 'srLabel', 'loadingLabel');
+  const t = useMessages('loadingState', { loading: loadingLabel ?? srLabel });
   return (
     <output
       data-slot="loading-state"

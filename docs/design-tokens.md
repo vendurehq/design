@@ -94,6 +94,7 @@ All colors use the OKLCH color space for perceptual uniformity.
 - `brand-text` — Vendure blue as text: a link name on hover or focus (`text-brand-text`). It is a brand scale step: `brand-800` in light mode, the lightest step that reads at 4.5:1 on `background`, a card, a hovered row and a selected row (`brand-700` is 4.1:1 on a selected row), and `brand-500` in dark mode. Use `brand-indicator` for marks and `brand-text` for text; `info-text` is for information status only
 - `secondary`, `secondary-foreground` — Secondary actions
 - `muted`, `muted-foreground` — Muted/disabled elements
+- `field` — The fill of a text field: Input, Textarea, Select, Combobox, NativeSelect, InputGroup, InputOTP and the date pickers (`bg-field`). In light mode it is lighter than `muted` (the foreground at 3%, against 5.5%), so an enabled field on a white card does not read as disabled. In dark mode it is the `muted` value. A disabled field is the same fill at half opacity
 - `faint-foreground` — Placeholder text in a field: a native `::placeholder` (`placeholder:text-faint-foreground`), and the placeholder that Select, Combobox and the date pickers show as text. It is fainter than `muted-foreground` and below 4.5:1, so never use it for text a user must read. Mark placeholder text with `data-placeholder`; the Storybook a11y scan skips it for contrast
 - `accent`, `accent-foreground` — The hover step for a control that already rests on `muted`, such as an IdChip
 - `destructive`, `destructive-foreground` — Destructive/error states

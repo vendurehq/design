@@ -30,6 +30,8 @@ Follow this order:
 
 For a whole page, read the matching section of [screen-recipes.md](references/screen-recipes.md). Treat recipe hierarchy, action placement, responsive anatomy, and state handling as strong defaults. In a standalone consumer, begin from the owned standalone skeleton. In a Dashboard extension, follow the integration intent, inspect the installed `@vendure/dashboard` source and types for the current APIs, and do not recreate the standalone page shell or invent Dashboard imports. Deviate only for a concrete product requirement and report the reason.
 
+Before you build any control, row, card, menu or navigation by hand, read the "Do not hand-roll" table at the top of [component-decisions.md](references/component-decisions.md). It maps hand-built patterns to the components that replace them.
+
 For component decisions, search [component-decisions.md](references/component-decisions.md) by component or decision name and read every relevant section before implementing. Do not load unrelated sections merely to inventory the catalog.
 
 ## Apply cross-cutting rules

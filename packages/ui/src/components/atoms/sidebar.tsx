@@ -9,6 +9,8 @@ import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { useMessages } from "../../lib/format-messages.ts"
 import { menuItem } from "../../lib/menu-item.tsx"
+import { logicalSide, type PhysicalSide, warnDeprecated } from "../../lib/deprecated.ts"
+import { usePopupDir } from "../../lib/popup-direction.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import {
   HoverCard,
@@ -157,7 +159,7 @@ function SidebarProvider({
 }
 
 function Sidebar({
-  side = "start",
+  side: sideProp = "start",
   variant = "sidebar",
   collapsible = "offcanvas",
   className,
@@ -166,7 +168,12 @@ function Sidebar({
   mobileLabels,
   ...props
 }: React.ComponentProps<"div"> & {
-  side?: "start" | "end"
+  /**
+   * The edge the sidebar sits on. `start` and `end` follow the reading
+   * direction. `left` and `right` are deprecated: use `start` or `end`.
+   * They are removed in 4.0.
+   */
+  side?: "start" | "end" | PhysicalSide
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
   /**
@@ -178,6 +185,8 @@ function Sidebar({
   mobileLabels?: { title?: string; description?: string }
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const providedDir = usePopupDir()
+  const side = logicalSide("Sidebar", sideProp, dir ?? providedDir)
   const t = useMessages("sidebar", {
     mobileTitle: mobileLabels?.title,
     mobileDescription: mobileLabels?.description,
@@ -657,7 +666,8 @@ const sidebarMenuButtonVariants = cva(
 
 function SidebarMenuButton({
   render,
-  active = false,
+  active: activeProp,
+  isActive,
   hasActiveChild = false,
   variant = "default",
   size = "default",
@@ -667,6 +677,8 @@ function SidebarMenuButton({
 }: useRender.ComponentProps<"button"> &
   React.ComponentProps<"button"> & {
     active?: boolean
+    /** @deprecated Use `active`. Removed in 4.0. */
+    isActive?: boolean
     /**
      * Set it on the button of every group that holds the current page, whether
      * or not the current item has an icon. For the current page exactly one
@@ -679,6 +691,8 @@ function SidebarMenuButton({
     hasActiveChild?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
+  if (isActive !== undefined) warnDeprecated("SidebarMenuButton", "isActive", "active")
+  const active = activeProp ?? isActive ?? false
   const { isMobile, state } = useSidebar()
   const comp = useRender({
     defaultTagName: "button",
@@ -909,15 +923,23 @@ function SidebarMenuSubItem({
 
 function SidebarMenuSubButton({
   render,
-  size = "default",
-  active = false,
+  size: sizeProp = "default",
+  active: activeProp,
+  isActive,
   className,
   ...props
 }: useRender.ComponentProps<"a"> &
   React.ComponentProps<"a"> & {
-    size?: "sm" | "default"
+    /** `md` is deprecated: use `default`. It is removed in 4.0. */
+    size?: "sm" | "default" | "md"
     active?: boolean
+    /** @deprecated Use `active`. Removed in 4.0. */
+    isActive?: boolean
   }) {
+  if (isActive !== undefined) warnDeprecated("SidebarMenuSubButton", "isActive", "active")
+  if (sizeProp === "md") warnDeprecated("SidebarMenuSubButton", 'size="md"', 'size="default"')
+  const active = activeProp ?? isActive ?? false
+  const size = sizeProp === "md" ? "default" : sizeProp
   return useRender({
     defaultTagName: "a",
     props: mergeProps<"a">(

@@ -18,13 +18,4 @@ describe('PaginationLink', () => {
     const html = renderToStaticMarkup(<PaginationLink href="#">3</PaginationLink>);
     expect(html).not.toContain('aria-current');
   });
-
-  test('isActive was renamed to active', () => {
-    renderToStaticMarkup(
-      // @ts-expect-error `isActive` was renamed to `active`
-      <PaginationLink href="#" isActive>
-        2
-      </PaginationLink>,
-    );
-  });
 });

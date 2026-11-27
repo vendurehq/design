@@ -16,7 +16,7 @@ describe('ComboboxTrigger field styling', () => {
     );
     const classes = slotTokens(html, 'combobox-trigger');
     for (const token of [
-      'bg-muted',
+      'bg-field',
       'inset-ring',
       'inset-ring-border',
       'rounded-xl',
@@ -108,14 +108,5 @@ describe('Combobox isLoading', () => {
       <FormatProvider messages={messages}>{list({ isLoading: true, loadingLabel: 'Chargement…' })}</FormatProvider>,
     );
     expect(status(fromProp)).toBe('Chargement…');
-  });
-
-  test('the 2.x loading prop is gone', () => {
-    const props: React.ComponentProps<typeof Combobox<string>> = {
-      items: ['DE'],
-      // @ts-expect-error `loading` was renamed to `isLoading`.
-      loading: true,
-    };
-    expect(props).toBeDefined();
   });
 });

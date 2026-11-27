@@ -1,7 +1,9 @@
 import { tokenGuidance } from '../packages/design-tokens/guidance/catalog.ts';
 import { uiGuidance } from '../packages/ui/guidance/catalog.ts';
 import { illustrationGuidance } from '../packages/ui/guidance/illustrations.ts';
+import { noGuidance } from '../packages/ui/guidance/no-guidance.ts';
 import { screenRecipes } from '../packages/ui/guidance/recipes.ts';
+import { publicComponents } from './public-components.ts';
 
 const root = new URL('../', import.meta.url);
 const checkOnly = Bun.argv.includes('--check');
@@ -10,6 +12,25 @@ const generatedHeader =
 
 function sectionTitle(title: string) {
   return `## ${title}`;
+}
+
+const code = (name: string) => `\`${name}\``;
+
+function renderDoNotHandRoll() {
+  const rows = uiGuidance.flatMap((entry) =>
+    (entry.replaces ?? []).map(
+      (item) => `| ${item.pattern} | ${item.use.map(code).join(', ')} | ${entry.title} |`,
+    ),
+  );
+  return [
+    sectionTitle('Do not hand-roll'),
+    '',
+    'Before you build one of these by hand, use the component. Then read its section below.',
+    '',
+    '| Hand-built pattern | Use | Section |',
+    '| --- | --- | --- |',
+    ...rows,
+  ].join('\n');
 }
 
 function renderComponentDecisions() {
@@ -22,6 +43,16 @@ function renderComponentDecisions() {
           ...entry.choices.map((choice) => `- \`${choice.choice}\`: ${choice.when}`),
         ]
       : [];
+    const replaces = entry.replaces?.length
+      ? [
+          '',
+          '**Instead of:**',
+          '',
+          ...entry.replaces.map(
+            (item) => `- ${item.pattern}: use ${item.use.map(code).join(', ')}.`,
+          ),
+        ]
+      : [];
     const related = entry.related?.length
       ? ['', `Related decisions: ${entry.related.map((id) => `\`${id}\``).join(', ')}.`]
       : [];
@@ -31,8 +62,11 @@ function renderComponentDecisions() {
       '',
       entry.summary,
       '',
+      `Components: ${entry.components.map(code).join(', ')}.`,
+      '',
       ...entry.rules.map((rule) => `- **${rule.title}:** ${rule.body}`),
       ...choices,
+      ...replaces,
       ...related,
     ].join('\n');
   });
@@ -42,6 +76,8 @@ function renderComponentDecisions() {
     '# Vendure UI component decisions',
     '',
     'Use these rules to select and compose components. Inspect the installed package source and types for exact APIs.',
+    '',
+    renderDoNotHandRoll(),
     '',
     ...entries,
     '',
@@ -131,6 +167,174 @@ const outputs = new Map<string, string>([
   ['skills/vendure-tokens/references/token-decisions.md', renderTokenDecisions()],
 ]);
 
+/**
+ * Compound parts named `<Parent><Slot>` are covered through their parent, so
+ * `DialogHeader` needs no entry once `Dialog` has one. The list holds layout
+ * slots only. A part with its own job, such as `CardLink`, `TabsLink` or
+ * `BreadcrumbMenu`, must be named in an entry: never add `Link`, `Menu`,
+ * `Button` or `Dialog` here.
+ */
+const structuralSlots = [
+  'Action',
+  'Actions',
+  'Addon',
+  'Badge',
+  'Body',
+  'Cancel',
+  'Caption',
+  'Cell',
+  'CheckboxItem',
+  'Chip',
+  'Chips',
+  'Close',
+  'Collection',
+  'Content',
+  'Controls',
+  'Count',
+  'DayButton',
+  'Description',
+  'Detail',
+  'Ellipsis',
+  'Empty',
+  'Fallback',
+  'Footer',
+  'Group',
+  'Guide',
+  'Handle',
+  'Head',
+  'Header',
+  'Image',
+  'Indicator',
+  'Input',
+  'Item',
+  'Label',
+  'Leading',
+  'Legend',
+  'List',
+  'Media',
+  'Meta',
+  'Next',
+  'OptGroup',
+  'Option',
+  'Overlay',
+  'Panel',
+  'Portal',
+  'Positioner',
+  'Previous',
+  'RadioGroup',
+  'RadioItem',
+  'Rail',
+  'Row',
+  'ScrollDownButton',
+  'ScrollUpButton',
+  'Separator',
+  'Shortcut',
+  'Skeleton',
+  'Slot',
+  'Step',
+  'Sub',
+  'SwipeHandle',
+  'Text',
+  'Textarea',
+  'Title',
+  'Track',
+  'Trigger',
+  'Value',
+];
+
+/** PascalCase words in guidance prose that are not components: icons, libraries, state names, types. */
+const proseNames = new Set([
+  'ArrowUpRight',
+  'CircleAlert',
+  'DataTableColumnMeta',
+  'MoreHorizontal',
+  'TanStack',
+  'TriangleAlert',
+  'TruckIcon',
+  'ValidatingCustomer',
+]);
+
+function validateCoverage() {
+  const exported = publicComponents();
+  const errors: string[] = [];
+  const owner = new Map<string, string>();
+  const named = (name: string, where: string) => {
+    if (!exported.has(name)) {
+      errors.push(`${where} names \`${name}\`, which is not a public component export.`);
+    }
+  };
+
+  for (const entry of uiGuidance) {
+    if (entry.components.length === 0) errors.push(`${entry.id} declares no components.`);
+    for (const name of entry.components) {
+      named(name, `Catalog entry ${entry.id}`);
+      const previous = owner.get(name);
+      if (previous) errors.push(`\`${name}\` is declared by both ${previous} and ${entry.id}.`);
+      owner.set(name, entry.id);
+    }
+    for (const item of entry.replaces ?? []) {
+      if (item.use.length === 0)
+        errors.push(`${entry.id} replaces "${item.pattern}" with nothing.`);
+      for (const name of item.use) named(name, `Catalog entry ${entry.id} (replaces)`);
+    }
+  }
+  // A slot covers a part only through a parent from the same module, so
+  // `ToggleGroup` is not a part of `Toggle`.
+  const parentOf = (name: string): string[] =>
+    structuralSlots
+      .filter((slot) => name.endsWith(slot) && name.length > slot.length)
+      .map((slot) => name.slice(0, -slot.length))
+      .filter((parent) => exported.get(parent) === exported.get(name));
+  const covered = (name: string): boolean => owner.has(name) || parentOf(name).some(covered);
+
+  // Every declared component, and every component-like name in the prose, is
+  // checked, so a rename cannot leave advice about a name that no longer exists.
+  const mentions = (text: string, name: string) => new RegExp(`\\b${name}\\b`).test(text);
+  for (const entry of uiGuidance) {
+    const { id, sourceStory, components, related, ...prose } = entry;
+    const text = JSON.stringify(prose);
+    for (const name of components) {
+      const parents = (n: string): string[] => [n, ...parentOf(n).flatMap(parents)];
+      if (!parents(name).some((n) => mentions(text, n))) {
+        errors.push(`Catalog entry ${id} declares \`${name}\` but its text never names it.`);
+      }
+    }
+    for (const [word] of text.matchAll(/\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+\b/g)) {
+      const singular = word.endsWith('s') ? word.slice(0, -1) : word;
+      if (!exported.has(word) && !exported.has(singular) && !proseNames.has(word)) {
+        errors.push(
+          `Catalog entry ${id} mentions \`${word}\`, which is not a public component export. Fix the name, or add it to proseNames if it is not a component.`,
+        );
+      }
+    }
+  }
+
+  for (const item of illustrationGuidance) {
+    named(item.component, 'illustrations.ts');
+    owner.set(item.component, 'illustrations');
+  }
+  for (const item of noGuidance) {
+    named(item.component, 'no-guidance.ts');
+    if (owner.has(item.component)) {
+      errors.push(`\`${item.component}\` is in no-guidance.ts but has guidance.`);
+    }
+    owner.set(item.component, 'no-guidance');
+  }
+
+  const missing = new Map<string, string[]>();
+  for (const [name, subpath] of exported) {
+    if (!covered(name)) missing.set(subpath, [...(missing.get(subpath) ?? []), name]);
+  }
+  if (missing.size > 0) {
+    errors.push(
+      'Public components without guidance. Add each to the `components` of a catalog entry, or to no-guidance.ts with a reason:',
+      ...Array.from(missing, ([subpath, names]) => `- ${subpath.slice(2)}: ${names.join(', ')}`),
+    );
+  }
+
+  if (errors.length > 0) throw new Error(errors.join('\n'));
+}
+
 function validateCatalog() {
   const ids = uiGuidance.map((entry) => entry.id);
   const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -163,6 +367,8 @@ function validateCatalog() {
         .join('\n'),
     );
   }
+
+  validateCoverage();
 
   for (const recipe of screenRecipes) {
     if (recipe.dashboardIntent.length === 0) {

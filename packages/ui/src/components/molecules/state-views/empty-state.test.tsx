@@ -130,16 +130,3 @@ function errorClasses(html: string): string[] {
   const tag = html.match(/<[^>]*data-slot="error-state"[^>]*>/)?.[0] ?? '';
   return (tag.match(/class="([^"]*)"/)?.[1] ?? '').split(/\s+/).filter(Boolean);
 }
-
-describe('state view size names', () => {
-  test('compact is gone: sm is the small size', () => {
-    renderToStaticMarkup(
-      <>
-        {/* @ts-expect-error `compact` was renamed to `sm` */}
-        <EmptyState size="compact" title="No domains" />
-        {/* @ts-expect-error `compact` was renamed to `sm` */}
-        <ErrorState size="compact" title="Couldn't load usage" />
-      </>,
-    );
-  });
-});

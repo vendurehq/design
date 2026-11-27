@@ -1,5 +1,5 @@
 /**
- * The v3 field surface: the `muted` fill with a 1px inset hairline in the
+ * The v3 field surface: the `field` fill with a 1px inset hairline in the
  * `border` colour (an `inset-ring`), the xl (8px) radius, the same corner as a Button, and a 2px ring drawn inside the field
  * on keyboard focus, over the hairline. An invalid field turns the hairline
  * and the ring destructive. The hairline is an inset ring, a box-shadow and not a
@@ -10,7 +10,7 @@
  * it. Each field adds its own height, padding and text size.
  */
 const fieldBase =
-  'bg-muted inset-ring inset-ring-border rounded-xl outline-none transition-shadow duration-quick ease-soft forced-colors:border';
+  'bg-field inset-ring inset-ring-border rounded-xl outline-none transition-shadow duration-quick ease-soft forced-colors:border';
 
 export const fieldSurface = `${fieldBase} focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring aria-invalid:inset-ring-destructive aria-invalid:focus-visible:outline-destructive`;
 

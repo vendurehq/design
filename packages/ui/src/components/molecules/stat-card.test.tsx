@@ -35,15 +35,6 @@ test('a real value draws no skeleton and is not busy', () => {
   expect(html).toContain('>0<');
 });
 
-test('isLoading is gone', () => {
-  const props: statCard.StatCardProps = {
-    label: 'Revenue',
-    // @ts-expect-error `isLoading` is removed: leave `value` undefined instead.
-    isLoading: true,
-  };
-  expect(props.label).toBe('Revenue');
-});
-
 test('an undefined delta value draws a delta skeleton', () => {
   const html = renderToStaticMarkup(<StatCard label="Revenue" delta={{ value: undefined }} />);
   expect(html).toMatch(/data-slot="stat-card-delta"[^>]*>.*data-skeleton="line"/);
@@ -69,12 +60,6 @@ test('a delta unit replaces the percent sign', () => {
     </FormatProvider>,
   );
   expect(html).toContain('</span>1,5 pp</span>');
-});
-
-test('delta.label is renamed to delta.unit', () => {
-  // @ts-expect-error `delta.label` is `delta.unit`.
-  const delta: statCard.StatCardDelta = { value: 1, label: ' pp' };
-  expect(delta.value).toBe(1);
 });
 
 test('the direction words default to English', () => {

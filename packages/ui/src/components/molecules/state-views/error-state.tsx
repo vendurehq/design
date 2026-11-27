@@ -10,6 +10,7 @@ import {
 import { ErrorIllustration } from '@vendure-io/ui/components/molecules/illustrations/error';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { TriangleAlertIcon } from 'lucide-react';
+import { warnDeprecated } from '../../../lib/deprecated.ts';
 
 // `title` is redefined as `ReactNode`, so drop the native string `title` attr.
 export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>, 'title'> {
@@ -47,8 +48,9 @@ export interface ErrorStateProps extends Omit<React.ComponentProps<typeof Empty>
    * panel or side column where the full state is too tall. An explicit `icon`
    * sits above a 14px title. Keep it to a title, a
    * description and at most one action. Defaults to `default`.
+   * `compact` is deprecated: use `sm`. It is removed in 4.0.
    */
-  size?: 'default' | 'sm';
+  size?: 'default' | 'sm' | 'compact';
 }
 
 /**
@@ -66,10 +68,12 @@ function ErrorState({
   retryLabel = 'Try again',
   children,
   bordered = false,
-  size = 'default',
+  size: sizeProp = 'default',
   className,
   ...props
 }: ErrorStateProps) {
+  if (sizeProp === 'compact') warnDeprecated('ErrorState', 'size="compact"', 'size="sm"');
+  const size = sizeProp === 'compact' ? 'sm' : sizeProp;
   const small = size === 'sm';
   // Precedence: an explicit `illustration` (including `null`, to opt out)
   // always wins; otherwise an explicit `icon` (including `null`) keeps

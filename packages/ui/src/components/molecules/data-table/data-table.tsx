@@ -47,7 +47,6 @@ import {
   DataTableAppliedFilters,
 } from '@vendure-io/ui/components/molecules/data-table/data-table-filters';
 import type {
-  ControlledState,
   DataTableProps,
   DataTableRowCellProps,
   DataTableRowRipple,
@@ -81,6 +80,8 @@ import {
   resolveClearFilters,
   resolveSlot,
   sameIndents,
+  useControlledTableState,
+  warnOnChange,
 } from './data-table-helpers.tsx';
 // Relative: `data-table-row-count-storage` is closed in the package exports.
 import { skeletonRowCountFor, useRememberedListTotal } from './data-table-row-count-storage.tsx';
@@ -350,36 +351,6 @@ function DataTableRowLink({
 // renders only if its config is wired — no feature flags, no disabled
 // placeholders. Only this folder imports TanStack; the composed
 // ListHeader/TablePagination/Chip primitives stay TanStack-free.
-
-/**
- * Bridge a capability config to a `[value, onChange]` pair TanStack can consume
- * as fully controlled. Controlled configs (`value`) are the source of truth every
- * render; uncontrolled configs (`defaultValue` or nothing) get internal state the
- * core owns, with any `onValueChange` observing. This fixes the donor's
- * seed-then-emit bug: the prop, not a one-time seed, drives every render.
- * TanStack's updater is resolved here, so `onValueChange` gets the next value.
- */
-function useControlledTableState<T>(
-  config: ControlledState<T> | undefined,
-  fallback: T,
-): readonly [T, OnChangeFn<T>] {
-  const controlled = config?.value !== undefined;
-  const [internal, setInternal] = React.useState<T>(config?.defaultValue ?? fallback);
-  const value = controlled ? (config?.value as T) : internal;
-  // Updates in one tick build on each other before the next render.
-  const latest = React.useRef(value);
-  latest.current = value;
-  const onChange = React.useCallback<OnChangeFn<T>>(
-    (updater) => {
-      const next = functionalUpdate(updater, latest.current);
-      latest.current = next;
-      if (!controlled) setInternal(next);
-      config?.onValueChange?.(next);
-    },
-    [controlled, config],
-  );
-  return [value, onChange] as const;
-}
 
 /** A string label for a column, from a string `header`, else the column id. */
 function headerLabelText<TData>(column: Column<TData, unknown>): string {
@@ -827,6 +798,10 @@ function DataTable<TData>({
     [labels],
   );
 
+  warnOnChange(sorting, 'sorting');
+  warnOnChange(filters, 'filters');
+  warnOnChange(columnVisibility, 'columnVisibility');
+  warnOnChange(rowSelection, 'rowSelection');
   const [sortingState, onSortingChange] = useControlledTableState<SortingState>(sorting, []);
   const [filtersState, onColumnFiltersChange] = useControlledTableState<ColumnFiltersState>(
     filters,

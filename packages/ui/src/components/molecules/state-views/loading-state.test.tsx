@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { FormatProvider } from '../format-provider.tsx';
-import { LoadingState, type LoadingStateProps } from './loading-state.tsx';
+import { LoadingState } from './loading-state.tsx';
 
 const html = (node: React.ReactElement) => renderToStaticMarkup(node);
 
@@ -43,14 +43,6 @@ describe('LoadingState', () => {
         </FormatProvider>,
       ),
     ).toContain('<span class="sr-only">Chargement…</span>');
-  });
-
-  test('the 2.x srLabel prop is gone', () => {
-    const props: LoadingStateProps = {
-      // @ts-expect-error `srLabel` was renamed to `loadingLabel`.
-      srLabel: 'x',
-    };
-    expect(props).toBeDefined();
   });
 });
 

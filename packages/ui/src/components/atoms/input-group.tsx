@@ -40,7 +40,7 @@ function InputGroup({
 // content about 10px in. Logical sides, so right-to-left mirrors it.
 // A kbd in an addon drops its own fill and uses the secondary text colour
 // and the input hairline, as the v3 look's search field does: its muted text
-// on its fill on the muted field fails the axe contrast check.
+// on its fill on the field fill fails the axe contrast check.
 const inputGroupAddonVariants = cva(
   // A CopyButton (24px) nests its corner like an xs InputGroupButton: the
   // field's 8px minus the gap, 5px in a 34px group and 2px in a 28px one.

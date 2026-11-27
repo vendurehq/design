@@ -3,6 +3,7 @@ import * as React from "react"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import { warnDeprecated } from "../../lib/deprecated.ts"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -35,15 +36,20 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 
 type PaginationLinkProps = {
   active?: boolean
+  /** @deprecated Use `active`. Removed in 4.0. */
+  isActive?: boolean
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">
 
 function PaginationLink({
   className,
-  active,
+  active: activeProp,
+  isActive,
   size = "icon",
   ...props
 }: PaginationLinkProps) {
+  if (isActive !== undefined) warnDeprecated("PaginationLink", "isActive", "active")
+  const active = activeProp ?? isActive
   return (
     <Button
       variant={active ? "outline" : "ghost"}

@@ -2,6 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cn } from '@vendure-io/ui/lib/utils';
 import type * as React from 'react';
+import { warnDeprecated } from '../../lib/deprecated.ts';
 import { DirectionLink, ExternalArrow } from './direction-link.tsx';
 
 // Compound-only, by decision: there is no simple-props sugar and
@@ -158,6 +159,15 @@ function PageHeaderBackRow({ className, ...props }: React.ComponentProps<'div'>)
 }
 
 /**
+ * @deprecated Use `PageHeaderBackRow`, and put a `PageHeaderBack` in it for the
+ * link. Removed in 4.0.
+ */
+function PageHeaderBackLink(props: React.ComponentProps<'div'>) {
+  warnDeprecated('PageHeaderBackLink', 'PageHeaderBackLink', 'PageHeaderBackRow');
+  return <PageHeaderBackRow {...props} />;
+}
+
+/**
  * The link up one level, above the title: "Deployments", "All profiles".
  * Renders an `<a>` with a leading chevron in `muted-foreground`; the look,
  * motion and right-to-left handling are ArrowLink's, pointing back. Pass
@@ -182,6 +192,7 @@ export {
   PageHeaderDescription,
   PageHeaderActions,
   PageHeaderBackRow,
+  PageHeaderBackLink,
   PageHeaderBack,
   PageHeaderFacts,
   PageHeaderFact,
