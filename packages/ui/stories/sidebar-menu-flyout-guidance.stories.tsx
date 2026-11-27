@@ -85,52 +85,55 @@ const groups = [
 export const GroupInTheRail: Story = {
   name: '1 · A group in the icon rail is a flyout',
   render: () => (
-    <div className="p-6">
-      <Section
-        title="Hover or focus a group's icon to see its pages"
-        intro="The flyout's title row lines up with the icon, so it reads as the icon's label: add no Tooltip. Pass hasActiveChild to the trigger and active to the current item. A single page with no items stays a SidebarMenuButton."
-      >
-        <Example verdict="do" caption="Sales holds the current page (Orders), so its icon takes the active colour. Home is one page, so it is a plain button.">
-          <SidebarProvider defaultOpen={false} className="min-h-80 rounded-lg border">
-            <Sidebar collapsible="icon" className="absolute h-full">
-              <SidebarContent>
-                <SidebarGroup>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Home">
-                          <HomeIcon />
-                          <span>Home</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                      {groups.map((group) => (
-                        <SidebarMenuItem key={group.title}>
-                          <SidebarMenuFlyout>
-                            <SidebarMenuFlyoutTrigger hasActiveChild={group.title === 'Sales'}>
-                              <group.icon />
-                              <span>{group.title}</span>
-                            </SidebarMenuFlyoutTrigger>
-                            <SidebarMenuFlyoutContent label={group.title}>
-                              {group.items.map((item) => (
-                                <SidebarMenuFlyoutItem key={item} href="#" active={item === 'Orders'}>
-                                  {item}
-                                </SidebarMenuFlyoutItem>
-                              ))}
-                            </SidebarMenuFlyoutContent>
-                          </SidebarMenuFlyout>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              </SidebarContent>
-            </Sidebar>
-            <SidebarInset render={<div />} className="p-4 text-sm">
-              Hover Sales or Catalog.
-            </SidebarInset>
-          </SidebarProvider>
-        </Example>
-      </Section>
-    </div>
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Home">
+                    <HomeIcon />
+                    <span>Home</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                {groups.map((group) => (
+                  <SidebarMenuItem key={group.title}>
+                    <SidebarMenuFlyout>
+                      <SidebarMenuFlyoutTrigger hasActiveChild={group.title === 'Sales'}>
+                        <group.icon />
+                        <span>{group.title}</span>
+                      </SidebarMenuFlyoutTrigger>
+                      <SidebarMenuFlyoutContent label={group.title}>
+                        {group.items.map((item) => (
+                          <SidebarMenuFlyoutItem key={item} href="#" active={item === 'Orders'}>
+                            {item}
+                          </SidebarMenuFlyoutItem>
+                        ))}
+                      </SidebarMenuFlyoutContent>
+                    </SidebarMenuFlyout>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset render={<div />}>
+        <div className="p-6">
+          <Section
+            title="Hover or focus a group's icon to see its pages"
+            intro="The flyout's title row lines up with the icon, so it reads as the icon's label: add no Tooltip. Pass hasActiveChild to the trigger and active to the current item. A single page with no items stays a SidebarMenuButton."
+          >
+            <Example
+              verdict="do"
+              caption="Sales holds the current page (Orders), so its icon takes the active colour. Home is one page, so it is a plain button with a Tooltip."
+            >
+              <p className="text-sm">Hover Sales or Catalog in the rail.</p>
+            </Example>
+          </Section>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   ),
 };
