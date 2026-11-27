@@ -100,8 +100,8 @@ describe('ActionNeeded', () => {
     expect(slotTag(html, 'action-needed-counts')).not.toContain('aria-hidden');
     expect(slotTag(html, 'action-needed')).not.toContain('data-open');
     expect(html.match(/inert=""/g)?.length).toBe(3);
-    expect(html).toContain('1 Error');
-    expect(html).toContain('2 Warning');
+    expect(html).toContain('1 error');
+    expect(html).toContain('2 warnings');
   });
 
   test('shows the findings worst first, as a list', () => {
@@ -140,12 +140,16 @@ describe('ActionNeeded', () => {
         items={ITEMS}
         label="Handlungsbedarf"
         open={false}
-        toneLabels={{ critical: 'Fehler', warning: 'Warnung' }}
+        countLabel={(count, tone) =>
+          tone === 'critical'
+            ? `${count} Fehler`
+            : `${count} ${count === 1 ? 'Warnung' : 'Warnungen'}`
+        }
       />,
     );
     expect(html).toContain('Handlungsbedarf');
     expect(html).toContain('1 Fehler');
-    expect(html).toContain('2 Warnung');
+    expect(html).toContain('2 Warnungen');
   });
 
   test('renderItem replaces the default row', () => {

@@ -170,11 +170,17 @@ const toneIconClass: Record<ActionNeededTone, string> = {
   info: 'text-info-text',
 };
 
-const DEFAULT_TONE_LABELS: Record<ActionNeededTone, string> = {
-  critical: 'Error',
-  warning: 'Warning',
-  info: 'Info',
+const DEFAULT_COUNT_WORDS: Record<ActionNeededTone, readonly [one: string, other: string]> = {
+  critical: ['error', 'errors'],
+  warning: ['warning', 'warnings'],
+  info: ['note', 'notes'],
 };
+
+/** The default badge text: the count and the tone word, singular for one ("1 error", "2 warnings"). */
+function defaultCountLabel(count: number, tone: ActionNeededTone): string {
+  const [one, other] = DEFAULT_COUNT_WORDS[tone];
+  return `${count} ${count === 1 ? one : other}`;
+}
 
 /*
  * Motion. Folded: one count badge per tone. Opening: the badges fade out, then each row opens
@@ -282,8 +288,11 @@ type ActionNeededProps<T extends ActionNeededItem> = Omit<
   renderItem?: (item: T) => ReactNode;
   /** The fold row's text. Default "Action needed". */
   label?: ReactNode;
-  /** The word after the count of each tone in the folded badges. */
-  toneLabels?: Partial<Record<ActionNeededTone, string>>;
+  /**
+   * The text of one folded count badge, such as "2 warnings". Pass it to translate the badges
+   * with the plural rules of the language. Default: English, "1 error", "2 warnings", "3 notes".
+   */
+  countLabel?: (count: number, tone: ActionNeededTone) => ReactNode;
   /** Names the fold memory, such as a channel id. Without it, the choice lasts for this visit. */
   memoryKey?: string;
   /** Where the fold memory lives. Default `localStorage`. `null` keeps it for this visit only. */
@@ -311,7 +320,7 @@ function ActionNeeded<T extends ActionNeededItem>({
   items,
   renderItem,
   label = 'Action needed',
-  toneLabels,
+  countLabel = defaultCountLabel,
   memoryKey,
   storage,
   open: openProp,
@@ -333,7 +342,6 @@ function ActionNeeded<T extends ActionNeededItem>({
   });
   const enters = useEntersOnScreen(revealed, keys.join('\n'));
   const listId = useId();
-  const words = { ...DEFAULT_TONE_LABELS, ...toneLabels };
   const state = { 'data-open': open || undefined, 'data-enter': enters || undefined };
 
   if (sorted.length === 0) return null;
@@ -365,7 +373,7 @@ function ActionNeeded<T extends ActionNeededItem>({
               style={{ '--i': index } as CSSProperties}
             >
               <StatusBadge className="tabular-nums" size="lg" tone={tone}>
-                {count} {words[tone]}
+                {countLabel(count, tone)}
               </StatusBadge>
             </span>
           ))}

@@ -144,8 +144,8 @@ export const Folded: Story = {
     const canvas = within(canvasElement);
     const trigger = canvas.getByRole('button', { name: /Action needed/ });
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    await expect(trigger).toHaveTextContent('1 Error');
-    await expect(trigger).toHaveTextContent('2 Warning');
+    await expect(trigger).toHaveTextContent('1 error');
+    await expect(trigger).toHaveTextContent('2 warnings');
     // The rows stay in the page, inert, so the fold can animate both ways.
     await expect(canvasElement.querySelectorAll('[inert]')).toHaveLength(4);
   },
