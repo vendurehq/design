@@ -315,6 +315,7 @@ export declare const lightTheme: {
     readonly secondary: "color-mix(in oklab, var(--foreground) 7%, transparent)";
     readonly 'secondary-foreground': "oklch(0.2 0.007 231)";
     readonly muted: "color-mix(in oklab, var(--foreground) 5.5%, transparent)";
+    readonly field: "color-mix(in oklab, var(--foreground) 3%, transparent)";
     readonly 'muted-foreground': "oklch(0.505 0.005 231)";
     readonly 'faint-foreground': "oklch(0.68 0.005 231)";
     readonly accent: "color-mix(in oklab, var(--foreground) 8.5%, transparent)";
@@ -397,6 +398,7 @@ export declare const darkTheme: {
     readonly secondary: "color-mix(in oklab, var(--foreground) 7%, transparent)";
     readonly 'secondary-foreground': "oklch(0.93 0.004 231)";
     readonly muted: "color-mix(in oklab, var(--foreground) 6%, transparent)";
+    readonly field: "var(--muted)";
     readonly 'muted-foreground': "oklch(0.715 0.005 231)";
     readonly 'faint-foreground': "oklch(0.55 0.005 231)";
     readonly accent: "color-mix(in oklab, var(--foreground) 9.5%, transparent)";
@@ -778,6 +780,7 @@ export declare const textStyles: {
 --color-destructive-subtle-foreground
 --color-destructive-text
 --color-faint-foreground
+--color-field
 --color-foreground
 --color-foreground-secondary
 --color-info
@@ -1050,6 +1053,7 @@ export declare const textStyles: {
 --destructive-subtle-foreground
 --destructive-text
 --faint-foreground
+--field
 --foreground
 --foreground-secondary
 --info

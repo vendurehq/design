@@ -14,4 +14,15 @@ describe('Tint tokens, the v3 look', () => {
     expect(darkTheme.muted).toBe('color-mix(in oklab, var(--foreground) 6%, transparent)');
     expect(darkTheme.accent).toBe('color-mix(in oklab, var(--foreground) 9.5%, transparent)');
   });
+
+  // A field has its own fill. At the `muted` strength an enabled field on a
+  // white card reads as disabled, so light mode uses a lighter mix. Dark mode
+  // keeps the `muted` fill.
+  test('light: field 3%, lighter than muted', () => {
+    expect(lightTheme.field).toBe('color-mix(in oklab, var(--foreground) 3%, transparent)');
+  });
+
+  test('dark: field is the muted fill', () => {
+    expect(darkTheme.field).toBe('var(--muted)');
+  });
 });
