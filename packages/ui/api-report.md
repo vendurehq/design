@@ -1057,6 +1057,7 @@ import * as React from "react";
 import { useRender } from "@base-ui/react/use-render";
 import { type VariantProps } from "class-variance-authority";
 import { Button } from "@vendure-io/ui/components/atoms/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@vendure-io/ui/components/atoms/hover-card";
 import { Input } from "@vendure-io/ui/components/atoms/input";
 import { Separator } from "@vendure-io/ui/components/atoms/separator";
 import { TooltipContent } from "@vendure-io/ui/components/atoms/tooltip";
@@ -1127,6 +1128,14 @@ declare function SidebarMenuSubButton({ render, size, active, className, ...prop
     size?: "sm" | "default";
     active?: boolean;
 }): React.ReactElement<unknown, string | React.JSXElementConstructor<any>>;
+declare function SidebarMenuFlyout(props: React.ComponentProps<typeof HoverCard>): import("react/jsx-runtime").JSX.Element;
+declare function SidebarMenuFlyoutTrigger({ delay, closeDelay, ...props }: Omit<React.ComponentProps<typeof SidebarMenuButton>, "tooltip"> & Pick<React.ComponentProps<typeof HoverCardTrigger>, "delay" | "closeDelay">): import("react/jsx-runtime").JSX.Element;
+declare function SidebarMenuFlyoutContent({ label, className, children, ...props }: Omit<React.ComponentProps<typeof HoverCardContent>, "side" | "align" | "alignOffset" | "sideOffset"> & {
+    label: React.ReactNode;
+}): import("react/jsx-runtime").JSX.Element;
+declare function SidebarMenuFlyoutItem({ render, active, className, ...props }: useRender.ComponentProps<"a"> & {
+    active?: boolean;
+}): React.ReactElement<unknown, string | React.JSXElementConstructor<any>>;
 declare function SidebarLevels({ level, className, children, ...props }: React.ComponentProps<"div"> & {
     level: string;
 }): import("react/jsx-runtime").JSX.Element;
@@ -1134,7 +1143,7 @@ declare function SidebarLevel({ value, className, ...props }: React.ComponentPro
     value: string;
 }): import("react/jsx-runtime").JSX.Element;
 declare function SidebarLevelBack({ className, children, ...props }: React.ComponentProps<typeof SidebarMenuButton>): import("react/jsx-runtime").JSX.Element;
-export { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarIdentityButton, SidebarIdentityText, SidebarInput, SidebarInset, SidebarLevel, SidebarLevelBack, SidebarLevels, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar, };
+export { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarIdentityButton, SidebarIdentityText, SidebarInput, SidebarInset, SidebarLevel, SidebarLevelBack, SidebarLevels, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuFlyout, SidebarMenuFlyoutContent, SidebarMenuFlyoutItem, SidebarMenuFlyoutTrigger, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar, };
 ```
 
 ## `@vendure-io/ui/components/atoms/skeleton`
