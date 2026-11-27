@@ -17,6 +17,11 @@ export const noGuidance: readonly NoGuidance[] = [
     reason: 'Site header navigation for public sites. Admin apps use Sidebar, which has an entry.',
   },
   { component: 'NavigationMenuLink', reason: 'Part of NavigationMenu.' },
+  {
+    component: 'PageHeaderBackLink',
+    reason:
+      'Deprecated alias of PageHeaderBackRow, removed in 4.0. The page-header entry covers the row.',
+  },
   { component: 'ResizableHandle', reason: 'Layout primitive for split panes; no choice to make.' },
   { component: 'ResizablePanel', reason: 'Layout primitive for split panes; no choice to make.' },
   { component: 'ScrollArea', reason: 'Layout primitive: a styled scroll container.' },
