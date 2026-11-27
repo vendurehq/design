@@ -25,8 +25,13 @@ function Tabs({
   )
 }
 
+// A horizontal list that is too narrow for its triggers scrolls sideways
+// (wheel, trackpad, or the arrow keys moving focus) with no scrollbar. It never
+// scrolls vertically: the line underline ends on the list's bottom edge, inside
+// the scroll box. justify-center-safe keeps the first trigger reachable when
+// the triggers overflow.
 const tabsListVariants = cva(
-  "rounded-lg p-[3px] group-data-horizontal/tabs:h-9 data-[variant=line]:rounded-none group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col",
+  "rounded-lg p-[3px] group-data-horizontal/tabs:h-9 group-data-horizontal/tabs:max-w-full group-data-horizontal/tabs:overflow-x-auto group-data-horizontal/tabs:overflow-y-hidden no-scrollbar data-[variant=line]:rounded-none group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center-safe group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col",
   {
     variants: {
       variant: {
@@ -66,7 +71,10 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
         // track in both themes. Dark keeps a hairline — lightness alone can't
         // separate a 0.21 thumb near the black end of the ramp.
         "data-active:bg-surface-raised dark:data-active:border-input dark:data-active:text-foreground data-active:text-foreground",
-        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-end-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        // The underline exists only in the line variant. In the default variant
+        // an invisible one would still stick out of the list and make a
+        // scrolling parent draw a scrollbar.
+        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-[variant=default]/tabs-list:after:hidden group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-4.5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-end-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className
       )}
       {...props}
@@ -94,8 +102,9 @@ function TabsNav({ className, ...props }: React.ComponentProps<"nav">) {
       data-slot="tabs-nav"
       className={cn(
         // The padding keeps the focus ring and the underline inside the
-        // scroll box, which clips everything outside it.
-        "text-muted-foreground flex h-9 max-w-full items-center gap-1 overflow-x-auto p-[3px]",
+        // scroll box, which clips everything outside it. Links that do not
+        // fit scroll sideways with no scrollbar, never vertically.
+        "text-muted-foreground no-scrollbar flex h-9 max-w-full items-center gap-1 overflow-x-auto overflow-y-hidden p-[3px]",
         className
       )}
       {...props}
