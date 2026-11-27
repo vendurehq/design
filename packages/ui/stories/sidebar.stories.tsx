@@ -339,34 +339,47 @@ export const IconRailFlyout: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const centre = (box: DOMRect) => box.top + box.height / 2;
-    for (const name of ['Sales', 'Catalog']) {
+    const findCard = (name: string) => () => {
+      const label = [...document.querySelectorAll('[data-slot=sidebar-menu-flyout-label]')].find(
+        (element) => element.textContent === name,
+      );
+      expect(label, `${name} opens a flyout`).toBeTruthy();
+      return label as HTMLElement;
+    };
+    // A hover that lands before the trigger has its listeners is lost, so
+    // leave and enter again when no card opens.
+    const open = async (name: string) => {
       const trigger = canvas.getByRole('button', { name });
-      await userEvent.hover(trigger);
-      const label = await waitFor(() => {
-        const found = [...document.querySelectorAll('[data-slot=sidebar-menu-flyout-label]')].find(
-          (element) => element.textContent === name,
-        );
-        expect(found).toBeTruthy();
-        return found as HTMLElement;
-      });
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await userEvent.hover(trigger);
+        try {
+          return { trigger, label: await waitFor(findCard(name), { timeout: 1500 }) };
+        } catch {
+          await userEvent.unhover(trigger);
+        }
+      }
+      return { trigger, label: await waitFor(findCard(name), { timeout: 3000 }) };
+    };
+    for (const name of ['Sales', 'Catalog']) {
+      const { trigger, label } = await open(name);
       const icon = trigger.querySelector('svg') as SVGElement;
-      await waitFor(() =>
-        expect(
-          Math.abs(centre(label.getBoundingClientRect()) - centre(icon.getBoundingClientRect())),
-        ).toBeLessThanOrEqual(1),
+      // The title row sits on the icon's centre line.
+      await waitFor(
+        () =>
+          expect(
+            Math.abs(centre(label.getBoundingClientRect()) - centre(icon.getBoundingClientRect())),
+          ).toBeLessThanOrEqual(1),
+        { timeout: 3000 },
       );
       await userEvent.unhover(trigger);
     }
     // At the bottom of the screen the card shifts up instead of leaving it.
-    const settings = canvas.getByRole('button', { name: 'Settings' });
-    await userEvent.hover(settings);
-    await waitFor(() => {
-      const card = [...document.querySelectorAll('[data-slot=hover-card-content]')].find((element) =>
-        element.textContent?.startsWith('Settings'),
-      );
-      expect(card).toBeTruthy();
-      expect((card as HTMLElement).getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
-    });
+    const { trigger: settings, label } = await open('Settings');
+    const card = label.closest('[data-slot=hover-card-content]') as HTMLElement;
+    await waitFor(
+      () => expect(card.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight),
+      { timeout: 3000 },
+    );
     await userEvent.unhover(settings);
   },
   render: () => (
