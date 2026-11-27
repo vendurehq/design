@@ -88,6 +88,19 @@ Two behaviors make this safe:
 
 Packages follow independent semver. A design-tokens bump does not require a ui bump unless the ui package needs the new tokens.
 
+### API report
+
+Each package has a committed `api-report.md` (`packages/ui/api-report.md`, `packages/design-tokens/api-report.md`, `packages/design-lint/api-report.md`). It lists every import path in the package's `exports`, the declarations of each TypeScript and JavaScript entry as `tsc` emits them (without comments), the package modules those declarations take types from, and the custom properties, utilities, variants and keyframes of each CSS entry. The reports of 3.0.0 are the baseline for 3.x.
+
+The `API report` step in CI runs `bun run api:check` after the build. It fails when the code's public API differs from the committed report, and prints the difference and the fix:
+
+```sh
+bun run build        # the ui report reads the token types from the build
+bun run api:update   # rewrites the three reports
+```
+
+Commit the updated report with the change. The report diff is the API change, so read it in review and pick the version bump from it: a removed import path, export or prop, or a narrowed type, is a major change; an addition is a minor change. A doc comment or a change inside a function body does not touch the report.
+
 ## Agent Skills
 
 The skills install from `main` rather than npm and do not have a separate release line. When a package change affects consumer decisions, imports, composition, or token ownership:
