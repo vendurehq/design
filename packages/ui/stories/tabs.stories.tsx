@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { useState } from 'react';
 import {
   Tabs,
@@ -124,5 +125,41 @@ export const LinkTabs: Story = {
         ))}
       </TabsNav>
     );
+  },
+};
+
+const thresholds = [5, 10, 20, 50];
+
+/**
+ * Tabs in a parent that scrolls sideways, like a Dashboard widget header in a
+ * narrow column. Such a parent also scrolls vertically, so nothing in the list
+ * may stick out below it: the triggers fit, and the parent must not scroll up
+ * or down. Both variants.
+ */
+export const InAScrollingParent: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      {(['default', 'line'] as const).map((variant) => (
+        <div key={variant} data-testid={`${variant}-parent`} className="w-fit max-w-full overflow-x-auto">
+          <Tabs defaultValue="5">
+            <TabsList variant={variant} aria-label={`${variant} tabs`}>
+              {thresholds.map((threshold) => (
+                <TabsTrigger key={threshold} value={String(threshold)}>
+                  {`≤ ${threshold}`}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    for (const variant of ['default', 'line']) {
+      const parent = canvas.getByTestId(`${variant}-parent`);
+      await expect(parent.scrollHeight, `${variant}: the parent scrolls vertically`).toBe(parent.clientHeight);
+      await expect(parent.scrollWidth).toBe(parent.clientWidth);
+    }
   },
 };

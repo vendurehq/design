@@ -66,7 +66,11 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
         // track in both themes. Dark keeps a hairline — lightness alone can't
         // separate a 0.21 thumb near the black end of the ramp.
         "data-active:bg-surface-raised dark:data-active:border-input dark:data-active:text-foreground data-active:text-foreground",
-        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-end-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        // The underline must not stick out below the list: a parent that
+        // scrolls sideways also scrolls vertically, and 1px of overflow gives
+        // it a vertical scrollbar. The default variant has no underline, and
+        // the line variant's ends on the list's bottom edge.
+        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-[variant=default]/tabs-list:after:hidden group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-4.5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-end-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
         className
       )}
       {...props}
