@@ -189,6 +189,7 @@ const structuralSlots = [
   'Close',
   'Collection',
   'Content',
+  'Controls',
   'Count',
   'DayButton',
   'Description',
@@ -207,9 +208,11 @@ const structuralSlots = [
   'Input',
   'Item',
   'Label',
+  'Leading',
   'Legend',
   'List',
   'Media',
+  'Meta',
   'Next',
   'OptGroup',
   'Option',
@@ -220,12 +223,15 @@ const structuralSlots = [
   'Previous',
   'RadioGroup',
   'RadioItem',
+  'Rail',
   'Row',
   'ScrollDownButton',
   'ScrollUpButton',
   'Separator',
   'Shortcut',
+  'Skeleton',
   'Slot',
+  'Step',
   'Sub',
   'SwipeHandle',
   'Text',
@@ -235,6 +241,18 @@ const structuralSlots = [
   'Trigger',
   'Value',
 ];
+
+/** PascalCase words in guidance prose that are not components: icons, libraries, state names, types. */
+const proseNames = new Set([
+  'ArrowUpRight',
+  'CircleAlert',
+  'DataTableColumnMeta',
+  'MoreHorizontal',
+  'TanStack',
+  'TriangleAlert',
+  'TruckIcon',
+  'ValidatingCustomer',
+]);
 
 function validateCoverage() {
   const exported = publicComponents();
@@ -260,6 +278,37 @@ function validateCoverage() {
       for (const name of item.use) named(name, `Catalog entry ${entry.id} (replaces)`);
     }
   }
+  // A slot covers a part only through a parent from the same module, so
+  // `ToggleGroup` is not a part of `Toggle`.
+  const parentOf = (name: string): string[] =>
+    structuralSlots
+      .filter((slot) => name.endsWith(slot) && name.length > slot.length)
+      .map((slot) => name.slice(0, -slot.length))
+      .filter((parent) => exported.get(parent) === exported.get(name));
+  const covered = (name: string): boolean => owner.has(name) || parentOf(name).some(covered);
+
+  // Every declared component, and every component-like name in the prose, is
+  // checked, so a rename cannot leave advice about a name that no longer exists.
+  const mentions = (text: string, name: string) => new RegExp(`\\b${name}\\b`).test(text);
+  for (const entry of uiGuidance) {
+    const { id, sourceStory, components, related, ...prose } = entry;
+    const text = JSON.stringify(prose);
+    for (const name of components) {
+      const parents = (n: string): string[] => [n, ...parentOf(n).flatMap(parents)];
+      if (!parents(name).some((n) => mentions(text, n))) {
+        errors.push(`Catalog entry ${id} declares \`${name}\` but its text never names it.`);
+      }
+    }
+    for (const [word] of text.matchAll(/\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+\b/g)) {
+      const singular = word.endsWith('s') ? word.slice(0, -1) : word;
+      if (!exported.has(word) && !exported.has(singular) && !proseNames.has(word)) {
+        errors.push(
+          `Catalog entry ${id} mentions \`${word}\`, which is not a public component export. Fix the name, or add it to proseNames if it is not a component.`,
+        );
+      }
+    }
+  }
+
   for (const item of illustrationGuidance) {
     named(item.component, 'illustrations.ts');
     owner.set(item.component, 'illustrations');
@@ -272,12 +321,6 @@ function validateCoverage() {
     owner.set(item.component, 'no-guidance');
   }
 
-  const covered = (name: string): boolean =>
-    owner.has(name) ||
-    structuralSlots.some(
-      (slot) =>
-        name.endsWith(slot) && name.length > slot.length && covered(name.slice(0, -slot.length)),
-    );
   const missing = new Map<string, string[]>();
   for (const [name, subpath] of exported) {
     if (!covered(name)) missing.set(subpath, [...(missing.get(subpath) ?? []), name]);

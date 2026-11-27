@@ -87,7 +87,7 @@ Related decisions: `copyable-text`, `id-chip`, `issued-secret`, `secret-value`.
 
 Use the shared application anatomy without moving app-owned routing or context into the shell.
 
-Components: `AppShell`, `AppShellMain`, `AppShellPage`, `AppShellSidebar`, `SearchTrigger`, `SkipLink`.
+Components: `AppShell`, `AppShellMain`, `AppShellPage`, `AppShellSidebar`, `SearchTrigger`, `SkipLink`, `SidebarInset`.
 
 - **The shell owns anatomy:** AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. Prefer AppShellMain as the scroll owner so the viewport-bound shell keeps its header and canvas inset visible; use container ownership only when integrating with an established shell that already owns scrolling.
 - **Compose one main landmark with Sidebar:** When using the collapsible Sidebar atom, render SidebarInset as a div and keep AppShellMain as the single focusable main landmark.
@@ -97,13 +97,14 @@ Components: `AppShell`, `AppShellMain`, `AppShellPage`, `AppShellSidebar`, `Sear
 - **AppShellPage is the page frame:** AppShellPage centres the page in AppShellMain, caps its content at 1180px and puts a 32px gutter (16px below 768px) on every side, the top included; the gutter sits outside the 1180px. The values are the CSS variables --app-shell-page-width and --app-shell-page-gutter. Do not add page padding or a page max width in the app. A narrower column, such as a settings form at max-w-4xl, goes inside the frame and stays left-aligned. A layout with its own page wrapper uses pageFrameClassName.
 - **The routed page enters with AppShellPage:** Wrap the routed page in AppShellPage inside AppShellMain, keyed by the pathname, so a new page fades in and rises 6px while the sidebar and the header stay still. A change of search params keeps the key and does not replay it. A layout without AppShell, such as the Dashboard, puts pageEnterClassName on its own wrapper, keyed the same way. A page that switches its content in place, such as the environment switch, reloads in place instead: see the motion tokens.
 - **A crumb that switches siblings is a BreadcrumbMenu:** When the user switches the current item between its siblings, such as the environment, make that crumb a BreadcrumbMenu: the current value, a menu of the options with a status dot, and extra items such as "Add environment" in its children. Do not add a list page or a picker inside the page for it. A crumb that only goes up a level stays a BreadcrumbLink. The options, the switch and the route stay in your app.
+- **Compose the shell from its parts:** Build the layout from AppShellHeader, AppShellSidebar and AppShellMain. Put a SkipLink first, so keyboard users can jump past the navigation to AppShellMain.
 
 Related decisions: `page-header`.
 ## ArrowLink
 
 Link to a page with more of what the user is looking at, at the end of the region it extends.
 
-Components: `ArrowLink`.
+Components: `ArrowLink`, `PageHeaderFactLink`.
 
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
@@ -151,7 +152,7 @@ Related decisions: `app-shell`, `page-header`.
 
 Compose actions as an emphasis ladder with one primary action per view.
 
-Components: `Button`, `ButtonLabelSwap`, `ButtonGroup`.
+Components: `Button`, `ButtonLabelSwap`, `ButtonGroup`, `TooltipLabelSwap`.
 
 - **One primary action per view:** Choose the single most-important action and give it the default filled Button. Step every other action down.
 - **Variant expresses weight, not color preference:** Choose variants relative to neighboring actions; do not use filled or destructive styling merely to attract attention.
@@ -189,6 +190,7 @@ Components: `Card`, `CardLink`, `CardAction`, `CardCount`, `CardTable`, `CardRow
 - **A link for a page, a button for a dialog:** Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.
 - **Controls stay above the link:** Buttons, menus, links, Tooltip triggers, IdChip and CopyableText inside the card keep their own click and tab stop. Another element that must stay hoverable takes `data-card-control`. Every action in a card menu is also on the page the card opens.
 - **The look comes with the link:** The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.
+- **A table or a list in a card runs edge to edge:** Put a table that fills a card in CardTable and a list of rows in CardRows. They cancel the card padding so the dividers reach the card edges. Do not undo the padding with negative margins.
 
 **Choose:**
 
@@ -212,13 +214,14 @@ Components: `ChartContainer`, `ChartTooltip`, `ChartLegend`, `ChartStyle`.
 - **Key colours to the config:** Chart names a shape from its `name`, else from the label of the config key in its colour (`var(--color-card)`). Give each series and slice a config entry with a `label`, and use `var(--color-<key>)` for its fill.
 - **Add the value on the shape:** Chart does not know the value a shape stands for. Put an `aria-label` such as `Card: 540` on the `Cell` or the shape when the name must carry the value. A name set by the consumer always wins.
 - **A table or text carries the data too:** Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.
+- **Compose from the chart parts:** Wrap the recharts chart in ChartContainer with the config, and use ChartTooltip with ChartTooltipContent and ChartLegend with ChartLegendContent. ChartContainer renders ChartStyle for you. Do not style a recharts tooltip or legend by hand.
 
 Related decisions: `stat-card`.
 ## Checklist
 
 Show a short set of steps the person completes, with its progress, until every step is done.
 
-Components: `Checklist`, `ChecklistStep`.
+Components: `Checklist`.
 
 - **Steps the person completes:** Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.
 - **Let the data decide when it can:** Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.
@@ -248,7 +251,7 @@ Related decisions: `badge`, `id-chip`, `status-badge`.
 
 Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.
 
-Components: `ChoiceCard`, `ChoiceCardBadge`, `ChoiceCardMedia`, `ChoiceCardMeta`, `Checkbox`, `RadioGroup`.
+Components: `ChoiceCard`, `ChoiceCardBadge`, `ChoiceCardMedia`, `Checkbox`, `RadioGroup`.
 
 - **The card is the control:** A ChoiceCard is a radio (single choice) or a checkbox (`multiple`) itself. Do not build a picker from a clickable Card with onClick, or a div with a role: it misses the arrow keys, Space and the checked state.
 - **Nothing interactive inside:** Slots hold text, icons and images. A link or button inside a card is not reachable as its own control. Put an action that belongs to one option next to the group, not in the card.
@@ -367,6 +370,7 @@ Components: `CopyableText`, `CopyButton`, `CopyStateIcon`, `CopyFeedbackProvider
 - **Identifiers have a dedicated compact form:** Use IdChip for opaque non-secret identifiers and CopyableText when readable content is primary.
 - **Secrets use AnonymizedToken:** Do not expose credential-like values through CopyableText.
 - **Truncate without destroying recognition:** Choose middle, start, or no truncation according to which portion users recognize while copying the full value.
+- **The parts for a custom trigger:** CopyButton is the copy icon button on its own. CopyStateIcon is its icon, for a trigger you build. To show a toast after a copy, mount one CopyFeedbackProvider in a client component and wire the toast there: the design system never toasts.
 
 **Instead of:**
 
@@ -413,6 +417,7 @@ Components: `DataTable`, `DataTableRowLink`, `DataTableColumnHeader`, `DataTable
 - **The first column names the row:** Start the table with the column that names the row (title, name, key). Put the status column directly after it, as a StatusBadge with appearance="icon". Do not lead with a status, a badge or a count.
 - **No chip or badge in the first or last column:** A chip or badge (Badge, StatusBadge chip, Chip) is never in the first or the last column of a table or list: it would sit against the edge of the list. Show the name as plain text first, and the status after it as an icon and a label. This holds for a card or list inside a bordered container too.
 - **Do not use DataTable for static layout:** Use Table or DescriptionList when there is no interactive collection behavior to coordinate.
+- **DataTable brings its header and filters:** DataTable renders DataTableColumnHeader for sortable columns and DataTableAddFilter and DataTableAppliedFilters for filters. Use these parts on their own only in a table that cannot be a DataTable.
 
 **Instead of:**
 
@@ -457,6 +462,7 @@ Components: `DescriptionList`, `DescriptionItem`, `DescriptionTerm`, `Descriptio
 - **Facts, tables, and forms are different shapes:** Use DescriptionList for one entity's labeled facts, Table for repeated records, and Field-based forms for editable values.
 - **Values may compose display molecules:** Use Money, DateTime, StatusBadge, CopyableText, and links inside values instead of reimplementing formatting.
 - **Split long detail surfaces by meaning:** Group facts into named sections once one list becomes difficult to scan; do not create arbitrary columns only to reduce height.
+- **Compose items from term and detail:** Each fact is a DescriptionItem with a DescriptionTerm and a DescriptionDetail, or a DescriptionListItem with `label` for the short form.
 
 **Instead of:**
 
@@ -472,6 +478,7 @@ Components: `Dialog`, `Sheet`, `Drawer`.
 - **The job picks the size:** Dialogs that do the same job open at the same width. Pick `size` on DialogContent or SheetContent from the job, not from the content's pixel width.
 - **No width classes:** Do not set `max-w-[…]`, `min-w-[…]` or `w-[…]` on DialogContent or SheetContent. If no size fits a real job, raise it in the design system.
 - **Small screens are handled:** A dialog shrinks to the viewport less 1rem on each side below its breakpoint; `xl` waits for 1024px. A left or right sheet is at most 3/4 of the viewport. Top and bottom sheets ignore `size`.
+- **A bottom sheet on a phone is a Drawer:** Use a Drawer for a sheet that slides up from the bottom on a small screen and can be swiped away. On a large screen the same task is a Dialog or a Sheet.
 
 **Choose:**
 
@@ -492,7 +499,8 @@ Components: `DropdownMenu`, `ContextMenu`, `Menubar`, `MenubarMenu`.
 - **Overflow actions live in one menu:** Show the primary action as a Button and put the rest in a DropdownMenu. Its trigger is a ghost `size="icon-sm"` Button with a MoreHorizontal icon and an `aria-label` that names the item, such as "More for Storefront".
 - **A destructive item goes last:** Put a destructive item last, after a DropdownMenuSeparator, with `variant="destructive"`. It opens a ConfirmDialog when the result cannot be undone.
 - **A menu runs actions; a select picks a value:** A list of options that sets a value in a form is a Select or a Combobox, not a DropdownMenu. A setting that is on or off inside a menu is a DropdownMenuCheckboxItem.
-- **Right-click repeats, it does not replace:** A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click. Use Menubar only for a desktop-style app menu bar.
+- **Right-click repeats, it does not replace:** A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click.
+- **A desktop menu bar is a Menubar:** Use Menubar with one MenubarMenu per menu only for a desktop-style app menu bar, such as File and Edit in an editor. An admin page does not have one.
 
 **Instead of:**
 
@@ -527,6 +535,7 @@ Components: `Field`, `FieldSet`, `FieldError`, `Input`, `Textarea`, `Label`, `Sw
 - **Pending submission preserves context:** Disable duplicate submission, communicate progress on the submit action, retain entered values, and surface server errors near the responsible region.
 - **Form state is host-owned:** Dashboard extensions use the form APIs exported by @vendure/dashboard. Standalone consumers keep their existing form-state library.
 - **Pick the control by the value:** Text is Input, long text is Textarea. An on/off setting that applies at once is a Switch; a yes/no answer that is saved with the form is a Checkbox. One of a few options is a RadioGroup, one of many is a Select or a Combobox. A number in a range the user drags is a Slider. A one-time code is InputOTP. Do not style a Checkbox as a toggle or build a slider from a range input.
+- **Group, label and select with the field parts:** Group related controls in a FieldSet with a FieldLegend. Label a control with FieldLabel inside a Field; Label alone is for a control outside a Field. NativeSelect is for a long or plain list where the browser picker is better, such as a country on a phone; otherwise use Select.
 
 Related decisions: `button`, `confirm-dialog`.
 ## HoverCard
@@ -592,7 +601,7 @@ Related decisions: `secret-value`, `anonymized-token`, `confirm-dialog`.
 
 Use list-page chrome without duplicating PageHeader or the DataTable engine.
 
-Components: `ListHeader`, `ListHeaderControls`, `ListHeaderChips`.
+Components: `ListHeader`, `ListHeaderChips`.
 
 - **PageHeader still owns the page title:** Place PageHeader first. ListHeader owns collection controls and applied filters, not the page heading hierarchy.
 - **Use it outside DataTable:** Reach for ListHeader when composing a collection view manually. DataTable already assembles its own coordinated list chrome.
@@ -603,7 +612,7 @@ Related decisions: `data-table`, `page-header`, `table-pagination`.
 
 Render a short list of entities where each row opens one detail page from any point of the row.
 
-Components: `ListRow`, `ListRowLink`, `ListRowChevron`, `ListRowActions`, `ListRowMeta`, `ListRowSwap`, `ListRowTrailing`, `ListRowLeading`, `ListRowGroupHeading`, `Item`.
+Components: `ListRow`, `ListRowLink`, `ListRowChevron`, `ListRowActions`, `ListRowMeta`, `ListRowSwap`, `ListRowTrailing`, `ListRowGroupHeading`, `Item`.
 
 - **Rows to open, columns to compare:** Use ListRow for a short list the user scans and opens one row of. Use DataTable when the user sorts, filters, pages, selects in bulk, or compares values across rows.
 - **One link per row, over the whole row:** Put exactly one ListRowLink in a row. It stretches over the row, so the row has one tab stop and one name. Never make one cell the only link.
@@ -614,6 +623,7 @@ Components: `ListRow`, `ListRowLink`, `ListRowChevron`, `ListRowActions`, `ListR
 - **One action takes the last value's place:** When a row has one action and ends with a value (a size, a count), put both in a ListRowSwap: the value holds the row end at rest, and the action fades in its place on hover, on focus and on touch screens. Use ListRowActions for a menu or more than one action. Name the action after its row (`Restore to today, 01:00`).
 - **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
 - **Only rows added later animate:** Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.
+- **Item is not a list row:** Item is a plain layout block of media, text and actions. A row in a list the user scans, especially one that opens a page, is a ListRow with a ListRowLink. Do not build list rows from Item.
 
 **Instead of:**
 
@@ -653,12 +663,13 @@ Related decisions: `combobox-free-text`.
 
 State what the view is and place its action hierarchy in one predictable header.
 
-Components: `PageHeader`, `PageHeaderActions`, `PageHeaderBack`, `PageHeaderBackRow`, `PageHeaderFacts`, `PageHeaderFact`, `PageHeaderFactLink`.
+Components: `PageHeader`, `PageHeaderActions`, `PageHeaderBack`, `PageHeaderBackRow`, `PageHeaderFacts`, `PageHeaderFact`.
 
 - **The title says what this is:** Use an entity name or concise page noun, not an instruction or sentence.
 - **At most one primary action:** Place one filled Button in the actions slot; step supporting actions down or move them into overflow.
 - **Title-adjacent content describes identity or state:** Badges and StatusBadges may sit beside the title. Controls and routine actions do not.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
+- **Back link and facts are header parts:** The link up to the parent page is a PageHeaderBack in a PageHeaderBackRow above the title. Short facts about the subject, such as the status, the region or the created date, go in PageHeaderFacts with one PageHeaderFact each. Do not add a breadcrumb line or a row of badges by hand.
 
 **Instead of:**
 
@@ -719,7 +730,7 @@ Related decisions: `anonymized-token`, `copyable-text`, `issued-secret`.
 
 For the current page, exactly one icon in the sidebar takes the active colour: the current item's own icon, or its group's icon.
 
-Components: `Sidebar`, `Avatar`, `SidebarProvider`, `SidebarInset`, `SidebarMenu`, `SidebarMenuButton`, `SidebarMenuSub`, `SidebarMenuSubButton`, `SidebarLevels`, `SidebarLevel`, `SidebarLevelBack`, `SidebarIdentityButton`, `SidebarIdentityText`, `SidebarTrigger`, `SidebarRail`, `SidebarInput`, `SidebarMenuAction`, `SidebarMenuBadge`, `SidebarMenuSkeleton`, `SidebarGroupAction`.
+Components: `Sidebar`, `Avatar`, `SidebarProvider`, `SidebarMenu`, `SidebarMenuButton`, `SidebarMenuSub`, `SidebarMenuSubButton`, `SidebarLevels`, `SidebarLevel`, `SidebarLevelBack`, `SidebarIdentityButton`, `SidebarIdentityText`, `SidebarTrigger`, `SidebarInput`, `SidebarMenuAction`, `SidebarMenuBadge`, `SidebarGroupAction`.
 
 - **One icon shows the current page:** If the current item has its own icon, only that icon takes the active colour and its group's icon stays neutral. If the current item has no icon, its group's icon takes it. In the icon rail the nested items are hidden, so the group's icon takes it.
 - **Set hasActiveChild on every group that holds the current page:** Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `active` on the nested SidebarMenuSubButton as well.
@@ -728,6 +739,7 @@ Components: `Sidebar`, `Avatar`, `SidebarProvider`, `SidebarInset`, `SidebarMenu
 - **An area with its own navigation is a second level:** Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.
 - **The account or user switch is a SidebarIdentityButton:** Render SidebarIdentityButton as the trigger of its menu, with an Avatar and a SidebarIdentityText (a title over an optional caption) as children. It brings the chevron, the open fill and the icon rail: the text and the chevron fade, the avatar stays. Do not hide the text with useSidebar().state, and do not build the row from SidebarMenuButton by hand.
 - **An account is square, a person is round:** Pass `shape="square"` to the Avatar of an account, an organisation or a channel. Keep the default round Avatar for a person. Do not set a radius on Avatar, AvatarImage or AvatarFallback.
+- **One provider for the sidebar state:** Wrap the sidebar and the page in one SidebarProvider. It owns the open and collapsed state and the keyboard shortcut. Do not keep that state in the app.
 ## SidebarMenuFlyout
 
 In the collapsed icon rail, a group's items open in a SidebarMenuFlyout beside its icon.
@@ -825,6 +837,7 @@ Components: `TablePagination`, `Pagination`, `PaginationLink`.
 - **DataTable already owns its footer:** Use TablePagination when composing a collection manually; do not add a second pagination system around DataTable.
 - **Capabilities appear only when wired:** Hide page-size and navigation controls when the consumer has not provided the state and handlers that make them work.
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
+- **Pagination is for page links:** Use TablePagination for a table or a list. Use Pagination with PaginationLink only when each page is its own URL, such as pages of public search results.
 
 Related decisions: `data-table`, `list-header`.
 ## Tabs and TabsNav
@@ -848,7 +861,7 @@ Related decisions: `page-header`, `toggle-group`.
 
 Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.
 
-Components: `StepIndicator`, `StepIndicatorStep`.
+Components: `StepIndicator`.
 
 - **An ordered flow, not a to-do list:** Use StepIndicator when the steps go one after the other. Tasks the user ticks off in any order are a Checklist. Events that already happened are a Timeline.
 - **Waiting is current, working is running:** A step that waits for the user or a queue is `current`: blue, with no spinner, because it can wait for days. Only a step whose work happens now is `running` and spins. A step where the flow stopped is `failed`; the steps after it stay `upcoming`.
@@ -922,7 +935,7 @@ Related decisions: `tabs`, `button`, `form`.
 
 A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.
 
-Components: `Tooltip`, `TooltipProvider`, `TooltipLabelSwap`.
+Components: `Tooltip`, `TooltipProvider`.
 
 - **A short hint, at most 320px:** A tooltip is a short hint or a label, never wider than 320px. Nothing widens it: a max-w class on TooltipContent is dropped. It holds no values to read in full, no paragraphs and no controls, because nobody can select or click inside it. Put longer content on the page or in a Popover.
 - **One TooltipProvider for the app:** Wrap the app in one TooltipProvider. The first tooltip then waits 350ms, so a pointer passing over a trigger opens nothing, and once a tooltip is open the next ones open at once with no animation. Do not set a delay per tooltip. Without a provider every tooltip still waits 350ms, but the next one does not open at once.

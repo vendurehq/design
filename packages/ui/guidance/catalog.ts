@@ -83,6 +83,7 @@ export const uiGuidance = [
       'AppShellSidebar',
       'SearchTrigger',
       'SkipLink',
+      'SidebarInset',
     ],
     rules: [
       {
@@ -117,6 +118,10 @@ export const uiGuidance = [
         title: 'A crumb that switches siblings is a BreadcrumbMenu',
         body: 'When the user switches the current item between its siblings, such as the environment, make that crumb a BreadcrumbMenu: the current value, a menu of the options with a status dot, and extra items such as "Add environment" in its children. Do not add a list page or a picker inside the page for it. A crumb that only goes up a level stays a BreadcrumbLink. The options, the switch and the route stay in your app.',
       },
+      {
+        title: 'Compose the shell from its parts',
+        body: 'Build the layout from AppShellHeader, AppShellSidebar and AppShellMain. Put a SkipLink first, so keyboard users can jump past the navigation to AppShellMain.',
+      },
     ],
     related: ['page-header'],
   },
@@ -126,7 +131,7 @@ export const uiGuidance = [
     summary:
       'Link to a page with more of what the user is looking at, at the end of the region it extends.',
     sourceStory: 'arrow-link-guidance.stories.tsx',
-    components: ['ArrowLink'],
+    components: ['ArrowLink', 'PageHeaderFactLink'],
     rules: [
       {
         title: 'Navigation, never an action',
@@ -229,7 +234,7 @@ export const uiGuidance = [
     title: 'Button',
     summary: 'Compose actions as an emphasis ladder with one primary action per view.',
     sourceStory: 'button-guidance.stories.tsx',
-    components: ['Button', 'ButtonLabelSwap', 'ButtonGroup'],
+    components: ['Button', 'ButtonLabelSwap', 'ButtonGroup', 'TooltipLabelSwap'],
     rules: [
       {
         title: 'One primary action per view',
@@ -310,6 +315,10 @@ export const uiGuidance = [
         title: 'The look comes with the link',
         body: 'The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.',
       },
+      {
+        title: 'A table or a list in a card runs edge to edge',
+        body: 'Put a table that fills a card in CardTable and a list of rows in CardRows. They cancel the card padding so the dividers reach the card edges. Do not undo the padding with negative margins.',
+      },
     ],
     replaces: [{ pattern: 'A card wrapped in `<a>`, or a Card with `onClick`', use: ['CardLink'] }],
     choices: [
@@ -355,6 +364,10 @@ export const uiGuidance = [
         title: 'A table or text carries the data too',
         body: 'Names label the shapes. They do not replace a table, a legend or a sentence that gives the numbers to someone who cannot see the chart.',
       },
+      {
+        title: 'Compose from the chart parts',
+        body: 'Wrap the recharts chart in ChartContainer with the config, and use ChartTooltip with ChartTooltipContent and ChartLegend with ChartLegendContent. ChartContainer renders ChartStyle for you. Do not style a recharts tooltip or legend by hand.',
+      },
     ],
     related: ['stat-card'],
   },
@@ -364,7 +377,7 @@ export const uiGuidance = [
     summary:
       'Show a short set of steps the person completes, with its progress, until every step is done.',
     sourceStory: 'checklist-guidance.stories.tsx',
-    components: ['Checklist', 'ChecklistStep'],
+    components: ['Checklist'],
     rules: [
       {
         title: 'Steps the person completes',
@@ -422,14 +435,7 @@ export const uiGuidance = [
     summary:
       'Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.',
     sourceStory: 'choice-card-guidance.stories.tsx',
-    components: [
-      'ChoiceCard',
-      'ChoiceCardBadge',
-      'ChoiceCardMedia',
-      'ChoiceCardMeta',
-      'Checkbox',
-      'RadioGroup',
-    ],
+    components: ['ChoiceCard', 'ChoiceCardBadge', 'ChoiceCardMedia', 'Checkbox', 'RadioGroup'],
     rules: [
       {
         title: 'The card is the control',
@@ -686,6 +692,10 @@ export const uiGuidance = [
         title: 'Truncate without destroying recognition',
         body: 'Choose middle, start, or no truncation according to which portion users recognize while copying the full value.',
       },
+      {
+        title: 'The parts for a custom trigger',
+        body: 'CopyButton is the copy icon button on its own. CopyStateIcon is its icon, for a trigger you build. To show a toast after a copy, mount one CopyFeedbackProvider in a client component and wire the toast there: the design system never toasts.',
+      },
     ],
     replaces: [
       {
@@ -809,6 +819,10 @@ export const uiGuidance = [
         title: 'Do not use DataTable for static layout',
         body: 'Use Table or DescriptionList when there is no interactive collection behavior to coordinate.',
       },
+      {
+        title: 'DataTable brings its header and filters',
+        body: 'DataTable renders DataTableColumnHeader for sortable columns and DataTableAddFilter and DataTableAppliedFilters for filters. Use these parts on their own only in a table that cannot be a DataTable.',
+      },
     ],
     replaces: [
       {
@@ -900,6 +914,10 @@ export const uiGuidance = [
         title: 'Split long detail surfaces by meaning',
         body: 'Group facts into named sections once one list becomes difficult to scan; do not create arbitrary columns only to reduce height.',
       },
+      {
+        title: 'Compose items from term and detail',
+        body: 'Each fact is a DescriptionItem with a DescriptionTerm and a DescriptionDetail, or a DescriptionListItem with `label` for the short form.',
+      },
     ],
     replaces: [
       {
@@ -927,6 +945,10 @@ export const uiGuidance = [
       {
         title: 'Small screens are handled',
         body: 'A dialog shrinks to the viewport less 1rem on each side below its breakpoint; `xl` waits for 1024px. A left or right sheet is at most 3/4 of the viewport. Top and bottom sheets ignore `size`.',
+      },
+      {
+        title: 'A bottom sheet on a phone is a Drawer',
+        body: 'Use a Drawer for a sheet that slides up from the bottom on a small screen and can be swiped away. On a large screen the same task is a Dialog or a Sheet.',
       },
     ],
     choices: [
@@ -973,7 +995,11 @@ export const uiGuidance = [
       },
       {
         title: 'Right-click repeats, it does not replace',
-        body: 'A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click. Use Menubar only for a desktop-style app menu bar.',
+        body: 'A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click.',
+      },
+      {
+        title: 'A desktop menu bar is a Menubar',
+        body: 'Use Menubar with one MenubarMenu per menu only for a desktop-style app menu bar, such as File and Edit in an editor. An admin page does not have one.',
       },
     ],
     replaces: [
@@ -1063,6 +1089,10 @@ export const uiGuidance = [
       {
         title: 'Pick the control by the value',
         body: 'Text is Input, long text is Textarea. An on/off setting that applies at once is a Switch; a yes/no answer that is saved with the form is a Checkbox. One of a few options is a RadioGroup, one of many is a Select or a Combobox. A number in a range the user drags is a Slider. A one-time code is InputOTP. Do not style a Checkbox as a toggle or build a slider from a range input.',
+      },
+      {
+        title: 'Group, label and select with the field parts',
+        body: 'Group related controls in a FieldSet with a FieldLegend. Label a control with FieldLabel inside a Field; Label alone is for a control outside a Field. NativeSelect is for a long or plain list where the browser picker is better, such as a country on a phone; otherwise use Select.',
       },
     ],
     related: ['button', 'confirm-dialog'],
@@ -1202,7 +1232,7 @@ export const uiGuidance = [
     title: 'ListHeader',
     summary: 'Use list-page chrome without duplicating PageHeader or the DataTable engine.',
     sourceStory: 'list-header-guidance.stories.tsx',
-    components: ['ListHeader', 'ListHeaderControls', 'ListHeaderChips'],
+    components: ['ListHeader', 'ListHeaderChips'],
     rules: [
       {
         title: 'PageHeader still owns the page title',
@@ -1233,7 +1263,6 @@ export const uiGuidance = [
       'ListRowMeta',
       'ListRowSwap',
       'ListRowTrailing',
-      'ListRowLeading',
       'ListRowGroupHeading',
       'Item',
     ],
@@ -1273,6 +1302,10 @@ export const uiGuidance = [
       {
         title: 'Only rows added later animate',
         body: 'Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.',
+      },
+      {
+        title: 'Item is not a list row',
+        body: 'Item is a plain layout block of media, text and actions. A row in a list the user scans, especially one that opens a page, is a ListRow with a ListRowLink. Do not build list rows from Item.',
       },
     ],
     replaces: [
@@ -1352,7 +1385,6 @@ export const uiGuidance = [
       'PageHeaderBackRow',
       'PageHeaderFacts',
       'PageHeaderFact',
-      'PageHeaderFactLink',
     ],
     rules: [
       {
@@ -1370,6 +1402,10 @@ export const uiGuidance = [
       {
         title: 'Keep the hierarchy stable on small screens',
         body: 'Allow actions to wrap or collapse without moving the page identity below transient controls.',
+      },
+      {
+        title: 'Back link and facts are header parts',
+        body: 'The link up to the parent page is a PageHeaderBack in a PageHeaderBackRow above the title. Short facts about the subject, such as the status, the region or the created date, go in PageHeaderFacts with one PageHeaderFact each. Do not add a breadcrumb line or a row of badges by hand.',
       },
     ],
     replaces: [{ pattern: 'An `<h1>` with a flex row of buttons beside it', use: ['PageHeader'] }],
@@ -1490,7 +1526,6 @@ export const uiGuidance = [
       'Sidebar',
       'Avatar',
       'SidebarProvider',
-      'SidebarInset',
       'SidebarMenu',
       'SidebarMenuButton',
       'SidebarMenuSub',
@@ -1501,11 +1536,9 @@ export const uiGuidance = [
       'SidebarIdentityButton',
       'SidebarIdentityText',
       'SidebarTrigger',
-      'SidebarRail',
       'SidebarInput',
       'SidebarMenuAction',
       'SidebarMenuBadge',
-      'SidebarMenuSkeleton',
       'SidebarGroupAction',
     ],
     rules: [
@@ -1536,6 +1569,10 @@ export const uiGuidance = [
       {
         title: 'An account is square, a person is round',
         body: 'Pass `shape="square"` to the Avatar of an account, an organisation or a channel. Keep the default round Avatar for a person. Do not set a radius on Avatar, AvatarImage or AvatarFallback.',
+      },
+      {
+        title: 'One provider for the sidebar state',
+        body: 'Wrap the sidebar and the page in one SidebarProvider. It owns the open and collapsed state and the keyboard shortcut. Do not keep that state in the app.',
       },
     ],
   },
@@ -1780,6 +1817,10 @@ export const uiGuidance = [
         title: 'URL-owned pagination uses links',
         body: 'Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.',
       },
+      {
+        title: 'Pagination is for page links',
+        body: 'Use TablePagination for a table or a list. Use Pagination with PaginationLink only when each page is its own URL, such as pages of public search results.',
+      },
     ],
     related: ['data-table', 'list-header'],
   },
@@ -1826,7 +1867,7 @@ export const uiGuidance = [
     summary:
       'Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.',
     sourceStory: 'step-indicator-guidance.stories.tsx',
-    components: ['StepIndicator', 'StepIndicatorStep'],
+    components: ['StepIndicator'],
     rules: [
       {
         title: 'An ordered flow, not a to-do list',
@@ -1984,7 +2025,7 @@ export const uiGuidance = [
     summary:
       'A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.',
     sourceStory: 'tooltip-guidance.stories.tsx',
-    components: ['Tooltip', 'TooltipProvider', 'TooltipLabelSwap'],
+    components: ['Tooltip', 'TooltipProvider'],
     rules: [
       {
         title: 'A short hint, at most 320px',
