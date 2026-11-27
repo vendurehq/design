@@ -99,3 +99,18 @@ describe('Match flash', () => {
     expect(Object.keys(start)).not.toContain('transform');
   });
 });
+
+describe('ActionNeeded fold', () => {
+  test('the badges and the closing rows run on the fold curve, the opening rows on height', () => {
+    expect(easing.fold).toBe('cubic-bezier(0.23, 1, 0.32, 1)');
+    expect(easing.height).toBe('cubic-bezier(0.25, 1, 0.5, 1)');
+  });
+
+  test('opening is slower than folding, and the rows wait for the badges', () => {
+    const ms = (value: string) => Number.parseInt(value, 10);
+    expect(ms(duration.foldOpen)).toBeGreaterThan(ms(duration.foldClose));
+    expect(ms(duration.foldRowIn)).toBeGreaterThan(ms(duration.foldRowOut));
+    expect(ms(duration.foldStagger)).toBeGreaterThan(ms(duration.foldStep));
+    expect(ms(duration.foldHandOff)).toBeLessThan(ms(duration.moderate));
+  });
+});
