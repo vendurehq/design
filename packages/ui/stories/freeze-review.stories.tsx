@@ -568,15 +568,21 @@ export const R9: Story = {
         options={[
           before(() => (
             <div className="flex flex-col items-start gap-4">
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Menu</p>
               <MenuSurface radius="rounded-2xl" />
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Command palette</p>
               {palette('rounded-xl')}
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Tabs</p>
               {tabs('rounded-md')}
             </div>
           )),
           after(() => (
             <div className="flex flex-col items-start gap-4">
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Menu</p>
               <MenuSurface radius="rounded-2xl" item="rounded-[calc(var(--radius-2xl)-5px)]" />
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Command palette</p>
               {palette('rounded-[calc(var(--radius-3xl)-8px)]')}
+              <p className="text-muted-foreground -mb-2 text-xs font-medium">Tabs</p>
               {tabs('rounded-[calc(var(--radius-lg)-3px)]')}
             </div>
           )),
