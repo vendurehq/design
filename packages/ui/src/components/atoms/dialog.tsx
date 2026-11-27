@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import type { Tone } from "@vendure-io/ui/lib/state-dictionary"
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useMessages } from "../../lib/format-messages.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
@@ -54,10 +55,11 @@ function DialogOverlay({
 }
 
 // Tells DialogHeader to host the close button, so the ✕ stays pinned with the
-// header while the body scrolls.
-const DialogCloseButtonContext = React.createContext(false)
+// header while the body scrolls. The value is the button's accessible name, or
+// null when the dialog shows no ✕.
+const DialogCloseButtonContext = React.createContext<string | null>(null)
 
-function DialogCloseButton({ className }: { className?: string }) {
+function DialogCloseButton({ className, label }: { className?: string; label: string }) {
   return (
     <DialogPrimitive.Close
       data-slot="dialog-close"
@@ -72,7 +74,7 @@ function DialogCloseButton({ className }: { className?: string }) {
     >
       <XIcon
       />
-      <span className="sr-only">Close</span>
+      <span className="sr-only">{label}</span>
     </DialogPrimitive.Close>
   )
 }
@@ -93,6 +95,7 @@ function DialogContent({
   children,
   size = "default",
   showCloseButton,
+  closeLabel,
   overlayClassName,
   ...props
 }: DialogPrimitive.Popup.Props & {
@@ -112,6 +115,11 @@ function DialogContent({
    * wins over that.
    */
   showCloseButton?: boolean
+  /**
+   * The ✕'s accessible name. Defaults to `messages.dialog.close` from
+   * `FormatProvider`, then "Close".
+   */
+  closeLabel?: string
   /** Classes for the backdrop behind the dialog, e.g. `bg-scrim-subtle`. */
   overlayClassName?: string
 }) {
@@ -122,6 +130,7 @@ function DialogContent({
     return () => setCloseControls((count) => count - 1)
   }, [])
   const showClose = showCloseButton ?? closeControls === 0
+  const t = useMessages("dialog", { close: closeLabel })
   return (
     <DialogPortal>
       <DialogOverlay className={overlayClassName} />
@@ -142,13 +151,16 @@ function DialogContent({
         {...props}
       >
         <DialogCloseControlContext.Provider value={registerCloseControl}>
-          <DialogCloseButtonContext.Provider value={showClose}>
+          <DialogCloseButtonContext.Provider value={showClose ? t.close : null}>
             {children}
           </DialogCloseButtonContext.Provider>
         </DialogCloseControlContext.Provider>
         {/* A dialog without a DialogHeader keeps the ✕ here, in the corner. */}
         {showClose && (
-          <DialogCloseButton className="group-has-data-[slot=dialog-header]/dialog-content:hidden" />
+          <DialogCloseButton
+            label={t.close}
+            className="group-has-data-[slot=dialog-header]/dialog-content:hidden"
+          />
         )}
       </DialogPrimitive.Popup>
     </DialogPortal>
@@ -165,7 +177,7 @@ function DialogContent({
 const pinned = "sticky z-10 -mx-(--dialog-padding) bg-overlay px-(--dialog-padding)"
 
 function DialogHeader({ className, children, ref, ...props }: React.ComponentProps<"div">) {
-  const showCloseButton = React.useContext(DialogCloseButtonContext)
+  const closeLabel = React.useContext(DialogCloseButtonContext)
   const pinnedRef = usePinnedHeight("--pinned-header-height", "dialog-content", ref)
   return (
     <div
@@ -175,13 +187,13 @@ function DialogHeader({ className, children, ref, ...props }: React.ComponentPro
         pinned,
         "-top-(--dialog-padding) -mt-(--dialog-padding) -mb-4 flex flex-col gap-2.5 pt-(--dialog-padding) pb-4",
         // The text stops before the close button, so a long title wraps instead of running under it.
-        showCloseButton && "pe-14",
+        closeLabel !== null && "pe-14",
         className
       )}
       {...props}
     >
       {children}
-      {showCloseButton && <DialogCloseButton />}
+      {closeLabel !== null && <DialogCloseButton label={closeLabel} />}
     </div>
   )
 }
@@ -189,13 +201,20 @@ function DialogHeader({ className, children, ref, ...props }: React.ComponentPro
 function DialogFooter({
   className,
   showCloseButton = false,
+  closeLabel,
   children,
   ref,
   ...props
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
+  /**
+   * The text of the Close button that `showCloseButton` adds. Defaults to
+   * `messages.dialog.close` from `FormatProvider`, then "Close".
+   */
+  closeLabel?: string
 }) {
   useRegisterCloseControl()
+  const t = useMessages("dialog", { close: closeLabel })
   const pinnedRef = usePinnedHeight("--pinned-footer-height", "dialog-content", ref)
   return (
     <div
@@ -211,7 +230,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close render={<Button variant="outline" />}>
-          Close
+          {t.close}
         </DialogPrimitive.Close>
       )}
     </div>

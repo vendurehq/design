@@ -4,6 +4,7 @@ import * as React from "react"
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useMessages } from "../../lib/format-messages.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { XIcon } from "lucide-react"
 import { usePopupDir } from "../../lib/popup-direction.ts"
@@ -40,10 +41,11 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
 }
 
 // Tells SheetHeader to host the close button, so the ✕ stays pinned with the
-// header while the body scrolls.
-const SheetCloseButtonContext = React.createContext(false)
+// header while the body scrolls. The value is the button's accessible name, or
+// null when the sheet shows no ✕.
+const SheetCloseButtonContext = React.createContext<string | null>(null)
 
-function SheetCloseButton({ className }: { className?: string }) {
+function SheetCloseButton({ className, label }: { className?: string; label: string }) {
   return (
     <SheetPrimitive.Close
       data-slot="sheet-close"
@@ -57,7 +59,7 @@ function SheetCloseButton({ className }: { className?: string }) {
     >
       <XIcon
       />
-      <span className="sr-only">Close</span>
+      <span className="sr-only">{label}</span>
     </SheetPrimitive.Close>
   )
 }
@@ -76,6 +78,7 @@ function SheetContent({
   side = "end",
   size = "default",
   showCloseButton = true,
+  closeLabel,
   ...props
 }: SheetPrimitive.Popup.Props & {
   /**
@@ -90,8 +93,14 @@ function SheetContent({
    */
   size?: keyof typeof sheetSizes
   showCloseButton?: boolean
+  /**
+   * The ✕'s accessible name. Defaults to `messages.sheet.close` from
+   * `FormatProvider`, then "Close".
+   */
+  closeLabel?: string
 }) {
   const dir = usePopupDir()
+  const t = useMessages("sheet", { close: closeLabel })
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -108,12 +117,15 @@ function SheetContent({
         )}
         {...props}
       >
-        <SheetCloseButtonContext.Provider value={showCloseButton}>
+        <SheetCloseButtonContext.Provider value={showCloseButton ? t.close : null}>
           {children}
         </SheetCloseButtonContext.Provider>
         {/* A sheet without a SheetHeader keeps the ✕ here, in the corner. */}
         {showCloseButton && (
-          <SheetCloseButton className="group-has-data-[slot=sheet-header]/sheet-content:hidden" />
+          <SheetCloseButton
+            label={t.close}
+            className="group-has-data-[slot=sheet-header]/sheet-content:hidden"
+          />
         )}
       </SheetPrimitive.Popup>
     </SheetPortal>
@@ -124,7 +136,7 @@ function SheetContent({
 // so a scrolled body passes under them. Their own 16px padding keeps the body
 // clear of their text. Each measures its height for the sheet's scroll padding.
 function SheetHeader({ className, children, ref, ...props }: React.ComponentProps<"div">) {
-  const showCloseButton = React.useContext(SheetCloseButtonContext)
+  const closeLabel = React.useContext(SheetCloseButtonContext)
   const pinnedRef = usePinnedHeight("--pinned-header-height", "sheet-content", ref)
   return (
     <div
@@ -137,7 +149,7 @@ function SheetHeader({ className, children, ref, ...props }: React.ComponentProp
       {...props}
     >
       {children}
-      {showCloseButton && <SheetCloseButton />}
+      {closeLabel !== null && <SheetCloseButton label={closeLabel} />}
     </div>
   )
 }

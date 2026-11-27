@@ -7,6 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile"
 import { cn } from "@vendure-io/ui/lib/utils"
+import { useMessages } from "../../lib/format-messages.ts"
 import { Button } from "@vendure-io/ui/components/atoms/button"
 import { Input } from "@vendure-io/ui/components/atoms/input"
 import { Separator } from "@vendure-io/ui/components/atoms/separator"
@@ -156,13 +157,25 @@ function Sidebar({
   className,
   children,
   dir,
+  mobileLabels,
   ...props
 }: React.ComponentProps<"div"> & {
   side?: "start" | "end"
   variant?: "sidebar" | "floating" | "inset"
   collapsible?: "offcanvas" | "icon" | "none"
+  /**
+   * The screen-reader title and description of the sheet the sidebar opens
+   * in on a small screen. Default to `messages.sidebar` (`mobileTitle`,
+   * `mobileDescription`) from `FormatProvider`, then "Sidebar" and
+   * "Displays the mobile sidebar.".
+   */
+  mobileLabels?: { title?: string; description?: string }
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const t = useMessages("sidebar", {
+    mobileTitle: mobileLabels?.title,
+    mobileDescription: mobileLabels?.description,
+  })
 
   if (collapsible === "none") {
     return (
@@ -196,8 +209,8 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+            <SheetTitle>{t.mobileTitle}</SheetTitle>
+            <SheetDescription>{t.mobileDescription}</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>

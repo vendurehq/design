@@ -47,6 +47,7 @@ import {
   SidebarLevelBack,
 } from '../src/components/atoms/sidebar.tsx';
 import { DirectionProvider } from '../src/components/atoms/direction.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import {
   Collapsible,
   CollapsibleContent,
@@ -1263,4 +1264,63 @@ export const InsetRightToLeft: Story = {
   parameters: { layout: 'fullscreen' },
   render: () => <TwoLevelSidebar dir="rtl" variant="inset" />,
   play: async ({ canvasElement }) => checkInsetMargins(canvasElement, 'right'),
+};
+
+// The sidebar opens in a sheet below 768px. useIsMobile reads
+// `window.innerWidth`, so the story narrows it while it is mounted.
+function narrowWindow() {
+  const own = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+  Object.defineProperty(window, 'innerWidth', { configurable: true, get: () => 500 });
+  return () => {
+    if (own) Object.defineProperty(window, 'innerWidth', own);
+    else delete (window as { innerWidth?: number }).innerWidth;
+  };
+}
+
+/**
+ * On a small screen the sidebar opens in a sheet with a screen-reader title
+ * and description. `mobileLabels` sets them; `messages.sidebar`
+ * (`mobileTitle`, `mobileDescription`) sets them once for the app, and
+ * `mobileLabels` wins.
+ */
+export const MobileLabels: Story = {
+  tags: ['!autodocs'],
+  beforeEach: narrowWindow,
+  render: () => (
+    <FormatProvider messages={{ sidebar: { mobileTitle: 'Seitenleiste', mobileDescription: 'Die Navigation der App.' } }}>
+      <SidebarProvider>
+        <Sidebar mobileLabels={{ title: 'Navigation' }}>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+        <SidebarInset>
+          <header className="flex h-12 items-center gap-2 border-b px-4">
+            <SidebarTrigger />
+          </header>
+        </SidebarInset>
+      </SidebarProvider>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    // The desktop sidebar leaves the page once useIsMobile has read the width.
+    await waitFor(() => expect(canvasElement.querySelector('[data-slot="sidebar-gap"]')).toBeNull());
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Toggle Sidebar' }));
+    const sheet = await within(document.body).findByRole('dialog', { name: 'Navigation' });
+    await expect(sheet).toHaveAccessibleDescription('Die Navigation der App.');
+    await userEvent.keyboard('{Escape}');
+  },
 };
