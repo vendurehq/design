@@ -192,7 +192,7 @@ behavior you need instead of rebuilding it from atoms.
 > Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dataTable` (`filterValue`, the placeholder and accessible name of the filter editor's value input; DataTable's `labels.filterValue` wins), `datePicker`, `dateRangePicker` (`clear`, the clear button's name) and `dateTimePicker` (`clear`, and `time`, the time field's name), `dialog` (`close`, the ✕'s name and DialogFooter's Close button), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `fileDropzone` (the rejection texts `typeNotAccepted`, `fileTooLarge` with `{size}`, `tooManyFiles` and `tooManyFilesOne` with `{max}` and `validationFailed`; `checking`, `accepted`, `remove` with `{name}`, and the size units `byte`, `kilobyte` and `megabyte`), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads), `sheet` (`close`, the ✕'s name), `sidebar` (`mobileTitle`, `mobileDescription`, the mobile sheet's screen-reader texts) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
-`confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
+`confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `action-needed`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
 
 > **Chip remove button.** `onRemove` and `removeLabel` go together: pass both or neither. For a chip that is removable only sometimes, type the props with `ChipRemoveProps` from `components/molecules/chip`, then spread them. A `{}` else branch written inside the JSX spread does not compile.
 >
@@ -223,6 +223,20 @@ behavior you need instead of rebuilding it from atoms.
 > ```
 >
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
+
+> **ActionNeeded.** The findings that need someone, such as the setup problems of a store or the alerts of a project. The header is the fold row: the `title` (the strongest text), one count badge per tone, the chevron at the end and an optional `description` under the title. The whole header folds the list. The badges show only while the list is folded. Below the header, plain rows with a divider between them: the tone icon, a short title, one sentence and one action. The tone shows on the icon and the badges only. Pass the findings worst first. In a Card, render it as the Card's only child: the whole card header becomes the fold row. `memoryKey` (a channel or project id) remembers the fold in `localStorage`; `storage` takes another store, or `null` for this visit only. A finding whose `key` the memory has not seen opens the list again. `open`, `defaultOpen` and `onOpenChange` work as on a Collapsible. `countLabel` holds the badge texts ("1 error", "2 warnings"), so a host can apply its plural rules. Renders nothing without findings.
+>
+> ```tsx
+> import { ActionNeeded } from '@vendure-io/ui/components/molecules/action-needed';
+>
+> <Card>
+>   <ActionNeeded
+>     title="Store setup"
+>     memoryKey={channel.id}
+>     items={[{ key: 'shipping', tone: 'critical', title: 'No shipping method', description: 'Customers cannot check out.', action: <Button size="sm" variant="outline">Set up shipping</Button> }]}
+>   />
+> </Card>
+> ```
 
 #### Data display
 `code-block`, `data-table/data-table`, `data-table/data-table-types`, `data-table/list-header`, `data-table/table-pagination`, `data-table/data-table-filters`, `data-table/data-table-column-header`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`

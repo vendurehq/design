@@ -60,6 +60,7 @@
 - `@vendure-io/ui/components/atoms/toggle` → `./src/components/atoms/toggle.tsx`
 - `@vendure-io/ui/components/atoms/toggle-group` → `./src/components/atoms/toggle-group.tsx`
 - `@vendure-io/ui/components/atoms/tooltip` → `./src/components/atoms/tooltip.tsx`
+- `@vendure-io/ui/components/molecules/action-needed` → `./src/components/molecules/action-needed.tsx`
 - `@vendure-io/ui/components/molecules/anonymized-token` → `./src/components/molecules/anonymized-token.tsx`
 - `@vendure-io/ui/components/molecules/app-shell` → `./src/components/molecules/app-shell.tsx`
 - `@vendure-io/ui/components/molecules/arrow-link` → `./src/components/molecules/arrow-link.tsx`
@@ -1301,6 +1302,51 @@ declare function TooltipLabelSwap(props: Omit<React.ComponentProps<"span">, "chi
     active: number;
 }): import("react/jsx-runtime").JSX.Element;
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipLabelSwap, TooltipProvider };
+```
+
+## `@vendure-io/ui/components/molecules/action-needed`
+
+```ts
+import { type ComponentProps, type ReactNode } from 'react';
+export declare const ACTION_NEEDED_TONES: readonly ["critical", "warning", "info"];
+export type ActionNeededTone = (typeof ACTION_NEEDED_TONES)[number];
+export interface ActionNeededItem {
+    key: string;
+    tone: ActionNeededTone;
+    title: ReactNode;
+    description?: ReactNode;
+    action?: ReactNode;
+    icon?: ReactNode;
+}
+export declare function actionNeededCounts(items: readonly Pick<ActionNeededItem, 'tone'>[]): {
+    tone: "info" | "warning" | "critical";
+    count: number;
+}[];
+export type FoldMemoryStorage = Pick<Storage, 'getItem' | 'setItem'>;
+export type FoldMemory = {
+    open: boolean;
+    keys: readonly string[];
+};
+export declare function readFoldMemory(storage: FoldMemoryStorage, memoryKey: string): FoldMemory | null;
+export declare function storeFoldMemory(storage: FoldMemoryStorage, memoryKey: string, memory: FoldMemory): void;
+export declare function opensOnLoad(memory: FoldMemory, keys: readonly string[]): boolean;
+type ActionNeededRowProps = Omit<ComponentProps<'div'>, 'title'> & Pick<ActionNeededItem, 'tone' | 'title' | 'description' | 'action' | 'icon'>;
+declare function ActionNeededRow({ tone, title, description, action, icon, className, ...props }: ActionNeededRowProps): import("react/jsx-runtime").JSX.Element;
+type ActionNeededProps<T extends ActionNeededItem> = Omit<ComponentProps<'div'>, 'children' | 'defaultValue' | 'title'> & {
+    title: ReactNode;
+    description?: ReactNode;
+    items: readonly T[];
+    renderItem?: (item: T) => ReactNode;
+    countLabel?: (count: number, tone: ActionNeededTone) => ReactNode;
+    memoryKey?: string;
+    storage?: FoldMemoryStorage | null;
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    revealed?: boolean;
+};
+declare function ActionNeeded<T extends ActionNeededItem>({ title, description, items, renderItem, countLabel, memoryKey, storage, open: openProp, defaultOpen, onOpenChange, revealed, className, ...props }: ActionNeededProps<T>): import("react/jsx-runtime").JSX.Element | null;
+export { ActionNeeded, ActionNeededRow, type ActionNeededProps, type ActionNeededRowProps };
 ```
 
 ## `@vendure-io/ui/components/molecules/anonymized-token`

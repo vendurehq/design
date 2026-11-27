@@ -25,6 +25,10 @@ export const easing = {
   // The content of a Drawer fading while a nested drawer opens over it: a
   // near-linear start with a small overshoot at the end. Only Drawer uses it.
   drawerContent: 'cubic-bezier(0.45, 1.005, 0, 1.005)',
+  // The fold of an ActionNeeded list: a quick ease-out, a touch softer at the
+  // start than `out`. The count badges fade on it both ways, and the rows
+  // close on it. The rows open on `height`. Only ActionNeeded uses it.
+  fold: 'cubic-bezier(0.23, 1, 0.32, 1)',
 } as const;
 
 export const duration = {
@@ -102,6 +106,23 @@ export const duration = {
   // An Alert that appears moves into place and fades in this time with the
   // `out` curve. Only Alert uses it.
   alertEnter: '240ms',
+  // An ActionNeeded list opens and folds in two beats: the count badges
+  // fade out, then the rows open one by one, worst first. Folding plays it
+  // in reverse, a bit faster. The rows open their height in `foldOpen` on
+  // the `height` curve and fade down into place in `foldRowIn`; folding,
+  // they close in `foldClose` and fade in `foldRowOut`, on the `fold` curve.
+  // The badges fade out in `moderate` and come back in `foldBadgeIn`, after
+  // the rows have gone. `foldHandOff` is the wait between the two beats.
+  // Each row (and badge) starts `foldStagger` after the one above it while
+  // opening, and `foldStep` apart while folding. Only ActionNeeded uses them.
+  foldOpen: '240ms',
+  foldClose: '160ms',
+  foldRowIn: '220ms',
+  foldRowOut: '140ms',
+  foldBadgeIn: '180ms',
+  foldHandOff: '110ms',
+  foldStagger: '50ms',
+  foldStep: '30ms',
   // The icon of a Button turns (a chevron on an expanded trigger) in this
   // time with the `out` curve. Only Button uses it.
   buttonIconTurn: '220ms',

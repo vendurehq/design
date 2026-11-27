@@ -214,6 +214,7 @@
   --ease-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-flash: cubic-bezier(0, 0, 0.58, 1);
   --ease-drawer-content: cubic-bezier(0.45, 1.005, 0, 1.005);
+  --ease-fold: cubic-bezier(0.23, 1, 0.32, 1);
   --transition-duration-instant: 0ms;
   --transition-duration-fast: 100ms;
   --transition-duration-quick: 120ms;
@@ -247,6 +248,14 @@
   --transition-duration-drawer-slide: 450ms;
   --transition-duration-drawer-swipe: 400ms;
   --transition-duration-alert-enter: 240ms;
+  --transition-duration-fold-open: 240ms;
+  --transition-duration-fold-close: 160ms;
+  --transition-duration-fold-row-in: 220ms;
+  --transition-duration-fold-row-out: 140ms;
+  --transition-duration-fold-badge-in: 180ms;
+  --transition-duration-fold-hand-off: 110ms;
+  --transition-duration-fold-stagger: 50ms;
+  --transition-duration-fold-step: 30ms;
   --transition-duration-button-icon-turn: 220ms;
   --transition-duration-external-arrow: 220ms;
   --transition-duration-page-fade: 220ms;

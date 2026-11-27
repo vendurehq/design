@@ -133,6 +133,7 @@ export declare const easing: {
     readonly soft: "cubic-bezier(0.25, 0.1, 0.25, 1)";
     readonly flash: "cubic-bezier(0, 0, 0.58, 1)";
     readonly drawerContent: "cubic-bezier(0.45, 1.005, 0, 1.005)";
+    readonly fold: "cubic-bezier(0.23, 1, 0.32, 1)";
 };
 export declare const duration: {
     readonly instant: "0ms";
@@ -168,6 +169,14 @@ export declare const duration: {
     readonly drawerSlide: "450ms";
     readonly drawerSwipe: "400ms";
     readonly alertEnter: "240ms";
+    readonly foldOpen: "240ms";
+    readonly foldClose: "160ms";
+    readonly foldRowIn: "220ms";
+    readonly foldRowOut: "140ms";
+    readonly foldBadgeIn: "180ms";
+    readonly foldHandOff: "110ms";
+    readonly foldStagger: "50ms";
+    readonly foldStep: "30ms";
     readonly buttonIconTurn: "220ms";
     readonly externalArrow: "220ms";
     readonly pageFade: "220ms";
@@ -883,6 +892,7 @@ export declare const textStyles: {
 --ease-drawer
 --ease-drawer-content
 --ease-flash
+--ease-fold
 --ease-height
 --ease-in
 --ease-in-out
@@ -941,6 +951,14 @@ export declare const textStyles: {
 --transition-duration-drawer-swipe
 --transition-duration-external-arrow
 --transition-duration-fast
+--transition-duration-fold-badge-in
+--transition-duration-fold-close
+--transition-duration-fold-hand-off
+--transition-duration-fold-open
+--transition-duration-fold-row-in
+--transition-duration-fold-row-out
+--transition-duration-fold-stagger
+--transition-duration-fold-step
 --transition-duration-instant
 --transition-duration-live-pulse
 --transition-duration-match-flash

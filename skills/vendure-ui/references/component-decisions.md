@@ -9,6 +9,9 @@ Before you build one of these by hand, use the component. Then read its section 
 
 | Hand-built pattern | Use | Section |
 | --- | --- | --- |
+| Tinted boxes inside a card, one per finding, or a stack of Alerts | `ActionNeeded` | ActionNeeded |
+| A bare "Open" link under each finding | `ActionNeededRow` | ActionNeeded |
+| A second "Action needed" header inside a card | `ActionNeeded` | ActionNeeded |
 | A tinted div with an icon and a message at the top of a page | `Alert` | Alert |
 | Links joined with "/" or "›" text above the page title | `Breadcrumb` | Breadcrumb |
 | A select or popover beside the page title to switch the current project or environment | `BreadcrumbMenu`, `BreadcrumbSearchMenu` | Breadcrumb |
@@ -46,6 +49,26 @@ Before you build one of these by hand, use the component. Then read its section 
 | Buttons side by side, where the selected one gets a filled variant | `ToggleGroup` | ToggleGroup |
 | A button that keeps a pressed state in `useState` and swaps its style | `Toggle` | ToggleGroup |
 
+## ActionNeeded
+
+Use one ActionNeeded for a list of findings that each wait on someone, such as the setup problems of a store or the alerts of a project.
+
+Components: `ActionNeeded`, `ActionNeededRow`.
+
+- **Findings that wait on someone:** Use ActionNeeded when a page or card lists several problems, each with its own fix: missing setup, a failed payment, a failed deploy. Each finding is one row with a tone icon, a short title, one sentence and one action.
+- **Not for one notice, a status or a task list:** One notice is an Alert. A state of one object is a StatusBadge. Steps the user works through in order are a Checklist. A log of past events is not a finding.
+- **The list is the card header:** In a Card, render ActionNeeded as the only child: its title is the card title and its header folds the list. Do not add a CardHeader above it or a second "Action needed" row inside it.
+- **Plain rows, not tinted boxes:** The rows are plain with a divider between them; tone shows only on the row icon and the folded count badges. Do not put an Alert or a tinted box per finding inside the card.
+- **One action, named for what it does:** Give each finding one small action that names the fix, such as "Change password" or "Set up shipping". Not a bare "Open" link and not a second "Dismiss" button: folding the list is how the user puts it away.
+- **Worst first, with stable keys:** Pass the findings worst first; the list shows them in the order given. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding. Pass `countLabel` to translate the count badges.
+
+**Instead of:**
+
+- Tinted boxes inside a card, one per finding, or a stack of Alerts: use `ActionNeeded`.
+- A bare "Open" link under each finding: use `ActionNeededRow`.
+- A second "Action needed" header inside a card: use `ActionNeeded`.
+
+Related decisions: `alert`, `checklist`, `status-badge`.
 ## Alert
 
 Use one Alert for a page or region notice, toned by its consequence for the viewer.
@@ -57,6 +80,7 @@ Components: `Alert`, `AlertAction`.
 - **A page notice is one Alert:** Set the tone with the Alert `tone` prop. Do not wrap Alert to hand-color its icon or stack several Alerts for one notice.
 - **A toned Alert carries its tone icon:** Put the tone icon first in every `warning`, `info` and `destructive` Alert: TriangleAlert, Info or CircleAlert. The faint tint alone is not enough cue, and the warning tint is never the only cue.
 - **Actions go in AlertAction:** Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.
+- **Several findings are one ActionNeeded list, not a stack of Alerts:** When a page or card lists several problems that each wait on the user, such as the setup problems of a store, use ActionNeeded: a header that folds the list (the title, then one count badge per tone while folded) over plain rows with a divider between them, each with a tone icon, a short title, one sentence and one action button named for what it does ("Change password", not "Open"). Do not stack Alerts or put tinted boxes inside a card. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding.
 
 **Choose:**
 
