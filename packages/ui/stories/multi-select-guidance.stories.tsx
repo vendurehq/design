@@ -167,7 +167,7 @@ export const ChoosingTheControl: Story = {
                   <td className="p-3">
                     <span className="font-mono text-xs">{control}</span>
                     {sibling ? (
-                      <span className="text-muted-foreground mt-0.5 block text-[11px]">
+                      <span className="text-muted-foreground mt-0.5 block text-2xs">
                         {sibling}
                       </span>
                     ) : null}

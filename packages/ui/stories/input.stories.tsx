@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
+import { Button } from '../src/components/atoms/button.tsx';
 import type { ReactNode } from 'react';
 import { Input } from '../src/components/atoms/input.tsx';
 
@@ -13,6 +15,27 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: { 'aria-label': 'Email' },
+};
+
+/**
+ * `size="sm"` is 28px, the height of a small Button, so a field and a button
+ * in one dense row line up. Both have the 8px control corner.
+ */
+export const Small: Story = {
+  render: () => (
+    <div className="flex items-center gap-2">
+      <Input size="sm" aria-label="Search" placeholder="Search" className="w-56" />
+      <Button size="sm">Search</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('textbox', { name: 'Search' });
+    const button = canvas.getByRole('button', { name: 'Search' });
+    await expect(input.offsetHeight).toBe(28);
+    await expect(input.offsetHeight).toBe(button.offsetHeight);
+    await expect(getComputedStyle(input).borderTopLeftRadius).toBe(getComputedStyle(button).borderTopLeftRadius);
+  },
 };
 
 export const WithPlaceholder: Story = {

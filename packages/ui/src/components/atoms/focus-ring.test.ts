@@ -121,11 +121,11 @@ describe('v3 focus ring', () => {
       expect(code).toContain('aria-invalid:border-destructive');
       expect(code).toContain('aria-invalid:focus-visible:outline-destructive');
     }
-    // Fields have no border: their hairline is an inset shadow, so invalid
-    // swaps the shadow colour.
+    // Fields have no border: their hairline is an inset ring, so invalid
+    // swaps the ring colour.
     for (const name of ['Input', 'Textarea', 'Select'] as const) {
       const tokens = fieldTokens(name);
-      expect(tokens).toContain('aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]');
+      expect(tokens).toContain('aria-invalid:inset-ring-destructive');
       expect(tokens).toContain('aria-invalid:focus-visible:outline-destructive');
     }
   });

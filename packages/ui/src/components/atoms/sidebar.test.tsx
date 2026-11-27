@@ -105,7 +105,7 @@ describe('SidebarMenuButton active state', () => {
     );
   });
 
-  test('the outline variant border reads the oklch token directly', () => {
+  test('the outline variant draws its edge with a ring in the sidebar border colour', () => {
     const tokens = slotTokens(
       renderToStaticMarkup(
         <SidebarProvider>
@@ -114,11 +114,9 @@ describe('SidebarMenuButton active state', () => {
       ),
       'sidebar-menu-button',
     );
-    // A colour function around the oklch variable made the value invalid.
-    expect(tokens.filter((token) => token.includes('shadow-['))).toEqual([
-      'shadow-[0_0_0_1px_var(--sidebar-border)]',
-      'hover:shadow-[0_0_0_1px_var(--sidebar-accent)]',
-    ]);
+    // A 1px ring in the sidebar border colour, the accent colour on hover.
+    expect(tokens).toEqual(expect.arrayContaining(['ring', 'ring-sidebar-border', 'hover:ring-sidebar-accent']));
+    expect(tokens.filter((token) => token.includes('shadow-['))).toEqual([]);
   });
 
   test('an active sub-item has no bar: the guide line of the sub-list is next to it', () => {

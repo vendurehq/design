@@ -61,6 +61,10 @@
         "!packages/ui/src/lib/syntax-colors.ts"
       ],
       "plugins": ["./packages/design-lint/biome/no-raw-colors.grit"]
+    },
+    {
+      "includes": ["packages/ui/src/**", "packages/ui/stories/**"],
+      "plugins": ["./packages/design-lint/biome/no-raw-font-sizes.grit"]
     }
   ],
   "javascript": {

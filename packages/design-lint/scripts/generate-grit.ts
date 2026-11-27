@@ -1,8 +1,11 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  arbitraryFontSize,
+  classStart,
   colorFunctionNames,
   opacitySuffix,
+  oversizedFontSize,
   rampNames,
   rampSteps,
   utilityPrefixes,
@@ -33,9 +36,30 @@ const colorFunction = `(?:^|[^a-z0-9])${colorFunctionNames}\\(`;
 
 const forbiddenColor = `(?i).*(?:${rampUtility}|${rampVariable}|${hexAlpha}|${hexLongDecimal}|${colorFunction}).*`;
 
-const message = 'Use a semantic Vendure color slot. Raw colors belong only in theme definitions.';
+const colorMessage =
+  'Use a semantic Vendure color slot. Raw colors belong only in theme definitions.';
 
-function gritFile(severity: 'error' | 'warn'): string {
+const colorHeader = `// The hex alternatives with an a-f letter enumerate the position of the first
+// letter because this regex flavor has no lookaround. A purely decimal 3/4-digit
+// run (e.g. a GitHub issue ref like \`(#2608)\`) is not treated as a #RGB(A)
+// color. A purely decimal 6/8-digit run is a color, except after a letter and a
+// space (e.g. \`Order #100234\`). Mirrors eslint/index.js.`;
+
+const forbiddenFontSize = `.*${classStart}(?:${arbitraryFontSize}|${oversizedFontSize}).*`;
+
+const fontSizeMessage =
+  'Use a type role or a scale step (text-2xs to text-5xl). Arbitrary font sizes and text-6xl to text-9xl are not design-system sizes.';
+
+const fontSizeHeader = `// Flags an arbitrary font size (text-[13px], text-[length:…], text-[clamp(…)])
+// and Tailwind's text-6xl to text-9xl. A bare text-[var(--x)] is a colour to
+// Tailwind and is not flagged. Mirrors eslint/index.js.`;
+
+function gritFile(
+  pattern: string,
+  message: string,
+  header: string,
+  severity: 'error' | 'warn',
+): string {
   const diagnostic = (span: string) =>
     `register_diagnostic(span=${span}, message="${message}", severity="${severity}")`;
   return `engine biome(1.0)
@@ -45,28 +69,33 @@ language js(typescript, jsx)
 // the pattern is composed from eslint/pattern-parts.js so both engines stay
 // behaviorally equivalent.
 //
-// The hex alternatives with an a-f letter enumerate the position of the first
-// letter because this regex flavor has no lookaround. A purely decimal 3/4-digit
-// run (e.g. a GitHub issue ref like \`(#2608)\`) is not treated as a #RGB(A)
-// color. A purely decimal 6/8-digit run is a color, except after a letter and a
-// space (e.g. \`Order #100234\`). Mirrors eslint/index.js.
+${header}
 or {
   JsxAttribute() as $attribute where {
     $attribute <: r"(?i)(?:className|style|fill|stroke|stopColor)=(?:\\"[^\\"]*\\"|'[^']*')",
-    $attribute <: r"${forbiddenColor}",
+    $attribute <: r"${pattern}",
     ${diagnostic('$attribute')}
   },
   string() as $literal where {
-    $literal <: r"${forbiddenColor}",
+    $literal <: r"${pattern}",
     ${diagnostic('$literal')}
   },
   JsTemplateChunkElement() as $literal where {
-    $literal <: r"${forbiddenColor}",
+    $literal <: r"${pattern}",
     ${diagnostic('$literal')}
   }
 }
 `;
 }
 
-await Bun.write(resolve(biomeDir, 'no-raw-colors.grit'), gritFile('error'));
-await Bun.write(resolve(biomeDir, 'no-raw-colors-warn.grit'), gritFile('warn'));
+for (const severity of ['error', 'warn'] as const) {
+  const suffix = severity === 'warn' ? '-warn' : '';
+  await Bun.write(
+    resolve(biomeDir, `no-raw-colors${suffix}.grit`),
+    gritFile(forbiddenColor, colorMessage, colorHeader, severity),
+  );
+  await Bun.write(
+    resolve(biomeDir, `no-raw-font-sizes${suffix}.grit`),
+    gritFile(forbiddenFontSize, fontSizeMessage, fontSizeHeader, severity),
+  );
+}

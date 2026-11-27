@@ -1,6 +1,9 @@
 import {
+  arbitraryFontSize,
+  classStart,
   colorFunctionNames,
   opacitySuffix,
+  oversizedFontSize,
   rampNames,
   rampSteps,
   utilityPrefixes,
@@ -99,12 +102,53 @@ const noRawColors = {
   },
 };
 
+const fontSizePattern = new RegExp(`${classStart}(?:${arbitraryFontSize}|${oversizedFontSize})`);
+
+const noRawFontSizes = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Require font sizes from the Vendure type scale in component code.',
+    },
+    schema: [],
+    messages: {
+      rawFontSize:
+        'Use a type role or a scale step (text-2xs to text-5xl). Arbitrary font sizes and text-6xl to text-9xl are not design-system sizes.',
+    },
+  },
+  /** @param {import('eslint').Rule.RuleContext} context */
+  create(context) {
+    /** @param {import('estree').Literal & { parent?: ParentNode }} node */
+    function checkLiteral(node) {
+      if (typeof node.value !== 'string' || isNonStyleJsxAttribute(node)) {
+        return;
+      }
+      if (fontSizePattern.test(node.value)) {
+        context.report({ node, messageId: 'rawFontSize' });
+      }
+    }
+
+    /** @param {import('estree').TemplateElement} node */
+    function checkTemplate(node) {
+      if (fontSizePattern.test(node.value.raw)) {
+        context.report({ node, messageId: 'rawFontSize' });
+      }
+    }
+
+    return {
+      Literal: checkLiteral,
+      TemplateElement: checkTemplate,
+    };
+  },
+};
+
 const plugin = {
   meta: {
     name: '@vendure-io/design-lint',
   },
   rules: {
     'no-raw-colors': noRawColors,
+    'no-raw-font-sizes': noRawFontSizes,
   },
   configs: {},
 };
@@ -117,9 +161,10 @@ plugin.configs.recommended = [
     },
     rules: {
       '@vendure-io/design/no-raw-colors': 'error',
+      '@vendure-io/design/no-raw-font-sizes': 'error',
     },
   },
 ];
 
 export default plugin;
-export { noRawColors };
+export { noRawColors, noRawFontSizes };

@@ -35,6 +35,8 @@ interface DatePickerProps extends Omit<React.ComponentProps<'div'>, 'defaultValu
   clearable?: boolean;
   disabled?: boolean;
   invalid?: boolean;
+  /** `sm` is 28px tall, for dense rows, like `Input size="sm"`. */
+  size?: 'sm' | 'default';
   name?: string;
   id?: string;
   calendarProps?: CalendarProps;
@@ -54,6 +56,7 @@ function DatePicker(allProps: DatePickerProps) {
     clearable = true,
     disabled,
     invalid,
+    size = 'default',
     name,
     id,
     calendarProps,
@@ -86,6 +89,7 @@ function DatePicker(allProps: DatePickerProps) {
   return (
     <div
       data-slot="date-picker"
+      data-size={size}
       // max-w-62 is the calendar: 7 cells of 2rem plus p-3. Pass max-w-none to fill the column.
       className={cn('flex min-w-0 max-w-62 items-center gap-1', className)}
       {...props}
@@ -101,7 +105,7 @@ function DatePicker(allProps: DatePickerProps) {
               disabled={disabled}
               aria-invalid={invalid || undefined}
               // Pickers sit in forms next to Inputs, so they take the field look.
-              className={fieldButton}
+              className={cn(fieldButton, size === 'sm' && 'h-7')}
             />
           }
         >
@@ -137,7 +141,7 @@ function DatePicker(allProps: DatePickerProps) {
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
+          size={size === 'sm' ? 'icon-xs' : 'icon-sm'}
           disabled={disabled}
           aria-label={t.clear}
           onClick={() => commit(undefined)}

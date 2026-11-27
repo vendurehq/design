@@ -32,6 +32,8 @@ interface DateTimePickerProps
   clearable?: boolean;
   disabled?: boolean;
   invalid?: boolean;
+  /** `sm` is 28px tall, for dense rows, like `Input size="sm"`. */
+  size?: 'sm' | 'default';
   name?: string;
   id?: string;
   calendarProps?: CalendarProps;
@@ -50,6 +52,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
     clearable = true,
     disabled,
     invalid,
+    size = 'default',
     name,
     id,
     calendarProps,
@@ -99,6 +102,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
   return (
     <div
       data-slot="date-time-picker"
+      data-size={size}
       // max-w-92 is the calendar (62), the gap and the w-28 time box. Pass max-w-none to fill the column.
       className={cn('flex min-w-0 max-w-92 items-center gap-2', className)}
       {...props}
@@ -114,7 +118,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
               disabled={disabled}
               aria-invalid={invalid || undefined}
               // Pickers sit in forms next to Inputs, so they take the field look.
-              className={fieldButton}
+              className={cn(fieldButton, size === 'sm' && 'h-7')}
             />
           }
         >
@@ -148,6 +152,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
         aria-invalid={invalid || undefined}
         value={timeValue}
         disabled={disabled || !selected}
+        size={size}
         className="w-28"
         onChange={(event) => commitTime(event.currentTarget.value)}
       />
@@ -155,7 +160,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
         <Button
           type="button"
           variant="ghost"
-          size="icon-sm"
+          size={size === 'sm' ? 'icon-xs' : 'icon-sm'}
           disabled={disabled}
           aria-label={t.clear}
           onClick={() => commit(undefined)}

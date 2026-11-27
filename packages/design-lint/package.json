@@ -14,7 +14,9 @@
     ".": "./eslint/index.js",
     "./eslint": "./eslint/index.js",
     "./biome/no-raw-colors": "./biome/no-raw-colors.grit",
-    "./biome/no-raw-colors-warn": "./biome/no-raw-colors-warn.grit"
+    "./biome/no-raw-colors-warn": "./biome/no-raw-colors-warn.grit",
+    "./biome/no-raw-font-sizes": "./biome/no-raw-font-sizes.grit",
+    "./biome/no-raw-font-sizes-warn": "./biome/no-raw-font-sizes-warn.grit"
   },
   "files": [
     "eslint",

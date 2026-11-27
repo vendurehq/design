@@ -1,6 +1,9 @@
 # @vendure-io/design-lint
 
-Mechanical lint rules for consumers of the Vendure design system. The package ships equivalent ESLint and Biome rules that reject raw color usage in component code.
+Mechanical lint rules for consumers of the Vendure design system. The package ships equivalent ESLint and Biome rules that reject raw colors and font sizes outside the type scale in component code:
+
+- `no-raw-colors`: semantic color slots only.
+- `no-raw-font-sizes`: font sizes from the type scale only.
 
 ## ESLint
 
@@ -17,11 +20,14 @@ export default [
 
 ## Biome
 
-Add the GritQL plugin to `biome.json`:
+Add the GritQL plugins to `biome.json`:
 
 ```json
 {
-  "plugins": ["./node_modules/@vendure-io/design-lint/biome/no-raw-colors.grit"]
+  "plugins": [
+    "./node_modules/@vendure-io/design-lint/biome/no-raw-colors.grit",
+    "./node_modules/@vendure-io/design-lint/biome/no-raw-font-sizes.grit"
+  ]
 }
 ```
 
@@ -29,7 +35,10 @@ The default plugin reports violations as errors. For gradual adoption, use the w
 
 ```json
 {
-  "plugins": ["./node_modules/@vendure-io/design-lint/biome/no-raw-colors-warn.grit"]
+  "plugins": [
+    "./node_modules/@vendure-io/design-lint/biome/no-raw-colors-warn.grit",
+    "./node_modules/@vendure-io/design-lint/biome/no-raw-font-sizes-warn.grit"
+  ]
 }
 ```
 
@@ -50,6 +59,12 @@ Declare the plugin in the root `biome.json`. A nested Biome configuration must e
 
 Do not use a relative path such as `"../../biome.json"`: inherited plugin paths are re-resolved from the nested configuration's directory and Biome will fail with `Cannot read file`. Inherited exclusion globs also match relative to the nested workspace, not the repository root, so verify exclusions from each workspace that owns a nested configuration.
 
+### no-raw-colors
+
 The rule rejects generic Tailwind palette utilities, literal colors, and direct generic ramp CSS variables in JavaScript and TypeScript component code. In JSX it checks the `className`, `style`, `fill`, `stroke` and `stopColor` attributes; other attributes such as `title` or `href` hold prose and are exempt. Inside Tailwind arbitrary values, `_` counts as a separator, so `shadow-[0_1px_rgba(0,0,0,0.1)]` is rejected. Vendure's published `brand`, `success`, `warning`, `destructive`, and `info` ramps are allowed because they carry semantic meaning. The rule does not suggest a replacement because choosing the correct semantic slot requires domain context.
 
 A `#` followed by a purely decimal 3- or 4-digit run (for example a GitHub issue reference like `(#2608)` in a test title) is not treated as a `#RGB`/`#RGBA` color, so such references are not flagged. This is a deliberate tradeoff: numeric shorthand colors such as `#000` or `#333` are also not flagged, because a decimal 3/4-digit run is far more likely to be an issue reference than a color. Short hex colors that contain at least one `a`-`f` digit (`#abc`, `#f00`) are still rejected, as are 6- and 8-digit hex colors even when fully decimal (`#112233`). The one exception is a fully decimal 6- or 8-digit run after a letter and a space, such as `Order #100234`: the rule reads it as a reference. The cost is that a CSS shorthand such as `2px #000000` is not flagged.
+
+### no-raw-font-sizes
+
+The rule enforces the type-scale guidance in `@vendure-io/design-tokens`: a font size comes from a type role or a scale step, `text-2xs` to `text-5xl`. It rejects an arbitrary size (`text-[13px]`, `text-[0.8rem]`, `text-[13vw]`, `text-[clamp(…)]`, `text-[length:…]`, `text-(length:…)`), with or without a line-height modifier, and Tailwind's `text-6xl` to `text-9xl`, which are not design-system sizes. The display sizes are reached through their roles (`text-style-display-xl` and the others), which the rule allows. A bare `text-[var(--x)]` or `text-(--x)` is a colour to Tailwind and is allowed. It checks the same strings and JSX attributes as `no-raw-colors`. It does not check an inline `fontSize` in a `style` object or a `font-size` rule in CSS; the guidance still forbids both.

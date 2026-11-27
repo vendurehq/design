@@ -9,7 +9,7 @@ import { fieldNames, fieldTokens } from '../../test/fields';
 import { slotTokens } from '../../test/slot-tokens';
 
 // The v3 field, as Input has it: the muted fill, a 1px inset hairline in the
-// border colour, the lg (6px) radius, 34px tall, a 2px ring inside the field,
+// border colour, the xl (8px) radius, the corner of a Button, 34px tall, a 2px ring inside the field,
 // and the text 10px in. Every field shares the recipe in lib/field-surface, so
 // they cannot drift apart. The per-field checks render each field and read the
 // classes it ends up with, so a class that overrides the recipe fails them;
@@ -23,15 +23,16 @@ const recipe = readFileSync(join(import.meta.dir, '../../lib/field-surface.ts'),
 const retired = ['border-input', 'dark:bg-input/30', 'dark:hover:bg-input/50', 'aria-invalid:ring-3', 'data-[size=default]:h-9'];
 
 describe('v3 field look', () => {
-  test('the recipe: muted fill, inset hairline, 6px radius, inset ring, invalid hairline', () => {
+  test('the recipe: muted fill, inset hairline, 8px radius, inset ring, invalid hairline', () => {
     for (const token of [
       'bg-muted',
-      'shadow-[inset_0_0_0_1px_var(--border)]',
-      'rounded-lg',
+      'inset-ring',
+      'inset-ring-border',
+      'rounded-xl',
       'focus-visible:outline-2',
       'focus-visible:-outline-offset-2',
       'focus-visible:outline-ring',
-      'aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]',
+      'aria-invalid:inset-ring-destructive',
       'aria-invalid:focus-visible:outline-destructive',
       'forced-colors:border',
     ]) {
@@ -70,7 +71,7 @@ describe('v3 field look', () => {
   test('InputGroup draws the field around its control and rings it inside', () => {
     const tokens = fieldTokens('InputGroup');
     expect(tokens).toContain('has-[[data-slot=input-group-control]:focus-visible]:-outline-offset-2');
-    expect(tokens).toContain('has-[[data-slot][aria-invalid=true]]:shadow-[inset_0_0_0_1px_var(--destructive)]');
+    expect(tokens).toContain('has-[[data-slot][aria-invalid=true]]:inset-ring-destructive');
     for (const token of ['border-input', 'dark:bg-input/30', 'has-[[data-slot][aria-invalid=true]]:ring-3']) {
       expect(tokens).not.toContain(token);
     }
@@ -114,14 +115,15 @@ describe('v3 field look', () => {
   // turns red when a control inside is invalid. Rendered, so an override fails.
   const within = [
     'bg-muted',
-    'shadow-[inset_0_0_0_1px_var(--border)]',
-    'rounded-lg',
+    'inset-ring',
+    'inset-ring-border',
+    'rounded-xl',
     'forced-colors:border',
     'focus-within:outline-solid',
     'focus-within:outline-2',
     'focus-within:-outline-offset-2',
     'focus-within:outline-ring',
-    'has-aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]',
+    'has-aria-invalid:inset-ring-destructive',
     'has-aria-invalid:focus-within:outline-destructive',
   ];
   const chipsHtml = renderToStaticMarkup(

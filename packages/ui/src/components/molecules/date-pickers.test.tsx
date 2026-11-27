@@ -36,6 +36,47 @@ describe('uncontrolled date pickers', () => {
   });
 });
 
+describe('date pickers take size="sm"', () => {
+  const cases = [
+    ['DatePicker', <DatePicker key="d" size="sm" defaultValue="2026-03-10" />],
+    [
+      'DateTimePicker',
+      <DateTimePicker key="t" size="sm" defaultValue="2026-03-10T12:00:00.000Z" />,
+    ],
+    [
+      'DateRangePicker',
+      <DateRangePicker key="r" size="sm" defaultValue={{ from: '2026-03-10', to: '2026-03-17' }} />,
+    ],
+  ] as const;
+
+  test.each(cases)('%s: a 28px trigger and a 24px clear button', (_, element) => {
+    const html = renderToStaticMarkup(element);
+    expect(html).toContain('data-size="sm"');
+    expect(html).toMatch(/aria-haspopup="dialog"[^>]*class="[^"]*\bh-7\b/);
+    expect(html).toContain('size-6');
+  });
+
+  test('the default size keeps the 34px trigger', () => {
+    const html = renderToStaticMarkup(<DatePicker defaultValue="2026-03-10" />);
+    expect(html).toContain('data-size="default"');
+    expect(html).not.toMatch(/\bh-7\b/);
+  });
+
+  test('DateTimePicker passes the size to its time field', () => {
+    const html = renderToStaticMarkup(
+      <DateTimePicker size="sm" defaultValue="2026-03-10T12:00:00.000Z" />,
+    );
+    expect(html).toMatch(
+      /<input[^>]*type="time"[^>]*data-size="sm"|<input[^>]*data-size="sm"[^>]*type="time"/,
+    );
+  });
+
+  test('size accepts only "sm" or "default"', () => {
+    // @ts-expect-error A numeric size is not a picker size.
+    renderToStaticMarkup(<DatePicker size={3} />);
+  });
+});
+
 describe('date picker texts', () => {
   const day = '2026-03-10';
   const instant = '2026-03-10T12:00:00.000Z';

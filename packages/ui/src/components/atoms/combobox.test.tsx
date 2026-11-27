@@ -17,13 +17,14 @@ describe('ComboboxTrigger field styling', () => {
     const classes = slotTokens(html, 'combobox-trigger');
     for (const token of [
       'bg-muted',
-      'shadow-[inset_0_0_0_1px_var(--border)]',
-      'rounded-lg',
+      'inset-ring',
+      'inset-ring-border',
+      'rounded-xl',
       'data-[size=default]:h-8.5',
       'focus-visible:outline-2',
       'focus-visible:-outline-offset-2',
       'focus-visible:outline-ring',
-      'aria-invalid:shadow-[inset_0_0_0_1px_var(--destructive)]',
+      'aria-invalid:inset-ring-destructive',
       'data-placeholder:text-faint-foreground',
     ]) {
       expect(classes).toContain(token);
@@ -49,7 +50,7 @@ describe('ComboboxTrigger field styling', () => {
     );
     const button = html.match(/<button[^>]*>/)?.[0] ?? '';
     expect(button).not.toBe('');
-    expect(button).not.toContain('shadow-[inset_0_0_0_1px_var(--border)]');
+    expect(button).not.toContain('inset-ring-border');
     expect(button).not.toContain('h-8.5');
   });
 });

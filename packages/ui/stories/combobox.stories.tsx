@@ -72,8 +72,8 @@ export const Default: Story = {
     await expect(body.queryByText('No framework found.')).toBeNull();
     const option = body.getByRole('option', { name: 'Remix' });
     await userEvent.hover(option);
-    // The menu item radius, as in DropdownMenu.
-    await expect(getComputedStyle(option).borderTopLeftRadius).toBe('6px');
+    // The popup's 12px minus the list's 5px padding, as in DropdownMenu.
+    await expect(getComputedStyle(option).borderTopLeftRadius).toBe('7px');
     // The icon button is a native <button>, and Base UI is told so.
     await expect(console.error).not.toHaveBeenCalledWith(expect.stringContaining('nativeButton'));
   },
@@ -296,26 +296,26 @@ export const Chips: Story = {
   play: async ({ canvasElement }) => {
     const chips = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chips"]') as HTMLElement;
     const probe = document.createElement('div');
-    probe.className = 'bg-muted shadow-[inset_0_0_0_1px_var(--border)]';
+    probe.className = 'bg-muted inset-ring inset-ring-border';
     canvasElement.append(probe);
     const style = getComputedStyle(chips);
     await expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
     await expect(style.boxShadow).toBe(getComputedStyle(probe).boxShadow);
-    await expect(style.borderTopLeftRadius).toBe('6px');
+    await expect(style.borderTopLeftRadius).toBe('8px');
     probe.remove();
     // A chip stands out from the field: its own fill and a grey outline, the
     // v3 look's grey chip.
     const chip = canvasElement.querySelector<HTMLElement>('[data-slot="combobox-chip"]') as HTMLElement;
     await expect(getComputedStyle(chip).backgroundColor).not.toBe(style.backgroundColor);
     await expect(getComputedStyle(chip).boxShadow).not.toBe('none');
-    // The Chip size, and corners that are concentric with the field's 6px:
-    // the chip sits 5px in, so its corner is 6 - 5 = 1px; the remove button
+    // The Chip size, and corners that are concentric with the field's 8px:
+    // the chip sits 5px in, so its corner is 8 - 5 = 3px; the remove button
     // sits 4px inside the chip, so its corner is square.
     const chipBox = chip.getBoundingClientRect();
     const fieldBox = chips.getBoundingClientRect();
     await expect(chipBox.height).toBe(24);
     await expect(chipBox.top - fieldBox.top).toBe(5);
-    await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('1px');
+    await expect(getComputedStyle(chip).borderTopLeftRadius).toBe('3px');
     // The label is 8px from the edge: denser than a standalone Chip, so a field holds more chips.
     await expect(getComputedStyle(chip).paddingLeft).toBe('8px');
     const remove = chip.querySelector<HTMLElement>('[data-slot="combobox-chip-remove"]') as HTMLElement;

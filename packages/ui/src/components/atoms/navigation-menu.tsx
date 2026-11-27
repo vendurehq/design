@@ -118,7 +118,7 @@ function NavigationMenuPositioner({
         {...props}
       >
         {/* Opens with popupMotion. While open, it resizes to the next item's content in `popup-resize` (350ms). */}
-        <NavigationMenuPrimitive.Popup className={cn("bg-popover text-popover-foreground shadow-overlay xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) rounded-xl outline-none", popupMotion, "transition-[opacity,scale,translate,width,height] [transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal),var(--transition-duration-normal),var(--transition-duration-popup-resize),var(--transition-duration-popup-resize)] motion-reduce:transition-opacity")}>
+        <NavigationMenuPrimitive.Popup className={cn("bg-popover text-popover-foreground shadow-overlay xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) rounded-2xl outline-none", popupMotion, "transition-[opacity,scale,translate,width,height] [transition-duration:var(--transition-duration-popup-fade),var(--transition-duration-normal),var(--transition-duration-normal),var(--transition-duration-popup-resize),var(--transition-duration-popup-resize)] motion-reduce:transition-opacity")}>
           <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
         </NavigationMenuPrimitive.Popup>
       </NavigationMenuPrimitive.Positioner>
@@ -137,7 +137,7 @@ function NavigationMenuLink({
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
       className={cn(
-        "data-active:text-foreground data-active:font-medium focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring hover:bg-muted focus:bg-muted relative flex items-center gap-1.5 rounded-sm p-2 text-sm transition-[color,background-color] outline-none [&_svg:not([class*='size-'])]:size-4 after:bg-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:opacity-0 after:transition-opacity data-active:after:opacity-100",
+        "data-active:text-foreground data-active:font-medium focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring hover:bg-muted focus:bg-muted relative flex items-center gap-1.5 rounded-[calc(var(--radius-2xl)-8px)] p-2 text-sm transition-[color,background-color] outline-none [&_svg:not([class*='size-'])]:size-4 after:bg-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:opacity-0 after:transition-opacity data-active:after:opacity-100",
         className
       )}
       {...props}
@@ -161,7 +161,7 @@ function NavigationMenuIndicator({
       )}
       {...props}
     >
-      <div className="bg-border relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm shadow-md" />
+      <div className="bg-border relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm" />
     </NavigationMenuPrimitive.Icon>
   )
 }

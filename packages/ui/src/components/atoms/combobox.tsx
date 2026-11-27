@@ -335,7 +335,7 @@ function ComboboxContent({
           data-slot="combobox-content"
           data-chips={!!anchor}
           data-field-group={!!fieldGroup}
-          className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-xl data-[chips=true]:min-w-(--anchor-width) data-[field-group=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none", popupMotion, className )}
+          className={cn("bg-popover text-popover-foreground shadow-overlay group/combobox-content relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] overflow-hidden rounded-2xl data-[chips=true]:min-w-(--anchor-width) data-[field-group=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none *:data-[slot=input-group]:inset-ring-0", popupMotion, className )}
           // A closing list is gone for assistive technology: the input no
           // longer points at it, and it takes no input while it fades out.
           // With the search input inside it, the popup is a dialog: it takes
@@ -425,7 +425,7 @@ function ComboboxList({ className, children, ref, ...props }: ComboboxPrimitive.
         data-slot="combobox-list"
         aria-busy={paging?.isLoading || undefined}
         className={cn(
-          "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
+          "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1.25 data-empty:p-0",
           className
         )}
         {...props}
@@ -478,7 +478,7 @@ function ComboboxItem({
       className={cn(
         menuItemDisabled,
         menuCheckItem,
-        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground data-disabled:data-highlighted:outline-solid data-disabled:data-highlighted:outline-2 data-disabled:data-highlighted:-outline-offset-2 data-disabled:data-highlighted:outline-ring not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
+        "not-data-disabled:data-highlighted:bg-muted not-data-disabled:data-highlighted:text-accent-foreground data-disabled:data-highlighted:outline-solid data-disabled:data-highlighted:outline-2 data-disabled:data-highlighted:-outline-offset-2 data-disabled:data-highlighted:outline-ring not-data-[variant=destructive]:not-data-disabled:data-highlighted:**:text-accent-foreground relative flex min-h-8.5 w-full cursor-default items-center gap-2 rounded-[calc(var(--radius-2xl)-5px)] py-1.5 pe-8 ps-2 text-sm outline-hidden select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='stroke-'])]:stroke-[1.75] [&>svg:not([class*='opacity-'])]:opacity-55 [&>svg:not([class*='opacity-'])]:transition-opacity [&>svg:not([class*='opacity-'])]:duration-moderate not-data-disabled:data-highlighted:[&>svg:not([class*='opacity-'])]:opacity-85",
         className
       )}
       {...props}
@@ -572,9 +572,9 @@ function ComboboxChips({
 // muted field it sits on, with a grey outline, so each value stands out.
 // It has the Chip height, 24px, and is denser than a standalone Chip: the
 // label is 8px from the edge, so a field fits more of them. In the 34px
-// field it sits 5px from the edge, so its corner is the field's 6px minus that
-// 5px, 1px. The remove button sits 4px inside the chip, so its corner is the
-// chip's 1px minus 4px, which is square.
+// field it sits 5px from the edge, so its corner is the field's 8px minus that
+// 5px, 3px. The remove button sits 4px inside the chip, so its corner is the
+// chip's 3px minus 4px, which is square.
 function ComboboxChip({
   className,
   children,
@@ -590,7 +590,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "bg-accent [--status-tone:var(--neutral-text)]", statusChipRing, "text-foreground flex h-6 w-fit items-center justify-center gap-1.5 rounded-[calc(var(--radius-lg)-5px)] ps-2 pe-2 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pe-1",
+        "bg-accent [--status-tone:var(--neutral-text)]", statusChipRing, "text-foreground flex h-6 w-fit items-center justify-center gap-1.5 rounded-[calc(var(--radius-xl)-5px)] ps-2 pe-2 text-xs font-medium whitespace-nowrap has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pe-1",
         className
       )}
       {...props}

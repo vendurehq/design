@@ -7,6 +7,7 @@ import {
   InputGroupInput,
   InputGroupTextarea,
 } from '../src/components/atoms/input-group.tsx';
+import { Button } from '../src/components/atoms/button.tsx';
 import { Kbd, KbdGroup } from '../src/components/atoms/kbd.tsx';
 import { Search, Copy } from 'lucide-react';
 import { useState } from 'react';
@@ -51,8 +52,9 @@ export const WithButton: Story = {
 };
 
 /**
- * The xs and icon-xs buttons take the `rounded-lg` corner of every xs
- * Button (6px), not a corner worked out from `--radius`.
+ * The xs and icon-xs buttons nest their corner inside the 8px field: 24px
+ * tall in a 34px field, they sit 5px from its edge, so their corner is 3px.
+ * Their text is 12px, like an xs Button.
  */
 export const ExtraSmallButtons: Story = {
   render: () => (
@@ -67,8 +69,41 @@ export const ExtraSmallButtons: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     for (const button of [canvas.getByRole('button', { name: 'Copy' }), canvas.getByRole('button', { name: 'Copy the token' })]) {
-      await expect(getComputedStyle(button).borderTopLeftRadius).toBe('6px');
+      await expect(getComputedStyle(button).borderTopLeftRadius).toBe('3px');
     }
+    await expect(getComputedStyle(canvas.getByRole('button', { name: 'Copy' })).fontSize).toBe('12px');
+  },
+};
+
+/**
+ * `size="sm"` makes the group 28px, the height of a small Button, for a
+ * search field in a toolbar of small buttons. The input follows the group,
+ * and an xs button sits 2px from the edge, so its corner is 6px.
+ */
+export const Small: Story = {
+  render: () => (
+    <div className="flex items-center gap-2">
+      <InputGroup size="sm" className="w-64">
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+        <InputGroupInput aria-label="Search orders" placeholder="Search orders" />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton size="xs">Clear</InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+      <Button size="sm" variant="outline">Filter</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const group = canvasElement.querySelector<HTMLElement>('[data-slot="input-group"]') as HTMLElement;
+    const filter = canvas.getByRole('button', { name: 'Filter' });
+    await expect(group.offsetHeight).toBe(28);
+    await expect(group.offsetHeight).toBe(filter.offsetHeight);
+    await expect(canvas.getByRole('textbox', { name: 'Search orders' }).offsetHeight).toBe(28);
+    await expect(getComputedStyle(group).borderTopLeftRadius).toBe(getComputedStyle(filter).borderTopLeftRadius);
+    await expect(getComputedStyle(canvas.getByRole('button', { name: 'Clear' })).borderTopLeftRadius).toBe('6px');
   },
 };
 

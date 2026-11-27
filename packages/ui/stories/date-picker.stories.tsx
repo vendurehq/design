@@ -44,6 +44,31 @@ export const DateAndTime: Story = {
   },
 };
 
+/** `size="sm"`: 28px pickers for dense rows, next to a small Input. */
+export const Small: Story = {
+  render: () => (
+    <div className="flex w-[460px] flex-col items-start gap-3">
+      <div className="flex w-full items-center gap-2">
+        <Input size="sm" placeholder="Search" className="w-40" />
+        <DatePicker size="sm" defaultValue="2026-03-10" />
+      </div>
+      <DateTimePicker size="sm" defaultValue="2026-03-10T12:00:00.000Z" />
+      <DateRangePicker size="sm" defaultValue={{ from: '2026-03-10', to: '2026-03-17' }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const triggers = canvasElement.querySelectorAll<HTMLElement>('[aria-haspopup="dialog"]');
+    await expect(triggers).toHaveLength(3);
+    for (const trigger of triggers) {
+      await expect(trigger.getBoundingClientRect().height).toBe(28);
+    }
+    const time = canvasElement.querySelector<HTMLElement>('input[type="time"]');
+    await expect(time?.getBoundingClientRect().height).toBe(28);
+    const search = canvasElement.querySelector<HTMLElement>('input[placeholder="Search"]');
+    await expect(search?.getBoundingClientRect().height).toBe(28);
+  },
+};
+
 export const RangeWithPresets: Story = {
   render: () => {
     const [value, setValue] = useState<DateRangeValue>();
