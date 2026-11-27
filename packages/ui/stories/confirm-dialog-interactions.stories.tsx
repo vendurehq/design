@@ -7,6 +7,7 @@ import { Checkbox } from '../src/components/atoms/checkbox.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
 import { Label } from '../src/components/atoms/label.tsx';
 import { ConfirmDialog } from '../src/components/molecules/confirm-dialog.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 
 // Mounted interaction tests for ConfirmDialog. The test runner (CI step
 // "Storybook a11y smoke test") runs each `play` in a real browser. The dialog
@@ -83,13 +84,51 @@ export const BusyKeepsWidth: Story = {
 
     await userEvent.click(confirm);
     await waitFor(() => expect(confirm).toHaveAttribute('aria-busy', 'true'));
-    await expect(within(confirm).getByRole('status')).toBeInTheDocument();
+    // The spinner announces the English text by default.
+    await expect(within(confirm).getByRole('status', { name: 'Loading' })).toBeInTheDocument();
     await expect(confirm.querySelector('[data-slot=confirm-dialog-label]')?.className).toContain(
       'opacity-0',
     );
     await expect(confirm.offsetWidth).toBe(idleWidth);
     await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
 
+    pendingConfirm.resolve();
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+  },
+};
+
+/** `FormatProvider` `messages` translate the spinner text, and `loadingLabel` wins over them. */
+export const BusyTextFromMessagesAndProp: Story = {
+  beforeEach: () => {
+    pendingConfirm = deferred();
+  },
+  render: () => (
+    <FormatProvider messages={{ confirmDialog: { loading: 'Wird geladen' } }}>
+      <ConfirmDialog title="Deploy?" onConfirm={() => pendingConfirm.promise}>
+        <Button>Deploy</Button>
+      </ConfirmDialog>
+      <ConfirmDialog
+        title="Publish?"
+        loadingLabel="Chargement"
+        onConfirm={() => pendingConfirm.promise}
+      >
+        <Button>Publish</Button>
+      </ConfirmDialog>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Deploy' }));
+    let dialog = await within(document.body).findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }));
+    await expect(within(dialog).getByRole('status', { name: 'Wird geladen' })).toBeInTheDocument();
+    pendingConfirm.resolve();
+    await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
+
+    pendingConfirm = deferred();
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Publish' }));
+    dialog = await within(document.body).findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }));
+    await expect(within(dialog).getByRole('status', { name: 'Chargement' })).toBeInTheDocument();
     pendingConfirm.resolve();
     await waitFor(() => expect(within(document.body).queryByRole('alertdialog')).toBeNull());
   },

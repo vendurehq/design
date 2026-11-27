@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
+import { expect, within } from 'storybook/test';
 import { TablePagination } from '../src/components/molecules/data-table/table-pagination.tsx';
 
 const meta = {
@@ -72,4 +73,40 @@ export const Empty: Story = {
       <TablePagination {...args} onPageChange={() => {}} onPageSizeChange={() => {}} />
     </div>
   ),
+};
+
+/**
+ * The footer is one line at every width, whatever the range text, so it keeps
+ * its height from the first load to the rows. In a 355px footer (a phone
+ * list) the page-size label is visually hidden; it stays the select's name.
+ * From the top: loading, "0 of 0", "1–10 of 123,456".
+ */
+export const OneLineAtEveryWidth: Story = {
+  render: (args) => (
+    <div className="flex w-[355px] flex-col gap-4">
+      {[undefined, 0, 123456].map((total) => (
+        <TablePagination
+          key={String(total)}
+          {...args}
+          page={1}
+          pageSize={10}
+          totalItems={total}
+          onPageChange={() => {}}
+          onPageSizeChange={() => {}}
+        />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText('1–10 of 123,456')).toBeInTheDocument();
+    const footers = Array.from(
+      canvasElement.querySelectorAll<HTMLElement>('[data-slot="table-pagination"]'),
+      (footer) => Math.round(footer.getBoundingClientRect().height),
+    );
+    await expect(footers).toHaveLength(3);
+    await expect(new Set(footers).size).toBe(1);
+    // One line: as tall as the prev/next buttons.
+    const button = canvasElement.querySelector('[data-slot="table-pagination-next"]');
+    await expect(footers[0]).toBe(Math.round(button?.getBoundingClientRect().height ?? 0));
+  },
 };

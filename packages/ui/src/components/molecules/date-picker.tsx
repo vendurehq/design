@@ -13,6 +13,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import { fieldButton } from '../../lib/field-surface.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
@@ -39,6 +40,8 @@ interface DatePickerProps extends Omit<React.ComponentProps<'div'>, 'defaultValu
   name?: string;
   id?: string;
   calendarProps?: CalendarProps;
+  /** Accessible name of the clear button. @default `messages.datePicker.clear`, "Clear date" */
+  clearLabel?: string;
 }
 
 /** Date-only picker whose value cannot shift when serialized across time zones. */
@@ -57,6 +60,7 @@ function DatePicker(allProps: DatePickerProps) {
     name,
     id,
     calendarProps,
+    clearLabel,
     className,
     ...props
   } = allProps;
@@ -73,6 +77,7 @@ function DatePicker(allProps: DatePickerProps) {
   const generatedId = React.useId();
   const triggerId = id ?? generatedId;
   const { locale } = useFormatSettings();
+  const t = useMessages('datePicker', { clear: clearLabel });
   const selected = parseCalendarDate(value);
   const minDate = parseCalendarDate(min);
   const maxDate = parseCalendarDate(max);
@@ -138,7 +143,7 @@ function DatePicker(allProps: DatePickerProps) {
           variant="ghost"
           size={size === 'sm' ? 'icon-xs' : 'icon-sm'}
           disabled={disabled}
-          aria-label="Clear date"
+          aria-label={t.clear}
           onClick={() => commit(undefined)}
         >
           <XIcon />

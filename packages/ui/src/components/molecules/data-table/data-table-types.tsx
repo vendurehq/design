@@ -3,7 +3,6 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   HeaderContext,
-  OnChangeFn,
   Row,
   RowSelectionState,
   SortingState,
@@ -25,6 +24,38 @@ export interface DataTableColumnMeta {
    * Logical, so it flips in right-to-left. Defaults to `'start'`.
    */
   align?: 'start' | 'end';
+  /**
+   * The column's width: a number in px or a CSS length (`'8rem'`). The column
+   * has it while the skeleton shows and once the rows arrive, so the headers
+   * do not move when the data replaces the skeleton. Give one to each column
+   * whose content has a known width (a code, a status, a date, a total) and
+   * leave the widest text column without, so it takes the rest of the row.
+   * Wider content still widens the column (the table keeps its automatic
+   * layout). It is also the column's minimum: a table narrower than its
+   * columns scrolls sideways instead of squeezing them. TanStack's `size` is
+   * not read: TanStack gives every column a default `size`, so a set one can't
+   * be told from the default.
+   */
+  width?: number | string;
+  /**
+   * The column's minimum width, for a text column without a `width`: it still
+   * takes the rest of the row, but never gets narrower than this, so in a
+   * narrow table it keeps a readable width and the same width while the
+   * skeleton shows and once the rows arrive.
+   */
+  minWidth?: number | string;
+  /**
+   * The `--content-inset` of the column's cell content: how far it pulls back
+   * so its first letter lines up with the header. For a default-size
+   * StatusBadge: `'status-badge'` (chip with an icon), `'status-badge-dot'`
+   * (chip with a dot) or `'status-icon'` (`appearance="icon"`). Otherwise a
+   * number in px or a CSS length. When the pull-back is wider than the cell's gutter, the column's
+   * header and cells indent by the rest. With this set, that indent applies in
+   * every state, so the header does not move when the rows replace the
+   * skeleton. Without it the table measures the indent from the loaded cells,
+   * so the header moves once they arrive.
+   */
+  contentInset?: 'status-badge' | 'status-badge-dot' | 'status-icon' | number | string;
 }
 
 // Pure type module for the DataTable molecule. Kept runtime-free so it can be
@@ -35,12 +66,13 @@ export interface DataTableColumnMeta {
 /**
  * Controlled OR uncontrolled, per capability. `value` present → controlled: the
  * prop is the source of truth on every render (no internal seeding). `defaultValue`
- * → uncontrolled: the core seeds its own state and `onChange` (if given) only
- * observes. Never mix `value` with `defaultValue`.
+ * → uncontrolled: the core seeds its own state and `onValueChange` (if given)
+ * only observes. `onValueChange` always gets the next value, never an updater
+ * function. Never mix `value` with `defaultValue`.
  */
 export type ControlledState<T> =
-  | { value: T; onChange: OnChangeFn<T>; defaultValue?: never }
-  | { value?: never; onChange?: OnChangeFn<T>; defaultValue?: T };
+  | { value: T; onValueChange: (value: T) => void; defaultValue?: never }
+  | { value?: never; onValueChange?: (value: T) => void; defaultValue?: T };
 
 /* --- capability configs; PRESENCE of the config is the only feature switch --- */
 
@@ -68,17 +100,33 @@ export type DataTableRowSelection<TData> = ControlledState<RowSelectionState> & 
  * controlled via `page`/`onPageChange` — no `defaultValue` branch, because page
  * is typically URL-owned.
  */
-export interface DataTablePagination {
-  mode?: 'server' | 'client'; // default 'server'
+interface DataTablePaginationBase {
   page: number; // 1-based
   pageSize: number;
-  totalItems?: number; // required in server mode
   onPageChange: (page: number) => void;
   onPageSizeChange?: (size: number) => void; // presence renders the size selector
   pageSizeOptions?: number[]; // default [10, 25, 50, 100]
   getPageHref?: (page: number) => string;
   formatRange?: (range: { start: number; end: number; total: number }) => string;
 }
+
+/** The server pages, sorts and filters. The table shows one page of `rows`. */
+export interface DataTableServerPagination extends DataTablePaginationBase {
+  mode?: 'server';
+  /**
+   * The number of rows on all pages. `null` or `undefined` while it is not
+   * known (the first page has not loaded yet): the footer range is a skeleton
+   * until then. Do not pass 0 for "not known": 0 means the list is empty.
+   */
+  totalItems: number | null | undefined;
+}
+
+/** `rows` is the full set. The table pages it. */
+export interface DataTableClientPagination extends DataTablePaginationBase {
+  mode: 'client';
+}
+
+export type DataTablePagination = DataTableServerPagination | DataTableClientPagination;
 
 /**
  * Open operator vocabulary — the core never interprets it; it only stores it in
@@ -268,6 +316,11 @@ export interface DataTableLabels {
   columnsTrigger?: string; // 'Columns'
   columnsHeading?: string; // 'Toggle columns'
   addFilter?: string; // 'Add filter'
+  /**
+   * Placeholder and accessible name of the filter editor's default value input.
+   * @default `messages.dataTable.filterValue`, "Value"
+   */
+  filterValue?: string;
   clearFilters?: string; // 'Clear filters'
   removeFilter?: (columnLabel: string) => string; // (l) => `Remove ${l} filter`
   sortLabel?: (columnLabel: string) => string; // (c) => `Sort by ${c}`
@@ -282,14 +335,53 @@ export interface DataTableLabels {
 }
 
 export interface DataTableProps<TData> {
-  rows: TData[]; // current page (server) or full set (client). The core never fetches.
+  /**
+   * The current page (server) or the full set (client). The core never
+   * fetches. `undefined` until the first load finishes: the body shows
+   * skeleton rows. `[]` is a loaded empty list and shows the empty state, also
+   * while a new load runs. Do not pass `[]` for "not loaded".
+   */
+  rows: TData[] | undefined;
+  /**
+   * THE cell/header seam. `meta` is passed through; the DataTable reads
+   * `meta.align` and `meta.width` (see `DataTableColumnMeta`).
+   */
   // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
-  columns: ColumnDef<TData, any>[]; // `meta` passed through untouched. THE cell/header seam.
+  columns: ColumnDef<TData, any>[];
   /** TanStack getRowId. Required with server pagination + rowSelection. */
   getRowId?: (row: TData, index: number) => string;
 
-  isLoading?: boolean; // skeleton rows only while `rows` is empty; never blanks populated rows
-  skeletonRowCount?: number; // default 10
+  /**
+   * A load is running. With `rows` loaded (a page, sort or filter change that
+   * keeps the previous rows, or the empty state) they stay: the body is
+   * `aria-busy`, the rows and the footer range dim after a short delay, and
+   * prev/next ignore presses. Never blanks loaded rows. Before the first load
+   * (`rows` is `undefined`) the body shows skeleton rows with or without it.
+   */
+  isLoading?: boolean;
+  /**
+   * Skeleton rows before the first load of a table without `pagination`.
+   * Default 10. With `pagination` the count comes from the page size (and
+   * `expectedTotal`), so this prop is not used.
+   */
+  skeletonRowCount?: number;
+  /**
+   * The list's total row count (all pages) from an earlier visit, while the
+   * rows are not loaded yet. The first load then draws as many skeleton rows
+   * as the current page will have: the page size, fewer on a short last page,
+   * so the table does not change height when the rows arrive. A page that will
+   * be empty renders the empty state (`emptyState` or "No results") hidden and
+   * inert instead, so the body has its exact height.
+   *
+   * - Only the skeleton row count uses it. The footer never shows it: it can
+   *   be out of date.
+   * - Without it a paginated table draws one full page, any other table
+   *   `skeletonRowCount`.
+   *
+   * `useRememberedListTotal` keeps the total in local storage. Any other store
+   * works too.
+   */
+  expectedTotal?: number | null;
   /**
    * Per-column loading cells, keyed by column id, for cells that are not one
    * text line tall (a title over a muted sub-line, an avatar, a button), so the
@@ -319,7 +411,7 @@ export interface DataTableProps<TData> {
    * reload and a visit to another page in the same tab. Needs `rowSelection`.
    *
    * - On the first load the table restores the ids stored under the key and
-   *   reports them through `rowSelection.onChange`.
+   *   reports them through `rowSelection.onValueChange`.
    * - Every change is stored, with the ids of rows on other pages: a selection
    *   can span pages. An empty selection removes the entry.
    * - A new key switches to the selection stored under it, or to none. Nothing
@@ -460,6 +552,14 @@ export interface DataTableProps<TData> {
    * item.
    */
   pinFirstColumn?: boolean;
+  /**
+   * The rows open an item through `DataTableRowLink`. The table then keeps the
+   * row chevron's slot after the last column in every state: while the
+   * skeleton shows, when empty and with rows. Without it the slot appears only
+   * once a row with a link renders, so on the first load every column moves
+   * sideways by the slot's width when the rows arrive.
+   */
+  rowLinks?: boolean;
   /**
    * Extra `<TableRow>`s appended inside `TableBody` after the data rows — e.g.
    * an order table's subtotal/shipping/total rows. Rendered only alongside

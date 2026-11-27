@@ -4,6 +4,23 @@ import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-pr
 // that gains a text adds its group here; the `FormatMessages` type follows.
 // List the new texts in the FormatProvider section of `docs/ui-components.md`.
 const defaultMessages = {
+  breadcrumb: {
+    /** The loading row of a crumb menu, and the pending crumb's status. */
+    loading: 'Loading…',
+    /** The row of a BreadcrumbSearchMenu that reads the options again. */
+    retry: 'Retry',
+  },
+  codeBlock: {
+    copyCode: 'Copy code',
+    copied: 'Copied!',
+    /** Header of a shell block with no filename and no package-manager tabs. */
+    terminal: 'Terminal',
+    /** Header of a block with no filename and no language. */
+    code: 'Code',
+    showLess: 'Show less',
+    /** `{count}` is the number of hidden lines, formatted with `FormatProvider`'s `locale`. */
+    showMore: 'Show {count} more lines',
+  },
   combobox: {
     /** Announced while a page of options loads. */
     loading: 'Loading…',
@@ -11,6 +28,10 @@ const defaultMessages = {
   comboboxFreeText: {
     /** Announced by the field's spinner while suggestions load. */
     loading: 'Loading…',
+  },
+  confirmDialog: {
+    /** Screen-reader text of the spinner while the confirm action runs. */
+    loading: 'Loading',
   },
   copyButton: {
     copy: 'Copy',
@@ -27,6 +48,10 @@ const defaultMessages = {
   passwordInput: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',
+  },
+  secretValue: {
+    /** Screen-reader text of the spinner while the value loads. */
+    loading: 'Loading',
   },
   searchTrigger: {
     label: 'Search',
@@ -60,6 +85,45 @@ const defaultMessages = {
   elapsedTime: {
     /** Screen-reader text while the start loads (`from={undefined}`). */
     loading: 'Loading duration',
+  },
+  datePicker: {
+    /** Accessible name of the button that clears the date. */
+    clear: 'Clear date',
+  },
+  dateTimePicker: {
+    /** Accessible name of the button that clears the date and time. */
+    clear: 'Clear date and time',
+    /** Accessible name of the time field. */
+    time: 'Time',
+  },
+  dateRangePicker: {
+    /** Accessible name of the button that clears the range. */
+    clear: 'Clear date range',
+  },
+  fileDropzone: {
+    typeNotAccepted: 'This file type is not accepted.',
+    /** `{size}` is the largest allowed size, in the `byte`, `kilobyte` or `megabyte` unit. */
+    fileTooLarge: 'File size must be {size} or smaller.',
+    /** `{max}` is the file limit. Used when it is more than one. */
+    tooManyFiles: 'You can select up to {max} files.',
+    /** `{max}` is the file limit. Used when it is one. */
+    tooManyFilesOne: 'You can select up to {max} file.',
+    /** Shown when `validateFile` throws. */
+    validationFailed: 'This file could not be validated.',
+    /** Replaces the drop prompt while `validateFile` runs. */
+    checking: 'Checking files…',
+    /** Placed before the `accept` list. */
+    accepted: 'Accepted:',
+    /** Accessible name of a file's remove button. `{name}` is the file name. */
+    remove: 'Remove {name}',
+    /** File size units. The number follows `FormatProvider`'s `locale`. */
+    byte: 'B',
+    kilobyte: 'KB',
+    megabyte: 'MB',
+  },
+  dataTable: {
+    /** Placeholder and accessible name of the filter editor's default value input. */
+    filterValue: 'Value',
   },
 };
 

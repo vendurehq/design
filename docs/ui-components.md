@@ -104,7 +104,7 @@ behavior you need instead of rebuilding it from atoms.
 ### Navigation
 `breadcrumb`, `navigation-menu`, `pagination`, `text-link`
 
-> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app.
+> **Breadcrumb menu.** `BreadcrumbMenu` is a crumb that switches the current item, such as the environment at the start of a breadcrumb. Pass the `options` (`value`, `label`, an optional `leading` status dot and `detail`), the current `value`, `onValueChange` and a `label` that names the list. The menu opens toward the centre of the screen and stays open after a pick. Extra items, such as "Add environment", go in `children`. The data and the switch stay in your app. While the options load, pass `options={undefined}`: the open menu shows a loading row one item tall. `[]` means there are none. `BreadcrumbSearchMenu` takes the same `options`, plus `retryLabel` for its Retry row; both take `loadingLabel`.
 
 ### Data Display
 `avatar`, `calendar`, `carousel`, `chart`, `kbd`, `table`
@@ -166,10 +166,14 @@ behavior you need instead of rebuilding it from atoms.
 
 > **VisibilityIcon.** An eye for a show/hide toggle: `<VisibilityIcon visible={isVisible} />`. When `visible` turns false a line draws across the eye and cuts it; when it turns true the line draws back out. It does not animate on first render, and with reduced motion the change is instant. It sizes and colours like a lucide icon. It is decorative, so label the button or menu item that holds it. An `opacity-*` class on it (to dim a hidden state) fades on the line's timing. PasswordInput and SecretValue use it.
 
+> **FileDropzone texts.** Pass `labels` for the dropzone's own texts, or set `messages.fileDropzone` once in `FormatProvider`. A text with a value in it is a function in `labels` (`remove: (name) => ...`, `fileTooLarge: (size) => ...`, `tooManyFiles: (max) => ...`) and a `{name}`, `{size}` or `{max}` placeholder in `messages`. File sizes show the number in `FormatProvider`'s `locale` (`1,5 Mo` in `fr-FR`) and the unit from `byte`, `kilobyte` and `megabyte` (English `B`, `KB`, `MB`). `formatFileSize(bytes, { locale, units })` does the same outside the component.
+
 #### Date & number entry/display
 `date-picker`, `date-time-picker`, `date-range-picker`, `date-time`, `relative-time`, `elapsed-time`, `money`, `format-provider`
 
 > **Calendar language.** `FormatProvider`'s `locale` formats dates and numbers. The calendar in `Calendar` and in the date pickers' popups takes its language from `calendarLocale`: month caption, weekday names, first day of the week and screen-reader labels. Pass the react-day-picker locale of the active language, imported on its own: `import { fr } from 'react-day-picker/locale/fr'`, then `<FormatProvider locale="fr-FR" calendarLocale={fr}>`. Never import the `react-day-picker/locale` barrel: it holds every language (about 1.6 MB). Without `calendarLocale` the calendar is US English. A `locale` passed to `Calendar` (or in a picker's `calendarProps`) wins.
+
+> **Picker labels.** The clear button of each picker and the time field of `DateTimePicker` have an accessible name. Set it with `clearLabel` and `timeLabel`, or once for the app with `messages.datePicker`, `messages.dateTimePicker` and `messages.dateRangePicker`. The prop wins over `messages`.
 
 > **Texts.** `FormatProvider`'s `messages` translates the library's texts in one place, so an app does not pass a label prop to every component. It is nested by component (`{ passwordInput: { showPassword } }`), and every group and text is optional: a text you leave out stays English. An unknown group or text is a type error, so your editor completes the keys. A component's own label prop wins over `messages`. Type your table with `FormatMessages` from `components/molecules/format-provider`:
 >
@@ -185,7 +189,7 @@ behavior you need instead of rebuilding it from atoms.
 > <FormatProvider locale="de-DE" messages={de}>{app}</FormatProvider>;
 > ```
 >
-> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
+> Keep the object stable (a module constant or `useMemo`), as with the other provider values. The texts today: `breadcrumb` (`loading`, the loading row and the pending crumb of BreadcrumbMenu and BreadcrumbSearchMenu; `retry`, BreadcrumbSearchMenu's Retry row), `anonymizedToken` (`loading`, AnonymizedToken's screen-reader text while the token loads), `codeBlock` (`copyCode`, `copied`, `terminal`, `code`, `showLess`, `showMore`; `showMore` holds `{count}`, the number of hidden lines, formatted with `locale`), `combobox` (`loading`, announced while a page of options loads), `comboboxFreeText` (`loading`, announced while suggestions load), `confirmDialog` (`loading`, the spinner text while the action runs), `copyButton` (`copy`, `copied`; CopyButton and CopyableText), `dataTable` (`filterValue`, the placeholder and accessible name of the filter editor's value input; DataTable's `labels.filterValue` wins), `datePicker`, `dateRangePicker` (`clear`, the clear button's name) and `dateTimePicker` (`clear`, and `time`, the time field's name), `dateTime`, `elapsedTime` and `relativeTime` (`loading`, the screen-reader text while the time loads), `fileDropzone` (the rejection texts `typeNotAccepted`, `fileTooLarge` with `{size}`, `tooManyFiles` and `tooManyFilesOne` with `{max}` and `validationFailed`; `checking`, `accepted`, `remove` with `{name}`, and the size units `byte`, `kilobyte` and `megabyte`), `loadingState` (`loading`, LoadingState's screen-reader text), `money` (`loading`, Money's screen-reader text while the amount loads), `multiSelect` (`loading`, read in place of the selected values while the options load), `passwordInput` (`showPassword`, `hidePassword`), `secretValue` (`loading`, the spinner text while the value loads) and `searchTrigger` (`label`, and `commandPalette`, which the accessible name puts in brackets: "Search (command palette)"). More components join as they move to `messages`.
 
 #### Feedback & identity
 `confirm-dialog`, `state-views/*` (including `state-views/skeleton-parts`), `status-badge`, `count-badge`, `live-indicator`, `chip`, `id-chip`, `copyable-text`, `copy-feedback-provider`, `anonymized-token`, `secret-value`, `issued-secret`
@@ -210,6 +214,8 @@ behavior you need instead of rebuilding it from atoms.
 
 #### Data display
 `code-block`, `data-table/data-table`, `data-table/data-table-types`, `data-table/list-header`, `data-table/table-pagination`, `data-table/data-table-filters`, `data-table/data-table-column-header`, `list-row`, `timeline`, `checklist/checklist`, `step-indicator`, `collapsible-section`, `description-list`, `stat-card`, `illustrations/*`
+
+> **CodeBlock texts.** `labels` translates the texts of one block: `copyCode`, `copied`, `terminal`, `code`, `showLess` and `showMore`. `showMore` holds `{count}`, the number of hidden lines, formatted with `FormatProvider`'s `locale`: `labels={{ showMore: 'Afficher {count} lignes de plus' }}`. Each text also reads `messages.codeBlock`, and `labels` wins.
 
 > **Timeline.** A feed of events about one thing, newest first, on one rail: `<Timeline><TimelineItem><TimelineMarker tone="warning" /><TimelineContent><TimelineTitle>The server restarted.</TimelineTitle><TimelineMeta><RelativeTime value={at} /></TimelineMeta></TimelineContent></TimelineItem></Timeline>`. A TimelineMarker with children (an icon) replaces the 8px dot. TimelineDetail holds a note or an amount under the meta line. TimelineLink makes the whole entry open a page. For days, put a TimelineGroupHeading before each day's Timeline. An entry added while the page is ope
 > **Checklist.** A short list of steps a person completes, with its progress: setting up a project or a store. Import from `@vendure-io/ui/components/molecules/checklist/checklist`.
@@ -731,11 +737,9 @@ dialog with another padding, set the variable:
 <DialogContent className="[--dialog-padding:--spacing(8)]">…</DialogContent>
 ```
 
-A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` (`p-0`,
-`p-4`, `px-[24px]`) also sets the variable, so code written for 2.x keeps its
-header and footer flush with the dialog's edges. A `px-*` class sets the
-padding on all four sides. `py-*`, `pt-*` and a class behind a breakpoint
-(`sm:p-0`) do not set it: use the variable for those.
+Only the variable sets the padding. A `p-*` class on `DialogContent` or
+`AlertDialogContent` changes the padding but not the variable, so the header
+and footer no longer line up with the dialog's edges.
 `SheetContent` has no padding of its own. Its header and footer bring their
 own 16px; pad the body, not `SheetContent`.
 
@@ -758,6 +762,8 @@ import { ConfirmDialog } from "@vendure-io/ui/components/molecules/confirm-dialo
 - `default`: a consequential action the user means to take, such as publishing. Confirm is the filled primary and takes the focus, so Enter confirms.
 - `caution`: a costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus and Confirm is an outline button, so the dialog points one way.
 - `destructive`: a loss. Cancel takes the focus and Confirm is solid red.
+
+While an async `onConfirm` runs, the spinner announces "Loading". Translate it with `loadingLabel`, or once for the app with `messages.confirmDialog.loading`. SecretValue works the same way (`loadingLabel`, `messages.secretValue.loading`).
 
 ### Card
 
@@ -939,7 +945,7 @@ Every other file in `data-table/` is internal, and an import of it fails to reso
 
 ### DataTable loading rows
 
-While `isLoading` is set and `rows` is empty, DataTable renders `skeletonRowCount` skeleton rows. Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
+Until the first load finishes, pass `rows={undefined}` (and, in server pagination, `totalItems: null` or `undefined`). DataTable then renders skeleton rows: one full page (`pageSize`) with pagination, else `skeletonRowCount` (default 10). With `expectedTotal` (the list's total from an earlier visit, for example from `useRememberedListTotal`), it draws only the rows the current page will have. `rows={[]}` is a loaded empty list: it shows the empty state, also while `isLoading` is set. Never pass `[]` or `0` for "not loaded yet". Each cell gets one `DataTableSkeletonLine`, a placeholder exactly one text line tall, so columns of one-line cells (text, Money) need nothing. When a column's cells are taller than one line, pass `skeletonCells` for that column so the loading rows keep the loaded row height. Stack one `DataTableSkeletonLine` per text line, sized like the text it stands in for:
 
 ```tsx
 import {
@@ -948,9 +954,9 @@ import {
 } from "@vendure-io/ui/components/molecules/data-table/data-table";
 
 <DataTable
-  rows={data?.items ?? []}
+  rows={data?.items}
   columns={columns}
-  isLoading={isPending}
+  isLoading={isFetching}
   skeletonCells={{
     // A title over a muted text-xs sub-line.
     customer: (
@@ -973,7 +979,7 @@ import {
 
 ```tsx
 <DataTable
-  rowSelection={{ value: selection, onChange: setSelection }}
+  rowSelection={{ value: selection, onValueChange: setSelection }}
   bulkActions={({ selectedCount, selectedRowIds, missingRowIds, selection, clearSelection }) => (
     <>
       <span>{selectedCount} selected</span>
@@ -997,11 +1003,11 @@ import {
   columns={columns}
   getRowId={(row) => row.id}
   selectionStorageKey={`${route}:${channelId}`}
-  rowSelection={{ value: selection, onChange: setSelection }}
+  rowSelection={{ value: selection, onValueChange: setSelection }}
 />
 ```
 
-- On its first load the table restores the stored ids and reports them through `rowSelection.onChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
+- On its first load the table restores the stored ids and reports them through `rowSelection.onValueChange`. A controlled consumer takes them there. Nothing stored leaves the selection as you set it.
 - Every change is stored, with the ids of rows on other pages: a selection can span pages. An empty selection removes the entry.
 - A new key switches to the selection stored under it, or to none. Nothing from the old key carries over, and the switch itself stores nothing.
 - No navigation and no request. Blocked or full storage is ignored: the selection then lasts until the table unmounts.
@@ -1096,6 +1102,13 @@ These packages are optional — install them only if you use the features that n
 4. The loading flag is `isLoading` everywhere. Combobox `loading` is `isLoading`. LoadingState `srLabel` is `loadingLabel`. Both texts also read `FormatProvider`'s `messages` (`combobox.loading`, `loadingState.loading`).
 5. Alert takes `tone` from the state dictionary, like StatusBadge, instead of `variant`. Rename `variant="info"` and `variant="warning"` to `tone="info"` and `tone="warning"`, `variant="destructive"` to `tone="critical"`, and drop `variant="default"`. Alert also has the `neutral`, `success` and `progress` tones; `progress` spins its icon.
 6. `side` on Sidebar is `'start' | 'end'` (default `start`), and on SheetContent it is `'top' | 'bottom' | 'start' | 'end'` (default `end`). `left` and `right` are removed. Nothing moves in left-to-right: the old defaults were `left` for Sidebar and `right` for Sheet. In right-to-left `start` is the right edge, so remove the `dir === 'rtl' ? 'right' : 'left'` branch. The `data-side` attribute on both follows the new values.
+7. `PageHeaderBackLink` is gone. Use `PageHeaderBackRow`, with a `PageHeaderBack` in it for the link.
+8. An `<svg>` in the `children` of `StatusBadge` or `Alert` no longer replaces the tone icon, and a StatusBadge no longer colours it. Pass the icon as `icon`.
+9. A `p-*` or `px-*` class on `DialogContent` or `AlertDialogContent` no longer sets `--dialog-padding`. Set the variable instead: `p-0` becomes `[--dialog-padding:0px]`, `p-8` becomes `[--dialog-padding:--spacing(8)]`.
+10. DataTable marks "not loaded yet" in the data, not with `isLoading`:
+    - `rows` is `TData[] | undefined`. `undefined` draws the skeleton. `[]` is an empty list and shows the empty state, also while `isLoading` is set. Pass `data?.items`, not `data?.items ?? []`.
+    - Server pagination requires `totalItems: number | null | undefined`, the same type as `TablePagination`. `null` and `undefined` both mean "not known" and draw a skeleton range. Pass `data?.totalItems`, not `data?.totalItems ?? 0`. Client pagination (`mode: 'client'`) takes no `totalItems`.
+    - With pagination, the skeleton has one row per row of the page (`pageSize`). `skeletonRowCount` only applies without pagination.
 
 ### Breaking changes in `@vendure-io/design-tokens`
 

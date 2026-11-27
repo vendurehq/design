@@ -72,12 +72,18 @@ import { DataTableBulkActions, useSelectionCache } from './data-table-bulk-actio
 import {
   buildDisplayColumns,
   columnAlign,
+  columnContentIndent,
+  columnMinWidth,
+  columnWidth,
   getSelectedRowIds,
   measureColumnIndents,
+  PENDING_CLASS,
   resolveClearFilters,
   resolveSlot,
   sameIndents,
 } from './data-table-helpers.tsx';
+// Relative: `data-table-row-count-storage` is closed in the package exports.
+import { skeletonRowCountFor, useRememberedListTotal } from './data-table-row-count-storage.tsx';
 // Relative: `data-table-selection-storage` is closed in the package exports.
 import { useSelectionStorage } from './data-table-selection-storage.tsx';
 import { DataTableViewOptions } from './data-table-view-options.tsx';
@@ -85,6 +91,12 @@ import { DataTableViewOptions } from './data-table-view-options.tsx';
 // Id of the generated row-actions column. Public: it is the `skeletonCells` key
 // for the actions cell.
 const ACTIONS_COLUMN_ID = 'actions';
+// The table's data before the first load. One array, so TanStack's row model
+// does not rebuild on every render.
+const NO_ROWS: never[] = [];
+
+// The built-in empty-state cell.
+const EMPTY_CELL_CLASS = 'text-muted-foreground h-24 text-center';
 
 // The row link is a stretched link, like ListRowLink: one real link per row,
 // whose ::after covers the row (the row is `relative`), so a click on any point
@@ -127,9 +139,11 @@ const LINKED_ROW_CLASS = cn(
 // cell of every row, header included, so the chevron never covers a cell and
 // a row without a link lines up with the others. The chevron is 15px and sits
 // one 12px gap after the last cell, like ListRowChevron. Important: CardTable
-// sets the edge padding with a descendant rule.
+// sets the edge padding with a descendant rule. `rowLinks` (`data-row-links`)
+// keeps the slot in every state, also while skeleton or empty rows have no
+// link to find, so the columns do not move when the linked rows arrive.
 const ROW_CHEVRON_SLOT_CLASS =
-  '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
+  '[&:has([data-slot=data-table-row-link])_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]! [&[data-row-links]_tr>*:last-child]:pe-[calc(var(--card-px)+--spacing(7))]!';
 
 // Pinned (`pinFirstColumn`): a pinned cell is positioned, so it becomes the
 // containing block of the link's stretched ::after. A link in the pinned cell
@@ -341,8 +355,9 @@ function DataTableRowLink({
  * Bridge a capability config to a `[value, onChange]` pair TanStack can consume
  * as fully controlled. Controlled configs (`value`) are the source of truth every
  * render; uncontrolled configs (`defaultValue` or nothing) get internal state the
- * core owns, with any `onChange` observing. This fixes the donor's seed-then-emit
- * bug: the prop, not a one-time seed, drives every render.
+ * core owns, with any `onValueChange` observing. This fixes the donor's
+ * seed-then-emit bug: the prop, not a one-time seed, drives every render.
+ * TanStack's updater is resolved here, so `onValueChange` gets the next value.
  */
 function useControlledTableState<T>(
   config: ControlledState<T> | undefined,
@@ -351,10 +366,15 @@ function useControlledTableState<T>(
   const controlled = config?.value !== undefined;
   const [internal, setInternal] = React.useState<T>(config?.defaultValue ?? fallback);
   const value = controlled ? (config?.value as T) : internal;
+  // Updates in one tick build on each other before the next render.
+  const latest = React.useRef(value);
+  latest.current = value;
   const onChange = React.useCallback<OnChangeFn<T>>(
     (updater) => {
-      if (!controlled) setInternal((old) => functionalUpdate(updater, old));
-      config?.onChange?.(updater);
+      const next = functionalUpdate(updater, latest.current);
+      latest.current = next;
+      if (!controlled) setInternal(next);
+      config?.onValueChange?.(next);
     },
     [controlled, config],
   );
@@ -720,6 +740,7 @@ function DataTable<TData>({
   isLoading,
   skeletonRowCount = 10,
   skeletonCells,
+  expectedTotal,
   pagination,
   sorting,
   filters,
@@ -737,6 +758,7 @@ function DataTable<TData>({
   onTableReady,
   frame = 'card',
   pinFirstColumn = false,
+  rowLinks = false,
   footerRows,
   labels,
   className,
@@ -754,6 +776,32 @@ function DataTable<TData>({
     console.warn(
       '[DataTable] rowSelection with server pagination requires getRowId. ' +
         "TanStack's default page-index row ids can resolve bulkActions selection to the wrong row after changing pages.",
+    );
+  }
+
+  // Before the first load (`rows` undefined) the body shows skeleton rows. A
+  // load with rows loaded (a page, sort or filter change, or a refetch of an
+  // empty list) is pending instead: the rows or the empty state stay and dim
+  // after a short delay.
+  const firstLoad = rows === undefined;
+  const pending = Boolean(isLoading) && !firstLoad;
+  const serverTotal =
+    pagination != null && pagination.mode !== 'client' ? pagination.totalItems : undefined;
+  const serverTotalUnknown =
+    pagination != null && pagination.mode !== 'client' && serverTotal == null;
+
+  const warnedUnknownTotal = React.useRef(false);
+  if (
+    isDevelopment &&
+    serverTotalUnknown &&
+    !firstLoad &&
+    !isLoading &&
+    !warnedUnknownTotal.current
+  ) {
+    warnedUnknownTotal.current = true;
+    console.warn(
+      '[DataTable] The rows have loaded but pagination.totalItems is not known (null or undefined). ' +
+        'Pass the total with the rows: the footer range stays a skeleton until then.',
     );
   }
 
@@ -948,7 +996,7 @@ function DataTable<TData>({
   };
 
   const baseOptions: TableOptions<TData> = {
-    data: rows,
+    data: rows ?? NO_ROWS,
     columns: displayColumns,
     state,
     getRowId,
@@ -959,7 +1007,7 @@ function DataTable<TData>({
     manualSorting: sorting ? sorting.mode !== 'client' : undefined,
     manualFiltering: filters ? filters.mode !== 'client' : undefined,
     manualPagination: pagination ? pagination.mode !== 'client' : undefined,
-    rowCount: pagination && pagination.mode !== 'client' ? pagination.totalItems : undefined,
+    rowCount: serverTotal ?? undefined,
   };
 
   if (sorting) {
@@ -996,6 +1044,8 @@ function DataTable<TData>({
 
   const bodyRows = table.getRowModel().rows;
   const columnCount = table.getVisibleLeafColumns().length;
+  // The first load draws as many skeleton rows as the current page will have.
+  const skeletonRows = skeletonRowCountFor(expectedTotal ?? null, pagination, skeletonRowCount);
 
   // The select checkbox is floated absolutely over a zero-width cell, so the
   // gutter it needs is folded into the leading data column as left padding —
@@ -1086,9 +1136,22 @@ function DataTable<TData>({
       generatedColumn(columnId) === 'select' && leadingColumnId != null
         ? leadingColumnId
         : columnId;
-    return columnIndents[id]
-      ? ({ '--column-indent': `${columnIndents[id]}px` } as React.CSSProperties)
-      : undefined;
+    // A declared inset (`meta.contentInset`) indents the column the same in
+    // every state; the measured indent is the fallback.
+    const declared = columnContentIndent(table.getColumn(id)?.columnDef.meta);
+    const indent = declared ?? (columnIndents[id] ? `${columnIndents[id]}px` : undefined);
+    return indent ? ({ '--column-indent': indent } as React.CSSProperties) : undefined;
+  };
+
+  // A column's `meta.width` is set on its header cell, so the column has that
+  // width while the skeleton shows and once the rows arrive (the table keeps
+  // its automatic layout: wider content still widens it).
+  // biome-ignore lint/suspicious/noExplicitAny: matches TanStack's ColumnDef value-type convention
+  const headerCellStyle = (column: Column<TData, any>): React.CSSProperties | undefined => {
+    const indent = columnIndentStyle(column.id);
+    const width = columnWidth(column.columnDef.meta);
+    const minWidth = columnMinWidth(column.columnDef.meta);
+    return width == null && minWidth == null ? indent : { ...indent, width, minWidth };
   };
 
   // What a built-in body cell of this column carries. Handed to `renderRow` as
@@ -1169,7 +1232,7 @@ function DataTable<TData>({
   const clearFilters = resolveClearFilters(
     filters?.clearFilters,
     table,
-    !(isLoading && rows.length === 0) && bodyRows.length === 0,
+    !firstLoad && bodyRows.length === 0,
   );
   // The bulk bar exists only while rows are selected. It takes the controls
   // row's place, or, with no controls row, covers the column header row (see
@@ -1283,6 +1346,7 @@ function DataTable<TData>({
                           table={table}
                           columns={filters.columns}
                           label={l.addFilter}
+                          valueLabel={labels?.filterValue}
                         />
                       )}
                       {showViewOptions && (
@@ -1371,6 +1435,7 @@ function DataTable<TData>({
           pinFirstColumn={pinFirstColumn}
           className={cn(LINKED_ROW_CLASS, ROW_CHEVRON_SLOT_CLASS, SELECT_RIPPLE_TABLE_CLASS)}
           data-selecting={selecting ? '' : undefined}
+          data-row-links={rowLinks ? '' : undefined}
           data-bulk-over-header={bulkOverHeader && showBulk ? '' : undefined}
         >
           <TableHeader>
@@ -1391,7 +1456,7 @@ function DataTable<TData>({
                         generatedColumn(headerCell.column.id) !== 'select' &&
                           HEADER_LABEL_UNDER_BULK_CLASS,
                       )}
-                      style={columnIndentStyle(headerCell.column.id)}
+                      style={headerCellStyle(headerCell.column)}
                     >
                       {sorting != null && !headerCell.isPlaceholder ? (
                         <DataTableColumnHeader
@@ -1410,9 +1475,13 @@ function DataTable<TData>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading && rows.length === 0 ? (
-              Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+          <TableBody
+            aria-busy={isLoading || firstLoad ? true : undefined}
+            data-pending={pending ? '' : undefined}
+            className={PENDING_CLASS}
+          >
+            {firstLoad && skeletonRows > 0 ? (
+              Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                 <TableRow key={`skeleton-${rowIndex}`}>
                   {columnCount === 0 ? (
                     <TableCell>
@@ -1434,11 +1503,17 @@ function DataTable<TData>({
                 </TableRow>
               ))
             ) : bodyRows.length === 0 ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell
-                  colSpan={Math.max(columnCount, 1)}
-                  className="text-muted-foreground h-24 text-center"
-                >
+              // The empty state. Before the first load of a page that will be
+              // empty (by the remembered total), it is already here but hidden
+              // and inert, so the body has its exact height and the empty
+              // result shows in place.
+              <TableRow
+                data-slot={firstLoad ? 'data-table-empty-placeholder' : undefined}
+                aria-hidden={firstLoad ? true : undefined}
+                inert={firstLoad ? true : undefined}
+                className={cn('hover:bg-transparent', firstLoad && 'invisible')}
+              >
+                <TableCell colSpan={Math.max(columnCount, 1)} className={EMPTY_CELL_CLASS}>
                   {emptyState ?? l.empty}
                 </TableCell>
               </TableRow>
@@ -1510,7 +1585,15 @@ function DataTable<TData>({
             className="w-full"
             page={pagination.page}
             pageSize={pagination.pageSize}
-            totalItems={pagination.totalItems ?? table.getPrePaginationRowModel().rows.length}
+            // Unknown (null or undefined, or client rows not loaded): a skeleton, not "0 of 0".
+            totalItems={
+              pagination.mode === 'client'
+                ? firstLoad
+                  ? undefined
+                  : table.getPrePaginationRowModel().rows.length
+                : pagination.totalItems
+            }
+            isLoading={pending}
             onPageChange={pagination.onPageChange}
             onPageSizeChange={pagination.onPageSizeChange}
             pageSizeOptions={pagination.pageSizeOptions}
@@ -1550,7 +1633,12 @@ function DataTable<TData>({
 
 // `DataTableSkeletonLine` is the shared SkeletonLine under its old name, kept for
 // consumers that stack it in `skeletonCells`.
-export { DataTable, DataTableRowLink, SkeletonLine as DataTableSkeletonLine };
+export {
+  DataTable,
+  DataTableRowLink,
+  SkeletonLine as DataTableSkeletonLine,
+  useRememberedListTotal,
+};
 
 // Re-export the consumer-facing TanStack types so columns can be authored from
 // the same import as `DataTable` — no direct `@tanstack/react-table` dependency

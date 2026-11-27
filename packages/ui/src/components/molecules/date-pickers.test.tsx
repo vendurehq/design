@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { DatePicker } from './date-picker.tsx';
 import { DateRangePicker } from './date-range-picker.tsx';
 import { DateTimePicker } from './date-time-picker.tsx';
+import { FormatProvider } from './format-provider.tsx';
 
 describe('uncontrolled date pickers', () => {
   test('DatePicker shows its defaultValue', () => {
@@ -73,5 +74,61 @@ describe('date pickers take size="sm"', () => {
   test('size accepts only "sm" or "default"', () => {
     // @ts-expect-error A numeric size is not a picker size.
     renderToStaticMarkup(<DatePicker size={3} />);
+  });
+});
+
+describe('date picker texts', () => {
+  const day = '2026-03-10';
+  const instant = '2026-03-10T12:00:00.000Z';
+  const range = { from: '2026-03-10', to: '2026-03-17' };
+
+  test('English by default', () => {
+    expect(renderToStaticMarkup(<DatePicker defaultValue={day} />)).toContain(
+      'aria-label="Clear date"',
+    );
+    const dateTime = renderToStaticMarkup(<DateTimePicker defaultValue={instant} />);
+    expect(dateTime).toContain('aria-label="Clear date and time"');
+    expect(dateTime).toContain('aria-label="Time"');
+    expect(renderToStaticMarkup(<DateRangePicker defaultValue={range} />)).toContain(
+      'aria-label="Clear date range"',
+    );
+  });
+
+  test('read from FormatProvider messages', () => {
+    const messages = {
+      datePicker: { clear: 'Datum löschen' },
+      dateTimePicker: { clear: 'Datum und Uhrzeit löschen', time: 'Uhrzeit' },
+      dateRangePicker: { clear: 'Zeitraum löschen' },
+    };
+    const html = (node: React.ReactElement) =>
+      renderToStaticMarkup(<FormatProvider messages={messages}>{node}</FormatProvider>);
+    expect(html(<DatePicker defaultValue={day} />)).toContain('aria-label="Datum löschen"');
+    const dateTime = html(<DateTimePicker defaultValue={instant} />);
+    expect(dateTime).toContain('aria-label="Datum und Uhrzeit löschen"');
+    expect(dateTime).toContain('aria-label="Uhrzeit"');
+    expect(html(<DateRangePicker defaultValue={range} />)).toContain(
+      'aria-label="Zeitraum löschen"',
+    );
+  });
+
+  test('clearLabel and timeLabel win over FormatProvider messages', () => {
+    const messages = {
+      datePicker: { clear: 'Datum löschen' },
+      dateTimePicker: { clear: 'Datum und Uhrzeit löschen', time: 'Uhrzeit' },
+      dateRangePicker: { clear: 'Zeitraum löschen' },
+    };
+    const html = (node: React.ReactElement) =>
+      renderToStaticMarkup(<FormatProvider messages={messages}>{node}</FormatProvider>);
+    expect(html(<DatePicker defaultValue={day} clearLabel="Reset" />)).toContain(
+      'aria-label="Reset"',
+    );
+    const dateTime = html(
+      <DateTimePicker defaultValue={instant} clearLabel="Reset both" timeLabel="Clock" />,
+    );
+    expect(dateTime).toContain('aria-label="Reset both"');
+    expect(dateTime).toContain('aria-label="Clock"');
+    expect(html(<DateRangePicker defaultValue={range} clearLabel="Reset range" />)).toContain(
+      'aria-label="Reset range"',
+    );
   });
 });

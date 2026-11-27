@@ -1,9 +1,16 @@
-import { describe, expect, test } from 'bun:test';
+import { afterEach, describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { matchFileTypeIcon } from './code-block/file-type-icons.tsx';
+import {
+  getStoredPackageManager,
+  STORAGE_EVENT,
+  STORAGE_KEY,
+  setStoredPackageManager,
+} from './code-block/package-manager-storage.ts';
 import { processCode } from './code-block/process-code.ts';
 import { transformCommand } from './code-block/transform-command.tsx';
 import * as codeBlock from './code-block.tsx';
+import { FormatProvider } from './format-provider.tsx';
 
 describe('transformCommand', () => {
   describe('npx → dlx / bunx', () => {
@@ -301,5 +308,134 @@ describe('CodeBlock', () => {
     const root = html.match(/<div[^>]*data-slot="code-block"[^>]*>/)?.[0] ?? '';
     expect(root).not.toBe('');
     expect(root).not.toMatch(/\bm[trblxy]?-\d/);
+  });
+});
+
+describe('CodeBlock texts', () => {
+  const { CodeBlock } = codeBlock;
+  const html = (node: React.ReactElement) => renderToStaticMarkup(node);
+  const long = Array.from({ length: 60 }, (_, i) => `line ${i}`).join('\n');
+  const de = {
+    codeBlock: {
+      copyCode: 'Code kopieren',
+      code: 'Quelltext',
+      showMore: '{count} weitere Zeilen zeigen',
+    },
+  };
+
+  test('shows the English defaults', () => {
+    const markup = html(<CodeBlock>{long}</CodeBlock>);
+
+    expect(markup).toContain('aria-label="Copy code"');
+    expect(markup).toContain('<span>Code</span>');
+    // 60 lines, 12 of them visible when collapsed.
+    expect(markup).toContain('Show 48 more lines');
+  });
+
+  test('reads the texts from FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={de}>
+        <CodeBlock>{long}</CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Code kopieren"');
+    expect(markup).toContain('<span>Quelltext</span>');
+    expect(markup).toContain('48 weitere Zeilen zeigen');
+  });
+
+  test('the labels prop wins over FormatProvider messages', () => {
+    const markup = html(
+      <FormatProvider messages={de}>
+        <CodeBlock
+          labels={{
+            copyCode: 'Copier',
+            code: 'Texte',
+            showMore: 'Afficher {count} lignes de plus',
+          }}
+        >
+          {long}
+        </CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('aria-label="Copier"');
+    expect(markup).toContain('<span>Texte</span>');
+    expect(markup).toContain('Afficher 48 lignes de plus');
+    expect(markup).not.toContain('Code kopieren');
+  });
+
+  test('formats the hidden line count with the FormatProvider locale', () => {
+    const markup = html(
+      <FormatProvider locale="ar-EG">
+        <CodeBlock>{Array.from({ length: 1500 }, (_, i) => `line ${i}`).join('\n')}</CodeBlock>
+      </FormatProvider>,
+    );
+
+    expect(markup).toContain('Show ١٬٤٨٨ more lines');
+  });
+});
+
+describe('package manager storage', () => {
+  const originalWindow = globalThis.window;
+  const originalLocalStorage = globalThis.localStorage;
+
+  const install = () => {
+    const store = new Map<string, string>();
+    const target = new EventTarget();
+    const fakeWindow = Object.assign(target, {
+      dispatchEvent: target.dispatchEvent.bind(target),
+    });
+    Object.defineProperty(globalThis, 'window', { value: fakeWindow, configurable: true });
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => void store.set(key, value),
+      },
+      configurable: true,
+    });
+    return { store, fakeWindow };
+  };
+
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'window', { value: originalWindow, configurable: true });
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: originalLocalStorage,
+      configurable: true,
+    });
+  });
+
+  test('the stored key and the event name use the vendure-ui:<component>:<what> scheme', () => {
+    expect(STORAGE_KEY).toBe('vendure-ui:code-block:package-manager');
+    expect(STORAGE_EVENT).toBe('vendure-ui:code-block:package-manager-change');
+  });
+
+  test('writes the chosen package manager to the stored key', () => {
+    const { store } = install();
+    setStoredPackageManager('pnpm');
+    expect(store.get('vendure-ui:code-block:package-manager')).toBe('pnpm');
+  });
+
+  test('reads the package manager from the stored key', () => {
+    const { store } = install();
+    store.set('vendure-ui:code-block:package-manager', 'bun');
+    expect(getStoredPackageManager()).toBe('bun');
+  });
+
+  test('falls back to npm for a missing or unknown stored value', () => {
+    const { store } = install();
+    expect(getStoredPackageManager()).toBe('npm');
+    store.set('vendure-ui:code-block:package-manager', 'deno');
+    expect(getStoredPackageManager()).toBe('npm');
+  });
+
+  test('dispatches the change event on window with the chosen package manager', () => {
+    const { fakeWindow } = install();
+    const received: unknown[] = [];
+    fakeWindow.addEventListener('vendure-ui:code-block:package-manager-change', (event) =>
+      received.push((event as CustomEvent).detail),
+    );
+    setStoredPackageManager('yarn');
+    expect(received).toEqual(['yarn']);
   });
 });

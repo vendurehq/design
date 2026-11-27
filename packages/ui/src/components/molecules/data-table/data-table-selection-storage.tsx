@@ -1,4 +1,4 @@
-import type { OnChangeFn, RowSelectionState, Updater } from '@tanstack/react-table';
+import type { RowSelectionState } from '@tanstack/react-table';
 import type {
   ControlledState,
   DataTableRowSelection,
@@ -9,7 +9,7 @@ import * as React from 'react';
 // It survives a reload and a visit to another page in the same tab. It is not in
 // the URL: a URL change is a navigation, and each checkbox click would run one.
 
-const STORAGE_PREFIX = 'vendure-ui:data-table-selection:';
+const STORAGE_PREFIX = 'vendure-ui:data-table:selection:';
 
 /** The ids stored under `key`. Blocked, missing or malformed storage gives none. */
 export function readStoredSelection(key: string): RowSelectionState {
@@ -49,9 +49,6 @@ const sameSelection = (a: RowSelectionState, b: RowSelectionState) => {
   return left.length === selectedIds(b).length && left.every((id) => b[id]);
 };
 
-const resolve = (updater: Updater<RowSelectionState>, old: RowSelectionState) =>
-  typeof updater === 'function' ? updater(old) : updater;
-
 /**
  * Wraps a table's `rowSelection` config so its selection is stored under
  * `storageKey`. Without a key, or without `rowSelection`, it returns the config
@@ -64,7 +61,7 @@ const resolve = (updater: Updater<RowSelectionState>, old: RowSelectionState) =>
  *   from the old key carries over, and the switch itself stores nothing.
  *
  * The stored ids are applied in a layout effect, before the first paint, and
- * reported through the consumer's `onChange`. A controlled consumer takes them
+ * reported through the consumer's `onValueChange`. A controlled consumer takes them
  * there.
  */
 export function useSelectionStorage<TData>(
@@ -77,8 +74,12 @@ export function useSelectionStorage<TData>(
   const current = controlled ? (rowSelection?.value as RowSelectionState) : own;
 
   // The latest values, read by the callbacks below so their identity holds.
-  const latest = React.useRef({ storageKey, current, onChange: rowSelection?.onChange });
-  latest.current = { storageKey, current, onChange: rowSelection?.onChange };
+  const latest = React.useRef({
+    storageKey,
+    current,
+    onValueChange: rowSelection?.onValueChange,
+  });
+  latest.current = { storageKey, current, onValueChange: rowSelection?.onValueChange };
   const loadedKey = React.useRef<string | undefined>(undefined);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: restores when the key changes, nothing else
@@ -94,22 +95,20 @@ export function useSelectionStorage<TData>(
     if (first && selectedIds(stored).length === 0) return;
     if (sameSelection(stored, latest.current.current)) return;
     if (!controlled) setOwn(stored);
-    latest.current.onChange?.(stored);
+    latest.current.onValueChange?.(stored);
   }, [enabled, storageKey]);
 
-  const onChange = React.useCallback<OnChangeFn<RowSelectionState>>((updater) => {
-    const next = resolve(updater, latest.current.current);
-    // Updates in one tick build on each other before the next render.
+  const onValueChange = React.useCallback((next: RowSelectionState) => {
     latest.current.current = next;
     if (latest.current.storageKey != null) writeStoredSelection(latest.current.storageKey, next);
     setOwn(next);
-    latest.current.onChange?.(updater);
+    latest.current.onValueChange?.(next);
   }, []);
 
   return React.useMemo(() => {
     if (!enabled || rowSelection == null) return rowSelection;
     const { defaultValue: _defaultValue, ...rest } = rowSelection;
-    return { ...rest, value: current, onChange } as ControlledState<RowSelectionState> &
+    return { ...rest, value: current, onValueChange } as ControlledState<RowSelectionState> &
       DataTableRowSelection<TData>;
-  }, [enabled, rowSelection, current, onChange]);
+  }, [enabled, rowSelection, current, onValueChange]);
 }

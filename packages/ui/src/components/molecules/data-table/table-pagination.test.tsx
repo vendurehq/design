@@ -279,3 +279,94 @@ describe('TablePagination labels', () => {
     expect(markup).not.toContain('Go to previous page');
   });
 });
+
+describe('TablePagination one-line footer', () => {
+  test('the default range groups digits', () => {
+    expect(rangeText(<TablePagination page={1} pageSize={10} totalItems={123456} />)).toBe(
+      '1–10 of 123,456',
+    );
+    expect(rangeText(<TablePagination page={12346} pageSize={10} totalItems={123456} />)).toBe(
+      '123,451–123,456 of 123,456',
+    );
+  });
+
+  test('the range and the page-size label never wrap; the label hides in a narrow footer', () => {
+    const markup = html(
+      <TablePagination page={1} pageSize={10} totalItems={20} onPageSizeChange={noop} />,
+    );
+    expect(markup).toMatch(/data-slot="table-pagination"[^>]*@container\/table-pagination/);
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*whitespace-nowrap/);
+    expect(markup).toMatch(
+      /whitespace-nowrap @max-md\/table-pagination:sr-only[^>]*>Items per page</,
+    );
+  });
+});
+
+describe('TablePagination loading', () => {
+  /** The opening tag of the element with `data-slot="<slot>"`. */
+  const tag = (markup: string, slot: string) =>
+    markup.match(new RegExp(`<[a-z]+[^>]*data-slot="${slot}"[^>]*>`))?.[0] ?? '';
+
+  test('an unknown total shows a skeleton range, not "0 of 0", and disables prev/next', () => {
+    const markup = html(
+      <TablePagination page={1} pageSize={25} totalItems={undefined} onPageChange={noop} />,
+    );
+    expect(
+      rangeText(<TablePagination page={1} pageSize={25} totalItems={undefined} />),
+    ).not.toContain('of');
+    expect(markup).toMatch(/data-slot="table-pagination-range"[^>]*>.*data-slot="skeleton"/);
+    expect(tag(markup, 'table-pagination-previous')).toContain('disabled=""');
+    expect(tag(markup, 'table-pagination-next')).toContain('disabled=""');
+  });
+
+  test('null is an unknown total too, the same as undefined', () => {
+    const unknown = html(
+      <TablePagination page={1} pageSize={25} totalItems={undefined} onPageChange={noop} />,
+    );
+    expect(
+      html(<TablePagination page={1} pageSize={25} totalItems={null} onPageChange={noop} />),
+    ).toBe(unknown);
+  });
+
+  test('an unknown total renders no links in anchor mode', () => {
+    const markup = html(
+      <TablePagination
+        page={2}
+        pageSize={25}
+        totalItems={undefined}
+        getPageHref={(page) => `/products?page=${page}`}
+      />,
+    );
+    expect(markup).not.toContain('href=');
+  });
+
+  test('isLoading keeps the range and marks it and the nav pending', () => {
+    const markup = html(
+      <TablePagination page={2} pageSize={25} totalItems={132} onPageChange={noop} isLoading />,
+    );
+    expect(
+      rangeText(<TablePagination page={2} pageSize={25} totalItems={132} isLoading />),
+    ).toContain('26–50 of 132');
+    expect(tag(markup, 'table-pagination-range')).toContain('data-pending=""');
+    expect(markup).toMatch(/<nav[^>]*data-pending=""/);
+  });
+
+  test('isLoading makes prev/next aria-disabled, not disabled, so they keep focus', () => {
+    const markup = html(
+      <TablePagination page={2} pageSize={25} totalItems={132} onPageChange={noop} isLoading />,
+    );
+    for (const slot of ['table-pagination-previous', 'table-pagination-next']) {
+      const button = tag(markup, slot);
+      expect(button).toContain('aria-disabled="true"');
+      expect(button).not.toContain('disabled=""');
+    }
+  });
+
+  test('not loading: nothing is pending', () => {
+    const markup = html(
+      <TablePagination page={2} pageSize={25} totalItems={132} onPageChange={noop} />,
+    );
+    expect(markup).not.toContain('data-pending=""');
+    expect(markup).not.toContain('aria-disabled="true"');
+  });
+});

@@ -10,6 +10,7 @@ import { cn } from '@vendure-io/ui/lib/utils';
 import { CalendarClockIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
 import { fieldButton } from '../../lib/field-surface.ts';
+import { useMessages } from '../../lib/format-messages.ts';
 
 type CalendarProps = Omit<
   React.ComponentProps<typeof Calendar>,
@@ -36,6 +37,10 @@ interface DateTimePickerProps
   name?: string;
   id?: string;
   calendarProps?: CalendarProps;
+  /** Accessible name of the clear button. @default `messages.dateTimePicker.clear`, "Clear date and time" */
+  clearLabel?: string;
+  /** Accessible name of the time field. @default `messages.dateTimePicker.time`, "Time" */
+  timeLabel?: string;
 }
 
 function DateTimePicker(allProps: DateTimePickerProps) {
@@ -51,6 +56,8 @@ function DateTimePicker(allProps: DateTimePickerProps) {
     name,
     id,
     calendarProps,
+    clearLabel,
+    timeLabel,
     className,
     ...props
   } = allProps;
@@ -67,6 +74,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
   const generatedId = React.useId();
   const triggerId = id ?? generatedId;
   const { locale } = useFormatSettings();
+  const t = useMessages('dateTimePicker', { clear: clearLabel, time: timeLabel });
   const selected = parseInstant(value);
   const timeValue = selected
     ? `${String(selected.getHours()).padStart(2, '0')}:${String(selected.getMinutes()).padStart(2, '0')}`
@@ -140,7 +148,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
       </Popover>
       <Input
         type="time"
-        aria-label="Time"
+        aria-label={t.time}
         aria-invalid={invalid || undefined}
         value={timeValue}
         disabled={disabled || !selected}
@@ -154,7 +162,7 @@ function DateTimePicker(allProps: DateTimePickerProps) {
           variant="ghost"
           size={size === 'sm' ? 'icon-xs' : 'icon-sm'}
           disabled={disabled}
-          aria-label="Clear date and time"
+          aria-label={t.clear}
           onClick={() => commit(undefined)}
         >
           <XIcon />

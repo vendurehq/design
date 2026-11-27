@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { SecretValue } from '../src/components/molecules/secret-value.tsx';
 
 // Mounted interaction tests for SecretValue. The test runner (CI step
@@ -63,6 +64,8 @@ export const RevealLoadsOnClick: Story = {
       'true',
     );
     expectSecretAbsent(canvasElement);
+    // The spinner announces the English text by default.
+    await expect(canvas.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
 
     revealLoader.resolve(SECRET);
     await waitFor(() => expect(root).toHaveAttribute('data-state', 'revealed'));
@@ -196,5 +199,45 @@ export const TargetsDoNotOverlap: Story = {
         }
       }
     }
+  },
+};
+
+const messagesLoader = deferredLoader();
+
+/** `FormatProvider` `messages` translate the spinner text while the value loads. */
+export const LoadingTextFromMessages: Story = {
+  args: { loadValue: messagesLoader.load },
+  beforeEach: () => messagesLoader.reset(),
+  render: (args) => (
+    <FormatProvider messages={{ secretValue: { loading: 'Wird geladen' } }}>
+      <SecretValue data-testid="secret" {...args} />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: 'Show value' }));
+    await expect(canvas.getByRole('status', { name: 'Wird geladen' })).toBeInTheDocument();
+    messagesLoader.resolve(SECRET);
+    await waitFor(() => expect(canvas.getByText(SECRET)).toBeVisible());
+  },
+};
+
+const labelLoader = deferredLoader();
+
+/** `loadingLabel` wins over `messages`. */
+export const LoadingTextFromProp: Story = {
+  args: { loadValue: labelLoader.load, loadingLabel: 'Chargement' },
+  beforeEach: () => labelLoader.reset(),
+  render: (args) => (
+    <FormatProvider messages={{ secretValue: { loading: 'Wird geladen' } }}>
+      <SecretValue data-testid="secret" {...args} />
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: 'Show value' }));
+    await expect(canvas.getByRole('status', { name: 'Chargement' })).toBeInTheDocument();
+    labelLoader.resolve(SECRET);
+    await waitFor(() => expect(canvas.getByText(SECRET)).toBeVisible());
   },
 };

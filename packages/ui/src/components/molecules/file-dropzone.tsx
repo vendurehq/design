@@ -1,9 +1,11 @@
 'use client';
 
 import { Button } from '@vendure-io/ui/components/atoms/button';
+import { useFormatSettings } from '@vendure-io/ui/components/molecules/format-provider';
 import { cn } from '@vendure-io/ui/lib/utils';
 import { FileIcon, UploadCloudIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
+import { defaultMessages, useMessages } from '../../lib/format-messages.ts';
 
 type FileValidationResult = string | readonly string[] | null | undefined;
 type FileValidator = (file: File) => FileValidationResult | Promise<FileValidationResult>;
@@ -11,6 +13,35 @@ type FileValidator = (file: File) => FileValidationResult | Promise<FileValidati
 interface FileRejection {
   file: File;
   messages: string[];
+}
+
+/**
+ * The texts of a FileDropzone. Each one is optional and wins over
+ * `FormatProvider`'s `messages.fileDropzone`, which wins over English.
+ * Texts with a value in them are functions here (and `{name}`, `{size}`,
+ * `{max}` placeholders in `messages`).
+ */
+interface FileDropzoneLabels {
+  /** @default `messages.fileDropzone.typeNotAccepted`, "This file type is not accepted." */
+  typeNotAccepted?: string;
+  /** Receives the largest allowed size, already formatted. @default `messages.fileDropzone.fileTooLarge`, "File size must be {size} or smaller." */
+  fileTooLarge?: (size: string) => string;
+  /** Receives the file limit. @default `messages.fileDropzone.tooManyFiles` ("You can select up to {max} files.") and `tooManyFilesOne` for a limit of one */
+  tooManyFiles?: (max: number) => string;
+  /** Shown when `validateFile` throws. @default `messages.fileDropzone.validationFailed`, "This file could not be validated." */
+  validationFailed?: string;
+  /** Replaces the drop prompt while `validateFile` runs. @default `messages.fileDropzone.checking`, "Checking files…" */
+  checking?: string;
+  /** Placed before the `accept` list. @default `messages.fileDropzone.accepted`, "Accepted:" */
+  accepted?: string;
+  /** Accessible name of a file's remove button. Receives the file name. @default `messages.fileDropzone.remove`, "Remove {name}" */
+  remove?: (name: string) => string;
+  /** @default `messages.fileDropzone.byte`, "B" */
+  byte?: string;
+  /** @default `messages.fileDropzone.kilobyte`, "KB" */
+  kilobyte?: string;
+  /** @default `messages.fileDropzone.megabyte`, "MB" */
+  megabyte?: string;
 }
 
 interface FileDropzoneProps extends Omit<React.ComponentProps<'div'>, 'defaultValue' | 'onChange'> {
@@ -34,6 +65,8 @@ interface FileDropzoneProps extends Omit<React.ComponentProps<'div'>, 'defaultVa
   emptyLabel?: React.ReactNode;
   dragLabel?: React.ReactNode;
   renderFile?: (file: File, remove: () => void) => React.ReactNode;
+  /** The component's own texts: rejection messages, status text, remove button and size units. */
+  labels?: FileDropzoneLabels;
 }
 
 function fileMatchesAccept(file: File, accept: string | undefined): boolean {
@@ -49,10 +82,36 @@ function fileMatchesAccept(file: File, accept: string | undefined): boolean {
   });
 }
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 ** 2) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+interface FormatFileSizeOptions {
+  /** BCP 47 locale of the number. Default: the runtime locale. */
+  locale?: string;
+  /** Unit texts. Default: `B`, `KB` and `MB`. */
+  units?: { byte?: string; kilobyte?: string; megabyte?: string };
+}
+
+/**
+ * Whole bytes below 1 KB, whole KB below 1 MB, MB with one decimal above. The
+ * number follows `locale`; the unit texts are English unless `units` is passed.
+ */
+function formatFileSize(bytes: number, { locale, units }: FormatFileSizeOptions = {}): string {
+  const defaults = defaultMessages.fileDropzone;
+  const format = (value: number, fractionDigits: number) =>
+    new Intl.NumberFormat(locale, {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+      useGrouping: false,
+    }).format(value);
+  if (bytes < 1024) return `${format(bytes, 0)} ${units?.byte ?? defaults.byte}`;
+  if (bytes < 1024 ** 2)
+    return `${format(bytes / 1024, 0)} ${units?.kilobyte ?? defaults.kilobyte}`;
+  return `${format(bytes / 1024 ** 2, 1)} ${units?.megabyte ?? defaults.megabyte}`;
+}
+
+/** Replaces each `{key}` in a message with its value. */
+function fillMessage(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
 }
 
 function normalizeValidationResult(result: FileValidationResult): string[] {
@@ -88,6 +147,7 @@ function FileDropzone(allProps: FileDropzoneProps) {
     emptyLabel = 'Drag and drop files here, or choose files',
     dragLabel = 'Drop files to add them',
     renderFile,
+    labels,
     className,
     ...props
   } = allProps;
@@ -99,6 +159,20 @@ function FileDropzone(allProps: FileDropzoneProps) {
     if (!controlled) setOwn(files);
     onValueChange?.(files);
   }
+  const { locale } = useFormatSettings();
+  const t = useMessages('fileDropzone', {
+    typeNotAccepted: labels?.typeNotAccepted,
+    validationFailed: labels?.validationFailed,
+    checking: labels?.checking,
+    accepted: labels?.accepted,
+    byte: labels?.byte,
+    kilobyte: labels?.kilobyte,
+    megabyte: labels?.megabyte,
+  });
+  const sizeOptions = {
+    locale,
+    units: { byte: t.byte, kilobyte: t.kilobyte, megabyte: t.megabyte },
+  };
   const generatedId = React.useId();
   const id = providedId ?? generatedId;
   const descriptionId = `${id}-description`;
@@ -121,15 +195,16 @@ function FileDropzone(allProps: FileDropzoneProps) {
 
     for (const file of incoming.slice(0, remaining)) {
       const messages: string[] = [];
-      if (!fileMatchesAccept(file, accept)) messages.push('This file type is not accepted.');
+      if (!fileMatchesAccept(file, accept)) messages.push(t.typeNotAccepted);
       if (maxSize !== undefined && file.size > maxSize) {
-        messages.push(`File size must be ${formatFileSize(maxSize)} or smaller.`);
+        const size = formatFileSize(maxSize, sizeOptions);
+        messages.push(labels?.fileTooLarge?.(size) ?? fillMessage(t.fileTooLarge, { size }));
       }
       if (validateFile) {
         try {
           messages.push(...normalizeValidationResult(await validateFile(file)));
         } catch {
-          messages.push('This file could not be validated.');
+          messages.push(t.validationFailed);
         }
       }
       if (messages.length > 0) rejected.push({ file, messages });
@@ -140,7 +215,10 @@ function FileDropzone(allProps: FileDropzoneProps) {
       for (const file of incoming.slice(remaining)) {
         rejected.push({
           file,
-          messages: [`You can select up to ${maxFiles} ${maxFiles === 1 ? 'file' : 'files'}.`],
+          messages: [
+            labels?.tooManyFiles?.(maxFiles) ??
+              fillMessage(maxFiles === 1 ? t.tooManyFilesOne : t.tooManyFiles, { max: maxFiles }),
+          ],
         });
       }
     }
@@ -164,7 +242,7 @@ function FileDropzone(allProps: FileDropzoneProps) {
       <div>
         <label htmlFor={id} className="text-sm font-medium">
           {label}
-          {required ? <span className="text-destructive"> *</span> : null}
+          {required ? <span className="text-destructive-text"> *</span> : null}
         </label>
         {description ? (
           <p id={descriptionId} className="text-muted-foreground mt-1 text-sm">
@@ -227,9 +305,9 @@ function FileDropzone(allProps: FileDropzoneProps) {
       >
         <UploadCloudIcon className="size-7" />
         <span className="text-foreground text-sm font-medium">
-          {validating ? 'Checking files…' : dragging ? dragLabel : emptyLabel}
+          {validating ? t.checking : dragging ? dragLabel : emptyLabel}
         </span>
-        {accept ? <span className="text-xs">Accepted: {accept}</span> : null}
+        {accept ? <span className="text-xs">{`${t.accepted} ${accept}`}</span> : null}
       </label>
 
       {value.length > 0 ? (
@@ -245,14 +323,18 @@ function FileDropzone(allProps: FileDropzoneProps) {
                   <FileIcon className="text-muted-foreground size-4 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{file.name}</p>
-                    <p className="text-muted-foreground text-xs">{formatFileSize(file.size)}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {formatFileSize(file.size, sizeOptions)}
+                    </p>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-xs"
                     disabled={disabled}
-                    aria-label={`Remove ${file.name}`}
+                    aria-label={
+                      labels?.remove?.(file.name) ?? fillMessage(t.remove, { name: file.name })
+                    }
                     onClick={() => removeFile(index)}
                   >
                     <XIcon />
@@ -265,7 +347,7 @@ function FileDropzone(allProps: FileDropzoneProps) {
       ) : null}
 
       {rejections.length > 0 ? (
-        <div id={errorId} role="alert" className="text-destructive text-sm">
+        <div id={errorId} role="alert" className="text-destructive-text text-sm">
           {rejections.map(({ file, messages }, index) => (
             <p key={`${file.name}-${file.size}-${index}`}>
               <span className="font-medium">{file.name}:</span> {messages.join(' ')}
@@ -281,7 +363,9 @@ export {
   FileDropzone,
   fileMatchesAccept,
   formatFileSize,
+  type FileDropzoneLabels,
   type FileDropzoneProps,
   type FileRejection,
+  type FormatFileSizeOptions,
   type FileValidator,
 };
