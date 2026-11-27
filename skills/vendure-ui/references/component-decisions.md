@@ -3,6 +3,18 @@
 
 Use these rules to select and compose components. Inspect the installed package source and types for exact APIs.
 
+## ActionNeeded
+
+Use one ActionNeeded for a list of findings that each wait on someone, such as the setup problems of a store or the alerts of a project.
+
+- **Findings that wait on someone:** Use ActionNeeded when a page or card lists several problems, each with its own fix: missing setup, a failed payment, a failed deploy. Each finding is one row with a tone icon, a short title, one sentence and one action.
+- **Not for one notice, a status or a task list:** One notice is an Alert. A state of one object is a StatusBadge. Steps the user works through in order are a Checklist. A log of past events is not a finding.
+- **The list is the card header:** In a Card, render ActionNeeded as the only child: its title is the card title and its header folds the list. Do not add a CardHeader above it or a second "Action needed" row inside it.
+- **Plain rows, not tinted boxes:** The rows are plain with a divider between them; tone shows only on the row icon and the folded count badges. Do not put an Alert or a tinted box per finding inside the card.
+- **One action, named for what it does:** Give each finding one small action that names the fix, such as "Change password" or "Set up shipping". Not a bare "Open" link and not a second "Dismiss" button: folding the list is how the user puts it away.
+- **Worst first, with stable keys:** Pass the findings worst first; the list shows them in the order given. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding. Pass `countLabel` to translate the count badges.
+
+Related decisions: `alert`, `checklist`, `status-badge`.
 ## Alert
 
 Use one Alert for a page or region notice, toned by its consequence for the viewer.
