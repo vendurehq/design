@@ -5,6 +5,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { expectInsidePadding } from './overlay-bounds.ts';
 import { expectPx } from './pixel.ts';
 
@@ -517,5 +518,61 @@ export const Open: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open Dialog' }));
     await waitFor(() => expect(within(document.body).getByRole('dialog', { name: 'Are you sure?' })).toBeVisible());
+  },
+};
+
+/**
+ * `FormatProvider`'s `messages.dialog.close` translates the ✕'s accessible
+ * name and the text of `DialogFooter`'s Close button once for the app.
+ */
+export const CloseLabelFromMessages: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <FormatProvider messages={{ dialog: { close: 'Fermer' } }}>
+      <Dialog>
+        <DialogTrigger render={<Button variant="outline" />}>Show build</DialogTrigger>
+        <DialogContent showCloseButton>
+          <DialogHeader>
+            <DialogTitle>Build details</DialogTitle>
+            <DialogDescription>Built from main in 2 min 14 s.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter showCloseButton />
+        </DialogContent>
+      </Dialog>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show build' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(dialog).getAllByRole('button', { name: 'Fermer' })).toHaveLength(2));
+    await expect(within(dialog).queryByRole('button', { name: 'Close' })).toBeNull();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** `closeLabel` on `DialogContent` and on `DialogFooter` wins over `messages`. */
+export const CloseLabel: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <FormatProvider messages={{ dialog: { close: 'Fermer' } }}>
+      <Dialog>
+        <DialogTrigger render={<Button variant="outline" />}>Show build</DialogTrigger>
+        <DialogContent showCloseButton closeLabel="Dialog schließen">
+          <DialogHeader>
+            <DialogTitle>Build details</DialogTitle>
+            <DialogDescription>Built from main in 2 min 14 s.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter showCloseButton closeLabel="Schließen" />
+        </DialogContent>
+      </Dialog>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Show build' }));
+    const dialog = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Dialog schließen' })).toBeVisible());
+    await expect(within(dialog).getByRole('button', { name: 'Schließen' })).toBeVisible();
+    await expect(within(dialog).queryByRole('button', { name: 'Fermer' })).toBeNull();
+    await userEvent.keyboard('{Escape}');
   },
 };

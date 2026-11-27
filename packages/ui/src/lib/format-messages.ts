@@ -125,6 +125,20 @@ const defaultMessages = {
     /** Placeholder and accessible name of the filter editor's default value input. */
     filterValue: 'Value',
   },
+  dialog: {
+    /** Accessible name of the ✕, and the text of DialogFooter's Close button. */
+    close: 'Close',
+  },
+  sheet: {
+    /** Accessible name of the ✕. */
+    close: 'Close',
+  },
+  sidebar: {
+    /** Screen-reader title of the mobile Sidebar's sheet. */
+    mobileTitle: 'Sidebar',
+    /** Screen-reader description of the mobile Sidebar's sheet. */
+    mobileDescription: 'Displays the mobile sidebar.',
+  },
 };
 
 type DefaultMessages = typeof defaultMessages;

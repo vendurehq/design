@@ -5,6 +5,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Field, FieldGroup, FieldLabel } from '../src/components/atoms/field.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
+import { FormatProvider } from '../src/components/molecules/format-provider.tsx';
 import { expectInsidePadding } from './overlay-bounds.ts';
 import { expectPx } from './pixel.ts';
 
@@ -300,3 +301,47 @@ export const EndLeftToRight: Story = sideStory('ltr', 'end');
 /** In right-to-left, `start` is the right edge. */
 export const StartRightToLeft: Story = sideStory('rtl', 'start');
 export const EndRightToLeft: Story = sideStory('rtl', 'end');
+
+/** `FormatProvider`'s `messages.sheet.close` names the ✕ once for the app. */
+export const CloseLabelFromMessages: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <FormatProvider messages={{ sheet: { close: 'Fermer' } }}>
+      <Sheet>
+        <SheetTrigger render={<Button variant="outline" />}>Open sheet</SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Edit profile</SheetTitle>
+          </SheetHeader>
+        </SheetContent>
+      </Sheet>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open sheet' }));
+    const sheet = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(sheet).getByRole('button', { name: 'Fermer' })).toBeVisible());
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** `closeLabel` wins over `messages`. */
+export const CloseLabel: Story = {
+  tags: ['!autodocs'],
+  render: () => (
+    <FormatProvider messages={{ sheet: { close: 'Fermer' } }}>
+      <Sheet>
+        <SheetTrigger render={<Button variant="outline" />}>Open sheet</SheetTrigger>
+        <SheetContent closeLabel="Schließen">
+          <SheetTitle className="p-4">Edit profile</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    </FormatProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open sheet' }));
+    const sheet = await within(document.body).findByRole('dialog');
+    await waitFor(() => expect(within(sheet).getByRole('button', { name: 'Schließen' })).toBeVisible());
+    await userEvent.keyboard('{Escape}');
+  },
+};
