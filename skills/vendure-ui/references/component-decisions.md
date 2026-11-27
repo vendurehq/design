@@ -3,9 +3,54 @@
 
 Use these rules to select and compose components. Inspect the installed package source and types for exact APIs.
 
+## Do not hand-roll
+
+Before you build one of these by hand, use the component. Then read its section below.
+
+| Hand-built pattern | Use | Section |
+| --- | --- | --- |
+| A tinted div with an icon and a message at the top of a page | `Alert` | Alert |
+| Links joined with "/" or "›" text above the page title | `Breadcrumb` | Breadcrumb |
+| A select or popover beside the page title to switch the current project or environment | `BreadcrumbMenu`, `BreadcrumbSearchMenu` | Breadcrumb |
+| A styled `<a>` or `<div onClick>` that looks like a button | `Button` | Button |
+| Buttons glued together with negative margins | `ButtonGroup` | Button |
+| A card wrapped in `<a>`, or a Card with `onClick` | `CardLink` | CardLink |
+| Radio inputs hidden inside bordered boxes that highlight when picked | `ChoiceCard` | ChoiceCard |
+| A heading with a chevron button that toggles the content below | `CollapsibleSection` | CollapsibleSection |
+| A modal with a search input and a list of links or buttons that filters as you type | `CommandDialog` | Command |
+| A `<span>` with a border that shows a key such as ⌘K | `Kbd` | Command |
+| `window.confirm()`, or a Dialog with its own Cancel and Delete buttons | `ConfirmDialog` | ConfirmDialog |
+| A copy icon button that keeps its own "copied" state and timer | `CopyableText`, `CopyButton` | CopyableText |
+| A table row with a bare "Open" or "View" link in the last column | `DataTableRowLink` | DataTable |
+| A `<table>` with hand-written sorting, filters and pagination | `DataTable` | DataTable |
+| A date formatted at the call site, or "3 minutes ago" built by hand | `DateTime`, `RelativeTime` | DateTime and RelativeTime |
+| A two-column grid of label and value `<div>`s on a detail page | `DescriptionList` | DescriptionList |
+| A "…" button that toggles an absolutely positioned `<div>` of buttons | `DropdownMenu` | DropdownMenu |
+| A row of icon buttons, one per action, on a table row or a card | `DropdownMenu` | DropdownMenu |
+| A dashed box with a hidden file input and drag handlers | `FileDropzone` | FileDropzone |
+| An ID in a monospace `<span>` with a copy button beside it | `IdChip` | IdChip |
+| An `<Input>` with an icon on top of it through absolute positioning and extra padding | `InputGroup` | InputGroup and PasswordInput |
+| A password input with an eye button that switches the type to "text" | `PasswordInput` | InputGroup and PasswordInput |
+| A list row with a bare "Open" link, or a chevron that is the only link | `ListRowLink`, `ListRowChevron` | ListRow |
+| A flex row of `<div>`s with a title, meta text and actions | `ListRow` | ListRow |
+| An amount formatted with `toFixed` and a currency symbol | `Money` | Money |
+| An `<h1>` with a flex row of buttons beside it | `PageHeader` | PageHeader |
+| A masked value with an eye button that fetches and shows the secret | `SecretValue` | SecretValue |
+| A Popover or HoverCard opened from a rail icon with a list of links | `SidebarMenuFlyout` | SidebarMenuFlyout |
+| A centred "No items yet" paragraph, or "Loading…" text | `EmptyState`, `LoadingState` | LoadingState, EmptyState, and ErrorState |
+| A red paragraph with the error message and a retry link | `ErrorState` | LoadingState, EmptyState, and ErrorState |
+| A coloured pill with the status colour picked at the call site | `StatusBadge` | StatusBadge and state dictionary |
+| A row of buttons with an underline under the selected one | `Tabs`, `TabsNav` | Tabs and TabsNav |
+| Links styled as tabs that keep the selected state in local state | `TabsLink` | Tabs and TabsNav |
+| Numbered circles joined by lines for the steps of a flow | `StepIndicator` | StepIndicator |
+| Buttons side by side, where the selected one gets a filled variant | `ToggleGroup` | ToggleGroup |
+| A button that keeps a pressed state in `useState` and swaps its style | `Toggle` | ToggleGroup |
+
 ## Alert
 
 Use one Alert for a page or region notice, toned by its consequence for the viewer.
+
+Components: `Alert`, `AlertAction`.
 
 - **Tone follows consequence:** `warning` means the user must act or a risk exists; `info` is a fact worth noticing with no valence; `destructive` is a failure. Tone follows consequence, as in the state dictionary.
 - **Tone is not volume:** Never use a tone to make a routine notice louder. A routine notice stays `default`.
@@ -20,10 +65,16 @@ Use one Alert for a page or region notice, toned by its consequence for the view
 - `warning`: The user must act, or a risk exists.
 - `destructive`: Something failed.
 
+**Instead of:**
+
+- A tinted div with an icon and a message at the top of a page: use `Alert`.
+
 Related decisions: `status-badge`.
 ## AnonymizedToken
 
 Render secret-like values as protected, copyable previews rather than exposed text.
+
+Components: `AnonymizedToken`.
 
 - **Secrets are never plain identifiers:** Use AnonymizedToken for credentials and secret-like values; use IdChip only for non-secret identifiers.
 - **Reveal only through deliberate interaction:** Keep the preview blurred and truncated at rest, reveal it on hover or focus, and copy the complete value.
@@ -35,6 +86,8 @@ Related decisions: `copyable-text`, `id-chip`, `issued-secret`, `secret-value`.
 ## AppShell
 
 Use the shared application anatomy without moving app-owned routing or context into the shell.
+
+Components: `AppShell`, `AppShellMain`, `AppShellPage`, `AppShellSidebar`, `SearchTrigger`, `SkipLink`.
 
 - **The shell owns anatomy:** AppShell owns the header, navigation region, main landmark, scroll boundary, and skip-link destination. Prefer AppShellMain as the scroll owner so the viewport-bound shell keeps its header and canvas inset visible; use container ownership only when integrating with an established shell that already owns scrolling.
 - **Compose one main landmark with Sidebar:** When using the collapsible Sidebar atom, render SidebarInset as a div and keep AppShellMain as the single focusable main landmark.
@@ -50,6 +103,8 @@ Related decisions: `page-header`.
 
 Link to a page with more of what the user is looking at, at the end of the region it extends.
 
+Components: `ArrowLink`.
+
 - **Navigation, never an action:** Use ArrowLink to go to more of the same subject: the full list, the detail page, the logs. An action that changes data is a Button.
 - **One per region, at the end:** A panel head, card or notice has at most one ArrowLink, at the inline end. The label names the destination in two or three words.
 - **Not inside running text:** A link inside a sentence or a form is a TextLink; a chevron there breaks the sentence.
@@ -59,6 +114,8 @@ Related decisions: `button`.
 ## Badge
 
 Use Badge for static classification or counts, neutral by default.
+
+Components: `Badge`.
 
 - **Classification is not state:** Use Badge for kind, category, or count. State words that can succeed, fail, or move belong to StatusBadge.
 - **Neutral is the default:** Begin with the default Badge and step away only when the meaning requires it.
@@ -73,9 +130,28 @@ Use Badge for static classification or counts, neutral by default.
 - `destructive`: A destructive classification, not an entity workflow state.
 
 Related decisions: `chip`, `count-badge`, `status-badge`.
+## Breadcrumb
+
+Show where the page sits, and let the user go up a level or switch to a sibling, in the top bar.
+
+Components: `Breadcrumb`, `BreadcrumbLink`, `BreadcrumbPage`, `BreadcrumbEllipsis`, `BreadcrumbMenu`, `BreadcrumbSearchMenu`.
+
+- **One trail, in the top bar:** Render one Breadcrumb in AppShellHeader. Each level above the page is a BreadcrumbLink and the page itself is a BreadcrumbPage. Do not repeat the trail inside the page, and do not put a back link in its place.
+- **Separators come from the component:** Put a BreadcrumbSeparator between items. Do not type "/" or "›" between links, and do not draw your own chevrons.
+- **A crumb that switches siblings is a menu:** When the user switches the current item between its siblings, such as the project or the environment, make that crumb a BreadcrumbMenu. For a long list with a search field, use BreadcrumbSearchMenu. The options and the route stay in your app.
+- **A long trail folds in the middle:** Keep the first and the last two levels, and fold the rest into a BreadcrumbEllipsis.
+
+**Instead of:**
+
+- Links joined with "/" or "›" text above the page title: use `Breadcrumb`.
+- A select or popover beside the page title to switch the current project or environment: use `BreadcrumbMenu`, `BreadcrumbSearchMenu`.
+
+Related decisions: `app-shell`, `page-header`.
 ## Button
 
 Compose actions as an emphasis ladder with one primary action per view.
+
+Components: `Button`, `ButtonLabelSwap`, `ButtonGroup`.
 
 - **One primary action per view:** Choose the single most-important action and give it the default filled Button. Step every other action down.
 - **Variant expresses weight, not color preference:** Choose variants relative to neighboring actions; do not use filled or destructive styling merely to attract attention.
@@ -84,6 +160,7 @@ Compose actions as an emphasis ladder with one primary action per view.
 - **Brand is an identity spend, not a louder primary:** Use the brand variant only for a deliberate identity or marketing CTA such as a trial or upgrade entry point. It is off the emphasis ladder; never reach for it to make an in-app primary shinier.
 - **A button that goes to a page is a link:** Render it with the element you navigate with: `<Button render={<a href="/billing" />}>` or `<Button render={<Link to="/billing" />}>`. It keeps the link role and takes the whole button look; Button finds the link from the element (an `<a>`, or an element with `href` or `to`), so there is no extra prop. Do not call `buttonVariants()` on your own `<a>` or `<Link>`. A disabled link has `role="link"` and `aria-disabled="true"`, follows nothing and leaves the tab order; add `focusableWhenDisabled` to keep the tab stop for a Tooltip that says why.
 - **A disabled button that must say why keeps its focus:** Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.
+- **A label that changes keeps its width:** When a button label changes in place, such as Copy to Copied or Save to Saving, wrap the labels in ButtonLabelSwap so the button keeps one width and the label crossfades. A tooltip label that changes uses TooltipLabelSwap. Do not swap the text by hand.
 
 **Choose:**
 
@@ -96,10 +173,17 @@ Compose actions as an emphasis ladder with one primary action per view.
 - `destructive`: The confirm of an irreversible or removing action.
 - `link`: Inline navigation that should read as text.
 
+**Instead of:**
+
+- A styled `<a>` or `<div onClick>` that looks like a button: use `Button`.
+- Buttons glued together with negative margins: use `ButtonGroup`.
+
 Related decisions: `confirm-dialog`, `page-header`.
 ## CardLink
 
 Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.
+
+Components: `Card`, `CardLink`, `CardAction`, `CardCount`, `CardTable`, `CardRows`.
 
 - **One link, around the title:** Put exactly one CardLink in a card, inside CardTitle around the title text. It stretches over the card, so a click anywhere opens it and the card has one tab stop named by the title. Never wrap the whole card in a link or give the Card an onClick.
 - **A link for a page, a button for a dialog:** Pass `render={<a href="…" />}` or a router link element to open a page. Leave `render` out and pass `onClick` when the card opens a dialog: it renders a button.
@@ -113,10 +197,16 @@ Use a Card with a CardLink when the whole card opens one page or one dialog, suc
 - `ListRowLink`: A list the user scans, one item per row, each opening a page.
 - `DataTableRowLink`: Rows the user sorts, filters or compares, each opening a page.
 
+**Instead of:**
+
+- A card wrapped in `<a>`, or a Card with `onClick`: use `CardLink`.
+
 Related decisions: `choice-card`, `list-row`, `data-table`.
 ## Chart
 
 Give every shape a chart draws an accessible name, from the config where Chart can.
+
+Components: `ChartContainer`, `ChartTooltip`, `ChartLegend`, `ChartStyle`.
 
 - **Every image shape has a name:** recharts draws pie slices, radial bars, scatter points, funnel steps, treemap cells and sankey nodes as images. An image without a name fails the accessibility check.
 - **Key colours to the config:** Chart names a shape from its `name`, else from the label of the config key in its colour (`var(--color-card)`). Give each series and slice a config entry with a `label`, and use `var(--color-<key>)` for its fill.
@@ -127,6 +217,8 @@ Related decisions: `stat-card`.
 ## Checklist
 
 Show a short set of steps the person completes, with its progress, until every step is done.
+
+Components: `Checklist`, `ChecklistStep`.
 
 - **Steps the person completes:** Use Checklist for work the person still has to do, in any order: set up a store, finish a project. Use Timeline for what already happened and Progress for work the system runs.
 - **Let the data decide when it can:** Use the default `mode="system"` when the app can verify a step from its own data; the step shows a tick, not a checkbox. Use `mode="manual"` only for steps only the person can confirm.
@@ -144,6 +236,8 @@ Related decisions: `step-indicator`, `timeline`, `collapsible-section`.
 
 Use Chip for removable members of an editable set or applied filters.
 
+Components: `Chip`.
+
 - **Removability is the signal:** A Chip represents membership in an editable set. Static labels are Badges, and state words are StatusBadges.
 - **State words are never Chips:** Active, Pending, Failed, Cancelled, and similar dictionary states must retain their state-dictionary tone contract.
 - **Name the remove action:** Whenever onRemove exists, provide a specific removeLabel for assistive technology.
@@ -153,6 +247,8 @@ Related decisions: `badge`, `id-chip`, `status-badge`.
 ## ChoiceCard
 
 Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.
+
+Components: `ChoiceCard`, `ChoiceCardBadge`, `ChoiceCardMedia`, `ChoiceCardMeta`, `Checkbox`, `RadioGroup`.
 
 - **The card is the control:** A ChoiceCard is a radio (single choice) or a checkbox (`multiple`) itself. Do not build a picker from a clickable Card with onClick, or a div with a role: it misses the arrow keys, Space and the checked state.
 - **Nothing interactive inside:** Slots hold text, icons and images. A link or button inside a card is not reachable as its own control. Put an action that belongs to one option next to the group, not in the card.
@@ -168,10 +264,16 @@ Use ChoiceCard when the user picks from a few options that each need a descripti
 - `Checkbox`: Independent on/off settings with short labels.
 - `A card link`: The whole card opens a page. That is navigation, not a choice.
 
+**Instead of:**
+
+- Radio inputs hidden inside bordered boxes that highlight when picked: use `ChoiceCard`.
+
 Related decisions: `form`, `badge`, `list-row`.
 ## CodeBlock
 
 Present multi-line code for reading, with the switcher reserved for runnable instructions and one annotation intent per block.
+
+Components: `CodeBlock`, `CodeBlockAction`, `InlineCode`.
 
 - **Blocks are for reading, not transport:** Use CodeBlock for multi-line code the reader studies or copies whole. Use CopyableText for single values users move elsewhere, and InlineCode for references inside prose.
 - **The switcher is for instructions, not output:** Enable packageManagerSwitcher only on shell blocks the reader should run under their own package manager. Terminal output and logs stay plain.
@@ -183,6 +285,8 @@ Related decisions: `copyable-text`.
 ## CollapsibleSection
 
 Keep one secondary list of rows behind a header that still says how many rows it holds.
+
+Components: `CollapsibleSection`, `Collapsible`, `Accordion`.
 
 - **Collapse what can wait:** Use CollapsibleSection for a secondary list on its own card. Rows that are the reason the user came to the page stay open on a plain card.
 - **Do not collapse a single row:** A closed section with one row costs a click to save one line. Show the row on a plain card.
@@ -196,19 +300,44 @@ Keep one secondary list of rows behind a header that still says how many rows it
 - `Accordion`: A set of peer panels of prose or form content.
 - `Collapsible`: A bare disclosure that is not a card of rows.
 
+**Instead of:**
+
+- A heading with a chevron button that toggles the content below: use `CollapsibleSection`.
+
 Related decisions: `list-row`.
 ## ComboboxFreeText
 
 Use free-text selection only when a brand-new value is a legitimate domain answer.
+
+Components: `ComboboxFreeText`, `Combobox`, `Select`.
 
 - **Openness is a domain decision:** Use ComboboxFreeText only when typed values outside the suggestion set are valid and should win.
 - **Managed vocabularies stay strict:** Use Combobox, Select, or MultiSelect when every valid answer already exists in a managed set.
 - **Pay for openness deliberately:** Expect and handle duplicates, spelling variation, normalization, and creation semantics when free text is allowed.
 
 Related decisions: `multi-select`.
+## Command
+
+Use CommandDialog for the command palette: one search field over a filtered list of pages and actions.
+
+Components: `Command`, `CommandDialog`, `Kbd`.
+
+- **The palette is a CommandDialog:** Open the palette in a CommandDialog from the SearchTrigger in the top bar and from the same keyboard shortcut. Its items are pages to go to and actions to run. Do not build a modal with an input and a list of buttons.
+- **Command filters and moves the focus:** CommandInput filters the items, and the arrow keys move between them. Do not write your own filter or key handling.
+- **Show a shortcut with Kbd:** Use CommandShortcut for the shortcut of an item, and Kbd for a key anywhere else, such as in a hint or a tooltip. Do not style a `<span>` as a key.
+- **Command is not a form control:** To pick a value in a form, use Select, Combobox or MultiSelect. Command is for going somewhere or doing something.
+
+**Instead of:**
+
+- A modal with a search input and a list of links or buttons that filters as you type: use `CommandDialog`.
+- A `<span>` with a border that shows a key such as ⌘K: use `Kbd`.
+
+Related decisions: `app-shell`, `combobox-free-text`, `multi-select`.
 ## ConfirmDialog
 
 Confirm only consequential actions, and make the consequence and verb explicit.
+
+Components: `ConfirmDialog`, `AlertDialog`.
 
 - **Confirmation must earn the interruption:** Confirm irreversible, bulk, or outward-facing actions. Do not confirm routine reversible changes.
 - **Name the action twice:** The title states the consequence and the confirmation button repeats the concrete verb.
@@ -223,20 +352,32 @@ Confirm only consequential actions, and make the consequence and verb explicit.
 - `caution`: A costly action that is not a loss, such as deploying after a failed check. Cancel takes the focus; Confirm is an outline button.
 - `destructive`: A loss. Cancel takes the focus; Confirm is solid red.
 
+**Instead of:**
+
+- `window.confirm()`, or a Dialog with its own Cancel and Delete buttons: use `ConfirmDialog`.
+
 Related decisions: `button`.
 ## CopyableText
 
 Offer copying only for values users genuinely transport elsewhere.
+
+Components: `CopyableText`, `CopyButton`, `CopyStateIcon`, `CopyFeedbackProvider`.
 
 - **Copy is a workflow, not decoration:** Add copying for URLs, commands, addresses, references, and other values users move into another tool.
 - **Identifiers have a dedicated compact form:** Use IdChip for opaque non-secret identifiers and CopyableText when readable content is primary.
 - **Secrets use AnonymizedToken:** Do not expose credential-like values through CopyableText.
 - **Truncate without destroying recognition:** Choose middle, start, or no truncation according to which portion users recognize while copying the full value.
 
+**Instead of:**
+
+- A copy icon button that keeps its own "copied" state and timer: use `CopyableText`, `CopyButton`.
+
 Related decisions: `anonymized-token`, `id-chip`.
 ## CountBadge
 
 Use CountBadge for a small count on an icon button or inside a button.
+
+Components: `CountBadge`.
 
 - **A count on a control, not in text:** Use CountBadge for unread notifications or alerts on an icon button and for the number of active filters inside a button. A count in running text, a heading or a table cell stays on Badge. Never size, place or colour a Badge or a span by hand for a count.
 - **The badge owns the number:** Pass the raw count. CountBadge caps it at max (99+ by default) and renders nothing at 0, so the caller does not branch on zero or cut the number.
@@ -256,6 +397,8 @@ Related decisions: `badge`, `button`, `status-badge`.
 
 Use the batteries-included collection engine while keeping URL, fetching, and persistence consumer-owned.
 
+Components: `DataTable`, `DataTableRowLink`, `DataTableColumnHeader`, `DataTableAddFilter`, `DataTableAppliedFilters`, `DataTableSkeletonLine`, `Table`.
+
 - **Reach for the whole engine:** Use DataTable when a collection needs coordinated columns, sorting, filtering, selection, pagination, and list chrome.
 - **Capabilities are opt-in:** Enable a capability by supplying its configuration; do not render disabled placeholder controls.
 - **The consumer owns state outside the table:** The consumer owns URL state, fetching, authorization, and persistence. DataTable owns one TanStack table instance and UI composition.
@@ -271,10 +414,17 @@ Use the batteries-included collection engine while keeping URL, fetching, and pe
 - **No chip or badge in the first or last column:** A chip or badge (Badge, StatusBadge chip, Chip) is never in the first or the last column of a table or list: it would sit against the edge of the list. Show the name as plain text first, and the status after it as an icon and a label. This holds for a card or list inside a bordered container too.
 - **Do not use DataTable for static layout:** Use Table or DescriptionList when there is no interactive collection behavior to coordinate.
 
+**Instead of:**
+
+- A table row with a bare "Open" or "View" link in the last column: use `DataTableRowLink`.
+- A `<table>` with hand-written sorting, filters and pagination: use `DataTable`.
+
 Related decisions: `list-header`, `table-pagination`.
 ## Date picker family
 
 Choose date inputs by value semantics so timezone conversion is deliberate.
+
+Components: `DatePicker`, `DateRangePicker`, `DateTimePicker`, `Calendar`.
 
 - **Calendar dates are not instants:** Use DatePicker for date-only domain values such as birthdays or reporting dates that should not shift by timezone.
 - **Instants include time and zone semantics:** Use DateTimePicker for a precise moment such as a scheduled publication or promotion boundary.
@@ -285,25 +435,39 @@ Related decisions: `date-time`.
 
 Render recency relatively and records absolutely, with formatting owned by FormatProvider.
 
+Components: `DateTime`, `RelativeTime`, `ElapsedTime`, `FormatProvider`.
+
 - **Recency reads relative; records read absolute:** Use RelativeTime when the question is freshness. Use DateTime for financial, legal, scheduled, and audit facts.
 - **Never hand-format a date:** Use the molecules so the semantic time element, machine-readable value, locale, and timezone remain consistent.
 - **Formatting comes from FormatProvider:** Treat locale and timezone as application context. Pass them per call only for a genuine one-off.
 - **Pin locale and timezone under SSR:** Prevent hydration disagreement for DateTime by making server and client formatting context explicit. RelativeTime and ElapsedTime need no pinning: they depend on the reader's clock, so the server and the first client render show the fallback, and the text follows right after. An app that renders only in the browser shows the text from its first paint.
 - **The other form is a tooltip, not a title:** RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Pass tooltip={<content />} to show other content, start to show the range and how long it took, and display="duration" for how long a state has lasted ("13 days", with the caller's own words around it). Add focusable where keyboard users need the exact time (a time under a StatusBadge label is a tab stop already); never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.
 
+**Instead of:**
+
+- A date formatted at the call site, or "3 minutes ago" built by hand: use `DateTime`, `RelativeTime`.
+
 Related decisions: `date-picker`, `money`.
 ## DescriptionList
 
 Use a description list for labeled facts, not editable values or record collections.
 
+Components: `DescriptionList`, `DescriptionItem`, `DescriptionTerm`, `DescriptionDetail`.
+
 - **Facts, tables, and forms are different shapes:** Use DescriptionList for one entity's labeled facts, Table for repeated records, and Field-based forms for editable values.
 - **Values may compose display molecules:** Use Money, DateTime, StatusBadge, CopyableText, and links inside values instead of reimplementing formatting.
 - **Split long detail surfaces by meaning:** Group facts into named sections once one list becomes difficult to scan; do not create arbitrary columns only to reduce height.
+
+**Instead of:**
+
+- A two-column grid of label and value `<div>`s on a detail page: use `DescriptionList`.
 
 Related decisions: `form`, `money`, `date-time`.
 ## Dialog and Sheet size
 
 Size a Dialog or a Sheet by its job with the `size` prop, never with a width class.
+
+Components: `Dialog`, `Sheet`, `Drawer`.
 
 - **The job picks the size:** Dialogs that do the same job open at the same width. Pick `size` on DialogContent or SheetContent from the job, not from the content's pixel width.
 - **No width classes:** Do not set `max-w-[…]`, `min-w-[…]` or `w-[…]` on DialogContent or SheetContent. If no size fits a real job, raise it in the design system.
@@ -319,16 +483,41 @@ Size a Dialog or a Sheet by its job with the `size` prop, never with a width cla
 - `Sheet size="xl"`: 800px. A table or a wide form beside the page.
 
 Related decisions: `confirm-dialog`, `form`.
+## DropdownMenu
+
+Put the actions of a row, a card or a page that do not fit as buttons in one DropdownMenu, opened from a ghost icon button.
+
+Components: `DropdownMenu`, `ContextMenu`, `Menubar`, `MenubarMenu`.
+
+- **Overflow actions live in one menu:** Show the primary action as a Button and put the rest in a DropdownMenu. Its trigger is a ghost `size="icon-sm"` Button with a MoreHorizontal icon and an `aria-label` that names the item, such as "More for Storefront".
+- **A destructive item goes last:** Put a destructive item last, after a DropdownMenuSeparator, with `variant="destructive"`. It opens a ConfirmDialog when the result cannot be undone.
+- **A menu runs actions; a select picks a value:** A list of options that sets a value in a form is a Select or a Combobox, not a DropdownMenu. A setting that is on or off inside a menu is a DropdownMenuCheckboxItem.
+- **Right-click repeats, it does not replace:** A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click. Use Menubar only for a desktop-style app menu bar.
+
+**Instead of:**
+
+- A "…" button that toggles an absolutely positioned `<div>` of buttons: use `DropdownMenu`.
+- A row of icon buttons, one per action, on a table row or a card: use `DropdownMenu`.
+
+Related decisions: `button`, `confirm-dialog`, `list-row`.
 ## FileDropzone
 
 Standardize local file selection and validation while leaving transport and persistence app-owned.
 
+Components: `FileDropzone`.
+
 - **The molecule owns local interaction:** FileDropzone owns drag-and-drop, file picking, constraints, validation feedback, and removal.
 - **The consumer owns upload lifecycle:** Keep authorization, transport, progress, persistence, retry policy, and server errors in the consumer.
 - **State the accepted contract:** Make file type, count, and size constraints visible before the user selects a file.
+
+**Instead of:**
+
+- A dashed box with a hidden file input and drag handlers: use `FileDropzone`.
 ## Form composition
 
 Compose accessible fields, validation, grouping, and actions independently of the form-state library.
+
+Components: `Field`, `FieldSet`, `FieldError`, `Input`, `Textarea`, `Label`, `Switch`, `NativeSelect`, `Slider`, `InputOTP`.
 
 - **Every control has one visible label:** Compose FieldLabel and the control with a programmatic association. Placeholder text never replaces a label.
 - **Description teaches; error corrects:** Use FieldDescription for stable help and FieldError for actionable validation. Do not swap help text for errors in a way that shifts the layout.
@@ -337,11 +526,14 @@ Compose accessible fields, validation, grouping, and actions independently of th
 - **Actions close the form hierarchy:** Place one primary submit action last, a neutral cancel beside it, and destructive actions outside the normal save path.
 - **Pending submission preserves context:** Disable duplicate submission, communicate progress on the submit action, retain entered values, and surface server errors near the responsible region.
 - **Form state is host-owned:** Dashboard extensions use the form APIs exported by @vendure/dashboard. Standalone consumers keep their existing form-state library.
+- **Pick the control by the value:** Text is Input, long text is Textarea. An on/off setting that applies at once is a Switch; a yes/no answer that is saved with the form is a Checkbox. One of a few options is a RadioGroup, one of many is a Select or a Combobox. A number in a range the user drags is a Slider. A one-time code is InputOTP. Do not style a Checkbox as a toggle or build a slider from a range input.
 
 Related decisions: `button`, `confirm-dialog`.
 ## HoverCard
 
 A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.
+
+Components: `HoverCard`.
 
 - **Do not set align unless there is a reason:** Without an align, HoverCardContent opens toward the centre of the screen: a trigger in the right half lines the card up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout. An explicit align always wins. align="center" brings back the old look, centred on the trigger.
 
@@ -349,6 +541,8 @@ Related decisions: `popover`, `tooltip`.
 ## IdChip
 
 Show compact, copyable, non-secret identifiers only where the exact identity helps the task.
+
+Components: `IdChip`.
 
 - **Identifiers must earn screen space:** Use IdChip on detail, support, and diagnostic surfaces where a user needs the exact identifier.
 - **Dense rows already identify the entity:** Do not repeat an opaque ID in every table row unless the identifier is itself a primary lookup key.
@@ -359,10 +553,33 @@ Show compact, copyable, non-secret identifiers only where the exact identity hel
 - **A lookup key in a list column reveals on row hover:** When a list column holds a lookup key such as a SKU, pass reveal="row": the value reads as plain text until its group/row row is hovered or focused. DataTable and ListRow rows keep a copy chip above their stretched row link, so it copies and does not open the row.
 - **A lookup key that names the row is still a chip:** When the lookup key is also the row's name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.
 
+**Instead of:**
+
+- An ID in a monospace `<span>` with a copy button beside it: use `IdChip`.
+
 Related decisions: `anonymized-token`, `copyable-text`.
+## InputGroup and PasswordInput
+
+Put an icon, a unit or a button inside a field with InputGroup. A password field is a PasswordInput.
+
+Components: `InputGroup`, `InputGroupButton`, `PasswordInput`.
+
+- **Add-ons go in InputGroupAddon:** Put an icon, a prefix such as "https://", a unit or a button in an InputGroupAddon with `align="inline-start"` or `align="inline-end"`, around an InputGroupInput or an InputGroupTextarea. The group draws one border and one focus ring for all of it. Do not position an icon over an Input with absolute positioning or padding.
+- **A button in a field is an InputGroupButton:** A copy, clear or search button inside a field is an InputGroupButton, so it fits the field height and keeps its own focus.
+- **A password field is a PasswordInput:** Use PasswordInput for a password. It brings the show/hide toggle with its label and icon. Do not build the eye button yourself.
+- **Still a field:** Wrap the group in a Field with a FieldLabel, as for any control. The add-on does not replace the label.
+
+**Instead of:**
+
+- An `<Input>` with an icon on top of it through absolute positioning and extra padding: use `InputGroup`.
+- A password input with an eye button that switches the type to "text": use `PasswordInput`.
+
+Related decisions: `form`, `copyable-text`.
 ## IssuedSecret
 
 Hand over a secret that was just issued, such as a new API key, as copy-only: never rendered, with a guard before the dialog closes.
+
+Components: `IssuedSecret`.
 
 - **Never render the value:** The value is never on screen: no text, no blur, no reveal on hover. One button copies it, or one button per format (the plain value, a .env line). The value shows only when the clipboard write fails, in a read-only field for a copy by hand.
 - **Close before a copy warns once:** Share one useIssuedSecretGuard between IssuedSecret and IssuedSecretFooter, and pass guard.onOpenChange to the Dialog. Done, the close button, Escape and the backdrop then show a warning before the first copy, and only "Close without copying" closes. It is a destructive-outline button, so the copy button stays the one filled button.
@@ -375,6 +592,8 @@ Related decisions: `secret-value`, `anonymized-token`, `confirm-dialog`.
 
 Use list-page chrome without duplicating PageHeader or the DataTable engine.
 
+Components: `ListHeader`, `ListHeaderControls`, `ListHeaderChips`.
+
 - **PageHeader still owns the page title:** Place PageHeader first. ListHeader owns collection controls and applied filters, not the page heading hierarchy.
 - **Use it outside DataTable:** Reach for ListHeader when composing a collection view manually. DataTable already assembles its own coordinated list chrome.
 - **Controls and applied filters have separate zones:** Keep search, filter, sort, and view controls together; render the Chip row only when filters are active.
@@ -383,6 +602,8 @@ Related decisions: `data-table`, `page-header`, `table-pagination`.
 ## ListRow
 
 Render a short list of entities where each row opens one detail page from any point of the row.
+
+Components: `ListRow`, `ListRowLink`, `ListRowChevron`, `ListRowActions`, `ListRowMeta`, `ListRowSwap`, `ListRowTrailing`, `ListRowLeading`, `ListRowGroupHeading`, `Item`.
 
 - **Rows to open, columns to compare:** Use ListRow for a short list the user scans and opens one row of. Use DataTable when the user sorts, filters, pages, selects in bulk, or compares values across rows.
 - **One link per row, over the whole row:** Put exactly one ListRowLink in a row. It stretches over the row, so the row has one tab stop and one name. Never make one cell the only link.
@@ -394,20 +615,33 @@ Render a short list of entities where each row opens one detail page from any po
 - **Group rows under a heading, not in a wrapper:** To group rows by day or kind, put a ListRowGroupHeading before each group, as a sibling of the rows. It takes the rule above, and the first row under it drops its own. Do not wrap a group in its own element: the heading then loses its rule.
 - **Only rows added later animate:** Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.
 
+**Instead of:**
+
+- A list row with a bare "Open" link, or a chevron that is the only link: use `ListRowLink`, `ListRowChevron`.
+- A flex row of `<div>`s with a title, meta text and actions: use `ListRow`.
+
 Related decisions: `collapsible-section`, `data-table`, `id-chip`, `status-badge`.
 ## Money
 
 Render minor-unit amounts with explicit currency and shared locale context.
+
+Components: `Money`.
 
 - **Amounts enter as minor units:** Pass the integer amount using the currency's minor units. Do not divide ad hoc at the call site.
 - **Currency is domain data:** Take currency from the record or channel context, never from the browser locale.
 - **Locale comes from FormatProvider:** Use shared formatting context and override it only for a real one-off.
 - **Tables align amounts for comparison:** Right-align monetary columns, use tabular numbers, and render negatives and zero consistently.
 
+**Instead of:**
+
+- An amount formatted with `toFixed` and a currency symbol: use `Money`.
+
 Related decisions: `date-time`.
 ## MultiSelect
 
 Choose multi-value controls by option count, search need, and how selected values must read.
+
+Components: `MultiSelect`.
 
 - **Use a compact multi-value trigger for bounded sets:** Use MultiSelect when several values may be chosen from a managed option set without exposing every checkbox.
 - **Small visible sets may use checkboxes:** Prefer a checkbox group when the option set is short and seeing every choice improves the task.
@@ -419,15 +653,23 @@ Related decisions: `combobox-free-text`.
 
 State what the view is and place its action hierarchy in one predictable header.
 
+Components: `PageHeader`, `PageHeaderActions`, `PageHeaderBack`, `PageHeaderBackRow`, `PageHeaderFacts`, `PageHeaderFact`, `PageHeaderFactLink`.
+
 - **The title says what this is:** Use an entity name or concise page noun, not an instruction or sentence.
 - **At most one primary action:** Place one filled Button in the actions slot; step supporting actions down or move them into overflow.
 - **Title-adjacent content describes identity or state:** Badges and StatusBadges may sit beside the title. Controls and routine actions do not.
 - **Keep the hierarchy stable on small screens:** Allow actions to wrap or collapse without moving the page identity below transient controls.
 
+**Instead of:**
+
+- An `<h1>` with a flex row of buttons beside it: use `PageHeader`.
+
 Related decisions: `button`, `list-header`, `status-badge`.
 ## Popover
 
 A popover holds content the user reads or edits next to its trigger. It opens toward the centre of the screen by itself.
+
+Components: `Popover`.
 
 - **Do not set align unless there is a reason:** Without an align, PopoverContent opens toward the centre of the screen: a trigger in the right half lines the popover up with its right edge, a trigger in the left half with its left edge. Set align only to pin one edge for a reason of the layout, such as a popover that must line up with a field. An explicit align always wins. align="center" brings back the old look, centred on the trigger.
 
@@ -435,6 +677,8 @@ Related decisions: `tooltip`.
 ## Progress
 
 Show task completion or usage against a limit, toned only when the level has a consequence.
+
+Components: `Progress`, `ProgressValue`.
 
 - **Tone follows consequence, not fill level alone:** A usage meter turns `warning` near a limit the user must act on and `critical` at or over it. A task progress bar stays `default`.
 - **Tone never carries the value alone:** Pair a toned bar with ProgressValue or text that states the amount and the limit.
@@ -457,6 +701,8 @@ Related decisions: `status-badge`, `stat-card`.
 
 Show a secret that the server returns only on request as a fixed mask, loaded and revealed by a click.
 
+Components: `SecretValue`.
+
 - **Loaded on request, not on the client:** Use SecretValue when the server returns the value only on request, such as an environment variable value. When the full value is already on the client, use AnonymizedToken.
 - **Reveal is a click, never hover:** Each load is a server read that may be audited. Load and reveal only on a click of the reveal button, never on hover or focus.
 - **The consumer owns the fetch:** Pass loadValue. SecretValue owns the hidden, loading, revealed and error states. Do not fetch every secret up front to fill a value.
@@ -464,10 +710,16 @@ Show a secret that the server returns only on request as a fixed mask, loaded an
 - **Hide clears the value:** Hiding drops the loaded value from state. Copy while hidden loads the value and copies it without revealing it.
 - **The value never goes in a title or label:** The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.
 
+**Instead of:**
+
+- A masked value with an eye button that fetches and shows the secret: use `SecretValue`.
+
 Related decisions: `anonymized-token`, `copyable-text`, `issued-secret`.
 ## Sidebar
 
 For the current page, exactly one icon in the sidebar takes the active colour: the current item's own icon, or its group's icon.
+
+Components: `Sidebar`, `Avatar`, `SidebarProvider`, `SidebarInset`, `SidebarMenu`, `SidebarMenuButton`, `SidebarMenuSub`, `SidebarMenuSubButton`, `SidebarLevels`, `SidebarLevel`, `SidebarLevelBack`, `SidebarIdentityButton`, `SidebarIdentityText`, `SidebarTrigger`, `SidebarRail`, `SidebarInput`, `SidebarMenuAction`, `SidebarMenuBadge`, `SidebarMenuSkeleton`, `SidebarGroupAction`.
 
 - **One icon shows the current page:** If the current item has its own icon, only that icon takes the active colour and its group's icon stays neutral. If the current item has no icon, its group's icon takes it. In the icon rail the nested items are hidden, so the group's icon takes it.
 - **Set hasActiveChild on every group that holds the current page:** Pass `hasActiveChild` to SidebarMenuButton whenever one of the group's items is the current page, with or without an icon on that item. Do not work out whether the item has an icon: SidebarMenuSubButton and SidebarMenuButton pick the one icon together. Set `active` on the nested SidebarMenuSubButton as well.
@@ -476,9 +728,27 @@ For the current page, exactly one icon in the sidebar takes the active colour: t
 - **An area with its own navigation is a second level:** Use SidebarLevels with one SidebarLevel per level, and start the second level with SidebarLevelBack (a chevron and the area's name). Set `level` from the route. Do not nest the area's pages as a sub-list, and do not add a second sidebar.
 - **The account or user switch is a SidebarIdentityButton:** Render SidebarIdentityButton as the trigger of its menu, with an Avatar and a SidebarIdentityText (a title over an optional caption) as children. It brings the chevron, the open fill and the icon rail: the text and the chevron fade, the avatar stays. Do not hide the text with useSidebar().state, and do not build the row from SidebarMenuButton by hand.
 - **An account is square, a person is round:** Pass `shape="square"` to the Avatar of an account, an organisation or a channel. Keep the default round Avatar for a person. Do not set a radius on Avatar, AvatarImage or AvatarFallback.
+## SidebarMenuFlyout
+
+In the collapsed icon rail, a group's items open in a SidebarMenuFlyout beside its icon.
+
+Components: `SidebarMenuFlyout`.
+
+- **Use it for a group in the icon rail:** When the sidebar collapses to icons, the items of a group are hidden. Render the group as a SidebarMenuFlyout: SidebarMenuFlyoutTrigger with the group icon and its name, and SidebarMenuFlyoutContent with `label` set to the group name and one SidebarMenuFlyoutItem per page. Hover or focus opens it.
+- **The title row is the label:** The flyout's title row lines up with the icon, so the title reads as the icon's label. Do not add a Tooltip to the same icon.
+- **Mark the current page:** Pass `hasActiveChild` to the trigger when one of its items is the current page, and `active` to that SidebarMenuFlyoutItem, as in the expanded sidebar.
+- **Not for a single page:** A group with no items, or an item that is itself a page, stays a SidebarMenuButton. Its name shows in a Tooltip in the rail.
+
+**Instead of:**
+
+- A Popover or HoverCard opened from a rail icon with a list of links: use `SidebarMenuFlyout`.
+
+Related decisions: `sidebar`, `app-shell`.
 ## StatCard
 
 Reserve cards for a small set of page-framing KPIs with explicit comparison context.
+
+Components: `StatCard`.
 
 - **A number must frame the page:** Use StatCard for a few KPIs that orient the entire view. Use inline text for local facts and a chart for shape over time.
 - **Every delta names its comparison:** State the window or baseline; an isolated percentage is not meaningful.
@@ -490,6 +760,8 @@ Related decisions: `money`.
 
 Render waiting, successful emptiness, and failure as distinct states with the right recovery.
 
+Components: `LoadingState`, `EmptyState`, `ErrorState`, `Empty`, `Skeleton`, `SkeletonCard`, `SkeletonFact`, `SkeletonField`, `SkeletonLine`, `SkeletonListRow`, `SkeletonPageHeader`, `Spinner`.
+
 - **Ask waiting, empty, or failed in that order:** Loading means the answer is in flight, Empty means the request succeeded with nothing, and Error means the system failed.
 - **Empty states teach the first action:** Explain what belongs in the region and offer the one concrete action that creates the first item.
 - **Filtered empty recovers the query:** When data exists but filters hide it, offer clear filters or a broader search rather than a create action.
@@ -500,11 +772,19 @@ Render waiting, successful emptiness, and failure as distinct states with the ri
 - **Skeleton for known shape; spinner for compact unknown shape:** Default to skeletons for tables and detail panes. Use a spinner for compact regions where skeleton rows would misrepresent the result.
 - **A page loads into a skeleton in its own shape:** Pass skeleton parts as LoadingState children, laid out like the loaded page: SkeletonPageHeader for a PageHeader, SkeletonCard for a Card, SkeletonListRow for a ListRow, SkeletonField for a Field with an input, SkeletonFact for a DescriptionList item, and SkeletonLine for any other line of text (size it with the text utility of the text it stands in for). Each part is as tall as its real component, so content fills in place. Use one LoadingState per region that loads together: it is the one live region, and the parts stay silent. A DataTable draws its own loading rows. Do not fall back to the bare rows bars where the shape is known.
 - **Nothing shows for a fast load:** LoadingState stays transparent for its first 150ms (delay), while holding its space, so a fast load never flashes a placeholder. Keep the default. Pass delay={0} only when something else already delays the loading view.
+- **A spinner is for a control, not a region:** Use Spinner inside a Button or next to a field that is working. A region or page that is loading uses LoadingState or the skeleton parts that match its layout. Never render "Loading…" text alone.
+
+**Instead of:**
+
+- A centred "No items yet" paragraph, or "Loading…" text: use `EmptyState`, `LoadingState`.
+- A red paragraph with the error message and a retry link: use `ErrorState`.
 
 Related decisions: `button`.
 ## StatusBadge and state dictionary
 
 Map domain states to the six shared tones by consequence for the viewer.
+
+Components: `StatusBadge`, `LiveIndicator`.
 
 - **Tone follows consequence, not the verb:** The same state word can map differently across domains. Build domain-specific state dictionaries rather than a global string map.
 - **Critical means intervene:** Reserve critical for failed, blocked, invalid, or service-affecting conditions. User-cancelled terminal states are neutral.
@@ -531,19 +811,44 @@ Map domain states to the six shared tones by consequence for the viewer.
 - `critical`: Failed, blocked, invalid, or service-affecting.
 - `progress`: The system is working (spinner), or waiting on the system or another person (pending: no icon).
 
+**Instead of:**
+
+- A coloured pill with the status colour picked at the call site: use `StatusBadge`.
+
 Related decisions: `badge`, `chip`.
 ## TablePagination
 
 Use the standalone collection footer only when DataTable is not coordinating pagination.
+
+Components: `TablePagination`, `Pagination`, `PaginationLink`.
 
 - **DataTable already owns its footer:** Use TablePagination when composing a collection manually; do not add a second pagination system around DataTable.
 - **Capabilities appear only when wired:** Hide page-size and navigation controls when the consumer has not provided the state and handlers that make them work.
 - **URL-owned pagination uses links:** Use anchor navigation when pages have meaningful URLs and should support browser affordances; use buttons for local state.
 
 Related decisions: `data-table`, `list-header`.
+## Tabs and TabsNav
+
+Switch views of one subject with Tabs. Switch between routes of one area with TabsNav.
+
+Components: `Tabs`, `TabsNav`, `TabsLink`.
+
+- **Panels or routes:** Use Tabs with TabsList, TabsTrigger and TabsContent when the panels belong to one page and the URL does not change. Use TabsNav with one TabsLink per route when each tab is its own page: it is a `<nav>` of links with `aria-current="page"`, not a tablist.
+- **The page sections use the line look:** Section tabs under a PageHeader use `variant="line"` on TabsList; TabsNav has that look already. The boxed default is for a small switch inside a card.
+- **The router owns the active link:** Pass `render` with your router link to TabsLink. A router link that sets `aria-current` on the active route needs no `active`; otherwise set `active` yourself.
+- **A filter is not a tab:** A control that narrows the same list, such as All, Open and Closed, is a ToggleGroup or a filter in the ListHeader. Tabs change what the page shows.
+
+**Instead of:**
+
+- A row of buttons with an underline under the selected one: use `Tabs`, `TabsNav`.
+- Links styled as tabs that keep the selected state in local state: use `TabsLink`.
+
+Related decisions: `page-header`, `toggle-group`.
 ## StepIndicator
 
 Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.
+
+Components: `StepIndicator`, `StepIndicatorStep`.
 
 - **An ordered flow, not a to-do list:** Use StepIndicator when the steps go one after the other. Tasks the user ticks off in any order are a Checklist. Events that already happened are a Timeline.
 - **Waiting is current, working is running:** A step that waits for the user or a queue is `current`: blue, with no spinner, because it can wait for days. Only a step whose work happens now is `running` and spins. A step where the flow stopped is `failed`; the steps after it stay `upcoming`.
@@ -559,10 +864,16 @@ Show where an ordered flow stands: signup, the build and deploy steps of a deplo
 - `done`: Finished.
 - `failed`: The flow stopped here.
 
+**Instead of:**
+
+- Numbered circles joined by lines for the steps of a flow: use `StepIndicator`.
+
 Related decisions: `checklist`, `timeline`, `progress`.
 ## TextLink
 
 Link inside running text, or a small standalone link that must not compete with the actions next to it.
+
+Components: `TextLink`.
 
 - **TextLink in text, ArrowLink at the end of a region, Button for an action:** A link inside a sentence, a description or a form hint is a TextLink. A link to more of the same subject at the end of a panel head, card or notice is an ArrowLink. Anything that changes data or opens a dialog is a Button. Do not force `Button variant="link"` to `h-auto p-0` to draw a link in text.
 - **Default tone in a sentence:** The default tone is always underlined, so it reads as a link without relying on colour. Use it inside running text. It takes the size, weight and line height of the text around it: do not add a text size to match.
@@ -580,6 +891,8 @@ Related decisions: `arrow-link`, `button`.
 
 Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.
 
+Components: `Timeline`, `TimelineLink`, `TimelineMarker`, `TimelineMeta`, `TimelineDetail`, `TimelineGroupHeading`.
+
 - **Events to read, entities to open:** Use Timeline for a feed of events about one thing: crashes and restarts of a server, the history of an order. Use ListRow when each line is an entity the user opens, such as a deployment.
 - **Quiet normal, loud abnormal:** Most entries stay neutral. Give an entry a tone only for a consequence: success for a deployment that went live, warning for a restart, critical for a failure. When a banner on the page already names the problem, its entries go neutral.
 - **A sentence, then the time:** TimelineTitle is one sentence of what happened. TimelineMeta holds a RelativeTime and, when it matters, who did it. Put a note, an amount or a state change in TimelineDetail, never in the sentence.
@@ -588,9 +901,28 @@ Show what happened to one thing, newest first, as entries on one rail: a tone ma
 - **Group by day with a heading before each group:** Put a TimelineGroupHeading before each day, then that day's own Timeline. Only entries added while the page is open take enter="new".
 
 Related decisions: `list-row`, `status-badge`, `date-time`.
+## ToggleGroup
+
+Use a ToggleGroup for a segmented control: a small set of options that changes the view in place.
+
+Components: `ToggleGroup`, `Toggle`.
+
+- **A segmented control is a ToggleGroup:** Use a ToggleGroup for a choice of two to five options that changes the view at once, such as a time range or list or grid view. One ToggleGroupItem per option, each with a text label or an `aria-label`. Do not build it from Buttons that swap variants.
+- **One or many:** A ToggleGroup picks one value by default. Pass `multiple` when the options combine, such as filters by status.
+- **One option on its own is a Toggle:** A single on/off button in a toolbar, such as "Wrap lines", is a Toggle. A setting saved with a form is a Switch or a Checkbox.
+- **Not for navigation:** When each option is a page with its own URL, use TabsNav.
+
+**Instead of:**
+
+- Buttons side by side, where the selected one gets a filled variant: use `ToggleGroup`.
+- A button that keeps a pressed state in `useState` and swaps its style: use `Toggle`.
+
+Related decisions: `tabs`, `button`, `form`.
 ## Tooltip
 
 A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.
+
+Components: `Tooltip`, `TooltipProvider`, `TooltipLabelSwap`.
 
 - **A short hint, at most 320px:** A tooltip is a short hint or a label, never wider than 320px. Nothing widens it: a max-w class on TooltipContent is dropped. It holds no values to read in full, no paragraphs and no controls, because nobody can select or click inside it. Put longer content on the page or in a Popover.
 - **One TooltipProvider for the app:** Wrap the app in one TooltipProvider. The first tooltip then waits 350ms, so a pointer passing over a trigger opens nothing, and once a tooltip is open the next ones open at once with no animation. Do not set a delay per tooltip. Without a provider every tooltip still waits 350ms, but the next one does not open at once.

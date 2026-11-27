@@ -6,6 +6,7 @@ export const uiGuidance = [
     title: 'Alert',
     summary: 'Use one Alert for a page or region notice, toned by its consequence for the viewer.',
     sourceStory: 'alert-guidance.stories.tsx',
+    components: ['Alert', 'AlertAction'],
     rules: [
       {
         title: 'Tone follows consequence',
@@ -28,6 +29,9 @@ export const uiGuidance = [
         body: 'Put buttons in AlertAction with `size="sm"` or `size="xs"`, so they fit the first line of text. Do not place actions in a row under AlertDescription; a narrow Alert moves AlertAction under the text itself.',
       },
     ],
+    replaces: [
+      { pattern: 'A tinted div with an icon and a message at the top of a page', use: ['Alert'] },
+    ],
     choices: [
       { choice: 'default', when: 'A routine notice with no consequence attached.' },
       { choice: 'info', when: 'A fact worth noticing, with no positive or negative valence.' },
@@ -41,6 +45,7 @@ export const uiGuidance = [
     title: 'AnonymizedToken',
     summary: 'Render secret-like values as protected, copyable previews rather than exposed text.',
     sourceStory: 'anonymized-token-guidance.stories.tsx',
+    components: ['AnonymizedToken'],
     rules: [
       {
         title: 'Secrets are never plain identifiers',
@@ -71,6 +76,14 @@ export const uiGuidance = [
     summary:
       'Use the shared application anatomy without moving app-owned routing or context into the shell.',
     sourceStory: 'app-shell-guidance.stories.tsx',
+    components: [
+      'AppShell',
+      'AppShellMain',
+      'AppShellPage',
+      'AppShellSidebar',
+      'SearchTrigger',
+      'SkipLink',
+    ],
     rules: [
       {
         title: 'The shell owns anatomy',
@@ -113,6 +126,7 @@ export const uiGuidance = [
     summary:
       'Link to a page with more of what the user is looking at, at the end of the region it extends.',
     sourceStory: 'arrow-link-guidance.stories.tsx',
+    components: ['ArrowLink'],
     rules: [
       {
         title: 'Navigation, never an action',
@@ -138,6 +152,7 @@ export const uiGuidance = [
     title: 'Badge',
     summary: 'Use Badge for static classification or counts, neutral by default.',
     sourceStory: 'badge-guidance.stories.tsx',
+    components: ['Badge'],
     rules: [
       {
         title: 'Classification is not state',
@@ -168,10 +183,53 @@ export const uiGuidance = [
     related: ['chip', 'count-badge', 'status-badge'],
   },
   {
+    id: 'breadcrumb',
+    title: 'Breadcrumb',
+    summary:
+      'Show where the page sits, and let the user go up a level or switch to a sibling, in the top bar.',
+    sourceStory: 'breadcrumb-guidance.stories.tsx',
+    components: [
+      'Breadcrumb',
+      'BreadcrumbLink',
+      'BreadcrumbPage',
+      'BreadcrumbEllipsis',
+      'BreadcrumbMenu',
+      'BreadcrumbSearchMenu',
+    ],
+    rules: [
+      {
+        title: 'One trail, in the top bar',
+        body: 'Render one Breadcrumb in AppShellHeader. Each level above the page is a BreadcrumbLink and the page itself is a BreadcrumbPage. Do not repeat the trail inside the page, and do not put a back link in its place.',
+      },
+      {
+        title: 'Separators come from the component',
+        body: 'Put a BreadcrumbSeparator between items. Do not type "/" or "›" between links, and do not draw your own chevrons.',
+      },
+      {
+        title: 'A crumb that switches siblings is a menu',
+        body: 'When the user switches the current item between its siblings, such as the project or the environment, make that crumb a BreadcrumbMenu. For a long list with a search field, use BreadcrumbSearchMenu. The options and the route stay in your app.',
+      },
+      {
+        title: 'A long trail folds in the middle',
+        body: 'Keep the first and the last two levels, and fold the rest into a BreadcrumbEllipsis.',
+      },
+    ],
+    replaces: [
+      { pattern: 'Links joined with "/" or "›" text above the page title', use: ['Breadcrumb'] },
+      {
+        pattern:
+          'A select or popover beside the page title to switch the current project or environment',
+        use: ['BreadcrumbMenu', 'BreadcrumbSearchMenu'],
+      },
+    ],
+    related: ['app-shell', 'page-header'],
+  },
+  {
     id: 'button',
     title: 'Button',
     summary: 'Compose actions as an emphasis ladder with one primary action per view.',
     sourceStory: 'button-guidance.stories.tsx',
+    components: ['Button', 'ButtonLabelSwap', 'ButtonGroup'],
     rules: [
       {
         title: 'One primary action per view',
@@ -201,6 +259,14 @@ export const uiGuidance = [
         title: 'A disabled button that must say why keeps its focus',
         body: 'Use `disabled` when the page already shows why the action is off. When the user needs the reason, add `focusableWhenDisabled` and a Tooltip that gives it: the button renders `aria-disabled="true"`, keeps its tab stop and pointer, and ignores the click. It looks like `disabled` in every variant. A raw `aria-disabled="true"` looks the same, but then ignoring the click is up to you.',
       },
+      {
+        title: 'A label that changes keeps its width',
+        body: 'When a button label changes in place, such as Copy to Copied or Save to Saving, wrap the labels in ButtonLabelSwap so the button keeps one width and the label crossfades. A tooltip label that changes uses TooltipLabelSwap. Do not swap the text by hand.',
+      },
+    ],
+    replaces: [
+      { pattern: 'A styled `<a>` or `<div onClick>` that looks like a button', use: ['Button'] },
+      { pattern: 'Buttons glued together with negative margins', use: ['ButtonGroup'] },
     ],
     choices: [
       { choice: 'default', when: 'The single primary action of the view.' },
@@ -226,6 +292,7 @@ export const uiGuidance = [
     summary:
       'Use a Card with a CardLink when the whole card opens one page or one dialog, such as a project in a grid of projects.',
     sourceStory: 'card-link-guidance.stories.tsx',
+    components: ['Card', 'CardLink', 'CardAction', 'CardCount', 'CardTable', 'CardRows'],
     rules: [
       {
         title: 'One link, around the title',
@@ -244,6 +311,7 @@ export const uiGuidance = [
         body: 'The card takes the shared interactive look when it holds a CardLink: the border darkens on hover, the card presses, and keyboard focus draws the design-system ring around the card. Do not add a hover border, a ring or a cursor of your own. A card without a CardLink stays static.',
       },
     ],
+    replaces: [{ pattern: 'A card wrapped in `<a>`, or a Card with `onClick`', use: ['CardLink'] }],
     choices: [
       {
         choice: 'CardLink',
@@ -269,6 +337,7 @@ export const uiGuidance = [
     title: 'Chart',
     summary: 'Give every shape a chart draws an accessible name, from the config where Chart can.',
     sourceStory: 'chart-guidance.stories.tsx',
+    components: ['ChartContainer', 'ChartTooltip', 'ChartLegend', 'ChartStyle'],
     rules: [
       {
         title: 'Every image shape has a name',
@@ -295,6 +364,7 @@ export const uiGuidance = [
     summary:
       'Show a short set of steps the person completes, with its progress, until every step is done.',
     sourceStory: 'checklist-guidance.stories.tsx',
+    components: ['Checklist', 'ChecklistStep'],
     rules: [
       {
         title: 'Steps the person completes',
@@ -325,6 +395,7 @@ export const uiGuidance = [
     title: 'Chip',
     summary: 'Use Chip for removable members of an editable set or applied filters.',
     sourceStory: 'chip-guidance.stories.tsx',
+    components: ['Chip'],
     rules: [
       {
         title: 'Removability is the signal',
@@ -351,6 +422,14 @@ export const uiGuidance = [
     summary:
       'Use ChoiceCard when the user picks from a few options that each need a description, a price, an icon or an image to choose between.',
     sourceStory: 'choice-card-guidance.stories.tsx',
+    components: [
+      'ChoiceCard',
+      'ChoiceCardBadge',
+      'ChoiceCardMedia',
+      'ChoiceCardMeta',
+      'Checkbox',
+      'RadioGroup',
+    ],
     rules: [
       {
         title: 'The card is the control',
@@ -371,6 +450,12 @@ export const uiGuidance = [
       {
         title: 'Keep the indicator',
         body: 'The radio dot or check box shows the state in shape, not only in colour. Do not hide it.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'Radio inputs hidden inside bordered boxes that highlight when picked',
+        use: ['ChoiceCard'],
       },
     ],
     choices: [
@@ -403,6 +488,7 @@ export const uiGuidance = [
     summary:
       'Present multi-line code for reading, with the switcher reserved for runnable instructions and one annotation intent per block.',
     sourceStory: 'code-block-guidance.stories.tsx',
+    components: ['CodeBlock', 'CodeBlockAction', 'InlineCode'],
     rules: [
       {
         title: 'Blocks are for reading, not transport',
@@ -433,6 +519,7 @@ export const uiGuidance = [
     summary:
       'Keep one secondary list of rows behind a header that still says how many rows it holds.',
     sourceStory: 'collapsible-section-guidance.stories.tsx',
+    components: ['CollapsibleSection', 'Collapsible', 'Accordion'],
     rules: [
       {
         title: 'Collapse what can wait',
@@ -455,6 +542,12 @@ export const uiGuidance = [
         body: 'When some rows have failed, pass `detail` ("1 failed") with `tone="critical"`. The tone then colours the detail only and the count stays muted: "2 · 1 failed".',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A heading with a chevron button that toggles the content below',
+        use: ['CollapsibleSection'],
+      },
+    ],
     choices: [
       { choice: 'CollapsibleSection', when: 'One secondary list of rows on a card, with a count.' },
       { choice: 'Accordion', when: 'A set of peer panels of prose or form content.' },
@@ -467,6 +560,7 @@ export const uiGuidance = [
     title: 'ComboboxFreeText',
     summary: 'Use free-text selection only when a brand-new value is a legitimate domain answer.',
     sourceStory: 'combobox-free-text-guidance.stories.tsx',
+    components: ['ComboboxFreeText', 'Combobox', 'Select'],
     rules: [
       {
         title: 'Openness is a domain decision',
@@ -484,10 +578,46 @@ export const uiGuidance = [
     related: ['multi-select'],
   },
   {
+    id: 'command',
+    title: 'Command',
+    summary:
+      'Use CommandDialog for the command palette: one search field over a filtered list of pages and actions.',
+    sourceStory: 'command-guidance.stories.tsx',
+    components: ['Command', 'CommandDialog', 'Kbd'],
+    rules: [
+      {
+        title: 'The palette is a CommandDialog',
+        body: 'Open the palette in a CommandDialog from the SearchTrigger in the top bar and from the same keyboard shortcut. Its items are pages to go to and actions to run. Do not build a modal with an input and a list of buttons.',
+      },
+      {
+        title: 'Command filters and moves the focus',
+        body: 'CommandInput filters the items, and the arrow keys move between them. Do not write your own filter or key handling.',
+      },
+      {
+        title: 'Show a shortcut with Kbd',
+        body: 'Use CommandShortcut for the shortcut of an item, and Kbd for a key anywhere else, such as in a hint or a tooltip. Do not style a `<span>` as a key.',
+      },
+      {
+        title: 'Command is not a form control',
+        body: 'To pick a value in a form, use Select, Combobox or MultiSelect. Command is for going somewhere or doing something.',
+      },
+    ],
+    replaces: [
+      {
+        pattern:
+          'A modal with a search input and a list of links or buttons that filters as you type',
+        use: ['CommandDialog'],
+      },
+      { pattern: 'A `<span>` with a border that shows a key such as ⌘K', use: ['Kbd'] },
+    ],
+    related: ['app-shell', 'combobox-free-text', 'multi-select'],
+  },
+  {
     id: 'confirm-dialog',
     title: 'ConfirmDialog',
     summary: 'Confirm only consequential actions, and make the consequence and verb explicit.',
     sourceStory: 'confirm-dialog-guidance.stories.tsx',
+    components: ['ConfirmDialog', 'AlertDialog'],
     rules: [
       {
         title: 'Confirmation must earn the interruption',
@@ -514,6 +644,12 @@ export const uiGuidance = [
         body: 'When the dialog loads what the action affects, set confirmDisabled until it has loaded and give a short confirmDisabledReason. Keep cancel available. Do not rebuild the dialog from AlertDialog atoms to do this.',
       },
     ],
+    replaces: [
+      {
+        pattern: '`window.confirm()`, or a Dialog with its own Cancel and Delete buttons',
+        use: ['ConfirmDialog'],
+      },
+    ],
     choices: [
       {
         choice: 'default',
@@ -532,6 +668,7 @@ export const uiGuidance = [
     title: 'CopyableText',
     summary: 'Offer copying only for values users genuinely transport elsewhere.',
     sourceStory: 'copyable-text-guidance.stories.tsx',
+    components: ['CopyableText', 'CopyButton', 'CopyStateIcon', 'CopyFeedbackProvider'],
     rules: [
       {
         title: 'Copy is a workflow, not decoration',
@@ -550,6 +687,12 @@ export const uiGuidance = [
         body: 'Choose middle, start, or no truncation according to which portion users recognize while copying the full value.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A copy icon button that keeps its own "copied" state and timer',
+        use: ['CopyableText', 'CopyButton'],
+      },
+    ],
     related: ['anonymized-token', 'id-chip'],
   },
   {
@@ -557,6 +700,7 @@ export const uiGuidance = [
     title: 'CountBadge',
     summary: 'Use CountBadge for a small count on an icon button or inside a button.',
     sourceStory: 'count-badge-guidance.stories.tsx',
+    components: ['CountBadge'],
     rules: [
       {
         title: 'A count on a control, not in text',
@@ -599,6 +743,15 @@ export const uiGuidance = [
     summary:
       'Use the batteries-included collection engine while keeping URL, fetching, and persistence consumer-owned.',
     sourceStory: 'data-table-guidance.stories.tsx',
+    components: [
+      'DataTable',
+      'DataTableRowLink',
+      'DataTableColumnHeader',
+      'DataTableAddFilter',
+      'DataTableAppliedFilters',
+      'DataTableSkeletonLine',
+      'Table',
+    ],
     rules: [
       {
         title: 'Reach for the whole engine',
@@ -657,6 +810,16 @@ export const uiGuidance = [
         body: 'Use Table or DescriptionList when there is no interactive collection behavior to coordinate.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A table row with a bare "Open" or "View" link in the last column',
+        use: ['DataTableRowLink'],
+      },
+      {
+        pattern: 'A `<table>` with hand-written sorting, filters and pagination',
+        use: ['DataTable'],
+      },
+    ],
     related: ['list-header', 'table-pagination'],
   },
   {
@@ -664,6 +827,7 @@ export const uiGuidance = [
     title: 'Date picker family',
     summary: 'Choose date inputs by value semantics so timezone conversion is deliberate.',
     sourceStory: 'date-picker-guidance.stories.tsx',
+    components: ['DatePicker', 'DateRangePicker', 'DateTimePicker', 'Calendar'],
     rules: [
       {
         title: 'Calendar dates are not instants',
@@ -686,6 +850,7 @@ export const uiGuidance = [
     summary:
       'Render recency relatively and records absolutely, with formatting owned by FormatProvider.',
     sourceStory: 'date-time-guidance.stories.tsx',
+    components: ['DateTime', 'RelativeTime', 'ElapsedTime', 'FormatProvider'],
     rules: [
       {
         title: 'Recency reads relative; records read absolute',
@@ -708,6 +873,12 @@ export const uiGuidance = [
         body: 'RelativeTime shows the absolute time in a DS Tooltip on hover and always carries it as its accessible description. Pass tooltip={<content />} to show other content, start to show the range and how long it took, and display="duration" for how long a state has lasted ("13 days", with the caller\'s own words around it). Add focusable where keyboard users need the exact time (a time under a StatusBadge label is a tab stop already); never inside a link, a button or other interactive content. Set tooltip={false} inside another tooltip trigger. Never use a native title. Where the exact time is the point, use DateTime.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A date formatted at the call site, or "3 minutes ago" built by hand',
+        use: ['DateTime', 'RelativeTime'],
+      },
+    ],
     related: ['date-picker', 'money'],
   },
   {
@@ -715,6 +886,7 @@ export const uiGuidance = [
     title: 'DescriptionList',
     summary: 'Use a description list for labeled facts, not editable values or record collections.',
     sourceStory: 'description-list-guidance.stories.tsx',
+    components: ['DescriptionList', 'DescriptionItem', 'DescriptionTerm', 'DescriptionDetail'],
     rules: [
       {
         title: 'Facts, tables, and forms are different shapes',
@@ -729,6 +901,12 @@ export const uiGuidance = [
         body: 'Group facts into named sections once one list becomes difficult to scan; do not create arbitrary columns only to reduce height.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A two-column grid of label and value `<div>`s on a detail page',
+        use: ['DescriptionList'],
+      },
+    ],
     related: ['form', 'money', 'date-time'],
   },
   {
@@ -736,6 +914,7 @@ export const uiGuidance = [
     title: 'Dialog and Sheet size',
     summary: 'Size a Dialog or a Sheet by its job with the `size` prop, never with a width class.',
     sourceStory: 'dialog-guidance.stories.tsx',
+    components: ['Dialog', 'Sheet', 'Drawer'],
     rules: [
       {
         title: 'The job picks the size',
@@ -773,11 +952,49 @@ export const uiGuidance = [
     related: ['confirm-dialog', 'form'],
   },
   {
+    id: 'dropdown-menu',
+    title: 'DropdownMenu',
+    summary:
+      'Put the actions of a row, a card or a page that do not fit as buttons in one DropdownMenu, opened from a ghost icon button.',
+    sourceStory: 'dropdown-menu-guidance.stories.tsx',
+    components: ['DropdownMenu', 'ContextMenu', 'Menubar', 'MenubarMenu'],
+    rules: [
+      {
+        title: 'Overflow actions live in one menu',
+        body: 'Show the primary action as a Button and put the rest in a DropdownMenu. Its trigger is a ghost `size="icon-sm"` Button with a MoreHorizontal icon and an `aria-label` that names the item, such as "More for Storefront".',
+      },
+      {
+        title: 'A destructive item goes last',
+        body: 'Put a destructive item last, after a DropdownMenuSeparator, with `variant="destructive"`. It opens a ConfirmDialog when the result cannot be undone.',
+      },
+      {
+        title: 'A menu runs actions; a select picks a value',
+        body: 'A list of options that sets a value in a form is a Select or a Combobox, not a DropdownMenu. A setting that is on or off inside a menu is a DropdownMenuCheckboxItem.',
+      },
+      {
+        title: 'Right-click repeats, it does not replace',
+        body: 'A ContextMenu may repeat the actions of the visible menu, but every action must also be reachable without a right click. Use Menubar only for a desktop-style app menu bar.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'A "…" button that toggles an absolutely positioned `<div>` of buttons',
+        use: ['DropdownMenu'],
+      },
+      {
+        pattern: 'A row of icon buttons, one per action, on a table row or a card',
+        use: ['DropdownMenu'],
+      },
+    ],
+    related: ['button', 'confirm-dialog', 'list-row'],
+  },
+  {
     id: 'file-dropzone',
     title: 'FileDropzone',
     summary:
       'Standardize local file selection and validation while leaving transport and persistence app-owned.',
     sourceStory: 'file-dropzone-guidance.stories.tsx',
+    components: ['FileDropzone'],
     rules: [
       {
         title: 'The molecule owns local interaction',
@@ -792,6 +1009,9 @@ export const uiGuidance = [
         body: 'Make file type, count, and size constraints visible before the user selects a file.',
       },
     ],
+    replaces: [
+      { pattern: 'A dashed box with a hidden file input and drag handlers', use: ['FileDropzone'] },
+    ],
   },
   {
     id: 'form',
@@ -799,6 +1019,18 @@ export const uiGuidance = [
     summary:
       'Compose accessible fields, validation, grouping, and actions independently of the form-state library.',
     sourceStory: 'form-guidance.stories.tsx',
+    components: [
+      'Field',
+      'FieldSet',
+      'FieldError',
+      'Input',
+      'Textarea',
+      'Label',
+      'Switch',
+      'NativeSelect',
+      'Slider',
+      'InputOTP',
+    ],
     rules: [
       {
         title: 'Every control has one visible label',
@@ -828,6 +1060,10 @@ export const uiGuidance = [
         title: 'Form state is host-owned',
         body: 'Dashboard extensions use the form APIs exported by @vendure/dashboard. Standalone consumers keep their existing form-state library.',
       },
+      {
+        title: 'Pick the control by the value',
+        body: 'Text is Input, long text is Textarea. An on/off setting that applies at once is a Switch; a yes/no answer that is saved with the form is a Checkbox. One of a few options is a RadioGroup, one of many is a Select or a Combobox. A number in a range the user drags is a Slider. A one-time code is InputOTP. Do not style a Checkbox as a toggle or build a slider from a range input.',
+      },
     ],
     related: ['button', 'confirm-dialog'],
   },
@@ -837,6 +1073,7 @@ export const uiGuidance = [
     summary:
       'A hover card previews what a link or a name points at. It opens toward the centre of the screen by itself.',
     sourceStory: 'hover-card-guidance.stories.tsx',
+    components: ['HoverCard'],
     rules: [
       {
         title: 'Do not set align unless there is a reason',
@@ -851,6 +1088,7 @@ export const uiGuidance = [
     summary:
       'Show compact, copyable, non-secret identifiers only where the exact identity helps the task.',
     sourceStory: 'id-chip-guidance.stories.tsx',
+    components: ['IdChip'],
     rules: [
       {
         title: 'Identifiers must earn screen space',
@@ -885,7 +1123,48 @@ export const uiGuidance = [
         body: 'When the lookup key is also the row\'s name (an order code), show it as an IdChip with reveal="row" and keep the DataTableRowLink in the same cell with the key as sr-only text. The row keeps one link named by the key and its end chevron. A click on the chip copies; a click anywhere else on the row opens the item.',
       },
     ],
+    replaces: [
+      { pattern: 'An ID in a monospace `<span>` with a copy button beside it', use: ['IdChip'] },
+    ],
     related: ['anonymized-token', 'copyable-text'],
+  },
+  {
+    id: 'input-group',
+    title: 'InputGroup and PasswordInput',
+    summary:
+      'Put an icon, a unit or a button inside a field with InputGroup. A password field is a PasswordInput.',
+    sourceStory: 'input-group-guidance.stories.tsx',
+    components: ['InputGroup', 'InputGroupButton', 'PasswordInput'],
+    rules: [
+      {
+        title: 'Add-ons go in InputGroupAddon',
+        body: 'Put an icon, a prefix such as "https://", a unit or a button in an InputGroupAddon with `align="inline-start"` or `align="inline-end"`, around an InputGroupInput or an InputGroupTextarea. The group draws one border and one focus ring for all of it. Do not position an icon over an Input with absolute positioning or padding.',
+      },
+      {
+        title: 'A button in a field is an InputGroupButton',
+        body: 'A copy, clear or search button inside a field is an InputGroupButton, so it fits the field height and keeps its own focus.',
+      },
+      {
+        title: 'A password field is a PasswordInput',
+        body: 'Use PasswordInput for a password. It brings the show/hide toggle with its label and icon. Do not build the eye button yourself.',
+      },
+      {
+        title: 'Still a field',
+        body: 'Wrap the group in a Field with a FieldLabel, as for any control. The add-on does not replace the label.',
+      },
+    ],
+    replaces: [
+      {
+        pattern:
+          'An `<Input>` with an icon on top of it through absolute positioning and extra padding',
+        use: ['InputGroup'],
+      },
+      {
+        pattern: 'A password input with an eye button that switches the type to "text"',
+        use: ['PasswordInput'],
+      },
+    ],
+    related: ['form', 'copyable-text'],
   },
   {
     id: 'issued-secret',
@@ -893,6 +1172,7 @@ export const uiGuidance = [
     summary:
       'Hand over a secret that was just issued, such as a new API key, as copy-only: never rendered, with a guard before the dialog closes.',
     sourceStory: 'issued-secret-guidance.stories.tsx',
+    components: ['IssuedSecret'],
     rules: [
       {
         title: 'Never render the value',
@@ -922,6 +1202,7 @@ export const uiGuidance = [
     title: 'ListHeader',
     summary: 'Use list-page chrome without duplicating PageHeader or the DataTable engine.',
     sourceStory: 'list-header-guidance.stories.tsx',
+    components: ['ListHeader', 'ListHeaderControls', 'ListHeaderChips'],
     rules: [
       {
         title: 'PageHeader still owns the page title',
@@ -944,6 +1225,18 @@ export const uiGuidance = [
     summary:
       'Render a short list of entities where each row opens one detail page from any point of the row.',
     sourceStory: 'list-row-guidance.stories.tsx',
+    components: [
+      'ListRow',
+      'ListRowLink',
+      'ListRowChevron',
+      'ListRowActions',
+      'ListRowMeta',
+      'ListRowSwap',
+      'ListRowTrailing',
+      'ListRowLeading',
+      'ListRowGroupHeading',
+      'Item',
+    ],
     rules: [
       {
         title: 'Rows to open, columns to compare',
@@ -982,6 +1275,13 @@ export const uiGuidance = [
         body: 'Set enter="new" on a row the user just created, and enter={{ stagger: n }} (n = 0, 1, 2…) on rows that a "Show older" action adds. Rows of the first render take no enter, so the list does not animate on page load.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A list row with a bare "Open" link, or a chevron that is the only link',
+        use: ['ListRowLink', 'ListRowChevron'],
+      },
+      { pattern: 'A flex row of `<div>`s with a title, meta text and actions', use: ['ListRow'] },
+    ],
     related: ['collapsible-section', 'data-table', 'id-chip', 'status-badge'],
   },
   {
@@ -989,6 +1289,7 @@ export const uiGuidance = [
     title: 'Money',
     summary: 'Render minor-unit amounts with explicit currency and shared locale context.',
     sourceStory: 'money-guidance.stories.tsx',
+    components: ['Money'],
     rules: [
       {
         title: 'Amounts enter as minor units',
@@ -1007,6 +1308,9 @@ export const uiGuidance = [
         body: 'Right-align monetary columns, use tabular numbers, and render negatives and zero consistently.',
       },
     ],
+    replaces: [
+      { pattern: 'An amount formatted with `toFixed` and a currency symbol', use: ['Money'] },
+    ],
     related: ['date-time'],
   },
   {
@@ -1015,6 +1319,7 @@ export const uiGuidance = [
     summary:
       'Choose multi-value controls by option count, search need, and how selected values must read.',
     sourceStory: 'multi-select-guidance.stories.tsx',
+    components: ['MultiSelect'],
     rules: [
       {
         title: 'Use a compact multi-value trigger for bounded sets',
@@ -1040,6 +1345,15 @@ export const uiGuidance = [
     title: 'PageHeader',
     summary: 'State what the view is and place its action hierarchy in one predictable header.',
     sourceStory: 'page-header-guidance.stories.tsx',
+    components: [
+      'PageHeader',
+      'PageHeaderActions',
+      'PageHeaderBack',
+      'PageHeaderBackRow',
+      'PageHeaderFacts',
+      'PageHeaderFact',
+      'PageHeaderFactLink',
+    ],
     rules: [
       {
         title: 'The title says what this is',
@@ -1058,6 +1372,7 @@ export const uiGuidance = [
         body: 'Allow actions to wrap or collapse without moving the page identity below transient controls.',
       },
     ],
+    replaces: [{ pattern: 'An `<h1>` with a flex row of buttons beside it', use: ['PageHeader'] }],
     related: ['button', 'list-header', 'status-badge'],
   },
   {
@@ -1066,6 +1381,7 @@ export const uiGuidance = [
     summary:
       'A popover holds content the user reads or edits next to its trigger. It opens toward the centre of the screen by itself.',
     sourceStory: 'popover-guidance.stories.tsx',
+    components: ['Popover'],
     rules: [
       {
         title: 'Do not set align unless there is a reason',
@@ -1080,6 +1396,7 @@ export const uiGuidance = [
     summary:
       'Show task completion or usage against a limit, toned only when the level has a consequence.',
     sourceStory: 'progress-guidance.stories.tsx',
+    components: ['Progress', 'ProgressValue'],
     rules: [
       {
         title: 'Tone follows consequence, not fill level alone',
@@ -1128,6 +1445,7 @@ export const uiGuidance = [
     summary:
       'Show a secret that the server returns only on request as a fixed mask, loaded and revealed by a click.',
     sourceStory: 'secret-value-guidance.stories.tsx',
+    components: ['SecretValue'],
     rules: [
       {
         title: 'Loaded on request, not on the client',
@@ -1154,6 +1472,12 @@ export const uiGuidance = [
         body: 'The value is visible text only after a deliberate reveal. Never put it in a title, an accessible label or a tooltip.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A masked value with an eye button that fetches and shows the secret',
+        use: ['SecretValue'],
+      },
+    ],
     related: ['anonymized-token', 'copyable-text', 'issued-secret'],
   },
   {
@@ -1162,6 +1486,28 @@ export const uiGuidance = [
     summary:
       "For the current page, exactly one icon in the sidebar takes the active colour: the current item's own icon, or its group's icon.",
     sourceStory: 'sidebar-guidance.stories.tsx',
+    components: [
+      'Sidebar',
+      'Avatar',
+      'SidebarProvider',
+      'SidebarInset',
+      'SidebarMenu',
+      'SidebarMenuButton',
+      'SidebarMenuSub',
+      'SidebarMenuSubButton',
+      'SidebarLevels',
+      'SidebarLevel',
+      'SidebarLevelBack',
+      'SidebarIdentityButton',
+      'SidebarIdentityText',
+      'SidebarTrigger',
+      'SidebarRail',
+      'SidebarInput',
+      'SidebarMenuAction',
+      'SidebarMenuBadge',
+      'SidebarMenuSkeleton',
+      'SidebarGroupAction',
+    ],
     rules: [
       {
         title: 'One icon shows the current page',
@@ -1194,10 +1540,44 @@ export const uiGuidance = [
     ],
   },
   {
+    id: 'sidebar-menu-flyout',
+    title: 'SidebarMenuFlyout',
+    summary:
+      "In the collapsed icon rail, a group's items open in a SidebarMenuFlyout beside its icon.",
+    sourceStory: 'sidebar-menu-flyout-guidance.stories.tsx',
+    components: ['SidebarMenuFlyout'],
+    rules: [
+      {
+        title: 'Use it for a group in the icon rail',
+        body: 'When the sidebar collapses to icons, the items of a group are hidden. Render the group as a SidebarMenuFlyout: SidebarMenuFlyoutTrigger with the group icon and its name, and SidebarMenuFlyoutContent with `label` set to the group name and one SidebarMenuFlyoutItem per page. Hover or focus opens it.',
+      },
+      {
+        title: 'The title row is the label',
+        body: "The flyout's title row lines up with the icon, so the title reads as the icon's label. Do not add a Tooltip to the same icon.",
+      },
+      {
+        title: 'Mark the current page',
+        body: 'Pass `hasActiveChild` to the trigger when one of its items is the current page, and `active` to that SidebarMenuFlyoutItem, as in the expanded sidebar.',
+      },
+      {
+        title: 'Not for a single page',
+        body: 'A group with no items, or an item that is itself a page, stays a SidebarMenuButton. Its name shows in a Tooltip in the rail.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'A Popover or HoverCard opened from a rail icon with a list of links',
+        use: ['SidebarMenuFlyout'],
+      },
+    ],
+    related: ['sidebar', 'app-shell'],
+  },
+  {
     id: 'stat-card',
     title: 'StatCard',
     summary: 'Reserve cards for a small set of page-framing KPIs with explicit comparison context.',
     sourceStory: 'stat-card-guidance.stories.tsx',
+    components: ['StatCard'],
     rules: [
       {
         title: 'A number must frame the page',
@@ -1224,6 +1604,20 @@ export const uiGuidance = [
     summary:
       'Render waiting, successful emptiness, and failure as distinct states with the right recovery.',
     sourceStory: 'state-views-guidance.stories.tsx',
+    components: [
+      'LoadingState',
+      'EmptyState',
+      'ErrorState',
+      'Empty',
+      'Skeleton',
+      'SkeletonCard',
+      'SkeletonFact',
+      'SkeletonField',
+      'SkeletonLine',
+      'SkeletonListRow',
+      'SkeletonPageHeader',
+      'Spinner',
+    ],
     rules: [
       {
         title: 'Ask waiting, empty, or failed in that order',
@@ -1265,6 +1659,17 @@ export const uiGuidance = [
         title: 'Nothing shows for a fast load',
         body: 'LoadingState stays transparent for its first 150ms (delay), while holding its space, so a fast load never flashes a placeholder. Keep the default. Pass delay={0} only when something else already delays the loading view.',
       },
+      {
+        title: 'A spinner is for a control, not a region',
+        body: 'Use Spinner inside a Button or next to a field that is working. A region or page that is loading uses LoadingState or the skeleton parts that match its layout. Never render "Loading…" text alone.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'A centred "No items yet" paragraph, or "Loading…" text',
+        use: ['EmptyState', 'LoadingState'],
+      },
+      { pattern: 'A red paragraph with the error message and a retry link', use: ['ErrorState'] },
     ],
     related: ['button'],
   },
@@ -1273,6 +1678,7 @@ export const uiGuidance = [
     title: 'StatusBadge and state dictionary',
     summary: 'Map domain states to the six shared tones by consequence for the viewer.',
     sourceStory: 'status-badge-guidance.stories.tsx',
+    components: ['StatusBadge', 'LiveIndicator'],
     rules: [
       {
         title: 'Tone follows consequence, not the verb',
@@ -1335,6 +1741,12 @@ export const uiGuidance = [
         body: 'To say why a state is what it is (which service is degraded, since when), render the StatusBadge as the TooltipTrigger: <TooltipTrigger render={<StatusBadge …/>} />. The badge then becomes a tab stop with the focus ring, and a chip takes the hover fill. Do not wrap it in a Button. A lone dot never opens a tooltip.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'A coloured pill with the status colour picked at the call site',
+        use: ['StatusBadge'],
+      },
+    ],
     choices: [
       { choice: 'neutral', when: 'Inert, or terminal without failure.' },
       { choice: 'info', when: 'A noteworthy fact with no positive or negative valence.' },
@@ -1354,6 +1766,7 @@ export const uiGuidance = [
     summary:
       'Use the standalone collection footer only when DataTable is not coordinating pagination.',
     sourceStory: 'table-pagination-guidance.stories.tsx',
+    components: ['TablePagination', 'Pagination', 'PaginationLink'],
     rules: [
       {
         title: 'DataTable already owns its footer',
@@ -1371,11 +1784,49 @@ export const uiGuidance = [
     related: ['data-table', 'list-header'],
   },
   {
+    id: 'tabs',
+    title: 'Tabs and TabsNav',
+    summary:
+      'Switch views of one subject with Tabs. Switch between routes of one area with TabsNav.',
+    sourceStory: 'tabs-guidance.stories.tsx',
+    components: ['Tabs', 'TabsNav', 'TabsLink'],
+    rules: [
+      {
+        title: 'Panels or routes',
+        body: 'Use Tabs with TabsList, TabsTrigger and TabsContent when the panels belong to one page and the URL does not change. Use TabsNav with one TabsLink per route when each tab is its own page: it is a `<nav>` of links with `aria-current="page"`, not a tablist.',
+      },
+      {
+        title: 'The page sections use the line look',
+        body: 'Section tabs under a PageHeader use `variant="line"` on TabsList; TabsNav has that look already. The boxed default is for a small switch inside a card.',
+      },
+      {
+        title: 'The router owns the active link',
+        body: 'Pass `render` with your router link to TabsLink. A router link that sets `aria-current` on the active route needs no `active`; otherwise set `active` yourself.',
+      },
+      {
+        title: 'A filter is not a tab',
+        body: 'A control that narrows the same list, such as All, Open and Closed, is a ToggleGroup or a filter in the ListHeader. Tabs change what the page shows.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'A row of buttons with an underline under the selected one',
+        use: ['Tabs', 'TabsNav'],
+      },
+      {
+        pattern: 'Links styled as tabs that keep the selected state in local state',
+        use: ['TabsLink'],
+      },
+    ],
+    related: ['page-header', 'toggle-group'],
+  },
+  {
     id: 'step-indicator',
     title: 'StepIndicator',
     summary:
       'Show where an ordered flow stands: signup, the build and deploy steps of a deployment, a first-run guide.',
     sourceStory: 'step-indicator-guidance.stories.tsx',
+    components: ['StepIndicator', 'StepIndicatorStep'],
     rules: [
       {
         title: 'An ordered flow, not a to-do list',
@@ -1398,6 +1849,12 @@ export const uiGuidance = [
         body: 'Give the StepIndicator an `aria-label`. Each title is followed by its state in words for screen readers; pass translations through `stateLabels`. Give guide titles `render={<h3 />}` when they belong in the page outline.',
       },
     ],
+    replaces: [
+      {
+        pattern: 'Numbered circles joined by lines for the steps of a flow',
+        use: ['StepIndicator'],
+      },
+    ],
     choices: [
       { choice: 'upcoming', when: 'Not reached yet.' },
       { choice: 'current', when: 'The step the flow is on, waiting for the user or the system.' },
@@ -1413,6 +1870,7 @@ export const uiGuidance = [
     summary:
       'Link inside running text, or a small standalone link that must not compete with the actions next to it.',
     sourceStory: 'text-link-guidance.stories.tsx',
+    components: ['TextLink'],
     rules: [
       {
         title: 'TextLink in text, ArrowLink at the end of a region, Button for an action',
@@ -1447,6 +1905,14 @@ export const uiGuidance = [
     summary:
       'Show what happened to one thing, newest first, as entries on one rail: a tone mark, a sentence and a time.',
     sourceStory: 'timeline-guidance.stories.tsx',
+    components: [
+      'Timeline',
+      'TimelineLink',
+      'TimelineMarker',
+      'TimelineMeta',
+      'TimelineDetail',
+      'TimelineGroupHeading',
+    ],
     rules: [
       {
         title: 'Events to read, entities to open',
@@ -1476,11 +1942,49 @@ export const uiGuidance = [
     related: ['list-row', 'status-badge', 'date-time'],
   },
   {
+    id: 'toggle-group',
+    title: 'ToggleGroup',
+    summary:
+      'Use a ToggleGroup for a segmented control: a small set of options that changes the view in place.',
+    sourceStory: 'toggle-group-guidance.stories.tsx',
+    components: ['ToggleGroup', 'Toggle'],
+    rules: [
+      {
+        title: 'A segmented control is a ToggleGroup',
+        body: 'Use a ToggleGroup for a choice of two to five options that changes the view at once, such as a time range or list or grid view. One ToggleGroupItem per option, each with a text label or an `aria-label`. Do not build it from Buttons that swap variants.',
+      },
+      {
+        title: 'One or many',
+        body: 'A ToggleGroup picks one value by default. Pass `multiple` when the options combine, such as filters by status.',
+      },
+      {
+        title: 'One option on its own is a Toggle',
+        body: 'A single on/off button in a toolbar, such as "Wrap lines", is a Toggle. A setting saved with a form is a Switch or a Checkbox.',
+      },
+      {
+        title: 'Not for navigation',
+        body: 'When each option is a page with its own URL, use TabsNav.',
+      },
+    ],
+    replaces: [
+      {
+        pattern: 'Buttons side by side, where the selected one gets a filled variant',
+        use: ['ToggleGroup'],
+      },
+      {
+        pattern: 'A button that keeps a pressed state in `useState` and swaps its style',
+        use: ['Toggle'],
+      },
+    ],
+    related: ['tabs', 'button', 'form'],
+  },
+  {
     id: 'tooltip',
     title: 'Tooltip',
     summary:
       'A tooltip names a control or adds a short hint. Anything longer goes on the page or in a Popover.',
     sourceStory: 'tooltip-guidance.stories.tsx',
+    components: ['Tooltip', 'TooltipProvider', 'TooltipLabelSwap'],
     rules: [
       {
         title: 'A short hint, at most 320px',
