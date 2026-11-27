@@ -208,47 +208,65 @@ function Sizes() {
   );
 }
 
-const scale = [
-  ['text-2xs', '11px', 'Dense metadata'],
-  ['text-xs', '12px', 'Captions, badges, small buttons'],
-  ['text-sm', '14px', 'Body text, fields, buttons'],
-  ['text-base', '16px', 'Section and dialog titles'],
-  ['text-lg', '18px', 'Lead text'],
-  ['text-xl', '20px', 'Small headlines'],
-  ['text-2xl', '24px', 'Page headlines'],
-  ['text-3xl', '30px', 'Display sm'],
-  ['text-4xl', '36px', 'Display md'],
-  ['text-5xl', '48px', 'Display lg (largest)'],
-] as const;
-
-const roles = [
+const productRoles = [
   ['text-style-page-title', '22px', 'Page title'],
   ['text-style-section-title', '16px', 'Section title'],
+  ['text-style-dialog-title', '16px', 'Dialog title'],
   ['text-style-card-title', '14px', 'Card title'],
-  ['text-style-body', '14px', 'Body'],
+  ['text-style-body', '14px', 'Body text'],
   ['text-style-caption', '12px', 'Caption'],
+  ['text-style-code', '14px', 'order_code'],
 ] as const;
+
+const websiteRoles = [
+  ['text-style-display-xl', '60px', 'Hero'],
+  ['text-style-display-lg', '48px', 'Page hero'],
+  ['text-style-display-md', '36px', 'Large stat'],
+  ['text-style-display-sm', '30px', 'Section heading'],
+] as const;
+
+// Primitive steps carry only a size. Components set the line height and
+// weight around them; screens use the roles above.
+const primitives = [
+  ['text-2xs', '11px', 'Count badges'],
+  ['text-xs', '12px', 'Badges, small buttons'],
+  ['text-sm', '14px', 'Fields, buttons, menu items'],
+  ['text-base', '16px', 'Fields on small screens, palette input'],
+  ['text-lg', '18px', 'Spare: no component uses 18px'],
+  ['text-xl', '20px', 'Spare: no component uses 20px'],
+  ['text-2xl', '24px', 'StatCard values'],
+] as const;
+
+function TypeGroup({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: ReadonlyArray<readonly [string, string, string]>;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-muted-foreground text-xs font-medium">{title}</span>
+      {rows.map(([cls, px, sample]) => (
+        <div key={cls} className="grid grid-cols-[11rem_3rem_1fr] items-baseline gap-3">
+          <span className="font-mono text-xs">{cls}</span>
+          <span className="text-muted-foreground font-mono text-xs">{px}</span>
+          <span className={`${cls} truncate`}>{sample}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function Type() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        {scale.map(([cls, px, role]) => (
-          <div key={cls} className="grid grid-cols-[6rem_3rem_1fr] items-baseline gap-3">
-            <span className="font-mono text-xs">{cls}</span>
-            <span className="text-muted-foreground font-mono text-xs">{px}</span>
-            <span className={`${cls} truncate`}>{role}</span>
-          </div>
-        ))}
+      <TypeGroup title="Roles · product" rows={productRoles} />
+      <div className="border-t pt-4">
+        <TypeGroup title="Roles · website only" rows={websiteRoles} />
       </div>
-      <div className="flex flex-col gap-2 border-t pt-4">
-        {roles.map(([cls, px, role]) => (
-          <div key={cls} className="grid grid-cols-[11rem_3rem_1fr] items-baseline gap-3">
-            <span className="font-mono text-xs">{cls}</span>
-            <span className="text-muted-foreground font-mono text-xs">{px}</span>
-            <span className={cls}>{role}</span>
-          </div>
-        ))}
+      <div className="border-t pt-4">
+        <TypeGroup title="Primitive steps (inside components only)" rows={primitives} />
       </div>
     </div>
   );
@@ -271,7 +289,7 @@ export const Overview: Story = {
       </Section>
       <Section
         title="Type"
-        note="The scale ends at text-5xl. Arbitrary sizes in brackets fail the no-raw-font-sizes lint."
+        note="Screens use the text-style roles: each sets size, line height, weight and tracking. Arbitrary sizes in brackets fail the no-raw-font-sizes lint."
       >
         {Type}
       </Section>
