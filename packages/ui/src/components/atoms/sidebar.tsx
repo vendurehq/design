@@ -8,7 +8,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { useIsMobile } from "@vendure-io/ui/hooks/use-mobile"
 import { cn } from "@vendure-io/ui/lib/utils"
 import { useMessages } from "../../lib/format-messages.ts"
+import { menuItem } from "../../lib/menu-item.tsx"
 import { Button } from "@vendure-io/ui/components/atoms/button"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@vendure-io/ui/components/atoms/hover-card"
 import { Input } from "@vendure-io/ui/components/atoms/input"
 import { Separator } from "@vendure-io/ui/components/atoms/separator"
 import {
@@ -933,6 +939,130 @@ function SidebarMenuSubButton({
   })
 }
 
+// The icon rail's flyout: hover or focus a group's icon and a card beside the
+// rail shows the group's title, a separator and its items. Use it for a group
+// whose items the rail hides. The card's title row is centred on the trigger,
+// so the title reads as the icon's label, and the card still flips to the other
+// side or shifts along the rail when it would leave the viewport.
+//
+// <SidebarMenuFlyout>
+//   <SidebarMenuFlyoutTrigger hasActiveChild><CartIcon /><span>Sales</span></SidebarMenuFlyoutTrigger>
+//   <SidebarMenuFlyoutContent label="Sales">
+//     <SidebarMenuFlyoutItem render={<Link to="/orders" />} active>Orders</SidebarMenuFlyoutItem>
+//   </SidebarMenuFlyoutContent>
+// </SidebarMenuFlyout>
+
+// The card's padding and its title row's height. The title row is centred on
+// the trigger from these, whatever the trigger's height.
+const FLYOUT_PADDING = 5
+const FLYOUT_LABEL_HEIGHT = 34
+
+function SidebarMenuFlyout(props: React.ComponentProps<typeof HoverCard>) {
+  return <HoverCard {...props} />
+}
+
+/**
+ * A SidebarMenuButton that opens the flyout. It takes the button's props, plus
+ * the hover delays of the card. The flyout opens only in the icon rail, like
+ * the rail's tooltips: on the expanded sidebar and on mobile it is a plain
+ * button.
+ */
+function SidebarMenuFlyoutTrigger({
+  delay,
+  closeDelay,
+  ...props
+}: Omit<React.ComponentProps<typeof SidebarMenuButton>, "tooltip"> &
+  Pick<React.ComponentProps<typeof HoverCardTrigger>, "delay" | "closeDelay">) {
+  const { isMobile, state } = useSidebar()
+  if (state !== "collapsed" || isMobile) {
+    return <SidebarMenuButton {...props} />
+  }
+  return (
+    <HoverCardTrigger
+      delay={delay}
+      closeDelay={closeDelay}
+      render={<SidebarMenuButton {...props} />}
+    />
+  )
+}
+
+/**
+ * The card. `label` is the group's title: it sits on the trigger's centre
+ * line, above a separator and the items.
+ */
+function SidebarMenuFlyoutContent({
+  label,
+  className,
+  children,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof HoverCardContent>,
+  "side" | "align" | "alignOffset" | "sideOffset"
+> & { label: React.ReactNode }) {
+  return (
+    <HoverCardContent
+      side="inline-end"
+      align="start"
+      // Moves the card up by its padding plus half the height difference
+      // between the title row and the trigger.
+      alignOffset={({ anchor }) =>
+        (anchor.height - FLYOUT_LABEL_HEIGHT) / 2 - FLYOUT_PADDING
+      }
+      // Clears the rail by the same 8px as the rail's tooltips.
+      sideOffset={16}
+      className={cn("flex w-auto min-w-40 flex-col rounded-2xl p-1.25", className)}
+      {...props}
+    >
+      <div
+        data-slot="sidebar-menu-flyout-label"
+        className="text-foreground flex h-8.5 shrink-0 items-center px-2 text-sm font-medium"
+      >
+        {label}
+      </div>
+      <div
+        data-slot="sidebar-menu-flyout-separator"
+        role="presentation"
+        className="bg-border -mx-1.25 my-1.25 h-px shrink-0"
+      />
+      {children}
+    </HoverCardContent>
+  )
+}
+
+/**
+ * One item of the flyout, a link by default. Compose a router link with
+ * `render`. `active` sets aria-current="page"; a router link that sets it
+ * itself does not need `active`.
+ */
+function SidebarMenuFlyoutItem({
+  render,
+  active,
+  className,
+  ...props
+}: useRender.ComponentProps<"a"> & { active?: boolean }) {
+  return useRender({
+    defaultTagName: "a",
+    render,
+    props: mergeProps<"a">(
+      {
+        ...(active !== undefined && {
+          "aria-current": active ? ("page" as const) : undefined,
+        }),
+        className: cn(
+          menuItem,
+          "hover:bg-muted hover:text-accent-foreground aria-[current=page]:text-foreground aria-[current=page]:font-medium [&>span:last-child]:min-w-0 [&>span:last-child]:truncate",
+          className
+        ),
+      },
+      props
+    ),
+    state: {
+      slot: "sidebar-menu-flyout-item",
+      sidebar: "menu-flyout-item",
+    },
+  })
+}
+
 type SidebarLevelsContextProps = {
   level: string
   ready: boolean
@@ -1122,6 +1252,10 @@ export {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
+  SidebarMenuFlyout,
+  SidebarMenuFlyoutContent,
+  SidebarMenuFlyoutItem,
+  SidebarMenuFlyoutTrigger,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,
