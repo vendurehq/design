@@ -194,5 +194,4 @@ function RelativeTime({
   );
 }
 
-// The format helpers in `lib/format-relative` are internal.
 export { RelativeTime, type RelativeTimeProps };
