@@ -1318,12 +1318,11 @@ export declare function storeFoldMemory(storage: FoldMemoryStorage, memoryKey: s
 export declare function opensOnLoad(memory: FoldMemory, keys: readonly string[]): boolean;
 type ActionNeededRowProps = Omit<ComponentProps<'div'>, 'title'> & Pick<ActionNeededItem, 'tone' | 'title' | 'description' | 'action' | 'icon'>;
 declare function ActionNeededRow({ tone, title, description, action, icon, className, ...props }: ActionNeededRowProps): import("react/jsx-runtime").JSX.Element;
-type ActionNeededProps<T extends ActionNeededItem> = Omit<ComponentProps<'div'>, 'children' | 'defaultValue'> & {
+type ActionNeededProps<T extends ActionNeededItem> = Omit<ComponentProps<'div'>, 'children' | 'defaultValue' | 'title'> & {
+    title: ReactNode;
+    description?: ReactNode;
     items: readonly T[];
     renderItem?: (item: T) => ReactNode;
-    label?: ReactNode;
-    title?: ReactNode;
-    description?: ReactNode;
     countLabel?: (count: number, tone: ActionNeededTone) => ReactNode;
     memoryKey?: string;
     storage?: FoldMemoryStorage | null;
@@ -1332,7 +1331,7 @@ type ActionNeededProps<T extends ActionNeededItem> = Omit<ComponentProps<'div'>,
     onOpenChange?: (open: boolean) => void;
     revealed?: boolean;
 };
-declare function ActionNeeded<T extends ActionNeededItem>({ items, renderItem, label, title, description, countLabel, memoryKey, storage, open: openProp, defaultOpen, onOpenChange, revealed, className, ...props }: ActionNeededProps<T>): import("react/jsx-runtime").JSX.Element | null;
+declare function ActionNeeded<T extends ActionNeededItem>({ title, description, items, renderItem, countLabel, memoryKey, storage, open: openProp, defaultOpen, onOpenChange, revealed, className, ...props }: ActionNeededProps<T>): import("react/jsx-runtime").JSX.Element | null;
 export { ActionNeeded, ActionNeededRow, type ActionNeededProps, type ActionNeededRowProps };
 ```
 

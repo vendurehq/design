@@ -29,7 +29,7 @@ export const uiGuidance = [
       },
       {
         title: 'Several findings are one ActionNeeded list, not a stack of Alerts',
-        body: 'When a page or card lists several problems that each wait on the user, such as the setup problems of a store, use ActionNeeded: a fold row over plain rows with a divider between them, each with a tone icon, a short title, one sentence and one action button named for what it does ("Change password", not "Open"). Do not stack Alerts or put tinted boxes inside a card. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding.',
+        body: 'When a page or card lists several problems that each wait on the user, such as the setup problems of a store, use ActionNeeded: a header that folds the list (the title, then one count badge per tone while folded) over plain rows with a divider between them, each with a tone icon, a short title, one sentence and one action button named for what it does ("Change password", not "Open"). Do not stack Alerts or put tinted boxes inside a card. Give each finding a stable `key` and pass a `memoryKey`, so a folded list stays folded and opens again only for a new finding.',
       },
     ],
     choices: [

@@ -224,15 +224,18 @@ behavior you need instead of rebuilding it from atoms.
 >
 > Every built-in text is a prop (`copyLabel`, `notice`, `warningTitle`, `doneLabel`, …), so a host can translate it. A stored secret the user can load again is a `SecretValue`.
 
-> **ActionNeeded.** The findings that need someone, such as the setup problems of a store: a fold row ("Action needed", a chevron) over a list of plain rows with a divider between them. Each row is the tone icon, a short title, one sentence and one action. The tone shows on the icon only. Folded, the fold row shows one count badge per tone. The list sorts worst first. `memoryKey` (a channel or project id) remembers the fold in `localStorage`; `storage` takes another store, or `null` for this visit only. A finding whose `key` the memory has not seen opens the list again. `open`, `defaultOpen` and `onOpenChange` work as on a Collapsible. `label` holds the fold row text and `countLabel` the badge texts ("1 error", "2 warnings"), so a host can apply its plural rules. Renders nothing without findings. With `title` (and `description`) it runs in header mode: render it as the only child of a Card, and the card header becomes the fold row, with the title, the count badges after it and the chevron at the end. The badges stay in both states.
+> **ActionNeeded.** The findings that need someone, such as the setup problems of a store or the alerts of a project. The header is the fold row: the `title` (the strongest text), one count badge per tone, the chevron at the end and an optional `description` under the title. The whole header folds the list. The badges show only while the list is folded. Below the header, plain rows with a divider between them: the tone icon, a short title, one sentence and one action. The tone shows on the icon and the badges only. Pass the findings worst first. In a Card, render it as the Card's only child: the whole card header becomes the fold row. `memoryKey` (a channel or project id) remembers the fold in `localStorage`; `storage` takes another store, or `null` for this visit only. A finding whose `key` the memory has not seen opens the list again. `open`, `defaultOpen` and `onOpenChange` work as on a Collapsible. `countLabel` holds the badge texts ("1 error", "2 warnings"), so a host can apply its plural rules. Renders nothing without findings.
 >
 > ```tsx
 > import { ActionNeeded } from '@vendure-io/ui/components/molecules/action-needed';
 >
-> <ActionNeeded
->   memoryKey={channel.id}
->   items={[{ key: 'shipping', tone: 'critical', title: 'No shipping method', description: 'Customers cannot check out.', action: <Button size="sm" variant="outline">Set up shipping</Button> }]}
-> />
+> <Card>
+>   <ActionNeeded
+>     title="Store setup"
+>     memoryKey={channel.id}
+>     items={[{ key: 'shipping', tone: 'critical', title: 'No shipping method', description: 'Customers cannot check out.', action: <Button size="sm" variant="outline">Set up shipping</Button> }]}
+>   />
+> </Card>
 > ```
 
 #### Data display
