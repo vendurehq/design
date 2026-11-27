@@ -33,8 +33,6 @@ export interface ActionNeededItem {
   icon?: ReactNode;
 }
 
-const RANK: Record<ActionNeededTone, number> = { critical: 0, warning: 1, info: 2 };
-
 /** The number of findings of each tone, worst first, without the tones that have none. */
 export function actionNeededCounts(items: readonly Pick<ActionNeededItem, 'tone'>[]) {
   return ACTION_NEEDED_TONES.map((tone) => ({
@@ -102,10 +100,10 @@ interface FoldOptions {
 }
 
 /**
- * The open state of the list. Stored choices are read in a layout effect, so a server render and
- * the first client render agree, and the list never paints in the wrong state. The choice is
- * re-read when the memory key changes (another channel), and a key that was not seen opens the
- * list. In controlled mode the hook only calls `onOpenChange`.
+ * The open state of the list. The stored choice is read in a layout effect on mount, so a server
+ * render and the first client render agree, and the list never paints in the wrong state. After
+ * that, a change of the findings or of the memory key only ever opens the list: when the memory
+ * has not seen a finding. In controlled mode the hook only calls `onOpenChange`.
  */
 function useFold({ keys, memoryKey, storage, open, defaultOpen, onOpenChange }: FoldOptions) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
@@ -117,6 +115,7 @@ function useFold({ keys, memoryKey, storage, open, defaultOpen, onOpenChange }: 
   const latest = useRef({ current, controlled, onOpenChange, defaultOpen, storage });
   latest.current = { current, controlled, onOpenChange, defaultOpen, storage };
   const keyString = keys.join('\n');
+  const mounted = useRef(false);
 
   useLayoutEffect(() => {
     const { current, controlled, onOpenChange, defaultOpen, storage } = latest.current;
@@ -129,7 +128,10 @@ function useFold({ keys, memoryKey, storage, open, defaultOpen, onOpenChange }: 
       null;
     if (memory === null) session.current.set(slot, { open: defaultOpen, keys: ids });
     const next = memory === null ? defaultOpen : opensOnLoad(memory, ids);
-    if (next === current) return;
+    const first = !mounted.current;
+    mounted.current = true;
+    // On mount the stored choice applies both ways; later, a new finding can only open the list.
+    if (next === current || (!first && !next)) return;
     if (controlled) onOpenChange?.(next);
     else setUncontrolled(next);
   }, [memoryKey, keyString]);
@@ -173,7 +175,7 @@ const toneIconClass: Record<ActionNeededTone, string> = {
 const DEFAULT_COUNT_WORDS: Record<ActionNeededTone, readonly [one: string, other: string]> = {
   critical: ['error', 'errors'],
   warning: ['warning', 'warnings'],
-  info: ['note', 'notes'],
+  info: ['info', 'info'],
 };
 
 /** The default badge text: the count and the tone word, singular for one ("1 error", "2 warnings"). */
@@ -215,7 +217,7 @@ const rowMotionClass = cn(
 // The chevron turns when the list opens. On hover of the fold row it darkens and moves 1px its way.
 const chevronClass = cn(
   'size-5! text-foreground-secondary',
-  'motion-safe:[transition-property:rotate,translate,color] motion-safe:duration-normal motion-safe:ease-out motion-reduce:transition-colors motion-reduce:duration-normal',
+  'motion-safe:[transition-property:rotate,translate,color] motion-safe:duration-normal motion-safe:ease-out motion-reduce:transition-none',
   'group-hover/action-needed-trigger:text-foreground motion-safe:group-hover/action-needed-trigger:translate-y-px',
   'group-aria-expanded/action-needed-trigger:rotate-180 motion-safe:group-aria-expanded/action-needed-trigger:group-hover/action-needed-trigger:-translate-y-px',
 );
@@ -280,28 +282,22 @@ function ActionNeededRow({
 
 type ActionNeededProps<T extends ActionNeededItem> = Omit<
   ComponentProps<'div'>,
-  'children' | 'defaultValue'
+  'children' | 'defaultValue' | 'title'
 > & {
-  /** The findings. They show worst first; findings of one tone keep their order. */
+  /** The header text, such as "Store setup" or "Action needed". The strongest text of the list. */
+  title: ReactNode;
+  /** An optional line under the title. */
+  description?: ReactNode;
+  /** The findings, worst first. They show in the order given. */
   items: readonly T[];
   /** Renders one finding. Default: an `ActionNeededRow` of the item's parts. */
   renderItem?: (item: T) => ReactNode;
-  /** The fold row's text. Default "Action needed". Not shown when `title` is set. */
-  label?: ReactNode;
   /**
-   * Header mode: the card's own title, such as "Store setup". The card header becomes the fold
-   * row: the title, the count badges after it, the chevron at the end and `description` under
-   * the title. Render the ActionNeeded as the only child of a Card; it takes the card's padding.
-   */
-  title?: ReactNode;
-  /** Header mode: the line under the title. */
-  description?: ReactNode;
-  /**
-   * The text of one folded count badge, such as "2 warnings". Pass it to translate the badges
-   * with the plural rules of the language. Default: English, "1 error", "2 warnings", "3 notes".
+   * The text of one count badge, such as "2 warnings". Pass it to translate the badges with the
+   * plural rules of the language. Default: English, "1 error", "2 warnings", "1 info".
    */
   countLabel?: (count: number, tone: ActionNeededTone) => ReactNode;
-  /** Names the fold memory, such as a channel id. Without it, the choice lasts for this visit. */
+  /** Names the fold memory, such as a channel or project id. Without it, the choice lasts for this visit. */
   memoryKey?: string;
   /** Where the fold memory lives. Default `localStorage`. `null` keeps it for this visit only. */
   storage?: FoldMemoryStorage | null;
@@ -319,20 +315,21 @@ type ActionNeededProps<T extends ActionNeededItem> = Omit<
 };
 
 /**
- * "Action needed": a fold row with one count badge per tone, over a list of findings with a
- * divider between rows. The whole fold row opens and folds the list. The rows stay in the page
- * while folded, inert, so the motion runs both ways. A finding with a key the memory has not seen
- * opens the list again. Renders nothing without findings.
+ * A foldable list of findings that need someone. The header is the fold row: the title, one
+ * count badge per tone, the chevron at the end and an optional description under the title. The
+ * whole header opens and folds the list. The badges show only while the list is folded. The rows
+ * are plain, with a divider between them, and stay in the page while folded, inert, so the motion
+ * runs both ways. A finding with a key the memory has not seen opens the list again. Renders
+ * nothing without findings.
  *
- * With `title`, the card header is the fold row instead: the title, the badges after it, the
- * chevron at the end and the description under the title. The badges stay in both states.
+ * In a Card, render it as the Card's only child: it takes the card's padding, so the whole card
+ * header is the fold row. Outside a Card it has no padding of its own.
  */
 function ActionNeeded<T extends ActionNeededItem>({
-  items,
-  renderItem,
-  label = 'Action needed',
   title,
   description,
+  items,
+  renderItem,
   countLabel = defaultCountLabel,
   memoryKey,
   storage,
@@ -343,8 +340,7 @@ function ActionNeeded<T extends ActionNeededItem>({
   className,
   ...props
 }: ActionNeededProps<T>) {
-  const sorted = [...items].sort((a, b) => RANK[a.tone] - RANK[b.tone]);
-  const keys = sorted.map((item) => item.key);
+  const keys = items.map((item) => item.key);
   const { open, toggle } = useFold({
     keys,
     memoryKey,
@@ -356,116 +352,71 @@ function ActionNeeded<T extends ActionNeededItem>({
   const enters = useEntersOnScreen(revealed, keys.join('\n'));
   const listId = useId();
   const state = { 'data-open': open || undefined, 'data-enter': enters || undefined };
-  const header = title !== undefined;
 
-  if (sorted.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <div
       data-slot="action-needed"
-      data-mode={header ? 'header' : 'label'}
       {...state}
-      className={cn(
-        'flex flex-col',
-        // Header mode fills the card: it takes over the card's vertical padding, so the whole
-        // header is the fold row, and the badges stay put, so the rows start without a hand-off.
-        header && '-my-(--card-gap) [--transition-duration-fold-hand-off:0ms]',
-        className,
-      )}
+      // In a Card it takes over the card's vertical padding, so the whole header is the fold row.
+      className={cn('-my-(--card-gap) flex flex-col', className)}
       {...props}
     >
       <button
         aria-controls={listId}
         aria-expanded={open}
         data-slot="action-needed-trigger"
-        className={cn(
-          'group/action-needed-trigger flex w-full cursor-pointer text-start text-sm outline-none',
-          header
-            ? 'items-start gap-3 py-(--card-gap) ps-(--card-ps) pe-(--card-px) focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-2xl'
-            : 'min-h-9 items-center gap-2.5 rounded-md focus-visible:ring-2 focus-visible:ring-ring',
-        )}
+        className="group/action-needed-trigger flex w-full cursor-pointer items-start gap-3 rounded-[inherit] py-[var(--card-gap,0.5rem)] ps-(--card-ps) pe-(--card-px) text-start text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         type="button"
         onClick={toggle}
       >
-        {header ? (
-          <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-              <span
-                data-slot="action-needed-heading"
-                className="font-heading text-sm font-semibold tracking-[-0.005em] text-foreground"
-              >
-                {title}
-              </span>
-              <span
-                data-slot="action-needed-counts"
-                className="flex flex-wrap items-center gap-1.5"
-              >
-                {actionNeededCounts(sorted).map(({ tone, count }, index) => (
-                  <span
-                    key={tone}
-                    data-slot="action-needed-count"
-                    {...state}
-                    className={header ? 'inline-flex' : badgeClass}
-                    style={{ '--i': index } as CSSProperties}
-                  >
-                    <StatusBadge
-                      className="tabular-nums"
-                      size={header ? 'default' : 'lg'}
-                      tone={tone}
-                    >
-                      {countLabel(count, tone)}
-                    </StatusBadge>
-                  </span>
-                ))}
-              </span>
-            </span>
-            {description ? (
-              <span
-                data-slot="action-needed-description"
-                className="text-sm text-foreground-secondary"
-              >
-                {description}
-              </span>
-            ) : null}
-          </span>
-        ) : (
-          <>
-            <span data-slot="action-needed-label" className="shrink-0 font-medium text-foreground">
-              {label}
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span
+              data-slot="action-needed-heading"
+              className="font-heading text-sm font-semibold tracking-[-0.005em] text-foreground"
+            >
+              {title}
             </span>
             <span
               aria-hidden={open || undefined}
               data-slot="action-needed-counts"
-              className="flex min-w-0 flex-wrap items-center gap-1.5"
+              // The badges overlap the line's padding, so the title line keeps the text's
+              // height and the space above the title equals the space under the last row.
+              className="-my-1 flex min-w-0 flex-wrap items-center gap-1.5"
             >
-              {actionNeededCounts(sorted).map(({ tone, count }, index) => (
+              {actionNeededCounts(items).map(({ tone, count }, index) => (
                 <span
                   key={tone}
                   data-slot="action-needed-count"
                   {...state}
-                  className={header ? 'inline-flex' : badgeClass}
+                  className={badgeClass}
                   style={{ '--i': index } as CSSProperties}
                 >
-                  <StatusBadge
-                    className="tabular-nums"
-                    size={header ? 'default' : 'lg'}
-                    tone={tone}
-                  >
+                  <StatusBadge className="tabular-nums" size="lg" tone={tone}>
                     {countLabel(count, tone)}
                   </StatusBadge>
                 </span>
               ))}
             </span>
-          </>
-        )}
-        {/* The row is the toggle. The chevron only looks like a button: a hover anywhere on the
-            row gives it the ghost hover fill, so the row reads as clickable. */}
+          </span>
+          {description ? (
+            <span
+              data-slot="action-needed-description"
+              className="text-sm text-foreground-secondary"
+            >
+              {description}
+            </span>
+          ) : null}
+        </span>
+        {/* The header is the toggle. The chevron only looks like a button: a hover anywhere on
+            the header gives it the ghost hover fill, so the header reads as clickable. */}
         <span
           aria-hidden
           className={cn(
             buttonVariants({ size: 'icon-sm', variant: 'ghost' }),
-            header && '-my-1 shrink-0',
-            'ms-auto group-hover/action-needed-trigger:bg-muted group-hover/action-needed-trigger:text-foreground',
+            '-my-1.5 ms-auto shrink-0 group-hover/action-needed-trigger:bg-muted group-hover/action-needed-trigger:text-foreground',
           )}
         >
           {/* A wrapper, so the Button's own icon transition (on its direct svg child) does not
@@ -483,27 +434,30 @@ function ActionNeeded<T extends ActionNeededItem>({
         id={listId}
         role="list"
         data-slot="action-needed-list"
-        className={cn(header && 'ps-(--card-ps) pe-(--card-px)')}
+        className="ps-(--card-ps) pe-(--card-px)"
       >
-        {sorted.map((item, index) => (
+        {items.map((item, index) => (
           <div
             key={item.key}
             role="listitem"
             data-slot="action-needed-slot"
             {...state}
             className={slotClass}
-            style={{ '--i': index, '--r': sorted.length - 1 - index } as CSSProperties}
+            style={{ '--i': index, '--r': items.length - 1 - index } as CSSProperties}
           >
             <div className="min-h-0 overflow-hidden" inert={!open}>
-              {/* The divider moves with its row, so a folding row takes its line with it. */}
+              {/* The divider moves with its row, so a folding row takes its line with it. In a
+                  Card, the card's bottom padding folds away with the last row. */}
               <div
                 data-slot="action-needed-item"
                 {...state}
                 className={cn(
                   rowMotionClass,
                   'border-t border-border',
-                  // Header mode: the card's bottom padding folds away with the last row.
-                  header && index === sorted.length - 1 && 'mb-(--card-gap)',
+                  // The last row ends on the card's padding alone: its own bottom padding
+                  // goes, so the space under it equals the space above the title.
+                  index === items.length - 1 &&
+                    'mb-(--card-gap) *:data-[slot=action-needed-row]:pb-0',
                 )}
               >
                 {renderItem ? (

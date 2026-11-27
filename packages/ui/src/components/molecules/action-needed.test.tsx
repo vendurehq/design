@@ -79,23 +79,35 @@ describe('actionNeededCounts', () => {
   });
 });
 
+const TITLE = 'Store setup';
+
 describe('ActionNeeded', () => {
   test('renders nothing without findings', () => {
-    expect(renderToStaticMarkup(<ActionNeeded items={[]} />)).toBe('');
+    expect(renderToStaticMarkup(<ActionNeeded items={[]} title={TITLE} />)).toBe('');
   });
 
-  test('open by default: the fold row is an expanded button and the rows are not inert', () => {
-    const html = renderToStaticMarkup(<ActionNeeded items={ITEMS} storage={null} />);
-    const trigger = slotTag(html, 'action-needed-trigger');
-    expect(trigger).toContain('aria-expanded="true"');
+  test('open: the header is one expanded button, the badges are hidden, the rows not inert', () => {
+    const html = renderToStaticMarkup(
+      <ActionNeeded
+        description="Fix these before this channel can take orders."
+        items={ITEMS}
+        storage={null}
+        title={TITLE}
+      />,
+    );
+    expect(slotTag(html, 'action-needed-trigger')).toContain('aria-expanded="true"');
     expect(slotTag(html, 'action-needed-counts')).toContain('aria-hidden="true"');
     expect(slotTag(html, 'action-needed')).toContain('data-open');
     expect(html).not.toContain('inert');
-    expect(html).toContain('Action needed');
+    const button = html.slice(html.indexOf('<button'), html.indexOf('</button>'));
+    for (const text of [TITLE, 'Fix these before this channel can take orders.']) {
+      expect(button).toContain(text);
+    }
+    expect(html).not.toContain('Action needed');
   });
 
-  test('folded: the rows stay in the page, inert, and the badges are readable', () => {
-    const html = renderToStaticMarkup(<ActionNeeded items={ITEMS} open={false} />);
+  test('folded: the badges are readable and the rows stay in the page, inert', () => {
+    const html = renderToStaticMarkup(<ActionNeeded items={ITEMS} open={false} title={TITLE} />);
     expect(slotTag(html, 'action-needed-trigger')).toContain('aria-expanded="false"');
     expect(slotTag(html, 'action-needed-counts')).not.toContain('aria-hidden');
     expect(slotTag(html, 'action-needed')).not.toContain('data-open');
@@ -104,10 +116,9 @@ describe('ActionNeeded', () => {
     expect(html).toContain('2 warnings');
   });
 
-  test('shows the findings worst first, as a list', () => {
-    const html = renderToStaticMarkup(<ActionNeeded items={ITEMS} storage={null} />);
-    const order = ['No shipping method', 'Default superadmin password', 'Search index out of date'];
-    const positions = order.map((title) => html.indexOf(title));
+  test('shows the findings in the order given, as a list', () => {
+    const html = renderToStaticMarkup(<ActionNeeded items={ITEMS} storage={null} title={TITLE} />);
+    const positions = ITEMS.map((item) => html.indexOf(String(item.title)));
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
     expect(slotTag(html, 'action-needed-list')).toContain('role="list"');
     expect(html.match(/role="listitem"/g)?.length).toBe(3);
@@ -126,6 +137,7 @@ describe('ActionNeeded', () => {
           },
         ]}
         storage={null}
+        title={TITLE}
       />,
     );
     expect(slotTag(html, 'action-needed-icon')).toContain('text-destructive-text');
@@ -134,17 +146,17 @@ describe('ActionNeeded', () => {
     expect(html).toContain('Set up shipping');
   });
 
-  test('labels are props, so a host can translate them', () => {
+  test('countLabel translates the badges', () => {
     const html = renderToStaticMarkup(
       <ActionNeeded
-        items={ITEMS}
-        label="Handlungsbedarf"
-        open={false}
         countLabel={(count, tone) =>
           tone === 'critical'
             ? `${count} Fehler`
             : `${count} ${count === 1 ? 'Warnung' : 'Warnungen'}`
         }
+        items={ITEMS}
+        open={false}
+        title="Handlungsbedarf"
       />,
     );
     expect(html).toContain('Handlungsbedarf');
@@ -154,37 +166,14 @@ describe('ActionNeeded', () => {
 
   test('renderItem replaces the default row', () => {
     const html = renderToStaticMarkup(
-      <ActionNeeded items={ITEMS} renderItem={(item) => <p>custom {item.key}</p>} storage={null} />,
+      <ActionNeeded
+        items={ITEMS}
+        renderItem={(item) => <p>custom {item.key}</p>}
+        storage={null}
+        title={TITLE}
+      />,
     );
     expect(html).toContain('<p>custom shipping</p>');
     expect(html).not.toContain('data-slot="action-needed-row"');
-  });
-
-  test('header mode: the title, badges and description make up the one fold button', () => {
-    const html = renderToStaticMarkup(
-      <ActionNeeded
-        description="Fix these before this channel can take orders."
-        items={ITEMS}
-        storage={null}
-        title="Store setup"
-      />,
-    );
-    const trigger = slotTag(html, 'action-needed-trigger');
-    expect(trigger).toContain('aria-expanded="true"');
-    expect(slotTag(html, 'action-needed')).toContain('data-mode="header"');
-    expect(html).not.toContain('Action needed');
-    expect(html).not.toContain('data-slot="action-needed-label"');
-    // Open, the badges stay readable: they are the header's summary.
-    expect(slotTag(html, 'action-needed-counts')).not.toContain('aria-hidden');
-    expect(html).toContain('1 error');
-    expect(html).toContain('2 warnings');
-    const button = html.slice(html.indexOf('<button'), html.indexOf('</button>'));
-    for (const text of [
-      'Store setup',
-      '1 error',
-      'Fix these before this channel can take orders.',
-    ]) {
-      expect(button).toContain(text);
-    }
   });
 });

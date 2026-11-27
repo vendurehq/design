@@ -4,10 +4,6 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../src/components/atoms/button.tsx';
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '../src/components/atoms/card.tsx';
 import {
   ActionNeeded,
@@ -115,35 +111,39 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Two warnings. The list starts open; the whole card header folds it.
+// Two warnings. The list starts open, the badges hidden; the whole card header folds it.
 export const WarningsOnly: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const trigger = canvas.getByRole('button', { name: /Store setup/ });
     await expect(trigger).toHaveTextContent('2 warnings');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    // Open, the badges are hidden; they show only while the list is folded.
+    const counts = canvasElement.querySelector('[data-slot=action-needed-counts]');
+    await expect(counts).toHaveAttribute('aria-hidden', 'true');
     await expect(canvas.queryByText('Action needed')).toBeNull();
     // The header is one button: Enter and Space fold and open the list.
     trigger.focus();
     await userEvent.keyboard('{Enter}');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(counts).not.toHaveAttribute('aria-hidden');
     await userEvent.keyboard(' ');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(canvas.getAllByRole('listitem')).toHaveLength(2);
   },
 };
 
-// One error and two warnings: the error comes first, and its icon is red.
+// One error and two warnings, passed worst first. The error's icon is red.
 export const ErrorAndWarnings: Story = {
   args: {
     description: 'Customers cannot check out until the error is fixed.',
-    items: [PASSWORD, SEARCH_INDEX, SHIPPING],
+    items: [SHIPPING, PASSWORD, SEARCH_INDEX],
   },
 };
 
-// Folded: only the card header is left, with one badge per tone. The rows stay in the page, inert.
+// Folded: only the header is left, with one count badge per tone. The rows stay in the page, inert.
 export const Folded: Story = {
-  args: { items: [PASSWORD, SEARCH_INDEX, SHIPPING, TAX], defaultOpen: false },
+  args: { items: [SHIPPING, PASSWORD, SEARCH_INDEX, TAX], defaultOpen: false },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const trigger = canvas.getByRole('button', { name: /Store setup/ });
@@ -202,28 +202,13 @@ export const FoldedDark: Story = {
   globals: { theme: 'dark' },
 };
 
-// Without `title`: an "Action needed" fold row inside a card's content, under its own header.
-// The badges show only while the list is folded.
-export const FoldRow: Story = {
+// The Console's Project Overview: the same component outside a Card, titled "Action needed".
+export const WithoutCard: Story = {
   render: () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Store setup</CardTitle>
-        <CardDescription>Customers cannot check out until the error is fixed.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ActionNeeded
-          items={[PASSWORD, SEARCH_INDEX, SHIPPING]}
-          storage={null}
-        />
-      </CardContent>
-    </Card>
+    <ActionNeeded
+      items={[SHIPPING, PASSWORD, SEARCH_INDEX]}
+      storage={null}
+      title="Action needed"
+    />
   ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expect(canvas.getByRole('button', { name: /Action needed/ })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
-  },
 };
