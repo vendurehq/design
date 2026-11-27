@@ -26,6 +26,7 @@
     "./components/molecules/time-tooltip": null,
     "./lib/base-ui": "./src/lib/base-ui.ts",
     "./lib/date-value": "./src/lib/date-value.ts",
+    "./lib/format-relative": "./src/lib/format-relative.ts",
     "./lib/state-dictionary": "./src/lib/state-dictionary.ts",
     "./lib/tone-icons": "./src/lib/tone-icons.ts",
     "./lib/utils": "./src/lib/utils.ts",

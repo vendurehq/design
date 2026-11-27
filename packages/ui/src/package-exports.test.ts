@@ -41,7 +41,6 @@ const internal = [
   'lib/field-surface',
   'lib/format-elapsed',
   'lib/format-messages',
-  'lib/format-relative',
   'lib/highlight',
   'lib/menu-item',
   'lib/popup-align',
@@ -61,6 +60,7 @@ const internal = [
 const publicLib = [
   'lib/base-ui',
   'lib/date-value',
+  'lib/format-relative',
   'lib/state-dictionary',
   'lib/tone-icons',
   'lib/utils',

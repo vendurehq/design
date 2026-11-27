@@ -250,7 +250,7 @@ n takes `enter="new"`.
 
 ## Utilities
 
-`@vendure-io/ui/lib/*` exports only the modules in this section: `utils`, `state-dictionary`, `tone-icons`, `date-value` and `base-ui`. Every other file in `src/lib` is internal, and an import of it fails to resolve.
+`@vendure-io/ui/lib/*` exports only the modules in this section: `utils`, `state-dictionary`, `tone-icons`, `date-value`, `format-relative` and `base-ui`. Every other file in `src/lib` is internal, and an import of it fails to resolve.
 
 ### `cn()` — Class Merging
 
@@ -287,6 +287,22 @@ const Icon = toneIcons[tone];
 - `formatCalendarDate(date)` writes a local date as `YYYY-MM-DD`.
 - `parseInstant(value)` reads an ISO timestamp. It returns `undefined` for an empty or invalid value.
 - `formatDateLabel(date, locale?)` and `formatDateRangeLabel(from, to, locale?)` give the medium date label that the pickers show.
+
+### `format-relative` — relative time as a string
+
+`@vendure-io/ui/lib/format-relative` formats an instant relative to now where you cannot render `RelativeTime`, such as a `title` attribute or a CSV export:
+
+- `formatRelative(value, options?)` gives `2 hours ago` or `in 3 days`.
+- `formatRelativeDuration(value, options?)` gives the length of time alone, such as `13 days`, for your own words around it.
+- `FormatRelativeOptions` has `locale`, `numeric` (`formatRelative` only) and `unitStyle`.
+
+Neither function reads `FormatProvider`: pass `locale` yourself.
+
+```ts
+import { formatRelative } from "@vendure-io/ui/lib/format-relative";
+
+const title = formatRelative(order.placedAt, { locale: "de-DE" });
+```
 
 ### `base-ui` — Base UI primitives
 
