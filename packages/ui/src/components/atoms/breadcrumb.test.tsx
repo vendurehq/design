@@ -93,15 +93,4 @@ describe('options', () => {
     const missing: React.ComponentProps<typeof BreadcrumbMenu> = { label: 'Project', value: 'p1' };
     expect([known, missing]).toBeDefined();
   });
-
-  test('the BreadcrumbSearchMenu loading prop is gone', () => {
-    const props: React.ComponentProps<typeof BreadcrumbSearchMenu> = {
-      label: 'Project',
-      options: undefined,
-      value: 'p1',
-      // @ts-expect-error `loading` is removed: pass `options={undefined}` while the options load.
-      loading: true,
-    };
-    expect(props).toBeDefined();
-  });
 });

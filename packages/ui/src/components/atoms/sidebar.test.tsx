@@ -413,19 +413,6 @@ describe('SidebarMenuSubButton size', () => {
     );
     expect(html).toContain('data-size="sm"');
   });
-
-  test('the old names are gone', () => {
-    renderToStaticMarkup(
-      <SidebarProvider>
-        {/* @ts-expect-error `md` was renamed to `default` */}
-        <SidebarMenuSubButton size="md">Products</SidebarMenuSubButton>
-        {/* @ts-expect-error `isActive` was renamed to `active` */}
-        <SidebarMenuSubButton isActive>Products</SidebarMenuSubButton>
-        {/* @ts-expect-error `isActive` was renamed to `active` */}
-        <SidebarMenuButton isActive>Orders</SidebarMenuButton>
-      </SidebarProvider>,
-    );
-  });
 });
 
 describe('Sidebar side', () => {
@@ -457,16 +444,5 @@ describe('Sidebar side', () => {
     // The old values and the physical utilities that carried them.
     expect(code).not.toMatch(/data-side=(left|right)|data-\[side=(left|right)\]|side=\{?["'](left|right)["']/);
     expect(code).not.toMatch(/[\s"'[:](-?left|-?right)-(0|2|4|full|\[)|[\s"']border-[lr]\b|[\s"':]m[lr]-0/);
-  });
-
-  test('the old physical values are gone', () => {
-    renderToStaticMarkup(
-      <SidebarProvider>
-        {/* @ts-expect-error `left` was renamed to `start` */}
-        <Sidebar side="left" />
-        {/* @ts-expect-error `right` was renamed to `end` */}
-        <Sidebar side="right" />
-      </SidebarProvider>,
-    );
   });
 });

@@ -124,16 +124,14 @@ describe('Alert icon', () => {
 });
 
 // Alert takes the state dictionary's tone, like StatusBadge, CountBadge and
-// Progress. The 2.x variant names are gone.
+// Progress. The 2.x variant names are deprecated aliases (deprecated-aliases.test.tsx).
 describe('Alert tone prop', () => {
   test('marks the alert with its tone', () => {
     expect(renderToStaticMarkup(<Alert tone="success">Saved</Alert>)).toContain('data-tone="success"');
     expect(renderToStaticMarkup(<Alert>Notice</Alert>)).not.toContain('data-tone');
   });
 
-  test('has no variant prop', () => {
-    // @ts-expect-error variant was replaced by tone
-    renderToStaticMarkup(<Alert variant="warning">Low stock</Alert>);
+  test('has no destructive tone', () => {
     // @ts-expect-error destructive is the critical tone
     renderToStaticMarkup(<Alert tone="destructive">Payment failed</Alert>);
   });

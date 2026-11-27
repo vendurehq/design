@@ -154,10 +154,3 @@ describe('RelativeTime while the time is not known', () => {
     expect(render(<RelativeTime value="not a date" fallback="n/a" />)).toBe('n/a');
   });
 });
-
-test('RelativeTime: the old start name is gone, and the format helpers live in lib', async () => {
-  // @ts-expect-error `start` is `from` since 3.0
-  void (<RelativeTime value={WHEN} start={WHEN} />);
-  const module: Record<string, unknown> = await import('./relative-time.tsx');
-  expect(Object.keys(module)).toEqual(['RelativeTime']);
-});
