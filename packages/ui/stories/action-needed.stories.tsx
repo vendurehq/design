@@ -79,7 +79,7 @@ const TAX: ActionNeededItem = {
 
 type CardProps = Partial<ActionNeededProps<ActionNeededItem>> & { description?: string };
 
-// The Dashboard's Store setup card: a card title and description, then the list.
+// The Dashboard's Store setup card in header mode: the card header is the fold row.
 function StoreSetupCard({
   description = 'This channel can take orders. These items are worth a look.',
   items = [PASSWORD, SEARCH_INDEX],
@@ -87,17 +87,13 @@ function StoreSetupCard({
 }: CardProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Store setup</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ActionNeeded
-          items={items}
-          storage={null}
-          {...props}
-        />
-      </CardContent>
+      <ActionNeeded
+        title="Store setup"
+        description={description}
+        items={items}
+        storage={null}
+        {...props}
+      />
     </Card>
   );
 }
@@ -119,11 +115,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Two warnings. The list starts open; the fold row folds it to one count badge.
+// Two warnings. The list starts open; the whole card header folds it.
 export const WarningsOnly: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button', { name: /Action needed/ });
+    const trigger = canvas.getByRole('button', { name: /Store setup/ });
+    await expect(trigger).toHaveTextContent('2 warnings');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(canvas.queryByText('Action needed')).toBeNull();
+    // The header is one button: Enter and Space fold and open the list.
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.keyboard(' ');
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(canvas.getAllByRole('listitem')).toHaveLength(2);
   },
@@ -137,12 +141,12 @@ export const ErrorAndWarnings: Story = {
   },
 };
 
-// Folded: the fold row shows one badge per tone with its count. The rows stay in the page, inert.
+// Folded: only the card header is left, with one badge per tone. The rows stay in the page, inert.
 export const Folded: Story = {
   args: { items: [PASSWORD, SEARCH_INDEX, SHIPPING, TAX], defaultOpen: false },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button', { name: /Action needed/ });
+    const trigger = canvas.getByRole('button', { name: /Store setup/ });
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await expect(trigger).toHaveTextContent('1 error');
     await expect(trigger).toHaveTextContent('2 warnings');
@@ -178,7 +182,7 @@ export const ReopenOnNewFinding: Story = {
   render: () => <ReopenDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button', { name: /Action needed/ });
+    const trigger = canvas.getByRole('button', { name: /Store setup/ });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await userEvent.click(trigger);
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -196,4 +200,30 @@ export const ErrorAndWarningsDark: Story = {
 export const FoldedDark: Story = {
   args: Folded.args,
   globals: { theme: 'dark' },
+};
+
+// Without `title`: an "Action needed" fold row inside a card's content, under its own header.
+// The badges show only while the list is folded.
+export const FoldRow: Story = {
+  render: () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Store setup</CardTitle>
+        <CardDescription>Customers cannot check out until the error is fixed.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ActionNeeded
+          items={[PASSWORD, SEARCH_INDEX, SHIPPING]}
+          storage={null}
+        />
+      </CardContent>
+    </Card>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: /Action needed/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  },
 };

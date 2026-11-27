@@ -159,4 +159,32 @@ describe('ActionNeeded', () => {
     expect(html).toContain('<p>custom shipping</p>');
     expect(html).not.toContain('data-slot="action-needed-row"');
   });
+
+  test('header mode: the title, badges and description make up the one fold button', () => {
+    const html = renderToStaticMarkup(
+      <ActionNeeded
+        description="Fix these before this channel can take orders."
+        items={ITEMS}
+        storage={null}
+        title="Store setup"
+      />,
+    );
+    const trigger = slotTag(html, 'action-needed-trigger');
+    expect(trigger).toContain('aria-expanded="true"');
+    expect(slotTag(html, 'action-needed')).toContain('data-mode="header"');
+    expect(html).not.toContain('Action needed');
+    expect(html).not.toContain('data-slot="action-needed-label"');
+    // Open, the badges stay readable: they are the header's summary.
+    expect(slotTag(html, 'action-needed-counts')).not.toContain('aria-hidden');
+    expect(html).toContain('1 error');
+    expect(html).toContain('2 warnings');
+    const button = html.slice(html.indexOf('<button'), html.indexOf('</button>'));
+    for (const text of [
+      'Store setup',
+      '1 error',
+      'Fix these before this channel can take orders.',
+    ]) {
+      expect(button).toContain(text);
+    }
+  });
 });
