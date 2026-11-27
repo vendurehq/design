@@ -190,3 +190,13 @@ describe('Every popup is a 12px surface', () => {
     expect(source('chart.tsx')).toMatch(/rounded-2xl[^"]*shadow-overlay/);
   });
 });
+
+describe('A CopyButton inside an InputGroup', () => {
+  test('nests its corner inside the field, like an xs InputGroupButton', () => {
+    const tokens = slotTokens(renderToStaticMarkup(<InputGroupAddon align="inline-end" />), 'input-group-addon');
+    expect(tokens).toContain('[&>[data-slot=copy-button]]:rounded-[calc(var(--radius-xl)-5px)]');
+    expect(tokens).toContain(
+      'group-data-[size=sm]/input-group:[&>[data-slot=copy-button]]:rounded-[calc(var(--radius-xl)-2px)]',
+    );
+  });
+});

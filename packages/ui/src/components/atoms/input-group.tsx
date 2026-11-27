@@ -42,7 +42,9 @@ function InputGroup({
 // and the input hairline, as the v3 look's search field does: its muted text
 // on its fill on the muted field fails the axe contrast check.
 const inputGroupAddonVariants = cva(
-  "text-muted-foreground **:data-[slot=kbd]:bg-transparent **:data-[slot=kbd]:text-foreground-secondary **:data-[slot=kbd]:inset-ring-input h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='stroke-'])]:stroke-[1.75] flex cursor-text items-center justify-center select-none",
+  // A CopyButton (24px) nests its corner like an xs InputGroupButton: the
+  // field's 8px minus the gap, 5px in a 34px group and 2px in a 28px one.
+  "[&>[data-slot=copy-button]]:rounded-[calc(var(--radius-xl)-5px)] group-data-[size=sm]/input-group:[&>[data-slot=copy-button]]:rounded-[calc(var(--radius-xl)-2px)] text-muted-foreground **:data-[slot=kbd]:bg-transparent **:data-[slot=kbd]:text-foreground-secondary **:data-[slot=kbd]:inset-ring-input h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>svg:not([class*='size-'])]:size-4 [&>svg:not([class*='stroke-'])]:stroke-[1.75] flex cursor-text items-center justify-center select-none",
   {
     variants: {
       align: {

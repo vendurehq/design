@@ -1,20 +1,33 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Copy, FileText, Search, Users } from 'lucide-react';
+import { FileText, Search, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { expect } from 'storybook/test';
 import { Badge } from '../src/components/atoms/badge.tsx';
 import { Button } from '../src/components/atoms/button.tsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../src/components/atoms/card.tsx';
 import { Command, CommandGroup, CommandItem, CommandList } from '../src/components/atoms/command.tsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../src/components/atoms/dropdown-menu.tsx';
 import { Input } from '../src/components/atoms/input.tsx';
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
 } from '../src/components/atoms/input-group.tsx';
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '../src/components/atoms/popover.tsx';
+import { CopyButton } from '../src/components/molecules/copyable-text.tsx';
 import { DatePicker } from '../src/components/molecules/date-picker.tsx';
-import { menuItem } from '../src/lib/menu-item.tsx';
 
 /**
  * What the design system has: the three shadows, the corner roles, the two
@@ -28,9 +41,14 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+type Theme = 'light' | 'dark';
+
+// Popups portal to the page body, outside the dark panel, so the dark copy
+// puts the theme class on the popup itself.
+const themed = (theme: Theme) => (theme === 'dark' ? 'dark' : undefined);
 
 /** A section: a heading, one line, and its content in light and dark side by side. */
-function Section({ title, note, children }: { title: string; note: string; children: () => ReactNode }) {
+function Section({ title, note, children }: { title: string; note: string; children: (theme: Theme) => ReactNode }) {
   return (
     <section className="flex max-w-4xl flex-col gap-3">
       <header className="flex flex-col gap-1">
@@ -42,7 +60,7 @@ function Section({ title, note, children }: { title: string; note: string; child
           <div key={theme} className={theme === 'dark' ? 'dark' : undefined}>
             <div className="bg-background text-foreground flex h-full flex-col gap-5 rounded-2xl border p-5">
               <p className="text-muted-foreground text-xs font-medium">{theme === 'dark' ? 'Dark' : 'Light'}</p>
-              {children()}
+              {children(theme)}
             </div>
           </div>
         ))}
@@ -62,18 +80,29 @@ function Sample({ name, use, children }: { name: string; use: string; children: 
   );
 }
 
-function Shadows() {
-  const surface = 'bg-card flex h-16 w-36 items-center justify-center rounded-2xl text-xs';
+function Shadows(theme: Theme) {
   return (
     <div className="grid grid-cols-3 gap-4">
-      <Sample name="shadow-control" use="Resting controls on a surface: buttons, button groups, cards.">
-        <div className={`${surface} shadow-control`}>Card</div>
+      <Sample name="shadow-control · Card" use="Resting controls on a surface: buttons, button groups, cards.">
+        <Card size="sm" className="w-36">
+          <CardContent>Card</CardContent>
+        </Card>
       </Sample>
-      <Sample name="shadow-overlay" use="Floating content: menus, popovers, dialogs, toasts.">
-        <div className={`${surface} bg-popover shadow-overlay`}>Popover</div>
+      <Sample name="shadow-overlay · Popover" use="Floating content: menus, popovers, dialogs, toasts.">
+        <div className="h-28">
+          <Popover open modal={false}>
+            <PopoverTrigger render={<Button variant="outline" size="sm" />}>Details</PopoverTrigger>
+            <PopoverContent className={`${themed(theme) ?? ''} w-44`} side="bottom" align="start">
+              <PopoverHeader>
+                <PopoverTitle>Popover</PopoverTitle>
+                <PopoverDescription>shadow-overlay</PopoverDescription>
+              </PopoverHeader>
+            </PopoverContent>
+          </Popover>
+        </div>
       </Sample>
-      <Sample name="shadow-scrolled" use="The rule under a sticky header while content scrolls under it.">
-        <div className="bg-card flex h-16 w-36 flex-col overflow-hidden rounded-2xl text-xs">
+      <Sample name="shadow-scrolled · token" use="The rule under a sticky header while content scrolls under it.">
+        <div className="bg-card flex h-16 w-36 flex-col overflow-hidden rounded-2xl border text-xs">
           <div className="bg-card shadow-scrolled px-3 py-2 font-medium">Header</div>
           <div className="text-muted-foreground px-3 py-2">Rows…</div>
         </div>
@@ -82,7 +111,7 @@ function Shadows() {
   );
 }
 
-function Corners() {
+function Corners(theme: Theme) {
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-3 gap-4">
@@ -109,25 +138,21 @@ function Corners() {
         </Sample>
       </div>
       <div className="grid grid-cols-3 gap-4">
-        <Sample name="Inner · 12 − 5 = 7px" use="A menu item 5px inside a 12px popup.">
-          <div
-            role="menu"
-            aria-label="Order actions"
-            className="bg-popover text-popover-foreground shadow-overlay w-44 rounded-2xl p-1.25"
-          >
-            {['Edit', 'Duplicate', 'Archive'].map((label, index) => (
-              <div
-                key={label}
-                role="menuitem"
-                tabIndex={-1}
-                className={`${menuItem} ${index === 0 ? 'bg-muted text-foreground' : ''}`}
-              >
-                {label}
-              </div>
-            ))}
+        <Sample name="Inner · 12 − 5 = 7px · DropdownMenu" use="A menu item 5px inside a 12px popup.">
+          <div className="h-40">
+            <DropdownMenu open modal={false}>
+              <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>Actions</DropdownMenuTrigger>
+              <DropdownMenuContent className={`${themed(theme) ?? ''} min-w-44`} side="bottom" align="start">
+                <DropdownMenuItem>Edit</DropdownMenuItem>
+                <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                <DropdownMenuItem>Archive</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </Sample>
-        <Sample name="Palette · rounded-3xl · 16px" use="The command palette. Its items: 16 − 8 = 8px.">
+        <Sample name="Palette · rounded-3xl · 16px · Command" use="The command palette. Its items: 16 − 8 = 8px.">
+          {/* CommandDialog opens modal at the top of the page, so the sample
+              draws the same palette scope and surface inline. */}
           <div data-command-palette="" className="shadow-overlay w-52 overflow-hidden rounded-3xl">
             <Command label="Go to">
               <CommandList>
@@ -145,13 +170,11 @@ function Corners() {
             </Command>
           </div>
         </Sample>
-        <Sample name="Nested · outer − gap" use="A chip or button inside a field takes its corner from the field.">
+        <Sample name="Nested · outer − gap · CopyButton" use="A copy button inside a field: 8 − 5 = 3px.">
           <InputGroup className="w-48">
-            <InputGroupInput aria-label="Token" defaultValue="vnd_live_4f2a" />
+            <InputGroupInput aria-label="Token" readOnly defaultValue="vnd_live_4f2a" />
             <InputGroupAddon align="inline-end">
-              <InputGroupButton size="icon-xs" aria-label="Copy">
-                <Copy />
-              </InputGroupButton>
+              <CopyButton value="vnd_live_4f2a" />
             </InputGroupAddon>
           </InputGroup>
         </Sample>
@@ -190,8 +213,8 @@ const scale = [
   ['text-xs', '12px', 'Captions, badges, small buttons'],
   ['text-sm', '14px', 'Body text, fields, buttons'],
   ['text-base', '16px', 'Section and dialog titles'],
-  ['text-lg', '18px', 'Large text'],
-  ['text-xl', '20px', 'Large text'],
+  ['text-lg', '18px', 'Lead text'],
+  ['text-xl', '20px', 'Small headlines'],
   ['text-2xl', '24px', 'Page headlines'],
   ['text-3xl', '30px', 'Display sm'],
   ['text-4xl', '36px', 'Display md'],
@@ -269,8 +292,11 @@ export const Overview: Story = {
         await expect(control.getBoundingClientRect().height).toBe(height);
       }
     }
-    // The menu item nests inside its popup: 12 − 5 = 7px.
-    const item = canvasElement.querySelector<HTMLElement>('[role=menuitem]');
+    // The menu item nests inside its popup (12 − 5 = 7px), the copy button
+    // inside its field (8 − 5 = 3px). The menu portals to the page body.
+    const item = canvasElement.ownerDocument.querySelector<HTMLElement>('[role=menuitem]');
     await expect(item && getComputedStyle(item).borderTopLeftRadius).toBe('7px');
+    const copy = canvasElement.querySelector<HTMLElement>('[data-slot=copy-button]');
+    await expect(copy && getComputedStyle(copy).borderTopLeftRadius).toBe('3px');
   },
 };
