@@ -37,6 +37,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuFlyout,
+  SidebarMenuFlyoutContent,
+  SidebarMenuFlyoutItem,
+  SidebarMenuFlyoutTrigger,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
@@ -307,6 +311,117 @@ export const NestedItemActiveIconRail: Story = {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <div className="flex-1 p-5">
+          <p className="text-muted-foreground text-sm">Main content area</p>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  ),
+};
+
+const flyoutGroups = [
+  { title: 'Insights', icon: ChartLineIcon, items: ['Overview'] },
+  { title: 'Catalog', icon: PackageIcon, items: ['Products', 'Facets', 'Collections', 'Assets'] },
+  { title: 'Sales', icon: ShoppingCartIcon, items: ['Orders', 'Promotions'] },
+  { title: 'Customers', icon: UsersIcon, items: ['Customers', 'Customer groups'] },
+];
+
+/**
+ * In the icon rail a group's items sit in a flyout: hover or focus the group's
+ * icon. The title row lines up with the icon, so the title reads as its label.
+ * Near the bottom of the screen the card shifts up to stay on screen (hover
+ * Settings).
+ */
+export const IconRailFlyout: Story = {
+  parameters: { layout: 'fullscreen' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const centre = (box: DOMRect) => box.top + box.height / 2;
+    for (const name of ['Sales', 'Catalog']) {
+      const trigger = canvas.getByRole('button', { name });
+      await userEvent.hover(trigger);
+      const label = await waitFor(() => {
+        const found = [...document.querySelectorAll('[data-slot=sidebar-menu-flyout-label]')].find(
+          (element) => element.textContent === name,
+        );
+        expect(found).toBeTruthy();
+        return found as HTMLElement;
+      });
+      const icon = trigger.querySelector('svg') as SVGElement;
+      await waitFor(() =>
+        expect(
+          Math.abs(centre(label.getBoundingClientRect()) - centre(icon.getBoundingClientRect())),
+        ).toBeLessThanOrEqual(1),
+      );
+      await userEvent.unhover(trigger);
+    }
+    // At the bottom of the screen the card shifts up instead of leaving it.
+    const settings = canvas.getByRole('button', { name: 'Settings' });
+    await userEvent.hover(settings);
+    await waitFor(() => {
+      const card = [...document.querySelectorAll('[data-slot=hover-card-content]')].find((element) =>
+        element.textContent?.startsWith('Settings'),
+      );
+      expect(card).toBeTruthy();
+      expect((card as HTMLElement).getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+    });
+    await userEvent.unhover(settings);
+  },
+  render: () => (
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {flyoutGroups.map((group) => (
+                  <SidebarMenuItem key={group.title}>
+                    <SidebarMenuFlyout>
+                      <SidebarMenuFlyoutTrigger hasActiveChild={group.title === 'Sales'}>
+                        <group.icon />
+                        <span>{group.title}</span>
+                      </SidebarMenuFlyoutTrigger>
+                      <SidebarMenuFlyoutContent label={group.title}>
+                        {group.items.map((item) => (
+                          <SidebarMenuFlyoutItem
+                            key={item}
+                            href={`#${item.toLowerCase().replace(/ /g, '-')}`}
+                            active={item === 'Orders'}
+                          >
+                            {item}
+                          </SidebarMenuFlyoutItem>
+                        ))}
+                      </SidebarMenuFlyoutContent>
+                    </SidebarMenuFlyout>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuFlyout>
+                <SidebarMenuFlyoutTrigger>
+                  <SettingsIcon />
+                  <span>Settings</span>
+                </SidebarMenuFlyoutTrigger>
+                <SidebarMenuFlyoutContent label="Settings">
+                  {['Sellers', 'Channels', 'Stock locations', 'Zones', 'Countries', 'Tax rates'].map(
+                    (item) => (
+                      <SidebarMenuFlyoutItem key={item} href="#">
+                        {item}
+                      </SidebarMenuFlyoutItem>
+                    ),
+                  )}
+                </SidebarMenuFlyoutContent>
+              </SidebarMenuFlyout>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <div className="flex-1 p-5">
